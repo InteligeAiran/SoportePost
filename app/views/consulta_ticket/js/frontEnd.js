@@ -310,6 +310,25 @@
 // });
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Precargar logo para PDF (si no está ya cargado)
+    try {
+        if (!window.PDF_LOGO_DATAURL) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    window.PDF_LOGO_DATAURL = canvas.toDataURL('image/png');
+                } catch (_) {}
+            };
+            const base = (typeof APP_PATH === 'string' ? APP_PATH : '/');
+            img.src = base + 'app/public/img/Nota_Entrega/INTELIGENSA.PNG';
+        }
+    } catch (_) {}
     // Referencias a los elementos
     const regionesSelect = document.getElementById("regiones");
     const searchRifDiv = document.getElementById("SearchRif");
@@ -576,7 +595,6 @@ function getRegionUsuarios() {
   xhr.send(datos);
 }
 
-
 function getBancoClienteUsuarios() {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getRegionTicket`);
@@ -630,7 +648,6 @@ function getBancoClienteUsuarios() {
   const datos = `action=GetRegionUsers`; // Cambia la acción para que coincida con el backend
   xhr.send(datos);
 }
-
 
 // Llama a la función para cargar las fallas cuando la página se cargue
 document.addEventListener("DOMContentLoaded", getRegionUsuarios);
@@ -706,8 +723,6 @@ function SendRegions() {
 
   const id_user = document.getElementById('id_user').value;
   const idtipouser = document.getElementById('idtipouser').value;
-
-
 
   // Mover la validación al principio para detener la ejecución si no hay región
   if (!RegionSelectValue) {
@@ -1064,108 +1079,146 @@ function SendRegions() {
                         });
                     }
                 },
-                {
-                    extend: 'pdfHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-                    </svg>PDF`,
-                    title: `${regionName}`,
-                    className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+               {
+    extend: 'pdfHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+    </svg>PDF`,
+    filename: `REPORTE TICKET - REGION ${regionName.toUpperCase()} - ${new Date().toISOString().split('T')[0]}`,
+    title: `${regionName}`,
+    className: 'btn-pdf-modern',
+    attr: {
+        id: 'btn-pdf-modern-id',
+        title: 'Exportar a PDF'
+    },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+        const rowCount = dt.rows({search: 'applied'}).count();
+        const delay = Math.min(Math.max(rowCount * 15, 3000), 15000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        format: { body: data => typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data }
+    },
+    customize: function(doc) {
+        // LOGO
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+        }
+
+        doc.pageMargins = [40, 130, 40, 80];
+        doc.pageSize = 'A4';
+        doc.pageOrientation = 'portrait';
+        doc.defaultStyle = { fontSize: 9.5 };
+
+        doc.styles = {
+            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
+            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
+            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
+            ticketSubtitle: { fontSize: 9.5, color: '#555' }
+        };
+
+        // HEADER PRO
+        doc.header = function() {
+            return {
+                margin: [40, 20, 40, 10],
+                stack: [
+                    { columns: [
+                        { image: 'logo_inteligensa', width: 85 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                    ]},
+                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                    { text: 'REPORTE DE TICKETS POR REGIÓN', style: 'title' },
+                    { text: `Región: ${regionName.toUpperCase()}`, style: 'subtitle' }
+                ]
+            };
+        };
+
+        // FOOTER PRO
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                margin: [40, 20],
+                columns: [
+                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                ]
+            };
+        };
+
+        const oldContent = doc.content;
+        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
+        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+        doc.content = [];
+
+        // NOTA + GENERADO POR
+        doc.content.push({
+            stack: [
+                { text: 'Nota importante', style: 'noteTitle' },
+                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+            ],
+            margin: [0, 15, 0, 12],
+            background: '#f8f9fa'
+        });
+
+        // TRANSFORMAR A 3 TICKETS POR PÁGINA
+        try {
+            const table = oldContent.find(item => item.table);
+            if (table && table.table.body.length > 1) {
+                const headerRow = table.table.body[0];
+                const dataRows = table.table.body.slice(1);
+
+                dataRows.forEach((row, idx) => {
+                    const kv = [];
+                    let idTicket = '', razon = '', rif = '';
+
+                    headerRow.forEach((h, i) => {
+                        const label = String(h.text || '').trim();
+                        const value = String(row[i].text || '').trim() || 'N/A';
+                        if (label.includes('ID Ticket')) idTicket = value;
+                        if (label.includes('Razón Social')) razon = value;
+                        if (label.includes('Rif')) rif = value;
+                        kv.push([
+                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                            { text: value, fontSize: 9, margin: [0, 4] }
+                        ]);
+                    });
+
+                    doc.content.push({
+                        stack: [
+                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
+                            {
+                                table: { widths: [160, '*'], body: kv },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                    hLineWidth: () => 0.6,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 10,
+                                    paddingRight: () => 10
                                 }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo para PDF
-                                    if (data.length > 60) {
-                                        data = data.substring(0, 57) + '...';
-                                    }
-                                }
-                                return data;
                             }
-                        }
-                    },
-                    // Configuración SIMPLIFICADA y ESTABLE para PDF
-                    customize: function(doc) {
-                        // Solo configuraciones básicas que no causan errores
-                        doc.pageOrientation = 'landscape';
-                        doc.pageSize = 'A4';
-                        doc.pageMargins = [10, 20, 10, 20];
-                        
-                        // Estilos básicos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 6,
-                            bold: true
-                        };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 7,
-                            lineHeight: 1.1
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
-                            return {
-                                text: `${regionName}`,
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
-                            };
-                        };
-                        
-                        // Pie de página
-                        doc.footer = function(currentPage, pageCount) {
-                            return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 10,
-                                margin: [0, 0, 0, 10]
-                            };
-                        };
-                        
-                        // NO configurar widths ni body - dejar que se ajuste automáticamente
-                    }
-                }
+                        ],
+                        margin: [0, 8, 0, 30],
+                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                    });
+                });
+            } else {
+                doc.content = oldContent;
+            }
+        } catch (e) {
+            console.error("Error transformando PDF por región:", e);
+            doc.content = oldContent;
+        }
+    }
+}
             ]
           });
           $(newTable).resizableColumns();
@@ -1330,6 +1383,31 @@ function SendRif() {
           newTable.appendChild(thead);
           newTable.appendChild(tbody);
 
+          function safeValue(value) {
+                if (value === null || value === undefined || value === '') {
+                    return 'N/A';
+                }
+                if (typeof value === 'object') {
+                    // Si es un objeto Date
+                    if (value instanceof Date) {
+                        return value.toLocaleDateString('es-VE');
+                    }
+                    // Si tiene una propiedad que sea string (como en Laravel Carbon)
+                    if (value.date || value.timezone || value.formatted) {
+                        return value.date || value.formatted || 'N/A';
+                    }
+                    // Si es un objeto plano, intenta convertirlo
+                    try {
+                        const str = JSON.stringify(value);
+                        if (str === '{}' || str === '[]') return 'N/A';
+                        return str;
+                    } catch (e) {
+                        return 'N/A';
+                    }
+                }
+                return String(value).trim() || 'N/A';
+            }
+
           // Lógica para crear las columnas y el thead
           const columnsConfig = [];
           const headerRow = thead.insertRow();
@@ -1380,16 +1458,87 @@ function SendRif() {
               th.textContent = columnTitles[key] || key;
               headerRow.appendChild(th);
               
-              const columnDef = {
+               const columnDef = {
                   data: key,
                   title: columnTitles[key] || key,
-                  defaultContent: "",
+                  defaultContent: "NULL",
+                  render: function(data, type, row) {
+                      return safeValue(data);
+                  }
               };
+
               if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
                   columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
               }
+
               columnsConfig.push(columnDef);
           }
+
+          // Función para crear y mostrar el overlay de carga
+            function showExportLoading() {
+              // Verificar si ya existe el overlay
+              let loadingOverlay = document.getElementById('export-loading-overlay');
+              if (!loadingOverlay) {
+                loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'export-loading-overlay';
+                loadingOverlay.style.cssText = `
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: rgba(255, 255, 255, 0.95);
+                  z-index: 9999;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                  align-items: center;
+                  backdrop-filter: blur(2px);
+                  -webkit-backdrop-filter: blur(2px);
+                `;
+                
+                const spinner = document.createElement('div');
+                spinner.style.cssText = `
+                  width: 80px;
+                  height: 80px;
+                  border: 6px solid #f3f3f3;
+                  border-top: 6px solid #003594;
+                  border-radius: 50%;
+                  animation: spin 1s linear infinite;
+                  margin-bottom: 20px;
+                `;
+                
+                const message = document.createElement('h4');
+                message.textContent = 'Generando documento...';
+                message.style.cssText = `
+                  color: #003594;
+                  margin-bottom: 10px;
+                  font-weight: 600;
+                `;
+                
+                const subMessage = document.createElement('p');
+                subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+                subMessage.style.cssText = `
+                  color: #666;
+                  font-size: 14px;
+                `;
+                
+                loadingOverlay.appendChild(spinner);
+                loadingOverlay.appendChild(message);
+                loadingOverlay.appendChild(subMessage);
+                document.body.appendChild(loadingOverlay);
+              } else {
+                loadingOverlay.style.display = 'flex';
+              }
+            }
+            
+            // Función para ocultar el overlay de carga
+            function hideExportLoading() {
+              const loadingOverlay = document.getElementById('export-loading-overlay');
+              if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+              }
+            }
 
           // Inicialización de DataTables
           $(newTable).DataTable({
@@ -1431,7 +1580,7 @@ function SendRif() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Busqueda por RIF',
+                    title: 'Reporte de Ticket por RIF',
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -1509,95 +1658,155 @@ function SendRif() {
                     }
                 },
                 {
-                    extend: 'pdfHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-                    </svg>PDF`,
-                    title: 'Busqueda por RIF',
-                    className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+    extend: 'pdfHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+    </svg>PDF`,
+    filename: () => {
+    const tipoRif = document.getElementById('rifTipo')?.value?.toUpperCase() || 'V';
+    const numeroRif = document.getElementById('rifInput')?.value?.trim() || '';
+    const rifCompleto = numeroRif ? `${tipoRif}${numeroRif}` : 'SIN_RIF';
+    const fecha = new Date().toISOString().split('T')[0];
+    return `REPORTE DE TICKET - RIF ${rifCompleto} - ${fecha}`;
+  },
+    title: 'Reporte de Ticket por RIF',
+    className: 'btn-pdf-modern',
+    attr: {
+        id: 'btn-pdf-modern-id',
+        title: 'Exportar a PDF'
+    },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+        const rowCount = dt.rows({search: 'applied'}).count();
+        const delay = Math.min(Math.max(rowCount * 18, 4000), 18000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        format: { 
+            body: data => (typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data) 
+        }
+    },
+    customize: function(doc) {
+        // LOGO
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+        }
+
+        doc.pageMargins = [40, 130, 40, 80];
+        doc.pageSize = 'A4';
+        doc.pageOrientation = 'portrait';
+        doc.defaultStyle = { fontSize: 9.5 };
+
+        doc.styles = {
+            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
+            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
+            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
+            ticketSubtitle: { fontSize: 9.5, color: '#555' }
+        };
+
+        // HEADER PRO
+        doc.header = function() {
+            const rif = document.getElementById('rifInput')?.value?.trim().toUpperCase() || 'DESCONOCIDO';
+            return {
+                margin: [40, 20, 40, 10],
+                stack: [
+                    { columns: [
+                        { image: 'logo_inteligensa', width: 85 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                    ]},
+                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                    { text: 'REPORTE DE TICKET POR RIF', style: 'title' },
+                    { text: `RIF: ${rif}`, style: 'subtitle' }
+                ]
+            };
+        };
+
+        // FOOTER PRO
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                margin: [40, 20],
+                columns: [
+                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                ]
+            };
+        };
+
+        const oldContent = doc.content;
+        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
+        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+        doc.content = [];
+
+        // NOTA + GENERADO POR
+        doc.content.push({
+            stack: [
+                { text: 'Nota importante', style: 'noteTitle' },
+                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+            ],
+            margin: [0, 15, 0, 12],
+            background: '#f8f9fa'
+        });
+
+        // TRANSFORMAR A 3 TICKETS POR PÁGINA
+        try {
+            const table = oldContent.find(item => item.table);
+            if (table && table.table.body.length > 1) {
+                const headerRow = table.table.body[0];
+                const dataRows = table.table.body.slice(1);
+
+                dataRows.forEach((row, idx) => {
+                    const kv = [];
+                    let idTicket = '', razon = '', rif = '', serialPOS = '';
+
+                    headerRow.forEach((h, i) => {
+                        const label = String(h.text || '').trim();
+                        const value = String(row[i].text || '').trim() || 'N/A';
+                        if (label.includes('ID Ticket')) idTicket = value;
+                        if (label.includes('Razón Social')) razon = value;
+                        if (label.includes('Rif')) rif = value;
+                        if (label.includes('Serial POS') || label.includes('serial_pos')) serialPOS = value;
+                        kv.push([
+                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                            { text: value, fontSize: 9, margin: [0, 4] }
+                        ]);
+                    });
+
+                    doc.content.push({
+                        stack: [
+                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}${serialPOS ? ' • Serial: ' + serialPOS : ''}`, style: 'ticketSubtitle' },
+                            {
+                                table: { widths: [160, '*'], body: kv },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                    hLineWidth: () => 0.6,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 10,
+                                    paddingRight: () => 10
                                 }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo para PDF
-                                    if (data.length > 60) {
-                                        data = data.substring(0, 57) + '...';
-                                    }
-                                }
-                                return data;
                             }
-                        }
-                    },
-                    // Configuración SIMPLIFICADA y ESTABLE para PDF
-                    customize: function(doc) {
-                        // Solo configuraciones básicas que no causan errores
-                        doc.pageOrientation = 'landscape';
-                        doc.pageSize = 'A4';
-                        doc.pageMargins = [10, 20, 10, 20];
-                        
-                        // Estilos básicos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 6,
-                            bold: true
-                        };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 7,
-                            lineHeight: 1.1
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
-                            return {
-                                text: 'Busqueda por RIF',
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
-                            };
-                        };
-                        
-                        // Pie de página
-                        doc.footer = function(currentPage, pageCount) {
-                            return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 10,
-                                margin: [0, 0, 0, 10]
-                            };
-                        };
-                        
-                        // NO configurar widths ni body - dejar que se ajuste automáticamente
-                    }
-                }
+                        ],
+                        margin: [0, 8, 0, 30],
+                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                    });
+                });
+            } else {
+                doc.content = oldContent;
+            }
+        } catch (e) {
+            console.error("Error transformando PDF por RIF:", e);
+            doc.content = oldContent;
+        }
+    }
+}
             ]
           });
           $(newTable).resizableColumns();
@@ -1761,6 +1970,33 @@ function SendSerial() {
           newTable.appendChild(thead);
           newTable.appendChild(tbody);
 
+            // Lógica para crear las columnas y el thead
+            // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
+            function safeValue(value) {
+                if (value === null || value === undefined || value === '') {
+                    return 'N/A';
+                }
+                if (typeof value === 'object') {
+                    // Si es un objeto Date
+                    if (value instanceof Date) {
+                        return value.toLocaleDateString('es-VE');
+                    }
+                    // Si tiene una propiedad que sea string (como en Laravel Carbon)
+                    if (value.date || value.timezone || value.formatted) {
+                        return value.date || value.formatted || 'N/A';
+                    }
+                    // Si es un objeto plano, intenta convertirlo
+                    try {
+                        const str = JSON.stringify(value);
+                        if (str === '{}' || str === '[]') return 'N/A';
+                        return str;
+                    } catch (e) {
+                        return 'N/A';
+                    }
+                }
+                return String(value).trim() || 'N/A';
+            }
+
           // Lógica para crear las columnas y el thead
           const columnsConfig = [];
           const headerRow = thead.insertRow();
@@ -1814,8 +2050,12 @@ function SendSerial() {
               const columnDef = {
                   data: key,
                   title: columnTitles[key] || key,
-                  defaultContent: "",
+                  defaultContent: "NULL",
+                  render: function(data, type, row) {
+                      return safeValue(data);
+                  }
               };
+
               if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
                   columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
               }
@@ -1941,7 +2181,7 @@ function SendSerial() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Busqueda por Serial',
+                    title: 'Reporte de Ticket por Serial',
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -2030,108 +2270,152 @@ function SendSerial() {
                         });
                     }
                 },
-                {
-                    extend: 'pdfHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-                    </svg>PDF`,
-                    title: 'Busqueda por Serial',
-                    className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+               {
+    extend: 'pdfHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+    </svg>PDF`,
+    filename: () => {
+        const serial = document.getElementById('serialInput')?.value?.trim().toUpperCase() || 'SIN_SERIAL';
+        const fecha = new Date().toISOString().split('T')[0];
+        return `REPORTE DE TICKET - SERIAL ${serial} - ${fecha}`;
+    },
+    title: 'Rporte por Serial',
+    className: 'btn-pdf-modern',
+    attr: {
+        id: 'btn-pdf-modern-id',
+        title: 'Exportar a PDF'
+    },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+        const rowCount = dt.rows({search: 'applied'}).count();
+        const delay = Math.min(Math.max(rowCount * 18, 4000), 18000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        format: { body: data => (typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data) }
+    },
+    customize: function(doc) {
+        // LOGO
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+        }
+
+        doc.pageMargins = [40, 130, 40, 80];
+        doc.pageSize = 'A4';
+        doc.pageOrientation = 'portrait';
+        doc.defaultStyle = { fontSize: 9.5 };
+
+        doc.styles = {
+            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
+            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
+            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
+            ticketSubtitle: { fontSize: 9.5, color: '#555' }
+        };
+
+        // HEADER PRO
+        doc.header = function() {
+            const serial = document.getElementById('serialInput')?.value?.trim().toUpperCase() || 'DESCONOCIDO';
+            return {
+                margin: [40, 20, 40, 10],
+                stack: [
+                    { columns: [
+                        { image: 'logo_inteligensa', width: 85 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                    ]},
+                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                    { text: 'REPORTE DE TICKET POR SERIAL', style: 'title' },
+                    { text: `Serial: ${serial}`, style: 'subtitle' }
+                ]
+            };
+        };
+
+        // FOOTER PRO
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                margin: [40, 20],
+                columns: [
+                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                ]
+            };
+        };
+
+        const oldContent = doc.content;
+        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
+        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+        doc.content = [];
+
+        // NOTA + GENERADO POR
+        doc.content.push({
+            stack: [
+                { text: 'Nota importante', style: 'noteTitle' },
+                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+            ],
+            margin: [0, 15, 0, 12],
+            background: '#f8f9fa'
+        });
+
+        // TRANSFORMAR A 3 TICKETS POR PÁGINA
+        try {
+            const table = oldContent.find(item => item.table);
+            if (table && table.table.body.length > 1) {
+                const headerRow = table.table.body[0];
+                const dataRows = table.table.body.slice(1);
+
+                dataRows.forEach((row, idx) => {
+                    const kv = [];
+                    let idTicket = '', razon = '', rif = '', serialPOS = '';
+
+                    headerRow.forEach((h, i) => {
+                        const label = String(h.text || '').trim();
+                        const value = String(row[i].text || '').trim() || 'N/A';
+                        if (label.includes('ID Ticket')) idTicket = value;
+                        if (label.includes('Razón Social')) razon = value;
+                        if (label.includes('Rif')) rif = value;
+                        if (label.includes('Serial POS') || label.includes('serial_pos')) serialPOS = value;
+                        kv.push([
+                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                            { text: value, fontSize: 9, margin: [0, 4] }
+                        ]);
+                    });
+
+                    doc.content.push({
+                        stack: [
+                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}${serialPOS ? ' • Serial: ' + serialPOS : ''}`, style: 'ticketSubtitle' },
+                            {
+                                table: { widths: [160, '*'], body: kv },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                    hLineWidth: () => 0.6,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 10,
+                                    paddingRight: () => 10
                                 }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo para PDF
-                                    if (data.length > 60) {
-                                        data = data.substring(0, 57) + '...';
-                                    }
-                                }
-                                return data;
                             }
-                        }
-                    },
-                    // Configuración SIMPLIFICADA y ESTABLE para PDF
-                    customize: function(doc) {
-                        // Solo configuraciones básicas que no causan errores
-                        doc.pageOrientation = 'landscape';
-                        doc.pageSize = 'A4';
-                        doc.pageMargins = [10, 20, 10, 20];
-                        
-                        // Estilos básicos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 6,
-                            bold: true
-                        };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 7,
-                            lineHeight: 1.1
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
-                            return {
-                                text: 'Busqueda por Serial',
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
-                            };
-                        };
-                        
-                        // Pie de página
-                        doc.footer = function(currentPage, pageCount) {
-                            return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 10,
-                                margin: [0, 0, 0, 10]
-                            };
-                        };
-                        
-                        // NO configurar widths ni body - dejar que se ajuste automáticamente
-                    }
-                }
+                        ],
+                        margin: [0, 8, 0, 30],
+                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                    });
+                });
+            } else {
+                doc.content = oldContent;
+            }
+        } catch (e) {
+            console.error("Error transformando PDF por serial:", e);
+            doc.content = oldContent;
+        }
+    }
+}
             ]
           });
           $(newTable).resizableColumns();
@@ -2195,539 +2479,536 @@ function SendSerial() {
 }
 
 function SendStatus() {
-  // Get the welcome message element and show it at the start
-  const welcomeMessage = document.getElementById("welcomeMessage");
-  if (welcomeMessage) {
-    welcomeMessage.style.visibility = "visible";
-    welcomeMessage.style.opacity = "1";
-  }
-
-  const EstatusSelectValue = document.getElementById("SelectStatus").value;
-  const selectElement = document.getElementById("SelectStatus");
-  const selectedOptionIndex = selectElement.selectedIndex;
-  const EstatusName = selectElement.options[selectedOptionIndex].text;
-
-  const id_user = document.getElementById('id_user').value;
-  const idtipouser = document.getElementById('idtipouser').value;
-
-
-  // Mover la validación al principio para detener la ejecución si no hay serial
-  if (!EstatusSelectValue) {
-    Swal.fire({
-      icon: "warning",
-      title: "Atención",
-      text: "Por favor, Seleccione un Estatus.",
-      color: "black",
-      confirmButtonText: "Aceptar",
-      confirmButtonColor: "#003594",
-    });
-    // Show the welcome message if validation fails
+    // Get the welcome message element and show it at the start
+    const welcomeMessage = document.getElementById("welcomeMessage");
     if (welcomeMessage) {
       welcomeMessage.style.visibility = "visible";
       welcomeMessage.style.opacity = "1";
     }
-    return;
-  }
 
-  const razonCountTableCard = document.querySelector(".card");
-  if (!razonCountTableCard) {
-    console.error("Error: El contenedor principal de tablas (.card) no se encontró.");
-    return;
-  }
-  
-  // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
-  razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+    const EstatusSelectValue = document.getElementById("SelectStatus").value;
+    const selectElement = document.getElementById("SelectStatus");
+    const selectedOptionIndex = selectElement.selectedIndex;
+    const EstatusName = selectElement.options[selectedOptionIndex].text;
 
-  // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
-  // Destruye la instancia de DataTables si ya existe
-  const rifCountTable = document.getElementById("rifCountTable");
-  if (rifCountTable && $.fn.DataTable.isDataTable(rifCountTable)) {
-    $(rifCountTable).DataTable().destroy();
-    rifCountTable.remove(); // Remueve completamente la tabla antigua
-  }
-  
-  // Opcional: mostrar un mensaje de "cargando..." mientras se busca
-  const loadingMessage = document.createElement("p");
-  loadingMessage.textContent = "Buscando datos...";
-  loadingMessage.className = "text-center text-muted";
-  razonCountTableCard.appendChild(loadingMessage);
+    const id_user = document.getElementById('id_user').value;
+    const idtipouser = document.getElementById('idtipouser').value;
 
-  razonCountTableCard.style.display = "block";
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/SearchEstatusData`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Mover la validación al principio para detener la ejecución si no hay serial
+    if (!EstatusSelectValue) {
+      Swal.fire({
+        icon: "warning",
+        title: "Atención",
+        text: "Por favor, Seleccione un Estatus.",
+        color: "black",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#003594",
+      });
+      // Show the welcome message if validation fails
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
+      return;
+    }
 
-  xhr.onload = function () {
-    // Eliminar el mensaje de carga
-    if(loadingMessage) {
-        loadingMessage.remove();
+    const razonCountTableCard = document.querySelector(".card");
+    if (!razonCountTableCard) {
+      console.error("Error: El contenedor principal de tablas (.card) no se encontró.");
+      return;
     }
     
-    // Buscar de nuevo la referencia a la tabla, ya que pudo ser removida
-    const existingTable = document.getElementById("rifCountTable");
-    if (existingTable) {
-        if ($.fn.DataTable.isDataTable(existingTable)) {
-            $(existingTable).DataTable().destroy();
-        }
-        existingTable.remove();
+    // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
+    razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+
+    // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
+    // Destruye la instancia de DataTables si ya existe
+    const rifCountTable = document.getElementById("rifCountTable");
+    if (rifCountTable && $.fn.DataTable.isDataTable(rifCountTable)) {
+      $(rifCountTable).DataTable().destroy();
+      rifCountTable.remove(); // Remueve completamente la tabla antigua
     }
+    
+    // Opcional: mostrar un mensaje de "cargando..." mientras se busca
+    const loadingMessage = document.createElement("p");
+    loadingMessage.textContent = "Buscando datos...";
+    loadingMessage.className = "text-center text-muted";
+    razonCountTableCard.appendChild(loadingMessage);
 
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
+    razonCountTableCard.style.display = "block";
 
-        if (response.success && response.ticket && response.ticket.length > 0) {
-          // Hide the welcome message when data is found successfully
-          if (welcomeMessage) {
-            welcomeMessage.style.visibility = "hidden";
-            welcomeMessage.style.opacity = "0";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/SearchEstatusData`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+      // Eliminar el mensaje de carga
+      if(loadingMessage) {
+          loadingMessage.remove();
+      }
+      
+      // Buscar de nuevo la referencia a la tabla, ya que pudo ser removida
+      const existingTable = document.getElementById("rifCountTable");
+      if (existingTable) {
+          if ($.fn.DataTable.isDataTable(existingTable)) {
+              $(existingTable).DataTable().destroy();
           }
-          
-          const TicketData = response.ticket;
+          existingTable.remove();
+      }
 
-          // Crea la tabla y sus elementos
-          const newTable = document.createElement("table");
-          newTable.id = "rifCountTable";
-          newTable.className = "table table-striped table-bordered table-hover table-sm";
-          razonCountTableCard.appendChild(newTable);
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
 
-          const thead = document.createElement("thead");
-          const tbody = document.createElement("tbody");
-          newTable.appendChild(thead);
-          newTable.appendChild(tbody);
-
-          // Lógica para crear las columnas y el thead
-          const columnsConfig = [];
-          const headerRow = thead.insertRow();
-          const visibleKeys = new Set();
-          
-          Object.keys(TicketData[0]).forEach(key => {
-              if (TicketData.some(item => item[key] !== null && item[key] !== undefined && item[key] !== "")) {
-                  visibleKeys.add(key);
-              }
-          });
-
-          const columnTitles = {
-              // ... Tus títulos de columna
-              id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              date_send_lab: "Fecha Envío Lab",
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-          };
-
-          for (const key of visibleKeys) {
-              const th = document.createElement("th");
-              th.textContent = columnTitles[key] || key;
-              headerRow.appendChild(th);
-              
-              const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "",
-              };
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-              }
-              columnsConfig.push(columnDef);
-          }
-
-          // Agregar animación CSS para el spinner si no existe
-          if (!document.getElementById('export-loading-spinner-style')) {
-            const style = document.createElement('style');
-            style.id = 'export-loading-spinner-style';
-            style.textContent = `
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `;
-            document.head.appendChild(style);
-          }
-
-          // Función para crear y mostrar el overlay de carga
-          function showExportLoading() {
-            // Verificar si ya existe el overlay
-            let loadingOverlay = document.getElementById('export-loading-overlay');
-            if (!loadingOverlay) {
-              loadingOverlay = document.createElement('div');
-              loadingOverlay.id = 'export-loading-overlay';
-              loadingOverlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.95);
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(2px);
-                -webkit-backdrop-filter: blur(2px);
-              `;
-              
-              const spinner = document.createElement('div');
-              spinner.style.cssText = `
-                width: 80px;
-                height: 80px;
-                border: 6px solid #f3f3f3;
-                border-top: 6px solid #003594;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-              `;
-              
-              const message = document.createElement('h4');
-              message.textContent = 'Generando documento...';
-              message.style.cssText = `
-                color: #003594;
-                margin-bottom: 10px;
-                font-weight: 600;
-              `;
-              
-              const subMessage = document.createElement('p');
-              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
-              subMessage.style.cssText = `
-                color: #666;
-                font-size: 14px;
-              `;
-              
-              loadingOverlay.appendChild(spinner);
-              loadingOverlay.appendChild(message);
-              loadingOverlay.appendChild(subMessage);
-              document.body.appendChild(loadingOverlay);
-            } else {
-              loadingOverlay.style.display = 'flex';
+          if (response.success && response.ticket && response.ticket.length > 0) {
+            // Hide the welcome message when data is found successfully
+            if (welcomeMessage) {
+              welcomeMessage.style.visibility = "hidden";
+              welcomeMessage.style.opacity = "0";
             }
-          }
-          
-          // Función para ocultar el overlay de carga
-          function hideExportLoading() {
-            const loadingOverlay = document.getElementById('export-loading-overlay');
-            if (loadingOverlay) {
-              loadingOverlay.style.display = 'none';
-            }
-          }
+            
+            const TicketData = response.ticket;
 
-          // Inicialización de DataTables
-          $(newTable).DataTable({
-            responsive: false,
-            data: TicketData,
-            columns: columnsConfig,
-            buttons: [{
-              extend: "excelHtml5",
-              footer: true,
-              text: "Excel",
-            }, ],
-            pagingType: "simple_numbers",
-            lengthMenu: [5],
-            autoWidth: false,
-            scrollCollapse: true,
-            scrollX: true,
-            language: {
-              lengthMenu: "Mostrar _MENU_ registros",
-              emptyTable: "No hay datos disponibles en la tabla",
-              zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
-              infoEmpty: "No hay Registros disponibles",
-              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
-              search: "Buscar:",
-              loadingRecords: "Buscando...",
-              processing: "Procesando...",
-              paginate: {
-                first: "Primero",
-                last: "Último",
-                next: "Siguiente",
-                previous: "Anterior",
-              },
-            },
+            // Crea la tabla y sus elementos
+            const newTable = document.createElement("table");
+            newTable.id = "rifCountTable";
+            newTable.className = "table table-striped table-bordered table-hover table-sm";
+            razonCountTableCard.appendChild(newTable);
 
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
-                    </svg>Excel`,
-                    title: `${EstatusName}`,
-                    className: 'btn-excel-modern',
-                    attr: {
-                        id: 'btn-excel-modern-id',
-                        title: 'Exportar a Excel'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
-                                }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para Excel
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo
-                                    if (data.length > 100) {
-                                        data = data.substring(0, 97) + '...';
-                                    }
-                                }
-                                return data;
-                            }
-                        }
-                    },
-                    customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['Busqueda_Por_Estatus.xml'];
-                        
-                        // Ajustar ancho de columnas
-                        $('col', sheet).each(function(index) {
-                            if (index === 1 || index === 7 || index === 8) {
-                                $(this).attr('width', 50);
-                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
-                                $(this).attr('width', 20);
-                            } else {
-                                $(this).attr('width', 25);
-                            }
-                        });
-                        
-                        // Ajustar altura de filas
-                        $('row', sheet).each(function(index) {
-                            if (index === 0) {
-                                $(this).attr('ht', 30);
-                            } else {
-                                let hasDateWithWarranty = false;
-                                $('c', this).each(function() {
-                                    let cellValue = $(this).text();
-                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
-                                        hasDateWithWarranty = true;
-                                    }
-                                });
-                                
-                                if (hasDateWithWarranty) {
-                                    $(this).attr('ht', 80);
-                                } else {
-                                    $(this).attr('ht', 60);
-                                }
-                            }
-                        });
+            const thead = document.createElement("thead");
+            const tbody = document.createElement("tbody");
+            newTable.appendChild(thead);
+            newTable.appendChild(tbody);
+
+              // Lógica para crear las columnas y el thead
+            // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
+            function safeValue(value) {
+                if (value === null || value === undefined || value === '') {
+                    return 'N/A';
+                }
+                if (typeof value === 'object') {
+                    // Si es un objeto Date
+                    if (value instanceof Date) {
+                        return value.toLocaleDateString('es-VE');
                     }
-                },
-                {
-                    extend: 'pdfHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-                    </svg>PDF`,
-                    title: `${EstatusName}`,
-                    className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
-                                }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo para PDF
-                                    if (data.length > 60) {
-                                        data = data.substring(0, 57) + '...';
-                                    }
-                                }
-                                return data;
-                            }
-                        }
-                    },
-                    // Configuración SIMPLIFICADA y ESTABLE para PDF
-                    customize: function(doc) {
-                        // Solo configuraciones básicas que no causan errores
-                        doc.pageOrientation = 'landscape';
-                        doc.pageSize = 'A4';
-                        doc.pageMargins = [10, 20, 10, 20];
-                        
-                        // Estilos básicos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 6,
-                            bold: true
-                        };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 7,
-                            lineHeight: 1.1
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
-                            return {
-                                text: `${EstatusName}`,
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
-                            };
-                        };
-                        
-                        // Pie de página
-                        doc.footer = function(currentPage, pageCount) {
-                            return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 10,
-                                margin: [0, 0, 0, 10]
-                            };
-                        };
-                        
-                        // NO configurar widths ni body - dejar que se ajuste automáticamente
+                    // Si tiene una propiedad que sea string (como en Laravel Carbon)
+                    if (value.date || value.timezone || value.formatted) {
+                        return value.date || value.formatted || 'N/A';
+                    }
+                    // Si es un objeto plano, intenta convertirlo
+                    try {
+                        const str = JSON.stringify(value);
+                        if (str === '{}' || str === '[]') return 'N/A';
+                        return str;
+                    } catch (e) {
+                        return 'N/A';
                     }
                 }
-            ]
-          });
-          $(newTable).resizableColumns();
+                return String(value).trim() || 'N/A';
+            }
 
-        } else {
-          const noDataMessage = document.createElement("p");
-          noDataMessage.textContent = "No se encontraron datos para el estatus seleccionado.";
-          razonCountTableCard.appendChild(noDataMessage);
-          // Show the welcome message if no data found
+            // Lógica para crear las columnas y el thead
+            const columnsConfig = [];
+            const headerRow = thead.insertRow();
+            const visibleKeys = new Set();
+            
+            Object.keys(TicketData[0]).forEach(key => {
+                if (TicketData.some(item => item[key] !== null && item[key] !== undefined && item[key] !== "")) {
+                    visibleKeys.add(key);
+                }
+            });
+
+            const columnTitles = {
+                // ... Tus títulos de columna
+                id_ticket: "ID Ticket",
+                rif_empresa: "Rif",
+                razonsocial_cliente: "Razón Social",
+                descbanco: "Banco",
+                descmodelo: "Modelo del POS",
+                name_process_ticket: "Gestión del Ticket",
+                name_status_payment: "Estatus Pago",
+                full_name_tecnico: "Usuario Gestión",
+                name_status_ticket: "Estatus Ticket",
+                create_ticket: "Fecha Apertura",
+                process_ticket: "Fecha Proceso",
+                end_ticket: "Fecha Cierre",
+                name_accion_ticket: "Accion Ticket",
+                full_name_coordinador: "Coordinador",
+                id_level_failure: "Nivel de Falla",
+                full_name_tecnicoassignado: "Técnico Asignado",
+                serial_pos: "Serial POS",
+                descestatus: "Estatus del POS",
+                name_failure: "Motivo de ingreso",
+                downl_exoneration: "Exoneración",
+                downl_payment: "Pago Anticipo",
+                downl_send_to_rosal: "Enviado a Rosal",
+                downl_send_fromrosal: "Enviado desde Rosal a destino",
+                date_send_lab: "Fecha Envío Lab",
+                date_send_torosal_fromlab: "Fecha Envío a rosal",
+                name_status_domiciliacion: "Estatus Domiciliación",
+                date_sendkey: "Fecha Envío Llaves",
+                date_receivekey: "Fecha Recepción Llaves",
+                date_receivefrom_desti: "Fecha Recibo Destino",
+            };
+
+            for (const key of visibleKeys) {
+                const th = document.createElement("th");
+                th.textContent = columnTitles[key] || key;
+                headerRow.appendChild(th);
+                
+                const columnDef = {
+                  data: key,
+                  title: columnTitles[key] || key,
+                  defaultContent: "NULL",
+                  render: function(data, type, row) {
+                      return safeValue(data);
+                  }
+              };
+
+                if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
+                    columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
+                }
+                columnsConfig.push(columnDef);
+            }
+
+            // Agregar animación CSS para el spinner si no existe
+            if (!document.getElementById('export-loading-spinner-style')) {
+              const style = document.createElement('style');
+              style.id = 'export-loading-spinner-style';
+              style.textContent = `
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+              `;
+              document.head.appendChild(style);
+            }
+
+            // Función para crear y mostrar el overlay de carga
+            function showExportLoading() {
+              // Verificar si ya existe el overlay
+              let loadingOverlay = document.getElementById('export-loading-overlay');
+              if (!loadingOverlay) {
+                loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'export-loading-overlay';
+                loadingOverlay.style.cssText = `
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: rgba(255, 255, 255, 0.95);
+                  z-index: 9999;
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+                  align-items: center;
+                  backdrop-filter: blur(2px);
+                  -webkit-backdrop-filter: blur(2px);
+                `;
+                
+                const spinner = document.createElement('div');
+                spinner.style.cssText = `
+                  width: 80px;
+                  height: 80px;
+                  border: 6px solid #f3f3f3;
+                  border-top: 6px solid #003594;
+                  border-radius: 50%;
+                  animation: spin 1s linear infinite;
+                  margin-bottom: 20px;
+                `;
+                
+                const message = document.createElement('h4');
+                message.textContent = 'Generando documento...';
+                message.style.cssText = `
+                  color: #003594;
+                  margin-bottom: 10px;
+                  font-weight: 600;
+                `;
+                
+                const subMessage = document.createElement('p');
+                subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+                subMessage.style.cssText = `
+                  color: #666;
+                  font-size: 14px;
+                `;
+                
+                loadingOverlay.appendChild(spinner);
+                loadingOverlay.appendChild(message);
+                loadingOverlay.appendChild(subMessage);
+                document.body.appendChild(loadingOverlay);
+              } else {
+                loadingOverlay.style.display = 'flex';
+              }
+            }
+            
+            // Función para ocultar el overlay de carga
+            function hideExportLoading() {
+              const loadingOverlay = document.getElementById('export-loading-overlay');
+              if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+              }
+            }
+
+            // Inicialización de DataTables
+            $(newTable).DataTable({
+              responsive: false,
+              data: TicketData,
+              columns: columnsConfig,
+              buttons: [{
+                extend: "excelHtml5",
+                footer: true,
+                text: "Excel",
+              }, ],
+              pagingType: "simple_numbers",
+              lengthMenu: [5],
+              autoWidth: false,
+              scrollCollapse: true,
+              scrollX: true,
+              language: {
+                lengthMenu: "Mostrar _MENU_ registros",
+                emptyTable: "No hay datos disponibles en la tabla",
+                zeroRecords: "No se encontraron resultados para la búsqueda",
+                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                infoEmpty: "No hay Registros disponibles",
+                infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+                search: "Buscar:",
+                loadingRecords: "Buscando...",
+                processing: "Procesando...",
+                paginate: {
+                  first: "Primero",
+                  last: "Último",
+                  next: "Siguiente",
+                  previous: "Anterior",
+                },
+              },
+
+              dom: 'Bfrtip',
+              buttons: [
+{
+    extend: 'excelHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+    </svg>Excel`,
+    filename: `REPORTE TICKETS - ESTATUS ${EstatusName.toUpperCase()} - NOV 2025`,
+    className: 'btn-excel-modern',
+    attr: {
+        id: 'btn-excel-modern-id',
+        title: 'Exportar a Excel'
+    },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+        const rowCount = dt.rows({search: 'applied'}).count();
+        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        format: {
+            header: function(data) {
+                return typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data;
+            },
+            body: function(data) {
+                return safeValue(data);
+            }
+        }
+    }
+},
+{
+    extend: 'pdfHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+    </svg>PDF`,
+  filename: `REPORTE TICKETS - ESTATUS ${EstatusName.toUpperCase()} - ${new Date().toISOString().split('T')[0]}`,    className: 'btn-pdf-modern',
+    attr: {
+        id: 'btn-pdf-modern-id',
+        title: 'Exportar a PDF'
+    },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        var oldConfig = $.extend(true, {}, config);
+        oldConfig.exportOptions = oldConfig.exportOptions || {};
+        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, oldConfig);
+        const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        modifier: { page: 'current' },
+        format: { body: data => safeValue(data) }
+    },
+    customize: function(doc) {
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+        }
+
+        doc.pageMargins = [40, 130, 40, 80];
+        doc.pageSize = 'A4';
+        doc.defaultStyle = { fontSize: 9.5 };
+
+        doc.styles = {
+            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
+            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
+            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
+            ticketSubtitle: { fontSize: 9.5, color: '#555' }
+        };
+
+        doc.header = function() {
+            return {
+                margin: [40, 20, 40, 10],
+                stack: [
+                    { columns: [
+                        { image: 'logo_inteligensa', width: 85 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                    ]},
+                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                    { text: 'REPORTE DE TICKETS POR ESTATUS', style: 'title' },
+                    { text: `Estatus: ${EstatusName.toUpperCase()}`, style: 'subtitle' }
+                ]
+            };
+        };
+
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                margin: [40, 20],
+                columns: [
+                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                ]
+            };
+        };
+
+        const oldContent = doc.content;
+        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
+        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+        doc.content = [];
+
+        doc.content.push({
+            stack: [
+                { text: 'Nota importante', style: 'noteTitle' },
+                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+            ],
+            margin: [0, 15, 0, 12],
+            background: '#f8f9fa'
+        });
+
+        try {
+            const table = oldContent.find(item => item.table);
+            if (table && table.table.body.length > 1) {
+                const headerRow = table.table.body[0];
+                const dataRows = table.table.body.slice(1);
+                dataRows.forEach((row, idx) => {
+                    const kv = [];
+                    let idTicket = '', razon = '', rif = '';
+                    headerRow.forEach((h, i) => {
+                        const label = String(h.text || '').trim();
+                        const value = String(row[i].text || '').trim() || 'N/A';
+                        if (label.includes('ID Ticket')) idTicket = value;
+                        if (label.includes('Razón Social')) razon = value;
+                        if (label.includes('Rif')) rif = value;
+                        kv.push([
+                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                            { text: value, fontSize: 9, margin: [0, 4] }
+                        ]);
+                    });
+
+                    doc.content.push({
+                        stack: [
+                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
+                            {
+                                table: { widths: [160, '*'], body: kv },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                    hLineWidth: () => 0.6,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 10,
+                                    paddingRight: () => 10
+                                }
+                            }
+                        ],
+                        margin: [0, 8, 0, 30],
+                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                    });
+                });
+            } else {
+                doc.content = oldContent;
+            }
+        } catch (e) {
+            console.error("Error transformando PDF por estatus:", e);
+            doc.content = oldContent;
+        }
+    }
+}
+              ]
+            });
+            $(newTable).resizableColumns();
+
+          } else {
+            const noDataMessage = document.createElement("p");
+            noDataMessage.textContent = "No se encontraron datos para el estatus seleccionado.";
+            razonCountTableCard.appendChild(noDataMessage);
+            // Show the welcome message if no data found
+            if (welcomeMessage) {
+              welcomeMessage.style.visibility = "visible";
+              welcomeMessage.style.opacity = "1";
+            }
+          }
+        } catch (error) {
+          const errorMessage = document.createElement("p");
+          errorMessage.textContent = "Error al procesar la respuesta del servidor.";
+          razonCountTableCard.appendChild(errorMessage);
+          console.error("Error parsing JSON:", error);
+          // Show the welcome message if there's an error
           if (welcomeMessage) {
             welcomeMessage.style.visibility = "visible";
             welcomeMessage.style.opacity = "1";
           }
         }
-      } catch (error) {
-        const errorMessage = document.createElement("p");
-        errorMessage.textContent = "Error al procesar la respuesta del servidor.";
-        razonCountTableCard.appendChild(errorMessage);
-        console.error("Error parsing JSON:", error);
-        // Show the welcome message if there's an error
-        if (welcomeMessage) {
-          welcomeMessage.style.visibility = "visible";
-          welcomeMessage.style.opacity = "1";
-        }
+      } else {
+        // const errorMessage = document.createElement("p");
+        // errorMessage.textContent = "No hay Datos en su búsqueda.";
+        // razonCountTableCard.appendChild(errorMessage);
+        // console.error("Error:", xhr.status, xhr.statusText);
+        // // Show the welcome message if there's a connection error
+        // if (welcomeMessage) {
+        //   welcomeMessage.style.visibility = "visible";
+        //   welcomeMessage.style.opacity = "1";
+        // }
+        Swal.fire("No hay resultados para la búsqueda!");
       }
-    } else {
-      // const errorMessage = document.createElement("p");
-      // errorMessage.textContent = "No hay Datos en su búsqueda.";
-      // razonCountTableCard.appendChild(errorMessage);
-      // console.error("Error:", xhr.status, xhr.statusText);
-      // // Show the welcome message if there's a connection error
-      // if (welcomeMessage) {
-      //   welcomeMessage.style.visibility = "visible";
-      //   welcomeMessage.style.opacity = "1";
-      // }
-      Swal.fire("No hay resultados para la búsqueda!");
-    }
-  };
+    };
 
-  xhr.onerror = function () {
-    if(loadingMessage) {
-        loadingMessage.remove();
-    }
-    const existingTable = document.getElementById("rifCountTable");
-    if (existingTable && $.fn.DataTable.isDataTable(existingTable)) {
-        $(existingTable).DataTable().destroy();
-        existingTable.remove();
-    }
-    const errorMessage = document.createElement("p");
-    errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
-    razonCountTableCard.appendChild(errorMessage);
-    console.error("Error de red");
-    // Show the welcome message if there's a network error
-    if (welcomeMessage) {
-      welcomeMessage.style.visibility = "visible";
-      welcomeMessage.style.opacity = "1";
-    }
-  };
+    xhr.onerror = function () {
+      if(loadingMessage) {
+          loadingMessage.remove();
+      }
+      const existingTable = document.getElementById("rifCountTable");
+      if (existingTable && $.fn.DataTable.isDataTable(existingTable)) {
+          $(existingTable).DataTable().destroy();
+          existingTable.remove();
+      }
+      const errorMessage = document.createElement("p");
+      errorMessage.textContent = "Error de conexión de red. Verifique su conexión a internet.";
+      razonCountTableCard.appendChild(errorMessage);
+      console.error("Error de red");
+      // Show the welcome message if there's a network error
+      if (welcomeMessage) {
+        welcomeMessage.style.visibility = "visible";
+        welcomeMessage.style.opacity = "1";
+      }
+    };
 
-  const datos = `action=SearchEstatusData&estatus=${encodeURIComponent(EstatusSelectValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
-  xhr.send(datos);
+    const datos = `action=SearchEstatusData&estatus=${encodeURIComponent(EstatusSelectValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
+    xhr.send(datos);
 }
 
 function SendRango() {
@@ -2814,6 +3095,32 @@ function SendRango() {
           rifCountTable.appendChild(thead);
           rifCountTable.appendChild(tbody);
 
+          // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
+          function safeValue(value) {
+              if (value === null || value === undefined || value === '') {
+                  return 'N/A';
+              }
+              if (typeof value === 'object') {
+                  // Si es un objeto Date
+                  if (value instanceof Date) {
+                      return value.toLocaleDateString('es-VE');
+                  }
+                  // Si tiene una propiedad que sea string (como en Laravel Carbon)
+                  if (value.date || value.timezone || value.formatted) {
+                      return value.date || value.formatted || 'N/A';
+                  }
+                  // Si es un objeto plano, intenta convertirlo
+                  try {
+                      const str = JSON.stringify(value);
+                      if (str === '{}' || str === '[]') return 'N/A';
+                      return str;
+                  } catch (e) {
+                      return 'N/A';
+                  }
+              }
+              return String(value).trim() || 'N/A';
+          }
+
           // Lógica para crear las columnas y el thead
           const columnsConfig = [];
           const headerRow = thead.insertRow();
@@ -2864,10 +3171,14 @@ function SendRango() {
               headerRow.appendChild(th);
               
               const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "",
-              };
+                data: key,
+                title: columnTitles[key] || key,
+                defaultContent: "NULL",
+                render: function(data, type, row) {
+                    return safeValue(data);
+                }
+            };
+
               if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
                   columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
               }
@@ -2995,7 +3306,7 @@ function SendRango() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Búsqueda por Rango De Fecha',
+                    title: 'Reporte de tickets por Rango De Fecha',
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -3023,169 +3334,322 @@ function SendRango() {
                                 return data;
                             },
                             body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para Excel
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo
-                                    if (data.length > 100) {
-                                        data = data.substring(0, 97) + '...';
-                                    }
-                                }
-                                return data;
+                              return safeValue(data);
                             }
                         }
                     },
-                    customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['Consulta_Por_Rango_Fecha.xml'];
-                        
-                        // Ajustar ancho de columnas
-                        $('col', sheet).each(function(index) {
-                            if (index === 1 || index === 7 || index === 8) {
-                                $(this).attr('width', 50);
-                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
-                                $(this).attr('width', 20);
-                            } else {
-                                $(this).attr('width', 25);
-                            }
-                        });
-                        
-                        // Ajustar altura de filas
-                        $('row', sheet).each(function(index) {
-                            if (index === 0) {
-                                $(this).attr('ht', 30);
-                            } else {
-                                let hasDateWithWarranty = false;
-                                $('c', this).each(function() {
-                                    let cellValue = $(this).text();
-                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
-                                        hasDateWithWarranty = true;
-                                    }
-                                });
-                                
-                                if (hasDateWithWarranty) {
-                                    $(this).attr('ht', 80);
-                                } else {
-                                    $(this).attr('ht', 60);
+                    customize: function(doc) {
+    // Preparar logo
+    if (window.PDF_LOGO_DATAURL) {
+        doc.images = doc.images || {};
+        doc.images.logo_inteligensa = window.PDF_LOGO_DATAURL;
+    }
+
+    // Configuración básica
+    doc.pageOrientation = 'portrait';
+    doc.pageSize = 'A4';
+    doc.pageMargins = [40, 120, 40, 80]; // Más espacio arriba para la nota
+    doc.info = { title: 'Reporte de tickets por Rango De Fecha' };
+
+    // Estilos
+    doc.defaultStyle = { fontSize: 10, color: '#333333' };
+    doc.styles.sectionTitle = { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 10, 0, 5] };
+    doc.styles.sectionSubtitle = { fontSize: 9, color: '#5f6368', margin: [0, 0, 0, 10] };
+    doc.styles.labelCell = { fontSize: 8, bold: true, color: '#1f4e8c' };
+    doc.styles.valueCell = { fontSize: 8, color: '#202124' };
+
+    // === HEADER SIMPLE (solo logo y datos) ===
+    doc.header = function(currentPage) {
+        return {
+            stack: [
+                {
+                    columns: [
+                        { image: 'logo_inteligensa', width: 90 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10 }
+                    ],
+                    margin: [40, 20, 40, 10]
+                },
+                { canvas: [{ type: 'line', x1: 40, y1: 5, x2: 555, y2: 5, lineWidth: 1, lineColor: '#d9d9d9' }] },
+                {
+                    text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda',
+                    alignment: 'center',
+                    fontSize: 9,
+                    color: '#555',
+                    margin: [0, 10, 0, 10]
+                },
+                currentPage === 1 ? {
+                    text: 'REPORTES DE TICKETS POR RANGO DE FECHA',
+                    alignment: 'center',
+                    fontSize: 16,
+                    bold: true,
+                    color: '#1f4e8c',
+                    margin: [0, 0, 0, 20]
+                } : {}
+            ],
+            margin: [0, 0, 0, 0]
+        };
+    };
+
+    // === FOOTER ===
+    doc.footer = function(currentPage, pageCount) {
+        return {
+            columns: [
+                { image: 'logo_inteligensa', width: 60, opacity: 0.8 },
+                { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8, color: '#666' }
+            ],
+            margin: [40, 20, 40, 20]
+        };
+    };
+
+    // === AGREGAR NOTA EN LA PRIMERA PÁGINA (EN EL CONTENT) ===
+    const originalContent = doc.content;
+    doc.content = [];
+
+    // Solo en la primera página: Título + Nota bonita
+    if (doc.internal.getCurrentPageInfo().pageNumber === 1) {
+        doc.content.push(
+            // Título ya está en header, pero si quieres duplicarlo:
+            // { text: 'BÚSQUEDA POR RANGO DE FECHA', alignment: 'center', fontSize: 16, bold: true, color: '#1f4e8c', margin: [0, 0, 0, 20] },
+
+            // === CAJA DE NOTA BONITA ===
+            {
+                canvas: [
+                    { type: 'rect', x: 0, y: 0, w: 515, h: 70, color: '#f8f9fa', r: 12 }
+                ],
+                absolutePosition: { x: 40, y: 180 }
+            },
+            {
+                text: 'Nota importante',
+                fontSize: 12,
+                bold: true,
+                color: '#d32f2f',
+                absolutePosition: { x: 60, y: 200 }
+            },
+            {
+                text: 'Los campos que aparecen como "NULL" indican que no existe información disponible para ese dato.',
+                fontSize: 10.5,
+                italics: true,
+                color: '#424242',
+                alignment: 'left',
+                lineHeight: 1.4,
+                absolutePosition: { x: 60, y: 225 },
+                margin: [0, 0, 60, 0]
+            },
+            // Línea debajo
+            {
+                canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 1, lineColor: '#003594' }],
+                absolutePosition: { x: 40, y: 285 }
+            }
+        );
+    }
+
+    // === TRANSFORMAR TABLA A BLOQUES VERTICALES ===
+    try {
+        let tableIndex = -1;
+        for (let i = 0; i < originalContent.length; i++) {
+            if (originalContent[i].table) {
+                tableIndex = i;
+                break;
+            }
+        }
+
+        if (tableIndex !== -1) {
+            const body = originalContent[tableIndex].table.body;
+            if (body && body.length > 1) {
+                const headerRow = body[0];
+                const dataRows = body.slice(1);
+                const verticalSections = [];
+
+                dataRows.forEach((row, idx) => {
+                    const kvRows = [];
+                    let idTicketValue = '', razonSocialValue = '', rifValue = '';
+
+                    for (let c = 0; c < headerRow.length; c++) {
+                        const label = String(headerRow[c].text || '').trim();
+                        const value = String(row[c].text || '').trim();
+
+                        if (label.includes('ID Ticket') || label === 'ID_TICKET') idTicketValue = value;
+                        if (label.includes('Razón Social') || label.includes('RAZON SOCIAL')) razonSocialValue = value;
+                        if (label === 'Rif' || label.includes('RIF')) rifValue = value;
+
+                        kvRows.push([
+                            { text: label || '-', style: 'labelCell', margin: [4, 3, 6, 3] },
+                            { text: value || '-', style: 'valueCell', margin: [0, 3, 4, 3] }
+                        ]);
+                    }
+
+                    const sectionTitle = idTicketValue ? `Ticket ${idTicketValue}` : `Registro ${idx + 1}`;
+                    const subtitle = [razonSocialValue, rifValue ? `RIF: ${rifValue}` : ''].filter(Boolean).join(' • ');
+
+                    verticalSections.push({
+                        stack: [
+                            { text: sectionTitle, style: 'sectionTitle' },
+                            subtitle ? { text: subtitle, style: 'sectionSubtitle' } : {},
+                            {
+                                table: { widths: [160, '*'], body: kvRows },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f5f9ff' : null,
+                                    hLineWidth: () => 0.5,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 6,
+                                    paddingRight: () => 6
                                 }
                             }
-                        });
+                        ],
+                        margin: [0, 15, 0, 20],
+                        pageBreak: (idx + 1) % 4 === 0 ? 'after' : undefined
+                    });
+                });
+
+                // Insertar bloques después de la nota
+                doc.content = doc.content.concat(verticalSections);
+                return;
+            }
+        }
+    } catch (e) {
+        console.error("Error en transformación:", e);
+    }
+
+    // Si falla todo, usar contenido original
+    doc.content = originalContent;
                     }
                 },
-                {
-                    extend: 'pdfHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-                    </svg>PDF`,
-                    title: 'Búsqueda por Rango De Fecha',
-                    className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+{
+    extend: 'pdfHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2  2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+    </svg>PDF`,
+    // NOMBRE DEL ARCHIVO CON RANGO DE FECHAS (TU OPCIÓN FAVORITA)
+    filename: () => {
+        const ini = document.getElementById('date-ini').value || 'FechaIni';
+        const fin = document.getElementById('date-end').value || 'FechaFin';
+        return `REPORTE TICKET - RangoFecha ${ini} al ${fin}`;
+    },
+    className: 'btn-pdf-modern',
+    attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+        const delay = Math.min(Math.max(dt.rows({search: 'applied'}).count() * 12, 2500), 12000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        format: { body: (data) => safeValue(data) }
+    },
+    customize: function(doc) {
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+        }
+
+        doc.pageMargins = [40, 130, 40, 80];
+        doc.pageSize = 'A4';
+        doc.pageOrientation = 'portrait';
+
+        doc.defaultStyle = { fontSize: 9.5 };
+        doc.styles = {
+            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f', margin: [0, 0, 0, 4] },
+            noteText: { fontSize: 9.2, italics: true, color: '#424242', margin: [0, 0, 0, 6] },
+            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 8, 0, 6] },
+            ticketSubtitle: { fontSize: 9.5, color: '#555', margin: [0, 0, 0, 8] }
+        };
+
+        doc.header = function() {
+            return {
+                margin: [40, 20, 40, 10],
+                stack: [
+                    { columns: [
+                        { image: 'logo_inteligensa', width: 85 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                    ]},
+                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                    { text: 'REPORTE DE TICKETS POR RANGO DE FECHA', style: 'title' }
+                ]
+            };
+        };
+
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                margin: [40, 20],
+                columns: [
+                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                ]
+            };
+        };
+
+        const oldContent = doc.content;
+        const full_name = document.getElementById('Full_name')?.value || 'USUARIO DESCONOCIDO';
+        doc.content = [];
+
+        doc.content.push({
+            stack: [
+                { text: 'Nota importante', style: 'noteTitle' },
+                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                { text: `Documento Generado por: ${full_name} - ${new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' })}`, style: 'generatedOSD' }
+            ],
+            alignment: 'left',
+            margin: [0, 15, 0, 12],
+            background: '#f8f9fa',
+            fillColor: '#f8f9fa'
+        });
+
+        try {
+            const table = oldContent.find(item => item.table);
+            if (table && table.table.body.length > 1) {
+                const headerRow = table.table.body[0];
+                const dataRows = table.table.body.slice(1);
+
+                dataRows.forEach((row, idx) => {
+                    const kv = [];
+                    let idTicket = '', razon = '', rif = '';
+
+                    headerRow.forEach((h, i) => {
+                        const label = String(h.text || '').trim();
+                        const value = String(row[i].text || '').trim() || 'N/A';
+                        if (label.includes('ID Ticket')) idTicket = value;
+                        if (label.includes('Razón Social')) razon = value;
+                        if (label.includes('Rif')) rif = value;
+
+                        kv.push([
+                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                            { text: value, fontSize: 9, margin: [0, 4] }
+                        ]);
+                    });
+
+                    doc.content.push({
+                        stack: [
+                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
+                            {
+                                table: { widths: [160, '*'], body: kv },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                    hLineWidth: () => 0.6,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 10,
+                                    paddingRight: () => 10
                                 }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo para PDF
-                                    if (data.length > 60) {
-                                        data = data.substring(0, 57) + '...';
-                                    }
-                                }
-                                return data;
                             }
-                        }
-                    },
-                    // Configuración SIMPLIFICADA y ESTABLE para PDF
-                    customize: function(doc) {
-                        // Solo configuraciones básicas que no causan errores
-                        doc.pageOrientation = 'landscape';
-                        doc.pageSize = 'A4';
-                        doc.pageMargins = [10, 20, 10, 20];
-                        
-                        // Estilos básicos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 6,
-                            bold: true
-                        };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 5,
-                            lineHeight: 1.1
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
-                            return {
-                                text: 'Consulta por Rango de Fecha',
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
-                            };
-                        };
-                        
-                        // Pie de página
-                        doc.footer = function(currentPage, pageCount) {
-                            return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 10,
-                                margin: [0, 0, 0, 10]
-                            };
-                        };
-                        
-                        // NO configurar widths ni body - dejar que se ajuste automáticamente
-                    }
-                }
+                        ],
+                        margin: [0, 8, 0, 30],
+                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                    });
+                });
+            } else {
+                doc.content = oldContent;
+            }
+        } catch (e) {
+            console.error("Error transformando:", e);
+            doc.content = oldContent;
+        }
+    }
+}
             ]
           });
           $(rifCountTable).resizableColumns();
@@ -3378,6 +3842,10 @@ function SendBancos() {
         existingTable.remove();
     }
 
+    const selectBanco = document.getElementById("SelectBancos");                          
+    // DEFINIMOS bancoNombre AQUÍ PARA QUE ESTÉ DISPONIBLE EN TODO EL ÁMBITO
+    const bancoNombre = selectBanco.options[selectBanco.selectedIndex]?.text.trim() || "Banco_Desconocido";
+
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
@@ -3403,6 +3871,32 @@ function SendBancos() {
           newTable.appendChild(tbody);
 
           // Lógica para crear las columnas y el thead
+           // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
+          function safeValue(value) {
+              if (value === null || value === undefined || value === '') {
+                  return 'N/A';
+              }
+              if (typeof value === 'object') {
+                  // Si es un objeto Date
+                  if (value instanceof Date) {
+                      return value.toLocaleDateString('es-VE');
+                  }
+                  // Si tiene una propiedad que sea string (como en Laravel Carbon)
+                  if (value.date || value.timezone || value.formatted) {
+                      return value.date || value.formatted || 'N/A';
+                  }
+                  // Si es un objeto plano, intenta convertirlo
+                  try {
+                      const str = JSON.stringify(value);
+                      if (str === '{}' || str === '[]') return 'N/A';
+                      return str;
+                  } catch (e) {
+                      return 'N/A';
+                  }
+              }
+              return String(value).trim() || 'N/A';
+          }
+
           const columnsConfig = [];
           const headerRow = thead.insertRow();
           const visibleKeys = new Set();
@@ -3451,11 +3945,15 @@ function SendBancos() {
               th.textContent = columnTitles[key] || key;
               headerRow.appendChild(th);
               
-              const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "",
-              };
+             const columnDef = {
+                data: key,
+                title: columnTitles[key] || key,
+                defaultContent: "NULL",
+                render: function(data, type, row) {
+                    return safeValue(data);
+                }
+            };
+
               if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
                   columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
               }
@@ -3671,107 +4169,144 @@ function SendBancos() {
                     }
                 },
                 {
-                    extend: 'pdfHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-                    </svg>PDF`,
-                    title: 'sfafa',
-                    className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
-                                }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo para PDF
-                                    if (data.length > 60) {
-                                        data = data.substring(0, 57) + '...';
-                                    }
-                                }
-                                return data;
-                            }
-                        }
-                    },
-                    // Configuración SIMPLIFICADA y ESTABLE para PDF
-                    customize: function(doc) {
-                        // Solo configuraciones básicas que no causan errores
-                        doc.pageOrientation = 'landscape';
-                        doc.pageSize = 'A4';
-                        doc.pageMargins = [10, 20, 10, 20];
-                        
-                        // Estilos básicos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 6,
-                            bold: true
-                        };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 7,
-                            lineHeight: 1.1
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
-                            return {
-                                text: 'sfafa',
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
-                            };
-                        };
-                        
-                        // Pie de página
-                        doc.footer = function(currentPage, pageCount) {
-                            return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 10,
-                                margin: [0, 0, 0, 10]
-                            };
-                        };
-                        
-                        // NO configurar widths ni body - dejar que se ajuste automáticamente
-                    }
+  extend: 'pdfHtml5',
+  text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+  </svg>PDF`,
+  
+  filename: `REPORTE TICKET - BANCO ${bancoNombre.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}`,
+  className: 'btn-pdf-modern',
+  attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
+  action: function(e, dt, button, config) {
+    showExportLoading();
+    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+    const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
+    setTimeout(hideExportLoading, delay);
+  },
+  exportOptions: {
+    columns: ':visible',
+    format: { body: (data) => safeValue(data) }
+  },
+  customize: function(doc) {
+    // LOGO
+    if (window.PDF_LOGO_DATAURL) {
+      doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+    }
+
+    // CONFIGURACIÓN EJECUTIVA
+    doc.pageMargins = [40, 130, 40, 80];
+    doc.pageSize = 'A4';
+    doc.defaultStyle = { fontSize: 9.5 };
+    doc.styles = {
+      title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+      subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+      noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f', margin: [0, 0, 0, 4] },
+      noteText: { fontSize: 9.2, italics: true, color: '#424242', margin: [0, 0, 0, 6] },
+      generatedOSD: { fontSize: 8, color: '#666', italics: true },
+      ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 8, 0, 6] },
+      ticketSubtitle: { fontSize: 9.5, color: '#555', margin: [0, 0, 0, 8] }
+    };
+
+    // HEADER PROFESIONAL
+    doc.header = function() {
+      return {
+        margin: [40, 20, 40, 10],
+        stack: [
+          {
+            columns: [
+              { image: 'logo_inteligensa', width: 85 },
+              { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+            ]
+          },
+          { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+          { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+          { text: 'REPORTE DE TICKETS POR ENTIDAD BANCARIA', style: 'title' },
+          { text: `Banco: ${bancoNombre.toUpperCase()}`, style: 'subtitle' }
+        ]
+      };
+    };
+
+    // FOOTER
+    doc.footer = function(currentPage, pageCount) {
+      return {
+        margin: [40, 20],
+        columns: [
+          { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+          { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+        ]
+      };
+    };
+
+    // NOTA + TRANSFORMACIÓN A BLOQUES VERTICALES (3 POR PÁGINA)
+    const oldContent = doc.content;
+    const full_name = document.getElementById('Full_name')?.value || 'USUARIO DESCONOCIDO';
+    const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+    doc.content = [];
+
+    doc.content.push({
+      stack: [
+        { text: 'Nota importante', style: 'noteTitle' },
+        { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+        { text: `Documento Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+      ],
+      alignment: 'left',
+      margin: [0, 15, 0, 12],
+      background: '#f8f9fa',
+      fillColor: '#f8f9fa'
+    });
+
+    try {
+      const table = oldContent.find(item => item.table);
+      if (table && table.table.body.length > 1) {
+        const headerRow = table.table.body[0];
+        const dataRows = table.table.body.slice(1);
+
+        dataRows.forEach((row, idx) => {
+          const kv = [];
+          let idTicket = '', razon = '', rif = '';
+
+          headerRow.forEach((h, i) => {
+            const label = String(h.text || '').trim();
+            const value = String(row[i].text || '').trim() || 'N/A';
+            if (label.includes('ID Ticket')) idTicket = value;
+            if (label.includes('Razón Social')) razon = value;
+            if (label.includes('Rif')) rif = value;
+
+            kv.push([
+              { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+              { text: value, fontSize: 9, margin: [0, 4] }
+            ]);
+          });
+
+          doc.content.push({
+            stack: [
+              { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+              { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
+              {
+                table: { widths: [160, '*'], body: kv },
+                layout: {
+                  fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                  hLineWidth: () => 0.6,
+                  vLineWidth: () => 0,
+                  hLineColor: () => '#c8d6ef',
+                  paddingLeft: () => 10,
+                  paddingRight: () => 10
                 }
+              }
+            ],
+            margin: [0, 8, 0, 30],
+            pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+          });
+        });
+      } else {
+        doc.content = oldContent;
+      }
+    } catch (e) {
+      console.error("Error transformando PDF:", e);
+      doc.content = oldContent;
+    }
+  }
+}
             ]
           });
           $(newTable).resizableColumns();

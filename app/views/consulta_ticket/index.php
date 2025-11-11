@@ -170,64 +170,66 @@ require 'app/footer.php';
 
  
 
-        .date-input-container {
-            display: flex;
-            gap: 2rem; /* Espacio entre los inputs */
-            padding: 2.5rem;
-            border-radius: 1rem;
-            /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Sombra opcional */
-        }
+            .date-input-container {
+                display: flex;
+                gap: 2rem; /* Espacio entre los inputs */
+                padding: 2.5rem;
+                border-radius: 1rem;
+                /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Sombra opcional */
+            }
 
-        .date-input-wrapper {
-            position: relative;
-        }
+            .date-input-wrapper {
+                position: relative;
+            }
 
-        input[type="text"] {
-            padding: 1rem 1.5rem; /* Más padding */
-            border: none; /* Sin borde por defecto */
-            border-radius: 0.75rem; /* Bordes más redondeados */
-            font-size: 1.25rem; /* Texto más grande */
-            width: 200px; /* Ancho fijo para cada input */
-            text-align: center;
-            background-color: #ffffff; /* Fondo blanco */
-            color: #333;
-            outline: none; /* Quita el outline por defecto en focus */
-            transition: box-shadow 0.2s ease-in-out;
-        }
-        input[type="text"]:focus {
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4); /* Sombra azul al enfocar */
-        }
-        .error-message {
-            color: #ef4444; /* Rojo para mensajes de error */
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-            text-align: center;
-            position: absolute;
-            width: 100%;
-            left: 0;
-        }
+            input[type="text"] {
+                padding: 1rem 1.5rem; /* Más padding */
+                border: none; /* Sin borde por defecto */
+                border-radius: 0.75rem; /* Bordes más redondeados */
+                font-size: 1.25rem; /* Texto más grande */
+                width: 200px; /* Ancho fijo para cada input */
+                text-align: center;
+                background-color: #ffffff; /* Fondo blanco */
+                color: #333;
+                outline: none; /* Quita el outline por defecto en focus */
+                transition: box-shadow 0.2s ease-in-out;
+            }
 
-        #inputsDate{
-            margin-left: 10%;
-            margin-top: -5%;
-        }
+            input[type="text"]:focus {
+                box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.4); /* Sombra azul al enfocar */
+            }
 
-        /* Estilos para la palabra de bienvenida */
-        #welcomeMessage h1 {
-            font-size: 2.8rem; /* Tamaño de letra más grande */
-            color: transparent; 
-            font-family: 'Poppins', sans-serif; /* Un tipo de letra moderno y limpio */
-            font-weight: 600; /* Texto más audaz */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para la letra */
-            text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
-            letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
-            line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
-            margin-top: 42%;
-            position: fixed;
-            margin-left: 15%;
-        }
+            .error-message {
+                color: #ef4444; /* Rojo para mensajes de error */
+                font-size: 0.875rem;
+                margin-top: 0.5rem;
+                text-align: center;
+                position: absolute;
+                width: 100%;
+                left: 0;
+            }
 
-         #btn-excel-modern-id {
+            #inputsDate{
+                margin-left: 10%;
+                margin-top: -5%;
+            }
+
+            /* Estilos para la palabra de bienvenida */
+            #welcomeMessage h1 {
+                font-size: 2.8rem; /* Tamaño de letra más grande */
+                color: transparent; 
+                font-family: 'Poppins', sans-serif; /* Un tipo de letra moderno y limpio */
+                font-weight: 600; /* Texto más audaz */
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para la letra */
+                text-shadow: 2px 35px 0px rgba(0, 0, 0, 0.1);
+                letter-spacing: 1px; /* Espaciado entre letras para un mejor look */
+                line-height: 1.4; /* Espaciado de línea para que las palabras no se amontonen */
+                margin-top: 42%;
+                position: fixed;
+                margin-left: 15%;
+            }
+
+            #btn-excel-modern-id {
                 background: linear-gradient(45deg, #217346, #28a745) !important;
                 color: white !important;
                 border: 2px solid #217346 !important;
@@ -381,11 +383,12 @@ require 'app/footer.php';
                 margin-bottom: 15px !important;
             }
             */
-
-    </style>
+        </style>
     </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
-    <input type="hidden" name="idtipouser" id="idtipouser" value="<?php echo $_SESSION['id_rol']?> ">
+    <input type="hidden" name="idtipouser" id="idtipouser" value="<?php echo $_SESSION['id_rol']?>">
+    <input type="hidden" id="Full_name" value="<?php echo $_SESSION['nombres']; ?> <?php echo $_SESSION['apellidos']; ?>">
+
 
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
         <div class="d-lg-none fixed-top bg-dark p-2">
@@ -488,19 +491,17 @@ require 'app/footer.php';
 
         </div>
     </div>
-                        <div class="card" style="display: none;">
-                                <table id="rifCountTable" style="display: none;" class="background-users-table">
-                                    <thead>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="15">No hay datos</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                        </div>
-                    </div>
-                </div>
+        <div class="card" style="display: none;">
+                <table id="rifCountTable" style="display: none;" class="background-users-table">
+                    <thead></thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="15">No hay datos</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
             <!-- AVISA LAS GARANTIAS --->
             <div id="garantiaModal" class="modal">
