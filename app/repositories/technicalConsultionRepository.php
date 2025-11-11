@@ -886,6 +886,20 @@ class TechnicalConsultionRepository
         return $tipousers;
     }
 
+    // Nueva: obtener bancos/cuentas de la tabla Accounts_banks
+    public function GetAccountsBanks(){
+        $result = $this->model->GetAccountsBanks();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $banks = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $row = pg_fetch_assoc($result['query'], $i);
+                $banks[] = $row;
+            }
+            return $banks;
+        }
+        return null;
+    }
+
     public function GetTicketDataComponent(){
         $result = $this->model->GetTicketDataComponent();
         if ($result) {

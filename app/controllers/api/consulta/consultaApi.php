@@ -271,6 +271,9 @@ class Consulta extends Controller
                 case 'GetMotivos':
                     $this->handleGetMotivos();
                     break;
+                case 'GetAccountsBanks':
+                    $this->handleGetAccountsBanks();
+                    break;
 
                 case 'rechazarDocumento':
                     $this->handlerechazarDocumentos();
@@ -1924,6 +1927,18 @@ class Consulta extends Controller
             $this->response(['success' => true, 'motivos' => $result], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    // Lista de bancos y cuentas para Acuerdos de Pago
+    public function handleGetAccountsBanks(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetAccountsBanks();
+
+        if ($result !== null) {
+            $this->response(['success' => true, 'banks' => $result], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'No fue posible obtener los bancos.'], 500);
         }
     }
 

@@ -610,6 +610,52 @@ function mi_navbar() {}
             cursor: pointer;
             padding: 10px 20px;
         }
+
+        /* Estilos para el campo de Saldo Deudor */
+        #pa_saldo_deudor {
+            font-weight: 500;
+            font-size: 1rem;
+            padding-right: 0.75rem;
+        }
+
+        #pa_saldo_deudor:focus {
+            border-color: #003594;
+            box-shadow: 0 0 0 0.2rem rgba(0, 53, 148, 0.25);
+        }
+
+        #pa_saldo_deudor.is-invalid {
+            border-color: #dc3545;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 3.6.4.4.4-.4m0 4.8-.4-.4-.4.4'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+
+        #pa_saldo_deudor.is-invalid:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            color: #495057;
+            font-weight: 600;
+            padding: 0.375rem 0.75rem;
+        }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #003594;
+            color: #003594;
+        }
+
+        #saldo_deudor_error {
+            display: none;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -859,9 +905,10 @@ function mi_navbar() {}
                                 <div class="col-md-6">
                                     <label class="form-label">Saldo deudor <small class="text-muted">(Mínimo $10.00)</small></label>
                                     <div class="input-group">
-                                        <input type="text" id="pa_saldo_deudor" class="form-control" placeholder="__.__" style="text-align: right;">
-                                        <span class="input-group-text">$</span>
+                                        <span class="input-group-text" style="height: 40px;">$</span>
+                                        <input type="text" id="pa_saldo_deudor" class="form-control" placeholder="0.00" style="text-align: right;" min="10.00" step="0.01">
                                     </div>
+                                    <small class="text-danger" id="saldo_deudor_error" style="display: none;">El saldo mínimo es $10.00</small>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Propuesta</label>
@@ -879,24 +926,28 @@ function mi_navbar() {}
                                 <div class="col-12 mt-4"><strong>Configuración de Datos Bancarios</strong></div>
                                 <div class="col-md-6">
                                     <label class="form-label">Número de Cuenta</label>
-                                    <input type="text" id="pa_numero_cuenta" class="form-control" placeholder="XXXX-XXXX-XX-XXXX" value="XXXX-XXXX-XX-XXXX">
+                                    <input type="text" id="pa_numero_cuenta" class="form-control" placeholder="XXXX-XXXX-XX-XXXX" value="XXXX-XXXX-XX-XXXX" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Nombre de la Empresa</label>
-                                    <input type="text" id="pa_nombre_empresa" class="form-control" placeholder="Nombre de la empresa" value="Informática y Telecomunicaciones Integradas Inteligen, SA">
+                                    <input type="text" id="pa_nombre_empresa" class="form-control" placeholder="Nombre de la empresa" value="Inteligensa" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">RIF de la Empresa</label>
-                                    <input type="text" id="pa_rif_empresa" class="form-control" placeholder="J-XXXXXXXX-X" value="J-00291615-0">
+                                    <input type="text" id="pa_rif_empresa" class="form-control" placeholder="J-XXXXXXXX-X" value="J-00291615-0" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Banco</label>
-                                    <input type="text" id="pa_banco" class="form-control" placeholder="Nombre del banco" value="XXXX">
+                                    <select id="pa_banco" class="form-control">
+                                        <option value="">Seleccione un banco</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Correo Electrónico</label>
-                                    <input type="email" id="pa_correo" class="form-control" placeholder="correo@empresa.com" value="domiciliación.intelipunto@inteligensa.com">
+                                    <input type="email" id="pa_correo" class="form-control" placeholder="correo@empresa.com" value="inteligensa@inteligensa.com" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
                                 </div>
+                                <!-- Hidden: código de banco seleccionado -->
+                                <input type="hidden" id="pa_cod_bank" value="">
 
                                 <div class="col-12">
                                     <button type="button" class="btn btn-secondary" id="previewPaymentAgreementBtn">Previsualizar</button>

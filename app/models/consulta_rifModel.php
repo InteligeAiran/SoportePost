@@ -6196,7 +6196,17 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
-
+    // Nueva: consulta directa a la tabla Accounts_banks
+    public function GetAccountsBanks(){
+        try{
+            $sql = "SELECT id_bank, name_bank, cod_bank, nro_account FROM Accounts_banks ORDER BY id_bank ASC";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log('Error GetAccountsBanks: '. $e->getMessage());
+            return false;
+        }
+    }
 
     public function GetTicketDataComponent(){
 
@@ -6217,8 +6227,6 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
 
     }
-
-
 
     public function GetComponentsBySerial($id_ticket, $serial){
 

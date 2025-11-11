@@ -4060,17 +4060,38 @@ function fillPaymentAgreementModal(d) {
 
   document.getElementById("pa_acuerdo").value = "";
 
-  // Limpiar campos de configuración bancaria (opcional - mantener valores por defecto)
+  // Establecer valores por defecto de configuración bancaria
+  const paNumeroCuenta = document.getElementById('pa_numero_cuenta');
+  if (paNumeroCuenta) {
+    paNumeroCuenta.value = 'XXXX-XXXX-XX-XXXX';
+    // Asegurar que el campo sea readonly (no editable por el usuario)
+    paNumeroCuenta.setAttribute('readonly', 'readonly');
+  }
 
-  // document.getElementById('pa_numero_cuenta').value = 'XXXX-XXXX-XX-XXXX';
+  const paNombreEmpresa = document.getElementById('pa_nombre_empresa');
+  if (paNombreEmpresa) {
+    paNombreEmpresa.value = 'Inteligensa';
+  }
 
-  // document.getElementById('pa_nombre_empresa').value = 'Informática y Telecomunicaciones Integradas Inteligen, SA';
+  const paRifEmpresa = document.getElementById('pa_rif_empresa');
+  if (paRifEmpresa) {
+    paRifEmpresa.value = 'J-00291615-0';
+  }
 
-  // document.getElementById('pa_rif_empresa').value = 'J-00291615-0';
+  const paBanco = document.getElementById('pa_banco');
+  if (paBanco) {
+    // Si es un select, establecer el valor seleccionado
+    if (paBanco.tagName === 'SELECT') {
+      paBanco.value = ''; // Dejar sin seleccionar por defecto
+    } else {
+      paBanco.value = '';
+    }
+  }
 
-  // document.getElementById('pa_banco').value = 'XXXX';
-
-  // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
+  const paCorreo = document.getElementById('pa_correo');
+  if (paCorreo) {
+    paCorreo.value = 'inteligensa@inteligensa.com';
+  }
 }
 
 function buildPaymentAgreementHtml(d, convenioNumero = null) {
@@ -5501,95 +5522,56 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
                         Los pagos aquí acordados, deberán realizarse a través de depósitos a la cuenta N° <strong>${
                           safe(d.numero_cuenta) || "XXXX-XXXX-XX-XXXX"
                         }</strong> a nombre de <strong>${
-    safe(d.nombre_empresa) ||
-    "Informática y Telecomunicaciones Integradas Inteligen, SA"
-  }</strong> ${safe(d.rif_empresa) || "J-00291615-0"} en el Banco <strong>${
-    safe(d.banco) || "XXXX"
-  }</strong> y notificar a través de este correo los siguientes datos: nombre y número de RIF de su comercio, número de referencia, nombre del titular de la cuenta y monto del pago <strong>${
-    safe(d.correo) || "domiciliación.intelipunto@inteligensa.com"
-  }</strong>. Recordar que cada vez que se realice un pago debe ser a la Tasa del BCV del día.
-
+                          safe(d.nombre_empresa) || "Inteligensa"
+                        }</strong> con el RIF <strong>${safe(d.rif_empresa) || "J-00291615-0"}</strong> en el Banco <strong>${
+                          safe(d.banco) || "XXXX"
+                        }</strong>${safe(d.cod_bank) ? " (Código banco: " + safe(d.cod_bank) + ")" : ""} y notificar a través de este correo los siguientes datos: nombre y número de RIF de su comercio, número de referencia, nombre del titular de la cuenta y monto del pago <strong>${
+                          safe(d.correo) || "inteligensa@inteligensa.com"
+                        }</strong>. Recordar que cada vez que se realice un pago debe ser a la Tasa del BCV del día.
                     </p>
-
                 </div>
 
-
-
                 <div class="signature-section">
-
                     <div class="signature-box">
-
                         <div class="signature-label">Firma del Cliente</div>
-
                         <div class="signature-space"></div>
-
                         <div class="signature-line"></div>
-
                         <div class="signature-field">Nombre: _____________________</div>
-
                         <div class="signature-field">C.I.: _____________________</div>
-
                     </div>
 
-                    
-                    
                     <div class="signature-box">
-
                         <div class="signature-label">Firma de Inteligensa</div>
-
                         <div class="signature-space"></div>
-
                         <div class="signature-line"></div>
-
                         <div class="signature-field">Nombre: ${
                           safe(d.ejecutivo) || "_____________________"
                         }</div>
-
                         <div class="signature-field">C.I.: _____________________</div>
-
                     </div>
-
                 </div>
 
-
-
                 <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
-
                 <div class="footer">
-
                     <div class="footer-content">
-
                         <div class="footer-left">
-
                             <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
-
                         </div>
 
                         <div class="footer-right">
-
                             <div class="footer-rif">RIF: J-00291615-0'</div>
-
                         </div>
-
                     </div>
 
                     <div class="footer-text">
-
-                        <p>El cliente certifica su responsabilidad de cumplir con los términos y condiciones del acuerdo de pago establecido en este documento.</p>
-
-                        <p>Generado: ${new Date().toLocaleString("es-ES")}</p>
-
+                      <p>El cliente certifica su responsabilidad de cumplir con los términos y condiciones del acuerdo de pago establecido en este documento.</p>
+                      <p>Generado: ${new Date().toLocaleString("es-ES")}</p>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
     </body>
-
-    </html>`;
+  </html>`;
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -5623,6 +5605,65 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     return result;
+  }
+
+  // Cargar bancos desde API y poblar el select
+  function loadBanksForPaymentAgreement() {
+    const select = document.getElementById('pa_banco');
+    if (!select) return;
+
+    // Estado inicial
+    select.innerHTML = '<option value="">Cargando bancos...</option>';
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetAccountsBanks`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+      try {
+        const res = JSON.parse(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300 && res && res.success) {
+          const banks = Array.isArray(res.banks) ? res.banks : [];
+          select.innerHTML = '<option value="">Seleccione un banco</option>';
+          banks.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.name_bank || '';
+            opt.textContent = b.name_bank || '';
+            // Guardamos nro de cuenta y código en data-*
+            if (b.nro_account) opt.dataset.account = b.nro_account;
+            if (b.cod_bank !== undefined && b.cod_bank !== null) opt.dataset.codBank = b.cod_bank;
+            select.appendChild(opt);
+          });
+        } else {
+          select.innerHTML = '<option value="">No hay bancos</option>';
+        }
+      } catch (e) {
+        console.error('Error parseando bancos:', e);
+        select.innerHTML = '<option value="">No hay bancos</option>';
+      }
+    };
+
+    xhr.onerror = function() {
+      select.innerHTML = '<option value="">Error cargando bancos</option>';
+    };
+
+    xhr.send('action=GetAccountsBanks');
+
+    // Al cambiar banco, actualizar nro de cuenta y cod bank
+    select.addEventListener('change', function() {
+      const selected = select.options[select.selectedIndex];
+      const account = selected?.dataset?.account || 'XXXX-XXXX-XX-XXXX';
+      const codBank = selected?.dataset?.codBank || '';
+
+      const numeroCuentaInput = document.getElementById('pa_numero_cuenta');
+      if (numeroCuentaInput) {
+        numeroCuentaInput.value = account;
+      }
+      const codBankHidden = document.getElementById('pa_cod_bank');
+      if (codBankHidden) {
+        codBankHidden.value = codBank;
+      }
+    });
   }
 
   // Aplicar saltos de línea automáticos a los campos de texto
@@ -5688,27 +5729,50 @@ document.addEventListener("DOMContentLoaded", function () {
   // Formatear campo de saldo deudor mientras se escribe
 
   const saldoDeudorField = document.getElementById("pa_saldo_deudor");
+  const saldoDeudorError = document.getElementById("saldo_deudor_error");
 
   if (saldoDeudorField) {
     // Formatear al perder el foco
-
     saldoDeudorField.addEventListener("blur", function (e) {
-      let value = e.target.value;
+      let value = e.target.value.trim();
 
       if (value && !isNaN(parseFloat(value))) {
         const numValue = parseFloat(value);
 
+        // Validar mínimo de $10.00
+        if (numValue < 10.00) {
+          e.target.classList.add("is-invalid");
+          if (saldoDeudorError) {
+            saldoDeudorError.style.display = "block";
+          }
+        } else {
+          e.target.classList.remove("is-invalid");
+          if (saldoDeudorError) {
+            saldoDeudorError.style.display = "none";
+          }
         e.target.value = numValue.toFixed(2);
+        }
+      } else if (value) {
+        // Si hay valor pero no es un número válido
+        e.target.classList.add("is-invalid");
+        if (saldoDeudorError) {
+          saldoDeudorError.textContent = "Ingrese un valor numérico válido";
+          saldoDeudorError.style.display = "block";
+        }
+      } else {
+        // Si está vacío, remover errores
+        e.target.classList.remove("is-invalid");
+        if (saldoDeudorError) {
+          saldoDeudorError.style.display = "none";
+        }
       }
     });
 
-    // Formatear al escribir para mostrar el $ después
-
+    // Formatear al escribir
     saldoDeudorField.addEventListener("input", function (e) {
       let value = e.target.value.replace(/[^0-9.]/g, ""); // Solo números y punto
 
       // Permitir solo un punto decimal
-
       const parts = value.split(".");
 
       if (parts.length > 2) {
@@ -5716,18 +5780,120 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // Limitar a 2 decimales
-
       if (parts[1] && parts[1].length > 2) {
         value = parts[0] + "." + parts[1].substring(0, 2);
       }
 
       e.target.value = value;
+
+      // Validar en tiempo real si el valor es válido
+      if (value) {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          if (numValue < 10.00 && numValue > 0) {
+            e.target.classList.add("is-invalid");
+            if (saldoDeudorError) {
+              saldoDeudorError.textContent = "El saldo mínimo es $10.00";
+              saldoDeudorError.style.display = "block";
+            }
+          } else if (numValue >= 10.00) {
+            e.target.classList.remove("is-invalid");
+            if (saldoDeudorError) {
+              saldoDeudorError.style.display = "none";
+            }
+          }
+        }
+      } else {
+        e.target.classList.remove("is-invalid");
+        if (saldoDeudorError) {
+          saldoDeudorError.style.display = "none";
+        }
+      }
+    });
+
+    // Validar antes de enviar el formulario
+    saldoDeudorField.addEventListener("change", function (e) {
+      let value = e.target.value.trim();
+
+      if (value && !isNaN(parseFloat(value))) {
+        const numValue = parseFloat(value);
+        
+        if (numValue < 10.00) {
+          e.target.classList.add("is-invalid");
+          if (saldoDeudorError) {
+            saldoDeudorError.textContent = "El saldo mínimo es $10.00";
+            saldoDeudorError.style.display = "block";
+          }
+          e.target.focus();
+        } else {
+          e.target.classList.remove("is-invalid");
+          if (saldoDeudorError) {
+            saldoDeudorError.style.display = "none";
+          }
+        }
+      }
     });
   }
 
   // Configurar saltos de línea automáticos
 
   setupAutoLineBreaks();
+
+  // Cargar bancos al iniciar
+  loadBanksForPaymentAgreement();
+
+  // Protección del campo de número de cuenta (solo se puede cambiar en el código)
+  const paNumeroCuenta = document.getElementById('pa_numero_cuenta');
+  if (paNumeroCuenta) {
+    const originalValue = 'XXXX-XXXX-XX-XXXX';
+    
+    // Establecer el valor original
+    paNumeroCuenta.value = originalValue;
+    paNumeroCuenta.setAttribute('readonly', 'readonly');
+    paNumeroCuenta.style.backgroundColor = '#f8f9fa';
+    paNumeroCuenta.style.cursor = 'not-allowed';
+    
+    // Protección adicional: prevenir cualquier modificación del campo
+    paNumeroCuenta.addEventListener('input', function(e) {
+      if (e.target.value !== originalValue) {
+        e.target.value = originalValue;
+      }
+    });
+    
+    paNumeroCuenta.addEventListener('keydown', function(e) {
+      // Permitir solo teclas de navegación (Tab, Enter, etc.) y atajos de teclado
+      const allowedKeys = ['Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+      const isModifierKey = e.ctrlKey || e.metaKey || e.altKey || e.shiftKey;
+      if (!allowedKeys.includes(e.key) && !isModifierKey) {
+        e.preventDefault();
+      }
+    });
+    
+    paNumeroCuenta.addEventListener('paste', function(e) {
+      e.preventDefault();
+    });
+    
+    paNumeroCuenta.addEventListener('cut', function(e) {
+      e.preventDefault();
+    });
+    
+    // Observar cambios en el atributo readonly y restaurarlo
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'readonly') {
+          if (!paNumeroCuenta.hasAttribute('readonly')) {
+            paNumeroCuenta.setAttribute('readonly', 'readonly');
+          }
+        }
+      });
+    });
+    
+    observer.observe(paNumeroCuenta, {
+      attributes: true,
+      attributeFilter: ['readonly']
+    });
+    
+  }
 
   // Aplicar estilos cuando se abra el modal
 
@@ -5755,6 +5921,47 @@ document.addEventListener("DOMContentLoaded", function () {
 
           modalBody.scrollTop = 0;
         }
+
+        // Establecer valores por defecto de configuración bancaria
+        const paNumeroCuentaModal = document.getElementById('pa_numero_cuenta');
+        if (paNumeroCuentaModal) {
+          // Asegurar que el número de cuenta siempre tenga el valor correcto y esté protegido
+          paNumeroCuentaModal.value = 'XXXX-XXXX-XX-XXXX';
+          paNumeroCuentaModal.setAttribute('readonly', 'readonly');
+          paNumeroCuentaModal.style.backgroundColor = '#f8f9fa';
+          paNumeroCuentaModal.style.cursor = 'not-allowed';
+          paNumeroCuentaModal.removeAttribute('contenteditable');
+        }
+
+        const paNombreEmpresa = document.getElementById('pa_nombre_empresa');
+        if (paNombreEmpresa) {
+          // Establecer valor por defecto si está vacío
+          if (!paNombreEmpresa.value || paNombreEmpresa.value.trim() === '') {
+            paNombreEmpresa.value = 'Inteligensa';
+          }
+        }
+
+        const paRifEmpresa = document.getElementById('pa_rif_empresa');
+        if (paRifEmpresa) {
+          // Establecer valor por defecto si está vacío
+          if (!paRifEmpresa.value || paRifEmpresa.value.trim() === '') {
+            paRifEmpresa.value = 'J-00291615-0';
+          }
+        }
+
+        const paBanco = document.getElementById('pa_banco');
+        if (paBanco) {
+          // Si es un select, no establecer valor por defecto (dejar que el usuario seleccione)
+          // El select ya tiene una opción por defecto "Seleccione un banco"
+        }
+
+        const paCorreo = document.getElementById('pa_correo');
+        if (paCorreo) {
+          // Establecer valor por defecto si está vacío
+          if (!paCorreo.value || paCorreo.value.trim() === '') {
+            paCorreo.value = 'inteligensa@inteligensa.com';
+          }
+        }
       }, 100);
     });
 
@@ -5767,6 +5974,17 @@ document.addEventListener("DOMContentLoaded", function () {
         e.stopPropagation();
       }
     });
+
+    // Restaurar el número de cuenta cuando se cierre el modal
+    modal.addEventListener("hidden.bs.modal", function () {
+      const paNumeroCuenta = document.getElementById('pa_numero_cuenta');
+      if (paNumeroCuenta) {
+        paNumeroCuenta.value = 'XXXX-XXXX-XX-XXXX';
+        paNumeroCuenta.setAttribute('readonly', 'readonly');
+        paNumeroCuenta.style.backgroundColor = '#f8f9fa';
+        paNumeroCuenta.style.cursor = 'not-allowed';
+      }
+    });
   }
 
   // Botón de previsualizar
@@ -5776,23 +5994,45 @@ document.addEventListener("DOMContentLoaded", function () {
   if (previewBtn) {
     previewBtn.addEventListener("click", function () {
       // Validar monto mínimo
+      const saldoDeudorField = document.getElementById("pa_saldo_deudor");
+      const saldoDeudor = saldoDeudorField ? saldoDeudorField.value.trim() : "";
+      const saldoDeudorError = document.getElementById("saldo_deudor_error");
 
-      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
-
-      if (
-        saldoDeudor &&
-        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
-      ) {
+      if (!saldoDeudor) {
         Swal.fire({
           icon: "warning",
-
-          title: "Monto inválido",
-
-          text: "El saldo deudor debe ser mínimo $10.00",
-
+          title: "Campo requerido",
+          text: "Debe ingresar el saldo deudor",
           confirmButtonColor: "#003594",
         });
+        if (saldoDeudorField) {
+          saldoDeudorField.focus();
+          saldoDeudorField.classList.add("is-invalid");
+        }
+        if (saldoDeudorError) {
+          saldoDeudorError.textContent = "Este campo es requerido";
+          saldoDeudorError.style.display = "block";
+        }
+        return;
+      }
 
+      const saldoNum = parseFloat(saldoDeudor.replace(/[^0-9.]/g, ""));
+
+      if (isNaN(saldoNum) || saldoNum < 10.00) {
+        Swal.fire({
+          icon: "warning",
+          title: "Monto inválido",
+          text: "El saldo deudor debe ser mínimo $10.00",
+          confirmButtonColor: "#003594",
+        });
+        if (saldoDeudorField) {
+          saldoDeudorField.focus();
+          saldoDeudorField.classList.add("is-invalid");
+        }
+        if (saldoDeudorError) {
+          saldoDeudorError.textContent = "El saldo mínimo es $10.00";
+          saldoDeudorError.style.display = "block";
+        }
         return;
       }
 
@@ -5817,23 +6057,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
     printBtn.addEventListener("click", async function () {
       // Validar monto mínimo
+      const saldoDeudorField = document.getElementById("pa_saldo_deudor");
+      const saldoDeudor = saldoDeudorField ? saldoDeudorField.value.trim() : "";
+      const saldoDeudorError = document.getElementById("saldo_deudor_error");
 
-      const saldoDeudor = document.getElementById("pa_saldo_deudor").value;
-
-      if (
-        saldoDeudor &&
-        parseFloat(saldoDeudor.replace(/[^0-9.-]/g, "")) < 10
-      ) {
+      if (!saldoDeudor) {
         Swal.fire({
           icon: "warning",
-
-          title: "Monto inválido",
-
-          text: "El saldo deudor debe ser mínimo $10.00",
-
+          title: "Campo requerido",
+          text: "Debe ingresar el saldo deudor",
           confirmButtonColor: "#003594",
         });
+        if (saldoDeudorField) {
+          saldoDeudorField.focus();
+          saldoDeudorField.classList.add("is-invalid");
+        }
+        if (saldoDeudorError) {
+          saldoDeudorError.textContent = "Este campo es requerido";
+          saldoDeudorError.style.display = "block";
+        }
+        return;
+      }
 
+      const saldoNum = parseFloat(saldoDeudor.replace(/[^0-9.]/g, ""));
+
+      if (isNaN(saldoNum) || saldoNum < 10.00) {
+        Swal.fire({
+          icon: "warning",
+          title: "Monto inválido",
+          text: "El saldo deudor debe ser mínimo $10.00",
+          confirmButtonColor: "#003594",
+        });
+        if (saldoDeudorField) {
+          saldoDeudorField.focus();
+          saldoDeudorField.classList.add("is-invalid");
+        }
+        if (saldoDeudorError) {
+          saldoDeudorError.textContent = "El saldo mínimo es $10.00";
+          saldoDeudorError.style.display = "block";
+        }
         return;
       }
 
@@ -6102,6 +6364,9 @@ function getPaymentAgreementFormData() {
     banco: document.getElementById("pa_banco").value,
 
     correo: document.getElementById("pa_correo").value,
+
+    // Nuevo: código banco
+    cod_bank: document.getElementById("pa_cod_bank") ? document.getElementById("pa_cod_bank").value : "",
   };
 }
 
@@ -6547,7 +6812,40 @@ function fillPaymentAgreementModal(data) {
   document.getElementById("pa_observaciones").value = "";
   document.getElementById("pa_acuerdo").value = "";
   
-  // Datos bancarios (ya están con valores por defecto en el HTML)
+  // Establecer valores por defecto de configuración bancaria
+  const paNumeroCuenta = document.getElementById('pa_numero_cuenta');
+  if (paNumeroCuenta) {
+    paNumeroCuenta.value = 'XXXX-XXXX-XX-XXXX';
+    // Asegurar que el campo sea readonly (no editable por el usuario)
+    paNumeroCuenta.setAttribute('readonly', 'readonly');
+    paNumeroCuenta.style.backgroundColor = '#f8f9fa';
+    paNumeroCuenta.style.cursor = 'not-allowed';
+  }
+
+  const paNombreEmpresa = document.getElementById('pa_nombre_empresa');
+  if (paNombreEmpresa) {
+    paNombreEmpresa.value = 'Inteligensa';
+  }
+
+  const paRifEmpresa = document.getElementById('pa_rif_empresa');
+  if (paRifEmpresa) {
+    paRifEmpresa.value = 'J-00291615-0';
+  }
+
+  const paBanco = document.getElementById('pa_banco');
+  if (paBanco) {
+    // Si es un select, dejar sin seleccionar por defecto
+    if (paBanco.tagName === 'SELECT') {
+      paBanco.value = '';
+    } else {
+      paBanco.value = '';
+    }
+  }
+
+  const paCorreo = document.getElementById('pa_correo');
+  if (paCorreo) {
+    paCorreo.value = 'inteligensa@inteligensa.com';
+  }
 }
 
 function processConvenioGeneration(ticketId, nroTicket) {
