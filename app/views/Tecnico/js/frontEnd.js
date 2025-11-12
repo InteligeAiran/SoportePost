@@ -364,7 +364,7 @@ function getTicketData() {
           ],
           language: {
             lengthMenu: "Mostrar _MENU_",
-            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            info: "_TOTAL_ Registros",
             infoFiltered: " de _MAX_ Disponibles",
             search: "Buscar:",
             loadingRecords: "Cargando...",
@@ -843,7 +843,7 @@ function getTicketData() {
           ],
           language: {
             lengthMenu: "Mostrar _MENU_ Registros",
-            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            info: "_TOTAL_ Registros",
             infoFiltered: " de _MAX_ Disponibles",
             search: "Buscar:",
             loadingRecords: "Cargando...",
@@ -931,7 +931,7 @@ function getTicketData() {
                 <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
               </div>
             </div>`,
-          info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+          info: "_TOTAL_ Registros",
           infoFiltered: " de _MAX_ Disponibles",
           search: "Buscar:",
           loadingRecords: "Cargando...",

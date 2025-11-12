@@ -310,7 +310,7 @@ function searchDomiciliacionTickets() {
 
                 zeroRecords: "No se encontraron resultados para la búsqueda",
 
-                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                info: "_TOTAL_ Registros",
 
                 infoEmpty: "No hay datos disponibles",
 

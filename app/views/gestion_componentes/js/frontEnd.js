@@ -108,7 +108,7 @@ function SearchTicketsComponents() {
                                 "lengthMenu": "Mostrar _MENU_",
                                 "emptyTable": "No hay datos disponibles en la tabla",
                                 "zeroRecords": "No se encontraron resultados para la búsqueda",
-                                "info": "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                "info": "_TOTAL_ Registros",
                                 "infoEmpty": "No hay datos disponibles",
                                 "infoFiltered": " de _MAX_ Disponibles",
                                 "search": "Buscar:",
