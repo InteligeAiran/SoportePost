@@ -3778,8 +3778,6 @@ function SendBancos() {
   const id_user = document.getElementById('id_user').value;
   const idtipouser = document.getElementById('idtipouser').value;
 
-
-
   // Mover la validación al principio para detener la ejecución si no hay serial
   if (!selectBanco) {
     Swal.fire({
