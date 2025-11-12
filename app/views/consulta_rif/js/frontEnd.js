@@ -108,7 +108,7 @@ function restoreCoordinacionState() {
 
 document.addEventListener("DOMContentLoaded", function () {
   // Estilo para el span "No file chosen"
-    restoreCoordinacionState();
+  restoreCoordinacionState();
 
   // Precargar logo para exportes PDF
   try {
@@ -650,108 +650,135 @@ function getPosSerials1(rif) {
     xhr.send(datos);
 }*/
 
-function getFailure() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure1`);
+async function getFailure() {
+  const select = document.getElementById("FallaSelect1");
+  const mensajeDiv = document.getElementById("rifMensaje");
 
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Estado de carga
+  select.innerHTML = '<option value="">Cargando fallas...</option>';
+  select.disabled = true;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const select = document.getElementById("FallaSelect1");
+  try {
+    const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure1`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: "action=GetFailure1"
+    });
 
-          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
-          if (
-            Array.isArray(response.failures) &&
-            response.failures.length > 0
-          ) {
-            response.failures.forEach((failure) => {
-              const option = document.createElement("option");
-              option.value = failure.id_failure;
-              option.textContent = failure.name_failure;
-              select.appendChild(option);
-            });
-          } else {
-            // Si no hay fallas, puedes mostrar un mensaje en el select
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No hay fallas disponibles";
-            select.appendChild(option);
-          }
-        } else {
-          document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener las fallas.";
-          console.error("Error al obtener las fallas:", response.message);
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de las fallas.";
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Limpiar errores previos del div
+    if (mensajeDiv) {
+      mensajeDiv.innerHTML = mensajeDiv.innerHTML.replace(/<br>Error.*falla.*/g, '');
+    }
+
+    if (data.success && Array.isArray(data.failures)) {
+      select.innerHTML = '<option value="">Seleccione</option>';
+
+      if (data.failures.length > 0) {
+        data.failures.forEach(failure => {
+          const option = document.createElement("option");
+          option.value = failure.id_failure;
+          option.textContent = failure.name_failure;
+          select.appendChild(option);
+        });
+      } else {
+        select.innerHTML += '<option value="" disabled>No hay fallas disponibles</option>';
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para las fallas.";
+      throw new Error(data.message || "Respuesta inválida del servidor");
     }
-  };
 
-  const datos = `action=GetFailure1`; // Cambia la acción para que coincida con el backend
-  xhr.send(datos);
+  } catch (error) {
+    console.error("Error en getFailure():", error);
+
+    // Mostrar error bonito en rojo
+    if (mensajeDiv) {
+      mensajeDiv.innerHTML += `<br><span style="color: red; font-weight: bold;">Error al cargar fallas: ${error.message}</span>`;
+    }
+
+    // Select en modo error
+    select.innerHTML = `
+      <option value="">Error al cargar</option>
+      <option value="" disabled>Intente más tarde</option>
+    `;
+
+  } finally {
+    // Siempre habilitar al final
+    select.disabled = false;
+  }
 }
+
 // Llama a la función para cargar las fallas cuando la página se cargue
 document.addEventListener("DOMContentLoaded", getFailure);
 
-function getFailure2() {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure2`);
+async function getFailure2() {
+  const select = document.getElementById("FallaSelect2");
+  const mensajeDiv = document.getElementById("rifMensaje");
 
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  // Limpiar select y mostrar estado de carga
+  select.innerHTML = '<option value="">Cargando fallas...</option>';
+  select.disabled = true;
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const select = document.getElementById("FallaSelect2");
-          select.innerHTML = '<option value="">Seleccione la falla</option>';
-          if (
-            Array.isArray(response.failures) &&
-            response.failures.length > 0
-          ) {
-            response.failures.forEach((failure) => {
-              const option = document.createElement("option");
-              option.value = failure.id_failure;
-              option.textContent = failure.name_failure;
-              select.appendChild(option);
-            });
-          } else {
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No hay fallas disponibles";
-            select.appendChild(option);
-          }
-        } else {
-          document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener las fallas.";
-          console.error("Error al obtener las fallas:", response.message);
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de las fallas.";
+  try {
+    const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure2`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: "action=GetFailure2"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Limpiar mensajes anteriores de error
+    if (mensajeDiv) {
+      mensajeDiv.innerHTML = mensajeDiv.innerHTML.replace(/<br>Error.*falla.*/g, '');
+    }
+
+    if (data.success && Array.isArray(data.failures)) {
+      select.innerHTML = '<option value="">Seleccione la falla</option>';
+
+      if (data.failures.length > 0) {
+        data.failures.forEach(failure => {
+          const option = document.createElement("option");
+          option.value = failure.id_failure;
+          option.textContent = failure.name_failure;
+          select.appendChild(option);
+        });
+      } else {
+        select.innerHTML += '<option value="" disabled>No hay fallas disponibles</option>';
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para las fallas.";
+      throw new Error(data.message || "Respuesta inválida del servidor");
     }
-  };
 
-  const datos = `action=GetFailure2`;
-  xhr.send(datos);
+  } catch (error) {
+    console.error("Error en getFailure2():", error);
+
+    // Mostrar error en el div
+    if (mensajeDiv) {
+      mensajeDiv.innerHTML += `<br><span style="color: red;">Error al cargar fallas: ${error.message}</span>`;
+    }
+
+    // Opción por defecto en caso de error
+    select.innerHTML = `
+      <option value="">Error al cargar</option>
+      <option value="" disabled>Intente más tarde</option>
+    `;
+  } finally {
+    select.disabled = false;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", getFailure2);
