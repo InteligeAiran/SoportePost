@@ -2348,71 +2348,69 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
-  const decodeHistorySafe = (encoded) => {
-    try {
-      if (!encoded) return [];
-      return JSON.parse(decodeURIComponent(encoded));
-    } catch (e) {
+    // ... (Mantener las funciones auxiliares: decodeHistorySafe, cleanString, parseCustomDate, calculateTimeElapsed, generateFileName)
+    const decodeHistorySafe = (encoded) => {
+        try {
+            if (!encoded) return [];
+            return JSON.parse(decodeURIComponent(encoded));
+        } catch (e) {
             console.error('Error decoding history:', e);
-      return [];
-    }
-  };
+            return [];
+        }
+    };
 
     const cleanString = (str) => (typeof str === 'string' ? str.replace(/\s/g, ' ').trim() : (str ?? ''));
 
-  const parseCustomDate = (dateStr) => {
-    if (!dateStr) return null;
+    const parseCustomDate = (dateStr) => {
+        if (!dateStr) return null;
         const parts = String(dateStr).split(' ');
-    if (parts.length !== 2) return null;
+        if (parts.length !== 2) return null;
         const [day, month, year] = parts[0].split('-');
         const [hours, minutes] = parts[1].split(':');
         const d = new Date(year, (Number(month) || 1) - 1, Number(day) || 1, Number(hours) || 0, Number(minutes) || 0);
-    return isNaN(d.getTime()) ? null : d;
-  };
+        return isNaN(d.getTime()) ? null : d;
+    };
 
-  const calculateTimeElapsed = (startDateStr, endDateStr) => {
-    if (!startDateStr || !endDateStr) return null;
-    const start = parseCustomDate(startDateStr);
-    const end = parseCustomDate(endDateStr);
-    if (!start || !end) return null;
-    const diffMs = end - start;
-    if (diffMs <= 0) return null;
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    const diffWeeks = Math.floor(diffDays / 7);
-    const diffMonths = Math.floor(diffDays / 30.44);
+    const calculateTimeElapsed = (startDateStr, endDateStr) => {
+        if (!startDateStr || !endDateStr) return null;
+        const start = parseCustomDate(startDateStr);
+        const end = parseCustomDate(endDateStr);
+        if (!start || !end) return null;
+        const diffMs = end - start;
+        if (diffMs <= 0) return null;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
         let text = '';
-    if (diffMonths > 0) {
-      const remainingDays = Math.floor(diffDays % 30.44);
-      text = `${diffMonths}M ${remainingDays}D`;
-    } else if (diffWeeks > 0) {
-      text = `${diffWeeks}W ${diffDays % 7}D`;
-    } else if (diffDays > 0) {
-      text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
-    } else if (diffHours > 0) {
-      text = `${diffHours}H ${diffMinutes % 60}M`;
-    } else if (diffMinutes > 0) {
-      // Mostrar minutos cuando es al menos 1 minuto
-      text = `${diffMinutes}M`;
-    } else {
-      // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
-      text = `N/A`;
-    }
+        if (diffMonths > 0) {
+            const remainingDays = Math.floor(diffDays % 30.44);
+            text = `${diffMonths}M ${remainingDays}D`;
+        } else if (diffWeeks > 0) {
+            text = `${diffWeeks}S ${diffDays % 7}D`;
+        } else if (diffDays > 0) {
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+        } else if (diffHours > 0) {
+            text = `${diffHours}H ${diffMinutes % 60}M`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}M`;
+        } else {
+            // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
+            text = `N/A`;
+        }
         return { text, ms: diffMs, minutes: diffMinutes, hours: diffHours, days: diffDays, weeks: diffWeeks, months: diffMonths };
-  };
+    };
 
-  const history = decodeHistorySafe(historyEncoded);
+    const history = decodeHistorySafe(historyEncoded);
 
-    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
         let fileName = `Historial_Ticket_${ticketNumber}`;
-        
         if (serial && serial.length >= 4) {
             const lastFourDigits = serial.slice(-4);
             fileName += `-${lastFourDigits}`;
         }
-        
         return `${fileName}.pdf`;
     };
 
@@ -2459,11 +2457,37 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
                         ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
-                    </table>
+                </table>
                 </div>
             </div>
         `;
     });
+
+    const legendHTML_Integrated = `
+        <div class="legend-integrated" style="margin: 10px 0; padding: 10px; background: #e0f2fe; border: 1px solid #93c5fd; border-radius: 6px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <p style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">
+                LEYENDA DE TIEMPO
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; font-size: 11px; font-weight: 500;">
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">D</strong> Día(s)
+                </span>
+                <span style="color: #1e40af;">
+                    <strong style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">H</strong> Hora(s)
+                </span>
+                <span style="color: #9a3412;">
+                    <strong style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">M</strong> Minuto(s)
+                </span>
+                <span style="color: #b91c1c;">
+                    <strong style="background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">S</strong> Semana(s)
+                </span>
+            </div>
+            <p style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+                *Ejemplo: **1D 6H 11M** significa 1 día, 6 horas y 11 minutos.
+            </p>
+        </div>
+    `;
+
 
     const printContent = `
         <!DOCTYPE html>
@@ -2473,6 +2497,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${fileName}</title>
             <style>
+                /* ... (Mantener todos los estilos CSS anteriores, asegurando que la clase .legend-float NO exista para no confundir) ... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -2696,13 +2721,24 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     margin-top: 6px;
                 }
                 
+                /* Estilos para la leyenda integrada */
+                .legend-integrated {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #e0f2fe;
+                    border: 1px solid #93c5fd;
+                    border-radius: 6px;
+                    text-align: center;
+                    page-break-inside: avoid; /* Evita que la leyenda se rompa entre páginas */
+                }
+                
                 /* Optimizaciones para impresión */
                 @media print {
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    
+
                     body {
                         margin-top: 50px !important;
                         margin-bottom: 40px !important;
@@ -2823,7 +2859,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-                    </div>
+                </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -2837,6 +2873,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <div class="info-value">${new Date().toLocaleString()}</div>
                     </div>
                 </div>
+                
+                ${legendHTML_Integrated}
 
                 <div class="content-wrapper">
                     <div class="history-section">
@@ -2845,8 +2883,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                             <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px; text-align: center;">
                                 <strong>Nota:</strong> En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.
                             </p>
-                            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
-                        </div>
+            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
+        </div>
                     </div>
                 </div>
 
@@ -2871,10 +2909,10 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const printWindow = window.open('', '', 'height=800,width=1024');
     printWindow.document.write(printContent);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
-  printWindow.close();
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
 }
 
 function showElapsedLegend(e) {
