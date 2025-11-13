@@ -594,7 +594,6 @@ function mi_navbar() {}
                                 <h5 class="modal-title text-white" id="modalComponentesLabel">
                                     <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="row">
@@ -642,9 +641,6 @@ function mi_navbar() {}
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" id="BotonCerrarModal">
-                                    <i class="bi bi-x-circle me-1"></i>Cancelar
-                                </button>
                                 <button type="button" class="btn btn-primary" id="btnGuardarComponentes">
                                     <i class="bi bi-check-circle me-1"></i>Guardar
                                 </button>

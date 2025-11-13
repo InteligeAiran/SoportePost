@@ -108,7 +108,7 @@ function restoreCoordinacionState() {
 
 document.addEventListener("DOMContentLoaded", function () {
   // Estilo para el span "No file chosen"
-  restoreCoordinacionState();
+    restoreCoordinacionState();
 
   // Precargar logo para exportes PDF
   try {
@@ -650,135 +650,108 @@ function getPosSerials1(rif) {
     xhr.send(datos);
 }*/
 
-async function getFailure() {
-  const select = document.getElementById("FallaSelect1");
-  const mensajeDiv = document.getElementById("rifMensaje");
+function getFailure() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure1`);
 
-  // Estado de carga
-  select.innerHTML = '<option value="">Cargando fallas...</option>';
-  select.disabled = true;
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  try {
-    const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure1`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: "action=GetFailure1"
-    });
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select = document.getElementById("FallaSelect1");
 
-    if (!response.ok) {
-      throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    // Limpiar errores previos del div
-    if (mensajeDiv) {
-      mensajeDiv.innerHTML = mensajeDiv.innerHTML.replace(/<br>Error.*falla.*/g, '');
-    }
-
-    if (data.success && Array.isArray(data.failures)) {
-      select.innerHTML = '<option value="">Seleccione</option>';
-
-      if (data.failures.length > 0) {
-        data.failures.forEach(failure => {
-          const option = document.createElement("option");
-          option.value = failure.id_failure;
-          option.textContent = failure.name_failure;
-          select.appendChild(option);
-        });
-      } else {
-        select.innerHTML += '<option value="" disabled>No hay fallas disponibles</option>';
+          select.innerHTML = '<option value="">Seleccione</option>'; // Limpiar y agregar la opción por defecto
+          if (
+            Array.isArray(response.failures) &&
+            response.failures.length > 0
+          ) {
+            response.failures.forEach((failure) => {
+              const option = document.createElement("option");
+              option.value = failure.id_failure;
+              option.textContent = failure.name_failure;
+              select.appendChild(option);
+            });
+          } else {
+            // Si no hay fallas, puedes mostrar un mensaje en el select
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay fallas disponibles";
+            select.appendChild(option);
+          }
+        } else {
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener las fallas.";
+          console.error("Error al obtener las fallas:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la respuesta de las fallas.";
       }
     } else {
-      throw new Error(data.message || "Respuesta inválida del servidor");
+      console.error("Error:", xhr.status, xhr.statusText);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para las fallas.";
     }
+  };
 
-  } catch (error) {
-    console.error("Error en getFailure():", error);
-
-    // Mostrar error bonito en rojo
-    if (mensajeDiv) {
-      mensajeDiv.innerHTML += `<br><span style="color: red; font-weight: bold;">Error al cargar fallas: ${error.message}</span>`;
-    }
-
-    // Select en modo error
-    select.innerHTML = `
-      <option value="">Error al cargar</option>
-      <option value="" disabled>Intente más tarde</option>
-    `;
-
-  } finally {
-    // Siempre habilitar al final
-    select.disabled = false;
-  }
+  const datos = `action=GetFailure1`; // Cambia la acción para que coincida con el backend
+  xhr.send(datos);
 }
-
 // Llama a la función para cargar las fallas cuando la página se cargue
 document.addEventListener("DOMContentLoaded", getFailure);
 
-async function getFailure2() {
-  const select = document.getElementById("FallaSelect2");
-  const mensajeDiv = document.getElementById("rifMensaje");
+function getFailure2() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure2`);
 
-  // Limpiar select y mostrar estado de carga
-  select.innerHTML = '<option value="">Cargando fallas...</option>';
-  select.disabled = true;
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  try {
-    const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetFailure2`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: "action=GetFailure2"
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    // Limpiar mensajes anteriores de error
-    if (mensajeDiv) {
-      mensajeDiv.innerHTML = mensajeDiv.innerHTML.replace(/<br>Error.*falla.*/g, '');
-    }
-
-    if (data.success && Array.isArray(data.failures)) {
-      select.innerHTML = '<option value="">Seleccione la falla</option>';
-
-      if (data.failures.length > 0) {
-        data.failures.forEach(failure => {
-          const option = document.createElement("option");
-          option.value = failure.id_failure;
-          option.textContent = failure.name_failure;
-          select.appendChild(option);
-        });
-      } else {
-        select.innerHTML += '<option value="" disabled>No hay fallas disponibles</option>';
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select = document.getElementById("FallaSelect2");
+          select.innerHTML = '<option value="">Seleccione la falla</option>';
+          if (
+            Array.isArray(response.failures) &&
+            response.failures.length > 0
+          ) {
+            response.failures.forEach((failure) => {
+              const option = document.createElement("option");
+              option.value = failure.id_failure;
+              option.textContent = failure.name_failure;
+              select.appendChild(option);
+            });
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay fallas disponibles";
+            select.appendChild(option);
+          }
+        } else {
+          document.getElementById("rifMensaje").innerHTML +=
+            "<br>Error al obtener las fallas.";
+          console.error("Error al obtener las fallas:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        document.getElementById("rifMensaje").innerHTML +=
+          "<br>Error al procesar la respuesta de las fallas.";
       }
     } else {
-      throw new Error(data.message || "Respuesta inválida del servidor");
+      console.error("Error:", xhr.status, xhr.statusText);
+      document.getElementById("rifMensaje").innerHTML +=
+        "<br>Error de conexión con el servidor para las fallas.";
     }
+  };
 
-  } catch (error) {
-    console.error("Error en getFailure2():", error);
-
-    // Mostrar error en el div
-    if (mensajeDiv) {
-      mensajeDiv.innerHTML += `<br><span style="color: red;">Error al cargar fallas: ${error.message}</span>`;
-    }
-
-    // Opción por defecto en caso de error
-    select.innerHTML = `
-      <option value="">Error al cargar</option>
-      <option value="" disabled>Intente más tarde</option>
-    `;
-  } finally {
-    select.disabled = false;
-  }
+  const datos = `action=GetFailure2`;
+  xhr.send(datos);
 }
 
 document.addEventListener("DOMContentLoaded", getFailure2);
@@ -3132,72 +3105,6 @@ function SendRif() {
     welcomeMessage.style.opacity = "1";
   }
 
-   // Función para crear y mostrar el overlay de carga
-          function showExportLoading() {
-            // Verificar si ya existe el overlay
-            let loadingOverlay = document.getElementById('export-loading-overlay');
-            if (!loadingOverlay) {
-              loadingOverlay = document.createElement('div');
-              loadingOverlay.id = 'export-loading-overlay';
-              loadingOverlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.95);
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(2px);
-                -webkit-backdrop-filter: blur(2px);
-              `;
-              
-              const spinner = document.createElement('div');
-              spinner.style.cssText = `
-                width: 80px;
-                height: 80px;
-                border: 6px solid #f3f3f3;
-                border-top: 6px solid #003594;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-              `;
-              
-              const message = document.createElement('h4');
-              message.textContent = 'Generando documento...';
-              message.style.cssText = `
-                color: #003594;
-                margin-bottom: 10px;
-                font-weight: 600;
-              `;
-              
-              const subMessage = document.createElement('p');
-              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
-              subMessage.style.cssText = `
-                color: #666;
-                font-size: 14px;
-              `;
-              
-              loadingOverlay.appendChild(spinner);
-              loadingOverlay.appendChild(message);
-              loadingOverlay.appendChild(subMessage);
-              document.body.appendChild(loadingOverlay);
-            } else {
-              loadingOverlay.style.display = 'flex';
-            }
-          }
-          
-          // Función para ocultar el overlay de carga
-          function hideExportLoading() {
-            const loadingOverlay = document.getElementById('export-loading-overlay');
-            if (loadingOverlay) {
-              loadingOverlay.style.display = 'none';
-            }
-          }
-
 
   // Si el campo no está vacío, el resto de la función se ejecuta
   const razonCountTableCard = document.querySelector(".card");
@@ -3433,183 +3340,93 @@ function SendRif() {
                     }
                 },
                 {
-  extend: 'pdfHtml5',
-  text: `
-    <span class="btn-pdf-custom">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16">
-        <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-      </svg>
-      PDF
-    </span>
-  `,
-  title: 'Busqueda por RIF',
-  className: 'btn-pdf-modern',
-  attr: {
-    id: 'btn-pdf-modern-id',
-    title: 'Exportar a PDF'
-  },
-
-  // NOMBRE DEL ARCHIVO CON LETRA (V/J/E/G) + NÚMERO LIMPIO
-  filename: function() {
-    const tipoRif = document.getElementById('rifTipo')?.value || 'V';
-    const numeroRif = document.getElementById('rifInput')?.value || '';
-    const rifCompleto = (tipoRif + numeroRif).trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-    const fecha = new Date().toISOString().split('T')[0];
-    return `REPORTE EMPRESA - RIF ${rifCompleto || 'SIN_RIF'}_${fecha}`;
-  },
-
-  action: function(e, dt, button, config) {
-    showExportLoading();
-    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-    const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
-    setTimeout(hideExportLoading, delay);
-  },
-
-  exportOptions: {
-    columns: ':visible',
-    format: {
-      body: (data) => {
-        if (typeof data !== 'string') return data || 'N/A';
-        let clean = data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-        const dateMatch = clean.match(/\d{4}-\d{2}-\d{2}/);
-        const hasSinGarantia = /Sin garant[ií]a/i.test(clean);
-        if (dateMatch && hasSinGarantia) {
-          const fecha = dateMatch[0];
-          const garantia = clean.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-          return `${fecha}\n${garantia}`;
-        }
-        return clean.length > 120 ? clean.substring(0, 117) + '...' : clean;
-      }
-    }
-  },
-
-  customize: function(doc) {
-    // LOGO
-    if (window.PDF_LOGO_DATAURL) {
-      doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-    }
-
-    // OBTENER RIF COMPLETO PARA EL SUBTÍTULO
-    const tipoRif = document.getElementById('rifTipo')?.value || 'V';
-    const numeroRif = document.getElementById('rifInput')?.value || '';
-    const rifValue = (tipoRif + numeroRif).trim().toUpperCase().replace(/[^A-Z0-9]/g, '') || 'SIN RIF';
-
-    const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-    const full_name = document.getElementById('Full_name')?.value || 'USUARIO DESCONOCIDO';
-
-    // CONFIGURACIÓN EJECUTIVA
-    doc.pageMargins = [40, 130, 40, 80];
-    doc.pageSize = 'A4';
-    doc.defaultStyle = { fontSize: 9.5 };
-    doc.styles = {
-      title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-      subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-      noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f', margin: [0, 0, 0, 4] },
-      noteText: { fontSize: 9.2, italics: true, color: '#424242', margin: [0, 0, 0, 6] },
-      generatedOSD: { fontSize: 8, color: '#666', italics: true },
-      ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 8, 0, 6] },
-      ticketSubtitle: { fontSize: 9.5, color: '#555', margin: [0, 0, 0, 8] }
-    };
-
-    // HEADER
-    doc.header = function() {
-      return {
-        margin: [40, 20, 40, 10],
-        stack: [
-          {
-            columns: [
-              { image: 'logo_inteligensa', width: 85 },
-              { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-            ]
-          },
-          { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-          { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-          { text: 'REPORTE DE EMPRESA POR RIF', style: 'title' },
-          { text: `RIF: ${rifValue}`, style: 'subtitle' }
-        ]
-      };
-    };
-
-    // FOOTER
-    doc.footer = function(currentPage, pageCount) {
-      return {
-        margin: [40, 20],
-        columns: [
-          { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-          { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-        ]
-      };
-    };
-
-    // NOTA + TARJETAS
-    const oldContent = doc.content;
-    doc.content = [];
-
-    doc.content.push({
-      stack: [
-        { text: 'Nota importante', style: 'noteTitle' },
-        { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-        { text: `Documento Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-      ],
-      alignment: 'left',
-      margin: [0, 15, 0, 12],
-      background: '#f8f9fa',
-      fillColor: '#f8f9fa'
-    });
-
-    try {
-      const table = oldContent.find(item => item.table);
-      if (table && table.table.body.length > 1) {
-        const headerRow = table.table.body[0];
-        const dataRows = table.table.body.slice(1);
-
-        dataRows.forEach((row, idx) => {
-          const kv = [];
-          let idCliente = '', razon = '', rif = '';
-
-          headerRow.forEach((h, i) => {
-            const label = String(h.text || '').trim();
-            const value = String(row[i]?.text || '').trim() || 'N/A';
-
-            if (label.includes('ID Cliente') || label.includes('ID Ticket')) idCliente = value;
-            if (label.includes('Razón Social') || label.includes('Razon Social')) razon = value;
-            if (label.includes('Rif') || label.includes('RIF')) rif = value;
-
-            kv.push([
-              { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-              { text: value, fontSize: 9, margin: [0, 4] }
-            ]);
-          });
-
-          doc.content.push({
-            stack: [
-              { text: `Empresa ${idCliente || (idx + 1)}`, style: 'ticketTitle' },
-              { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
-              {
-                table: { widths: [160, '*'], body: kv },
-                layout: {
-                  fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                  hLineWidth: () => 0.6,
-                  vLineWidth: () => 0,
-                  hLineColor: () => '#c8d6ef',
-                  paddingLeft: () => 10,
-                  paddingRight: () => 10
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
+                    title: 'Busqueda por RIF',
+                    className: 'btn-pdf-modern',
+                    attr: {
+                        id: 'btn-pdf-modern-id',
+                        title: 'Exportar a PDF'
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    // Remover HTML
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    
+                                    // Separar fecha y garantía para PDF
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        // Buscar fecha (formato YYYY-MM-DD)
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia; // Salto de línea para separar
+                                        }
+                                    }
+                                    
+                                    // Truncar texto muy largo
+                                    if (data.length > 80) {
+                                        data = data.substring(0, 77) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    // Configuración para PDF con fecha y garantía separados
+                    customize: function(doc) {
+                        doc.pageOrientation = 'landscape';
+                        doc.pageSize = 'A4';
+                        doc.pageMargins = [20, 20, 20, 20];
+                        
+                        // Estilos
+                        doc.styles.tableHeader = {
+                            fillColor: '#2E86AB',
+                            color: 'white',
+                            fontSize: 10,
+                            bold: true
+                        };
+                        
+                        doc.defaultStyle = {
+                            fontSize: 8,
+                            lineHeight: 1.2
+                        };
+                        
+                        // Título
+                        doc.header = function(currentPage, pageCount) {
+                            return {
+                                text: 'Consulta por RIF',
+                                alignment: 'center',
+                                fontSize: 16,
+                                bold: true,
+                                margin: [0, 10, 0, 0]
+                            };
+                        };
+                        
+                        // Pie de página
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
+                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                alignment: 'center',
+                                fontSize: 8,
+                                margin: [0, 0, 0, 10]
+                            };
+                        };
+                    }
                 }
-              }
-            ],
-            margin: [0, 8, 0, 30],
-            pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-          });
-        });
-      } else {
-        doc.content = oldContent;
-      }
-    } catch (e) {
-      console.error("Error transformando PDF por RIF:", e);
-      doc.content = oldContent;
-    }
-  }
-}
             ]
           });
 
@@ -3733,73 +3550,6 @@ function SendSerial() {
   loadingMessage.textContent = "Buscando datos...";
   loadingMessage.className = "text-center text-muted";
   mainTableCard.appendChild(loadingMessage);
-
-  // Función para crear y mostrar el overlay de carga
-          function showExportLoading() {
-            // Verificar si ya existe el overlay
-            let loadingOverlay = document.getElementById('export-loading-overlay');
-            if (!loadingOverlay) {
-              loadingOverlay = document.createElement('div');
-              loadingOverlay.id = 'export-loading-overlay';
-              loadingOverlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.95);
-                z-index: 9999;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                backdrop-filter: blur(2px);
-                -webkit-backdrop-filter: blur(2px);
-              `;
-              
-              const spinner = document.createElement('div');
-              spinner.style.cssText = `
-                width: 80px;
-                height: 80px;
-                border: 6px solid #f3f3f3;
-                border-top: 6px solid #003594;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-              `;
-              
-              const message = document.createElement('h4');
-              message.textContent = 'Generando documento...';
-              message.style.cssText = `
-                color: #003594;
-                margin-bottom: 10px;
-                font-weight: 600;
-              `;
-              
-              const subMessage = document.createElement('p');
-              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
-              subMessage.style.cssText = `
-                color: #666;
-                font-size: 14px;
-              `;
-              
-              loadingOverlay.appendChild(spinner);
-              loadingOverlay.appendChild(message);
-              loadingOverlay.appendChild(subMessage);
-              document.body.appendChild(loadingOverlay);
-            } else {
-              loadingOverlay.style.display = 'flex';
-            }
-          }
-          
-          // Función para ocultar el overlay de carga
-          function hideExportLoading() {
-            const loadingOverlay = document.getElementById('export-loading-overlay');
-            if (loadingOverlay) {
-              loadingOverlay.style.display = 'none';
-            }
-          }
-
 
   // **ATENCIÓN:** Se ha eliminado la línea para hacer la tarjeta visible aquí
   // mainTableCard.style.display = "block";
@@ -4994,7 +4744,7 @@ function fetchSerialData(serial, rif,razonsocial) {
               language: {
                 emptyTable: "No hay Registros disponibles en la tabla",
                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                info: "_PAGE_ de _PAGES_ ( _TOTAL_ Registros )",
+                info: "_TOTAL_ Registros",
                 infoEmpty: "No hay datos disponibles",
                 infoFiltered: "(Filtrado de _MAX_ Registros disponibles)",
                 search: "Buscar:",
@@ -5169,7 +4919,7 @@ const modalComponentesEl = document.getElementById('modalComponentes');
 const tbodyComponentes = document.getElementById('tbodyComponentes');
 const contadorComponentes = document.getElementById('contadorComponentes');
 const botonCargarComponentes = document.getElementById('hiperbinComponents');
-const ModalBotonCerrar = document.getElementById('BotonCerrarModal');
+/*const ModalBotonCerrar = document.getElementById('BotonCerrarModal');*/
 
 // Inicializa el modal de Bootstrap una sola vez.
 const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
@@ -5177,12 +4927,12 @@ const modalComponentes = new bootstrap.Modal(modalComponentesEl, {
   backdrop:'static'
 });
 
-if (ModalBotonCerrar) {
+/*if (ModalBotonCerrar) {
   ModalBotonCerrar.addEventListener('click', function () {
     limpiarSeleccion();
     window.location.reload();
   });
-}
+}*/
 
 // Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
 modalComponentesEl.addEventListener('show.bs.modal', function () {
@@ -5252,12 +5002,21 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                 const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
                                 
                                 if (responseEmail.success || correoTecnicoEnviado) {
+                                    // Obtener el número de ticket de la respuesta (ahora viene directamente en response.nro_ticket)
+                                    const nroTicketEmail = response.nro_ticket || 
+                                                          response.ticket_data?.nro_ticket || 
+                                                          response.ticket_data?.Nr_ticket || 
+                                                          response.ticket_data?.ticket_number ||
+                                                          response.Nr_ticket || 
+                                                          response.ticket_number || 
+                                                          ticketId;
+                                    
                                     // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
                                     setTimeout(() => {
                                         Swal.fire({
                                             icon: "success",
                                             title: "Correo Enviado",
-                                            text: `Correo de notificación (Nivel 2) enviado exitosamente para el ticket #${response.ticket_number || ticketId} - Cliente: ${globalRazon} (${globalRif})`,
+                                            text: `Correo de notificación (Nivel 2) enviado exitosamente para el ticket #${nroTicketEmail} - Cliente: ${globalRazon} (${globalRif})`,
                                             showConfirmButton: false,
                                             confirmButtonText: "Cerrar",
                                             confirmButtonColor: "#003594",
@@ -5286,7 +5045,16 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                     xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
                     // **FIN DE LA LÓGICA DEL CORREO**
                     
-                    console.log(`📧 Componentes guardados para ticket: ${response.ticket_number || ticketId}. Correo enviado.`);
+                    // Obtener el número de ticket de la respuesta (ahora viene directamente en response.nro_ticket)
+                    const nroTicket = response.nro_ticket || 
+                                     response.ticket_data?.nro_ticket || 
+                                     response.ticket_data?.Nr_ticket || 
+                                     response.ticket_data?.ticket_number ||
+                                     response.Nr_ticket || 
+                                     response.ticket_number || 
+                                     ticketId;
+                    
+                    console.log(`📧 Componentes guardados para ticket: ${nroTicket}. Correo enviado.`);
                     
                     Swal.fire({
                         title: '¡Éxito!',
@@ -5305,7 +5073,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                             Swal.fire({
                                 icon: "success",
                                 title: "✅ Componentes Agregados",
-                                text: `Componentes del POS ${serialPos} agregados exitosamente al ticket #${response.ticket_number || ticketId}`,
+                                text: `Componentes del POS ${serialPos} agregados exitosamente al ticket #${nroTicket}`,
                                 showConfirmButton: false,
                                 confirmButtonText: "Cerrar",
                                 confirmButtonColor: "#003594",
@@ -5505,9 +5273,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Event listener para el botón de cerrar el modal
-        if (e.target && e.target.id === 'BotonCerrarModal') {
+        /*if (e.target && e.target.id === 'BotonCerrarModal') {
             modalComponentes.hide();
-        }
+        }*/
 
         // Event listener para el checkbox "Seleccionar Todos"
         if (e.target && e.target.id === 'selectAllComponents') {
@@ -5530,7 +5298,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function abrirModalComponentes(boton) {
 
-    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
+    /*const modalCerrarComponnets = document.getElementById('BotonCerrarModal');*/
     const ticketId = boton.dataset.idTicket;
     const serialPos = boton.dataset.serialPos;
 
@@ -5560,11 +5328,11 @@ function abrirModalComponentes(boton) {
         return;
     }
 
-    if(modalCerrarComponnets){
+    /*if(modalCerrarComponnets){
       modalCerrarComponnets.addEventListener('click', function() {
         modalComponentes.hide();
       });
-    }
+    }*/
     showSelectComponentsModal(ticketId, regionName, serialPos);
 }
 

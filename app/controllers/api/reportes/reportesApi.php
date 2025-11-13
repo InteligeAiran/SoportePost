@@ -1611,7 +1611,8 @@ class reportes extends Controller {
         $repository = new ReportRepository();
         $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo);
         if ($result !== false) {
-            $this->response(['success' => true, 'message' => 'Componentes guardados correctamente'], 200);
+            $nro_ticket = isset($result['nro_ticket']) ? $result['nro_ticket'] : null;
+            $this->response(['success' => true, 'message' => 'Componentes guardados correctamente', 'nro_ticket' => $nro_ticket], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al guardar los componentes'], 500);
         }

@@ -2599,7 +2599,7 @@ class email extends Controller {
             <div class="technical-container">
                 <div class="technical-header">
                     <h1 class="technical-title">✅ TICKET PROCESADO</h1>
-                    <p class="technical-subtitle">Confirmación Técnica de Cierre</p>
+                    <p class="technical-subtitle">Confirmación Técnica de Apertura</p>
                 </div>
                 <div class="technical-content">
                     <div class="greeting">

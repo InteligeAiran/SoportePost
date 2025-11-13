@@ -1164,9 +1164,18 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                     return false;
                 }
 
+                // Obtener el número de ticket (nro_ticket) antes de confirmar la transacción
+                $nro_ticket_sql = "SELECT nro_ticket FROM tickets WHERE id_ticket = " . (int)$idticket . ";";
+                $nro_ticket_result = pg_query($this->db->getConnection(), $nro_ticket_sql);
+                $nro_ticket = null;
+                if ($nro_ticket_result && pg_num_rows($nro_ticket_result) > 0) {
+                    $nro_ticket = pg_fetch_result($nro_ticket_result, 0, 'nro_ticket');
+                    pg_free_result($nro_ticket_result);
+                }
+
                 // Si todo ha sido exitoso, confirma la transacción
                 pg_query($this->db->getConnection(), "COMMIT");
-                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'component_result' => true);
+                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'component_result' => true, 'nro_ticket' => $nro_ticket);
 
             } else {
                 return false;
