@@ -2656,7 +2656,7 @@ function openUploadModal(ticketId, documentType) {
   }
 }
 
-function handleFileSelectForUpload(event) {
+/*function handleFileSelectForUpload(event) {
   const file = event.target.files[0];
   const imagePreview = document.getElementById("imagePreview");
   const uploadMessage = document.getElementById("uploadMessage");
@@ -2690,7 +2690,7 @@ function handleFileSelectForUpload(event) {
       imagePreview.style.display = "none";
     }
   }
-}
+}*/
 
 async function handleUploadButtonClick(ticketId, documentType, uploadModalBootstrap, ticketNumber) {
     const id_user = document.getElementById("userId").value;

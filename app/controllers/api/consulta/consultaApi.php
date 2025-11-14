@@ -271,6 +271,11 @@ class Consulta extends Controller
                 case 'GetMotivos':
                     $this->handleGetMotivos();
                     break;
+
+                case 'getMotivosDomiciliacion':
+                    $this->handleGetMotivosDomiciliacion();
+                    break;
+
                 case 'GetAccountsBanks':
                     $this->handleGetAccountsBanks();
                     break;
@@ -1931,8 +1936,28 @@ class Consulta extends Controller
         ], 200);
     }
 
-    public function handleGetMotivos(){
+    public function handleGetMotivosDomiciliacion(){
         $documentType = 'Convenio_Firmado';
+
+        if (!$documentType) {
+            $this->response(['success' => false, 'message' => 'Tipo de documento requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetMotivos($documentType);
+
+        if ($result) {
+            $this->response(['success' => true, 'motivos' => $result], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetMotivos(){
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+
+        //$documentType = 'Convenio_Firmado';
 
         if (!$documentType) {
             $this->response(['success' => false, 'message' => 'Tipo de documento requerido.'], 400);

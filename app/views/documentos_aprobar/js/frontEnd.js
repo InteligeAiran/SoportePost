@@ -1,8 +1,10 @@
 let currentSelectedTicket = null;
 let currentTicketNroForImage = null;
+let paymentAgreementModalInstance = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
+    paymentAgreementModalInstance = new bootstrap.Modal(document.getElementById("paymentAgreementModal"));
     
     if (approveTicketFromImageBtn) {
         approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
@@ -879,7 +881,6 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     const modalTicketIdSpan = document.getElementById('modalTicketId');
     const idTicketInput = document.getElementById('id_ticket');
     const documentFileInput = document.getElementById('documentFile');
-    const imagePreview = document.getElementById('imagePreview');
     const uploadMessage = document.getElementById('uploadMessage');
     const uploadFileBtn = document.getElementById('uploadFileBtn');
     const cerrarBoton = document.getElementById('CerrarBoton');
@@ -888,14 +889,12 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     const nro_ticket = document.getElementById('nro_ticket');
 
     // Verificar que todos los elementos necesarios existan
-    if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput || 
-        !imagePreview || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
+    if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput  || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
         console.error('Elementos del modal no encontrados:', {
             modal: !!modal,
             modalTicketIdSpan: !!modalTicketIdSpan,
             idTicketInput: !!idTicketInput,
             documentFileInput: !!documentFileInput,
-            imagePreview: !!imagePreview,
             uploadMessage: !!uploadMessage,
             uploadFileBtn: !!uploadFileBtn,
             cerrarBoton: !!cerrarBoton,
@@ -945,7 +944,7 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
 
     // Limpiar formulario anterior
     uploadForm.reset();
-    imagePreview.style.display = 'none';
+    /*imagePreview.style.display = 'none';*/
     uploadMessage.innerHTML = '';
     uploadMessage.classList.add('hidden');
 
@@ -963,6 +962,29 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
             <p class="mb-0"><strong>Motivo de Rechazo:</strong> <span class="motivo-rechazo-highlight">${motivoRechazo || 'No especificado'}</span></p>
         </div>
     `;
+
+    if(documentType === 'convenio_firmado') {
+        const botonConvenio = document.getElementById('generateNotaEntregaBtn');
+        const botonEnvio = document.getElementById('generateNotaEntregaBtn2');
+        if(botonConvenio && botonEnvio) {
+            botonConvenio.style.display = 'block';
+            botonEnvio.style.display = 'none';
+        }
+    }else if(documentType === 'Envio') {
+        const botonConvenio = document.getElementById('generateNotaEntregaBtn');
+        const botonEnvio = document.getElementById('generateNotaEntregaBtn2');
+        if(botonConvenio && botonEnvio) {
+            botonConvenio.style.display = 'none';
+            botonEnvio.style.display = 'block';
+        }
+    }else {
+        const botonConvenio = document.getElementById('generateNotaEntregaBtn');
+        const botonEnvio = document.getElementById('generateNotaEntregaBtn2');
+        if(botonConvenio && botonEnvio) {
+            botonConvenio.style.display = 'none';
+            botonEnvio.style.display = 'none';
+        }
+    }
     
     // Insertar la información antes del formulario
     const existingInfo = uploadForm.querySelector('#CartWrong');
@@ -991,7 +1013,6 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
                     confirmButtonColor: '#003594'
                 });
                 this.value = '';
-                imagePreview.style.display = 'none';
                 return;
             }
 
@@ -1007,27 +1028,12 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
                     confirmButtonColor: '#003594'
                 });
                 this.value = '';
-                imagePreview.style.display = 'none';
                 return;
-            }
-
-            // Mostrar previsualización si es imagen
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // Si es PDF, ocultar previsualización
-                imagePreview.style.display = 'none';
             }
 
             // Habilitar botón de subida
             uploadFileBtn.disabled = false;
         } else {
-            imagePreview.style.display = 'none';
             uploadFileBtn.disabled = true;
         }
     };
@@ -1078,7 +1084,6 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
         
         // Limpiar formulario
         uploadForm.reset();
-        imagePreview.style.display = 'none';
         uploadMessage.innerHTML = '';
         uploadMessage.classList.add('hidden');
         
@@ -3474,17 +3479,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Botón de cerrar
 
   const closeBtn = document.getElementById("closePaymentAgreementBtn");
-
   if (closeBtn) {
     closeBtn.addEventListener("click", function () {
       // Usar la instancia global o crear una nueva si no existe
-
-      if (!paymentAgreementModalInstance) {
-        paymentAgreementModalInstance = new bootstrap.Modal(
-          document.getElementById("paymentAgreementModal")
-        );
-      }
-
       paymentAgreementModalInstance.hide();
     });
   }
@@ -3533,7 +3530,6 @@ function getPaymentAgreementFormData() {
     correo: document.getElementById("pa_correo").value,
   };
 }
-
 
 function buildPaymentAgreementHtml(d, convenioNumero = null) {
   const safe = (s) => (s || "").toString();
@@ -5100,8 +5096,6 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
               setTimeout(() => {
                 // Usar la instancia global o crear una nueva si no existe
 
-                let paymentAgreementModalInstance = null;
-
                 if (!paymentAgreementModalInstance) {
                   paymentAgreementModalInstance = new bootstrap.Modal(
                     document.getElementById("paymentAgreementModal")
@@ -5216,4 +5210,802 @@ function fillPaymentAgreementModal(d) {
   // document.getElementById('pa_banco').value = 'XXXX';
 
   // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
+}
+
+
+$(document).on('click', '#generateNotaEntregaBtn2', function () {
+    const ticketId = document.getElementById('id_ticket').value;
+    if (!ticketId) {
+        Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (!res || !res.success || !res.rows) {
+                    Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+                    return;
+                }
+
+                const d = res.rows[0];
+                window.currentDeliveryData = d;
+                const serialPos = d.serialpos || d.serial_pos || '';
+                const lastFourSerialDigits = serialPos.slice(-4);
+                const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+                const regDes = 'Caracas';
+
+                $('#htmlTemplateTicketId').val(ticketId);
+                $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+                $('#ne_numero').val(notaNumero);
+                $('#ne_rif').val(d.coddocumento || '');
+                $('#ne_razon').val(d.razonsocial || '');
+                $('#ne_responsable').val(d.rlegal || '');
+                $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto');
+                $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+                $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+                $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+                $('#ne_region_origen').val(d.estado_final || d.estado || '');
+                $('#ne_region_destino').val(regDes);
+                $('#ne_observaciones').val('');
+                $('#ne_componentes').val(d.componentes || 'Sin componentes');
+                
+                // ✅ AGREGAR ESTOS CAMPOS
+                $('#ne_banco').val(d.ibp || 'Sin banco');
+                $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
+
+                // 1. Obtiene la instancia del modal o la crea si no existe
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.show();
+                
+                // 2. Adjunta el evento de clic al botón de cerrar
+                $('#closeHtmlTemplateBtn').on('click', function () {
+                     htmlModal.hide();
+                });
+
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+            }
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+        }
+    };
+
+    const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+    xhr.send(params);
+});
+
+// ✅ FUNCIÓN ACTUALIZADA
+$(document).on('click', '#previewHtmlTemplateBtn', function () {
+  const data = {
+    fecha: $('#ne_fecha').val(),
+    numero: $('#ne_numero').val(),
+    rif: $('#ne_rif').val(),
+    razon: $('#ne_razon').val(),
+    responsable: $('#ne_responsable').val(),
+    tipo_equipo: $('#ne_tipo_equipo').val(),
+    modelo: $('#ne_modelo').val(),
+    serial: $('#ne_serial').val(),
+    region_origen: $('#ne_region_origen').val(),
+    region_destino: $('#ne_region_destino').val(),
+    observaciones: $('#ne_observaciones').val(),
+    componentes: $('#ne_componentes').val(),
+    banco: $('#ne_banco').val(), // ✅ AGREGAR
+    proveedor: $('#ne_proveedor').val(), // ✅ AGREGAR
+    tecnico_responsable: window.currentDeliveryData?.full_name_tecnico_responsable || 'Sin técnico asignado'
+  };
+
+  const html = buildDeliveryNoteHtml(data);
+
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+});
+
+function buildDeliveryNoteHtml(d) {
+  const safe = (s) => (s || '').toString();
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Entrega y Envío de Equipo</title>
+      <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 11px;
+        line-height: 1.2;
+        color: #333;
+        background: #fff;
+        padding: 10px;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow-x: hidden;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        min-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 2px solid #2c5aa0;
+        position: relative;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+      }
+      
+      .company-logo-img {
+        max-width: 120px;
+        max-height: 60px;
+        margin-bottom: 8px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .company-address {
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        text-align: center;
+        font-weight: 500;
+      }
+      
+      .document-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .document-subtitle {
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .info-label {
+        font-size: 9px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      
+      .info-value {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .content-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .section {
+        margin: 6px 0;
+        background: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+      }
+      
+      .section-header {
+        background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+        color: white;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      
+      .section-content {
+        padding: 8px 10px;
+      }
+      
+      .two-columns {
+        display: flex;
+        gap: 15px;
+      }
+      
+      .column {
+        flex: 1;
+      }
+      
+      .column-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 8px;
+        text-align: center;
+        padding: 4px;
+        background: #f0f4f8;
+        border-radius: 3px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .field-row {
+        display: flex;
+        margin-bottom: 4px;
+        align-items: flex-start;
+      }
+      
+      .field-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 110px;
+        margin-right: 8px;
+        font-size: 10px;
+        padding-top: 2px;
+      }
+      
+      .field-value {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+        padding: 3px 8px;
+        background: #f8f9fa;
+        border-radius: 3px;
+        border-left: 2px solid #2c5aa0;
+        font-size: 10px;
+        min-height: 20px;
+        display: flex;
+        align-items: center;
+      }
+      
+      .field-value.observations {
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 25px;
+        font-style: italic;
+        align-items: flex-start;
+        padding-top: 5px;
+      }
+      
+      .constancy {
+        background: #e8f4fd;
+        border: 1px solid #b3d9ff;
+        border-radius: 5px;
+        padding: 8px;
+        margin: 8px 0;
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.4;
+        color: #2c5aa0;
+        font-weight: 500;
+      }
+      
+      .signature-section {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+      }
+      
+      .signature-box {
+        flex: 1;
+        max-width: 280px;
+        text-align: center;
+        padding: 12px;
+        border: 1px dashed #ccc;
+        border-radius: 5px;
+        background: #fafafa;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      
+      .signature-line {
+        border-top: 2px solid #333;
+        margin: 15px auto 8px auto;
+        width: 180px;
+        display: block;
+      }
+      
+      .signature-space {
+        height: 40px;
+        margin: 10px 0;
+      }
+      
+      .signature-label {
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 3px;
+        font-size: 10px;
+      }
+      
+      .signature-field {
+        color: #666;
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+      
+      /* ✅ ESTILOS DEL FOOTER ACTUALIZADOS */
+      .footer {
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid #ddd;
+        color: #666;
+        font-size: 8px;
+        line-height: 1.2;
+      }
+      
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      .footer-left {
+        flex: 1;
+        text-align: left;
+      }
+      
+      .footer-right {
+        flex: 1;
+        text-align: right;
+      }
+      
+      .footer-logo {
+        max-height: 25px;
+        max-width: 100px;
+      }
+      
+      .footer-rif {
+        font-size: 10px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .footer-text {
+        text-align: center;
+        margin-top: 6px;
+      }
+      
+      /* Optimizaciones críticas para impresión */
+      @media print {
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Mostrar header y footer personalizados solo en impresión */
+        .print-header,
+        .print-footer {
+          display: block !important;
+        }
+        
+        /* Ajustar el contenido para dar espacio al header/footer fijos */
+        body {
+          margin-top: 50px !important;
+          margin-bottom: 40px !important;
+        }
+        
+        html, body {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: visible !important;
+        }
+        
+        body {
+          font-size: 10px !important;
+          padding: 8px !important;
+        }
+        
+        .container {
+          max-width: 100% !important;
+          width: 100% !important;
+          min-height: auto !important;
+          height: auto !important;
+          page-break-inside: avoid;
+        }
+        
+        .section {
+          box-shadow: none !important;
+          border: 1px solid #ddd !important;
+          margin: 4px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .header {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+          page-break-after: avoid;
+        }
+        
+        .company-logo-img {
+          max-width: 100px !important;
+          max-height: 50px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .company-address {
+          font-size: 9px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .document-title {
+          font-size: 14px !important;
+        }
+        
+        .section-content {
+          padding: 6px 8px !important;
+        }
+        
+        .two-columns {
+          gap: 10px !important;
+        }
+        
+        .column-title {
+          font-size: 10px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .constancy {
+          padding: 6px !important;
+          margin: 6px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .signature-section {
+          margin-top: 12px !important;
+          page-break-inside: avoid;
+          gap: 15px !important;
+        }
+        
+        .signature-box {
+          min-height: 70px !important;
+          padding: 10px !important;
+        }
+        
+        .signature-line {
+          width: 150px !important;
+          margin: 12px auto 6px auto !important;
+          display: block !important;
+        }
+        
+        .signature-space {
+          height: 30px !important;
+          margin: 8px 0 !important;
+        }
+        
+        /* ✅ ESTILOS DE IMPRESIÓN PARA FOOTER */
+        .footer {
+          margin-top: 6px !important;
+          padding-top: 4px !important;
+          page-break-before: avoid;
+        }
+        
+        .footer-content {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+        }
+        
+        .footer-logo {
+          max-height: 20px !important;
+          max-width: 80px !important;
+        }
+        
+        .footer-rif {
+          font-size: 9px !important;
+        }
+        
+        .footer-text {
+          margin-top: 4px !important;
+        }
+        
+        .field-row {
+          margin-bottom: 3px !important;
+          page-break-inside: avoid;
+        }
+        
+        .document-info {
+          margin: 6px 0 !important;
+          padding: 6px !important;
+          page-break-after: avoid;
+        }
+        
+        .section-header {
+          padding: 4px 8px !important;
+          font-size: 10px !important;
+        }
+      }
+      
+      /* Configuración de página para impresión */
+      @page {
+        size: letter;
+        margin: 0.2in 0.5in;
+        padding: 0;
+        /* Ocultar header y footer del navegador */
+        @top-left { content: ""; }
+        @top-center { content: ""; }
+        @top-right { content: ""; }
+        @bottom-left { content: ""; }
+        @bottom-center { content: ""; }
+        @bottom-right { content: ""; }
+      }
+      
+      /* Header personalizado para impresión */
+      .print-header {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: white;
+        border-bottom: 1px solid #ddd;
+        z-index: 1000;
+        padding: 8px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+      }
+      
+      .print-header-logo {
+        max-height: 30px;
+        max-width: 80px;
+      }
+      
+      .print-header-rif {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      /* Footer personalizado para impresión */
+      .print-footer {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: white;
+        border-top: 1px solid #ddd;
+        z-index: 1000;
+        padding: 5px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+        font-size: 10px;
+        color: #666;
+      }
+      
+      /* Evitar cortes de página en elementos críticos */
+      .header,
+      .document-info,
+      .section,
+      .constancy,
+      .signature-section,
+      .footer {
+        page-break-inside: avoid;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header personalizado para impresión -->
+    <div class="print-header">
+      <div class="print-header-content">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+        <div class="print-header-rif">RIF: J-002916150</div>
+      </div>
+    </div>
+    
+    <!-- Footer personalizado para impresión -->
+    <div class="print-footer">
+      <div class="print-footer-content">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="header">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+        <div class="company-address">
+          Urbanización El Rosal. Av. Francisco de Miranda<br>
+          Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+        </div>
+        <div class="document-title">Nota de Entrega</div>
+        <div class="document-subtitle"></div>
+      </div>
+      
+      <div class="document-info">
+        <div class="info-item">
+          <div class="info-label">Fecha</div>
+          <div class="info-value">${safe(d.fecha)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">N° de Nota</div>
+          <div class="info-value">${safe(d.numero)}</div>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="section">
+          <div class="section-header">Datos del Cliente</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">R.I.F. / Identificación:</div>
+              <div class="field-value">${safe(d.rif)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Razón Social:</div>
+              <div class="field-value">${safe(d.razon)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Representante Legal:</div>
+              <div class="field-value">${safe(d.responsable)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Detalles del Equipo</div>
+          <div class="section-content">
+            <div class="two-columns">
+              <div class="column">
+                <div class="column-title">Información del Equipo</div>
+                <div class="field-row">
+                  <div class="field-label">Proveedor:</div>
+                  <div class="field-value">${safe(d.proveedor)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Modelo:</div>
+                  <div class="field-value">${safe(d.modelo)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Número de Serie:</div>
+                  <div class="field-value">${safe(d.serial)}</div>
+                </div>
+                 <div class="field-row">
+                  <div class="field-label">Banco:</div>
+                  <div class="field-value">${safe(d.banco)}</div>
+                </div>
+              </div>
+              
+              <div class="column">
+                <div class="column-title">Accesorios</div>
+                <div class="field-row">
+                  <div class="field-label">Periféricos:</div>
+                  <div class="field-value">${safe(d.componentes || 'Sin accesorios adicionales')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Información del Envío</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">Estado de Origen:</div>
+              <div class="field-value">${safe(d.region_origen)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Estado de Destino:</div>
+              <div class="field-value">${safe(d.region_destino)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Observaciones:</div>
+              <div class="field-value observations">${safe(d.observaciones) || ''}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <div class="signature-box">
+            <div class="signature-label">Recibe</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: _____________________</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+          
+          <div class="signature-box">
+            <div class="signature-label">Firma de Conformidad</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: ${safe(d.tecnico_responsable)}</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+        </div>
+
+        <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+        <div class="footer">
+          <div class="footer-content">
+            <div class="footer-left">
+              <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="footer-right">
+              <div class="footer-rif">RIF: J-002916150</div>
+            </div>
+          </div>
+          <div class="footer-text">
+            <p>Documento válido como constancia oficial de entrega del equipo especificado.</p>
+            <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>`;
 }

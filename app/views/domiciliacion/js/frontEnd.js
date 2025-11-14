@@ -6564,7 +6564,7 @@ function getMotivos() {
   motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
 
   // Aquí cambiamos el endpoint para apuntar a la API de motivos
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getMotivosDomiciliacion`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {

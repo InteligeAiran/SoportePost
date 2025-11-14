@@ -790,9 +790,9 @@ function mi_navbar()
                                     style="display:block">
                                 <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
                             </div>
-                            <div class="mb-3 text-center">
+                            <!--div class="mb-3 text-center">
                                 <img id="imagePreview" class="img-preview" src="#" alt="Previsualización de Imagen">
-                            </div>
+                            </div-->
                             <div id="uploadMessage" class="message-box hidden"></div>
                         </form>
                     </div>
