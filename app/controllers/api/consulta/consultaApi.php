@@ -481,6 +481,16 @@ class Consulta extends Controller
                     $claseImagen = "SUNMI-P2-LITE";
                 break;
 
+                case 27: 
+                    $nombreArchivo = "New-8210.png";
+                    $claseImagen = "New-8210";
+                break;
+
+                case 28: 
+                    $nombreArchivo = "New-8210.png";
+                    $claseImagen = "New-8210";
+                break;
+
                 default:
                     $nombreArchivo = "mantainment.png";
                     $claseImagen = "mantainment";
@@ -589,14 +599,23 @@ class Consulta extends Controller
                 break;
 
                 case 26: 
-                    $nombreArchivo = "SUNMI-P2-LITEDashboard.png";
+                    $nombreArchivo = "SUNMI-P2-LITE.png";
                     $claseImagen = "SUNMI-P2-LITEDashboard";
+                break;
+
+                case 27: 
+                    $nombreArchivo = "New-8210.png";
+                    $claseImagen = "New-8210Dashboard";
+                break;
+
+                case 28: 
+                    $nombreArchivo = "New-8210.png";
+                    $claseImagen = "New-8210Dashboard";
                 break;
 
                 default:
                     $nombreArchivo = "mantainment.png";
                     $claseImagen = "mantainmentDashboard";
-
                 break;
             }
             /* ENDF AGREGAR CSS */

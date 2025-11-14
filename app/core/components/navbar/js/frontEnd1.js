@@ -535,12 +535,73 @@ async function loadFullNavbar(options = {}) {
             body: body,
         });
 
+        // Función auxiliar para agregar el botón "Cerrar Sesión"
+        const addLogoutButton = () => {
+            updateLoadingProgress(85, 'Agregando opciones finales...');
+
+            // Agregar "Cerrar Sesión" al final
+            const logoutLi = document.createElement("li");
+            logoutLi.className = "nav-item";
+            const logoutAnchor = document.createElement("a");
+            logoutAnchor.className = "nav-link";
+            logoutAnchor.id = "cerrar-session-link";
+            logoutAnchor.href = "cerrar_session";
+
+            const logoutIcon = getIconSvgForName("Cerrar Sesión");
+            const logoutText = document.createElement("h6");
+            logoutText.className = "nav-link-text ms-3";
+            logoutText.textContent = "Cerrar Sesión";
+            logoutText.style.color = "white";
+            logoutText.style.margin = "11%";
+            logoutText.style.paddingLeft = ".5rem";
+
+            logoutAnchor.innerHTML = logoutIcon;
+            logoutAnchor.appendChild(logoutText);
+            logoutLi.appendChild(logoutAnchor);
+            navbarNav.appendChild(logoutLi);
+        };
+
+        // Intentar parsear la respuesta JSON
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            // Si no se puede parsear, lanzar error
+            if (!response.ok) {
+                throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
+            }
+            throw new Error("Error al procesar la respuesta del servidor.");
+        }
+
+        updateLoadingProgress(40, 'Procesando módulos...');
+
+        // Verificar si el usuario no tiene módulos asignados (404 o success: false)
+        if ((!response.ok && response.status === 404) || (data && !data.success && data.message)) {
+            if (data.message && data.message.includes("No hay módulos disponibles")) {
+                updateLoadingProgress(100, 'Finalizando...');
+                setTimeout(() => {
+                    hideLoadingOverlay();
+                }, 1000);
+                
+                // Agregar el botón "Cerrar Sesión" incluso sin módulos
+                addLogoutButton();
+                
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({
+                        title: "Sin módulos asignados",
+                        text: "No tiene módulos asignados. Por favor, contacte al administrador del sistema.",
+                        icon: "info",
+                        confirmButtonText: "OK",
+                        color: "black",
+                    });
+                }
+                return;
+            }
+        }
+
         if (!response.ok) {
             throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
         }
-
-        const data = await response.json();
-        updateLoadingProgress(40, 'Procesando módulos...');
 
         if (data.success && Array.isArray(data.modules)) {
             const modulesData = data.modules.filter(module => module.activo === "t");
@@ -588,28 +649,8 @@ async function loadFullNavbar(options = {}) {
             }
             //console.log(`🎉 TODOS LOS MÓDULOS CARGADOS SECUENCIALMENTE`);
 
-            updateLoadingProgress(85, 'Agregando opciones finales...');
-
-            // Agregar "Cerrar Sesión" al final
-            const logoutLi = document.createElement("li");
-            logoutLi.className = "nav-item";
-            const logoutAnchor = document.createElement("a");
-            logoutAnchor.className = "nav-link";
-            logoutAnchor.id = "cerrar-session-link";
-            logoutAnchor.href = "cerrar_session";
-
-            const logoutIcon = getIconSvgForName("Cerrar Sesión");
-            const logoutText = document.createElement("h6");
-            logoutText.className = "nav-link-text ms-3";
-            logoutText.textContent = "Cerrar Sesión";
-            logoutText.style.color = "white";
-            logoutText.style.margin = "11%";
-            logoutText.style.paddingLeft = ".5rem";
-
-            logoutAnchor.innerHTML = logoutIcon;
-            logoutAnchor.appendChild(logoutText);
-            logoutLi.appendChild(logoutAnchor);
-            navbarNav.appendChild(logoutLi);
+            // Agregar "Cerrar Sesión" al final cuando hay módulos
+            addLogoutButton();
 
             updateLoadingProgress(95, 'Finalizando configuración...');
 
@@ -630,6 +671,9 @@ async function loadFullNavbar(options = {}) {
                 hideLoadingOverlay();
             }, 1000);
             
+            // Agregar el botón "Cerrar Sesión" incluso en caso de error
+            addLogoutButton();
+            
             if (typeof Swal !== "undefined") {
                 Swal.fire({
                     title: "Error",
@@ -646,6 +690,27 @@ async function loadFullNavbar(options = {}) {
         setTimeout(() => {
             hideLoadingOverlay();
         }, 1000);
+        
+        // Agregar el botón "Cerrar Sesión" incluso en caso de error de red
+        const logoutLi = document.createElement("li");
+        logoutLi.className = "nav-item";
+        const logoutAnchor = document.createElement("a");
+        logoutAnchor.className = "nav-link";
+        logoutAnchor.id = "cerrar-session-link";
+        logoutAnchor.href = "cerrar_session";
+
+        const logoutIcon = getIconSvgForName("Cerrar Sesión");
+        const logoutText = document.createElement("h6");
+        logoutText.className = "nav-link-text ms-3";
+        logoutText.textContent = "Cerrar Sesión";
+        logoutText.style.color = "white";
+        logoutText.style.margin = "11%";
+        logoutText.style.paddingLeft = ".5rem";
+
+        logoutAnchor.innerHTML = logoutIcon;
+        logoutAnchor.appendChild(logoutText);
+        logoutLi.appendChild(logoutAnchor);
+        navbarNav.appendChild(logoutLi);
         
         const errorMessage = error.message.includes("HTTP")
             ? `Error de conexión con el servidor: ${error.message}`

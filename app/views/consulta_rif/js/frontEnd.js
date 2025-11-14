@@ -3224,6 +3224,98 @@ function SendRif() {
             municipioCell.textContent = item.municipio;
           });
 
+          // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
+          function safeValue(value) {
+              if (value === null || value === undefined || value === '') {
+                  return 'N/A';
+              }
+              if (typeof value === 'object') {
+                  // Si es un objeto Date
+                  if (value instanceof Date) {
+                      return value.toLocaleDateString('es-VE');
+                  }
+                  // Si tiene una propiedad que sea string (como en Laravel Carbon)
+                  if (value.date || value.timezone || value.formatted) {
+                      return value.date || value.formatted || 'N/A';
+                  }
+                  // Si es un objeto plano, intenta convertirlo
+                  try {
+                      const str = JSON.stringify(value);
+                      if (str === '{}' || str === '[]') return 'N/A';
+                      return str;
+                  } catch (e) {
+                      return 'N/A';
+                  }
+              }
+              return String(value).trim() || 'N/A';
+          }
+
+          // Función para crear y mostrar el overlay de carga
+          function showExportLoading() {
+            // Verificar si ya existe el overlay
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+              `;
+              
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px;
+                height: 80px;
+                border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+              `;
+              
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = `
+                color: #003594;
+                margin-bottom: 10px;
+                font-weight: 600;
+              `;
+              
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = `
+                color: #666;
+                font-size: 14px;
+              `;
+              
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          // Función para ocultar el overlay de carga
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
+          }
+
           // Inicialización de DataTables
           if ($.fn.DataTable.isDataTable("#rifCountTable")) {
             $("#rifCountTable").DataTable().destroy();
@@ -3344,87 +3436,165 @@ function SendRif() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
                     </svg>PDF`,
-                    title: 'Busqueda por RIF',
+                    filename: `REPORTE EMPRESA - RIF ${rifCompleto.trim().toUpperCase().replace(/[^a-zA-Z0-9]/g, '_')} ${new Date().toISOString().split('T')[0]}`,
                     className: 'btn-pdf-modern',
-                    attr: {
-                        id: 'btn-pdf-modern-id',
-                        title: 'Exportar a PDF'
+                    attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
+                    action: function(e, dt, button, config) {
+                        showExportLoading();
+                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
+                        setTimeout(hideExportLoading, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
-                                }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para PDF
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        // Buscar fecha (formato YYYY-MM-DD)
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia; // Salto de línea para separar
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo
-                                    if (data.length > 80) {
-                                        data = data.substring(0, 77) + '...';
-                                    }
-                                }
-                                return data;
-                            }
-                        }
+                        format: { body: (data) => safeValue(data) }
                     },
-                    // Configuración para PDF con fecha y garantía separados
                     customize: function(doc) {
-                        doc.pageOrientation = 'landscape';
+                        const logoDataUrl = window.PDF_LOGO_DATAURL;
+                        const hasLogo = typeof logoDataUrl === 'string' && logoDataUrl.startsWith('data:');
+                        if (hasLogo) {
+                            doc.images = doc.images || {};
+                            doc.images.logo_inteligensa = logoDataUrl;
+                        }
+
+                        const rif = rifCompleto.trim().toUpperCase() || 'SIN_RIF';
+                        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+                        const fullName = document.getElementById('Full_name')?.value || 'USUARIO DESCONOCIDO';
+
+                        doc.pageMargins = [40, 130, 40, 80];
                         doc.pageSize = 'A4';
-                        doc.pageMargins = [20, 20, 20, 20];
-                        
-                        // Estilos
-                        doc.styles.tableHeader = {
-                            fillColor: '#2E86AB',
-                            color: 'white',
-                            fontSize: 10,
-                            bold: true
+                        doc.defaultStyle = { fontSize: 9.5 };
+                        doc.styles = {
+                            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+                            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+                            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f', margin: [0, 0, 0, 4] },
+                            noteText: { fontSize: 9.2, italics: true, color: '#424242', margin: [0, 0, 0, 6] },
+                            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+                            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 8, 0, 6] },
+                            ticketSubtitle: { fontSize: 9.5, color: '#555', margin: [0, 0, 0, 8] }
                         };
-                        
-                        doc.defaultStyle = {
-                            fontSize: 8,
-                            lineHeight: 1.2
-                        };
-                        
-                        // Título
-                        doc.header = function(currentPage, pageCount) {
+
+                        doc.header = function() {
                             return {
-                                text: 'Consulta por RIF',
-                                alignment: 'center',
-                                fontSize: 16,
-                                bold: true,
-                                margin: [0, 10, 0, 0]
+                                margin: [40, 20, 40, 10],
+                                stack: [
+                                    hasLogo
+                                        ? {
+                                            columns: [
+                                                { image: 'logo_inteligensa', width: 85 },
+                                                { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                                            ]
+                                        }
+                                        : {
+                                            columns: [
+                                                { text: 'INTELIGENSA', alignment: 'left', bold: true, color: '#1f4e8c', fontSize: 14 },
+                                                { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                                            ]
+                                        },
+                                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                                    { text: 'REPORTE DE EMPRESA POR RIF', style: 'title' },
+                                    { text: `RIF: ${rif}`, style: 'subtitle' }
+                                ]
                             };
                         };
-                        
-                        // Pie de página
+
                         doc.footer = function(currentPage, pageCount) {
                             return {
-                                text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
-                                alignment: 'center',
-                                fontSize: 8,
-                                margin: [0, 0, 0, 10]
+                                margin: [40, 20],
+                                columns: [
+                                    hasLogo ? { image: 'logo_inteligensa', width: 55, opacity: 0.7 } : { text: 'INTELIGENSA', bold: true, color: '#1f4e8c', fontSize: 9 },
+                                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                                ]
                             };
                         };
+
+                        const originalContent = doc.content;
+                        doc.content = [];
+
+                        doc.content.push({
+                            stack: [
+                                { text: 'Nota importante', style: 'noteTitle' },
+                                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                                { text: `Documento Generado por: ${fullName} - ${fechaGen}`, style: 'generatedOSD' }
+                            ],
+                            alignment: 'left',
+                            margin: [0, 15, 0, 12],
+                            background: '#f8f9fa',
+                            fillColor: '#f8f9fa'
+                        });
+
+                        const stripHtml = (input) => {
+                            if (input === null || input === undefined) return 'N/A';
+                            if (typeof input === 'object') {
+                                if (typeof input.text === 'string') input = input.text;
+                                else if (Array.isArray(input)) input = input.join(' ');
+                                else input = input.toString();
+                            }
+                            const text = String(input)
+                                .replace(/<[^>]*>/g, ' ')
+                                .replace(/\s+/g, ' ')
+                                .trim();
+                            return text || 'N/A';
+                        };
+
+                        try {
+                            const table = originalContent.find(item => item.table);
+                            if (table && table.table.body.length > 1) {
+                                const headerRow = table.table.body[0];
+                                const dataRows = table.table.body.slice(1);
+
+                                dataRows.forEach((row, idx) => {
+                                    const kv = [];
+                                    let idTicket = '', razonRow = '', rifRow = '', serialRow = '';
+
+                                    headerRow.forEach((h, i) => {
+                                        const label = stripHtml(h.text || h);
+                                        const value = stripHtml(row[i]);
+
+                                        if (label.toLowerCase().includes('id ticket') || label.toLowerCase().includes('id cliente')) idTicket = value;
+                                        if (label.toLowerCase().includes('razón social') || label.toLowerCase().includes('razon social')) razonRow = value;
+                                        if (label.toLowerCase().includes('rif')) rifRow = value;
+                                        if (label.toLowerCase().includes('serial')) serialRow = value;
+
+                                        kv.push([
+                                            { text: label || '-', bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                                            { text: value || 'N/A', fontSize: 9, margin: [0, 4] }
+                                        ]);
+                                    });
+
+                                    const subtitleParts = [];
+                                    if (razonRow && razonRow !== 'N/A') subtitleParts.push(razonRow);
+                                    if (rifRow && rifRow !== 'N/A') subtitleParts.push(`RIF: ${rifRow}`);
+                                    const subtitleText = subtitleParts.join(' • ');
+
+                                    doc.content.push({
+                                        stack: [
+                                            { text: `Empresa ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                                            ...(subtitleText ? [{ text: subtitleText, style: 'ticketSubtitle' }] : []),
+                                            {
+                                                table: { widths: [160, '*'], body: kv },
+                                                layout: {
+                                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                                    hLineWidth: () => 0.6,
+                                                    vLineWidth: () => 0,
+                                                    hLineColor: () => '#c8d6ef',
+                                                    paddingLeft: () => 10,
+                                                    paddingRight: () => 10
+                                                }
+                                            }
+                                        ],
+                                        margin: [0, 8, 0, 30],
+                                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                                    });
+                                });
+                            } else {
+                                doc.content = originalContent;
+                            }
+                        } catch (err) {
+                            console.error("Error transformando PDF por RIF:", err);
+                            doc.content = originalContent;
+                        }
                     }
                 }
             ]
@@ -3652,6 +3822,72 @@ function SendSerial() {
               return String(value).trim() || 'N/A';
           }
 
+                    // Función para crear y mostrar el overlay de carga
+          function showExportLoading() {
+            // Verificar si ya existe el overlay
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+              `;
+              
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px;
+                height: 80px;
+                border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+              `;
+              
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = `
+                color: #003594;
+                margin-bottom: 10px;
+                font-weight: 600;
+              `;
+              
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = `
+                color: #666;
+                font-size: 14px;
+              `;
+              
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          // Función para ocultar el overlay de carga
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
+          }
+
           $(newTable).DataTable({
             responsive: false,
             fixedHeader: true,
@@ -3765,22 +4001,22 @@ function SendSerial() {
                     }
                 },
                 {
-  extend: 'pdfHtml5',
-  text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-  </svg>PDF`,
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
   
   filename: `REPORTE EMPRESA - SERIAL ${serialInputValue.trim().toUpperCase().replace(/[^a-zA-Z0-9]/g, '_')} ${new Date().toISOString().split('T')[0]}`,
-  className: 'btn-pdf-modern',
+                    className: 'btn-pdf-modern',
   attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
   action: function(e, dt, button, config) {
     showExportLoading();
     $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
     const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
     setTimeout(hideExportLoading, delay);
-  },
-  exportOptions: {
-    columns: ':visible',
+                    },
+                    exportOptions: {
+                        columns: ':visible',
     format: { body: (data) => safeValue(data) }
   },
   customize: function(doc) {
@@ -3809,7 +4045,7 @@ function SendSerial() {
     };
 
     doc.header = function() {
-      return {
+                            return {
         margin: [40, 20, 40, 10],
         stack: [
           hasLogo
@@ -3833,8 +4069,8 @@ function SendSerial() {
       };
     };
 
-    doc.footer = function(currentPage, pageCount) {
-      return {
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
         margin: [40, 20],
         columns: [
           hasLogo ? { image: 'logo_inteligensa', width: 55, opacity: 0.7 } : { text: 'INTELIGENSA', bold: true, color: '#1f4e8c', fontSize: 9 },
@@ -3929,8 +4165,8 @@ function SendSerial() {
       console.error("Error transformando PDF por serial:", err);
       doc.content = originalContent;
     }
-  }
-}
+                    }
+                }
             ]
           });
           $(newTable).resizableColumns();
@@ -4386,22 +4622,22 @@ function SendRazon() {
                     }
                 },
                 {
-  extend: 'pdfHtml5',
-  text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-  </svg>PDF`,
+                    extend: 'pdfHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+                    </svg>PDF`,
   
   filename: `REPORTE EMPRESA - RAZÓN SOCIAL ${slugRazon.toUpperCase()} ${new Date().toISOString().split('T')[0]}`,
-  className: 'btn-pdf-modern',
+                    className: 'btn-pdf-modern',
   attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
-  action: function(e, dt, button, config) {
-    showExportLoading();
-    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                    action: function(e, dt, button, config) {
+                        showExportLoading();
+                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
     const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
     setTimeout(hideExportLoading, delay);
-  },
-  exportOptions: {
-    columns: ':visible',
+                    },
+                    exportOptions: {
+                        columns: ':visible',
     format: { body: (data) => safeValue(data) }
   },
   customize: function(doc) {
@@ -4430,7 +4666,7 @@ function SendRazon() {
     };
 
     doc.header = function() {
-      return {
+                            return {
         margin: [40, 20, 40, 10],
         stack: [
           hasLogo
@@ -4454,8 +4690,8 @@ function SendRazon() {
       };
     };
 
-    doc.footer = function(currentPage, pageCount) {
-      return {
+                        doc.footer = function(currentPage, pageCount) {
+                            return {
         margin: [40, 20],
         columns: [
           hasLogo ? { image: 'logo_inteligensa', width: 55, opacity: 0.7 } : { text: 'INTELIGENSA', bold: true, color: '#1f4e8c', fontSize: 9 },
@@ -4550,8 +4786,8 @@ function SendRazon() {
       console.error("Error transformando PDF por razón social:", err);
       doc.content = originalContent;
     }
-  }
-}
+                    }
+                }
             ]
           });
           $("#rifCountTable").resizableColumns();
@@ -5297,7 +5533,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function abrirModalComponentes(boton) {
-
     /*const modalCerrarComponnets = document.getElementById('BotonCerrarModal');*/
     const ticketId = boton.dataset.idTicket;
     const serialPos = boton.dataset.serialPos;

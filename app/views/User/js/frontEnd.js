@@ -522,80 +522,80 @@ function GuardarUsuariosNew() {
 
   else { 
 
-  //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
+    //alert(nombre_usuario + apellido_usuario + iusuario + identificacion + correo + area_usuario + tipo_usuario + regionusers + id_nivel);
 
-  // Agregar datos al formData
-  const formData = new FormData();
-  formData.append("nombreuser", nombre_usuario);
-  formData.append("apellidouser", apellido_usuario);
-  //formData.append('tipodoc', tipo_doc);
-  //formData.append('coddocumento', documento);
-  formData.append("usuario", iusuario);
-  formData.append("email", correo);
-  formData.append("areausers", area_usuario);
-  formData.append("tipousers", tipo_usuario);
-  formData.append("regionusers", regionusers);
-  formData.append("identificacion", identificacion);
-  formData.append("id_user", id_user);
-  formData.append("id_nivel", id_nivel);
-  formData.append("action", "GuardarUsuarios");
+    // Agregar datos al formData
+    const formData = new FormData();
+    formData.append("nombreuser", nombre_usuario);
+    formData.append("apellidouser", apellido_usuario);
+    //formData.append('tipodoc', tipo_doc);
+    //formData.append('coddocumento', documento);
+    formData.append("usuario", iusuario);
+    formData.append("email", correo);
+    formData.append("areausers", area_usuario);
+    formData.append("tipousers", tipo_usuario);
+    formData.append("regionusers", regionusers);
+    formData.append("identificacion", identificacion);
+    formData.append("id_user", id_user);
+    formData.append("id_nivel", id_nivel);
+    formData.append("action", "GuardarUsuarios");
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/GuardarUsuarios`);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/GuardarUsuarios`);
 
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          Swal.fire({
-            icon: "success",
-            title: "Guardado exitoso",
-            text: response.message,
-            color: "black",
-            timer: 3500,
-            timerProgressBar: true,
-            didOpen: () => {
-              Swal.showLoading();
-            },
-            willClose: () => {
-              // setTimeout(() => {
-              location.reload();
-              //   }, 1000);
-            },
-          });
-          $("#miModal").css("display", "none");
-        } else {
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            Swal.fire({
+              icon: "success",
+              title: "Guardado exitoso",
+              text: response.message,
+              color: "black",
+              timer: 3500,
+              timerProgressBar: true,
+              didOpen: () => {
+                Swal.showLoading();
+              },
+              willClose: () => {
+                // setTimeout(() => {
+                location.reload();
+                //   }, 1000);
+              },
+            });
+            $("#miModal").css("display", "none");
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: response.message,
+              color: "black",
+            });
+          }
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+          console.log(xhr.responseText);
           Swal.fire({
             icon: "error",
-            title: "Error",
-            text: response.message,
+            title: "Error en el servidor",
+            text: "Ocurrió un error al procesar la respuesta del servidor.",
             color: "black",
           });
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        console.log(xhr.responseText);
+      } else {
+        console.error("Error:", xhr.status, xhr.statusText);
         Swal.fire({
           icon: "error",
-          title: "Error en el servidor",
-          text: "Ocurrió un error al procesar la respuesta del servidor.",
+          title: "Error de conexión",
+          text: "No se pudo conectar con el servidor.",
           color: "black",
         });
       }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      Swal.fire({
-        icon: "error",
-        title: "Error de conexión",
-        text: "No se pudo conectar con el servidor.",
-        color: "black",
-      });
-    }
-  };
-  xhr.send(formData);
+    };
+    xhr.send(formData);
+  }
 }
- }
 
 function VerUsuario(idusuario) {
   var infoDiv = document.getElementById("nivelEditar").value;

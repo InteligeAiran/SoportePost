@@ -17,9 +17,15 @@
   }
 
   .move-2500Dashboard {
-    margin-left: -69px !important;;
-    margin-bottom: 4% !important;;
-    width: 360% !important;;
+    margin-left: -69px !important;
+    margin-bottom: 4% !important;
+    width: 360% !important;
+  }
+
+  .New-8210Dashboard{
+    margin-left: -185%;
+    width: 487%;
+    margin-bottom: 24%;
   }
 }
 
