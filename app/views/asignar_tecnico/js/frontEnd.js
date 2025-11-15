@@ -2207,7 +2207,6 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 }
 
 // Ejecutar esto una vez al cargar la página o cuando se abre la vista del historial
-document.body.insertAdjacentHTML('beforeend', legendHTML);
 
 function showElapsedLegend(e) {
     try { if (e && e.stopPropagation) e.stopPropagation(); } catch (_) {}

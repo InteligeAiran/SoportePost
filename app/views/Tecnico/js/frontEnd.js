@@ -719,7 +719,7 @@ function getTicketData() {
                 Swal.fire({
                   icon: 'warning',
                   title: '¡Advertencia!',
-                  text: 'Tiene que revisar la domiciliación del cliente.',
+                  text: 'Debe revisar la domiciliación del cliente.',
                   confirmButtonText: 'Ok',
                   confirmButtonColor: '#003594',
                   color: 'black',
@@ -761,6 +761,11 @@ function getTicketData() {
             $("#close-button").off("click").on("click", function () {
               if (staticBackdropModalInstance) {
                 staticBackdropModalInstance.hide();
+                setTimeout(() => {
+                  if (actionSelectionModalInstance) {
+                    actionSelectionModalInstance.show();
+                  }
+                }, 300);
               }
             });
 
@@ -778,7 +783,7 @@ function getTicketData() {
                 Swal.fire({
                   icon: 'warning',
                   title: '¡Advertencia!',
-                  text: 'Antes de Devolver el equipo al Rosal, debe cargar al menos el ZOOM de envio.',
+                  text: 'Antes de Devolver el equipo al Rosal, debe cargar al menos el Documento de Envio.',
                   confirmButtonText: 'Ok',
                   confirmButtonColor: '#003594',
                   color: 'black',
@@ -797,6 +802,11 @@ function getTicketData() {
               $("#BttonCloseModalDevolucion").off("click").on("click", function () {
                 if (modaldevolucion) {
                   modaldevolucion.hide();
+                  setTimeout(() => {
+                    if (actionSelectionModalInstance) {
+                      actionSelectionModalInstance.show();
+                    }
+                  }, 300);
                 }
               });
 
@@ -1288,14 +1298,40 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     }
 
     uploadForm[0].reset();
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
     $('#imagePreview').attr('src', '#').hide();
+    $('#imagePreviewContainer').hide();
     $('#uploadMessage').removeClass('alert-success alert-danger').addClass('hidden').text('');
     $('#uploadDocumentModal .modal-title h5').html(`Subir Documento para Ticket: <span id="modalTicketId">${ticketId}</span>`);
+    
+    // Limpiar clases de validación del input y formulario
+    const documentFileInput = document.getElementById('documentFile');
+    const uploadFormElement = document.getElementById('uploadForm');
+    if (documentFileInput) {
+      documentFileInput.classList.remove('is-valid', 'is-invalid');
+    }
+    if (uploadFormElement) {
+      uploadFormElement.classList.remove('was-validated');
+    }
+    
+    // Mostrar el mensaje informativo
+    $('#fileFormatInfo').show();
+    
+    // Deshabilitar el botón de subir al abrir el modal
+    $('#uploadFileBtn').prop('disabled', true);
         
     $('#uploadForm').data('document-type', documentType);
     $('#uploadForm').data('nro_ticket', nro_ticket);
     $('#uploadForm').data('file-name', fileName);
     $('#uploadForm').data('ticket-id', ticketId);
+
+    // Configurar el listener para el input de archivo
+    if (documentFileInput) {
+      // Remover listener previo para evitar duplicados
+      documentFileInput.removeEventListener('change', handleFileSelectForUpload);
+      // Añadir el listener
+      documentFileInput.addEventListener('change', handleFileSelectForUpload);
+    }
 
     setTimeout(() => {
       uploadDocumentModal.show();
@@ -2440,16 +2476,9 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     }
 }
 
-// 5. Previsualización de la imagen
-$('#documentFile').on('change', function(event) {
-  const [file] = event.target.files;
-  const preview = $('#imagePreview');
-  if (file) {
-    preview.attr('src', URL.createObjectURL(file)).show();
-  } else {
-    preview.hide();
- }
-});
+// 5. Previsualización de la imagen - MANEJADA EN handleFileSelectForUpload
+// Este handler fue removido para evitar conflictos con la validación
+// La previsualización ahora se maneja en handleFileSelectForUpload junto con la validación
 
 // 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
 $(document).on('click', '#uploadFileBtn', function() {
@@ -2626,10 +2655,36 @@ function openUploadModal(ticketId, documentType) {
 
     // Limpiar el formulario y mensajes previos
     documentFileInput.value = ""; // Limpiar el input file
+    documentFileInput.classList.remove("is-valid", "is-invalid"); // Limpiar clases de validación
+    
+    const uploadForm = document.getElementById("uploadForm");
+    if (uploadForm) {
+      uploadForm.classList.remove("was-validated"); // Limpiar clase de validación del formulario
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
     imagePreview.style.display = "none"; // Ocultar previsualización
     imagePreview.src = "#"; // Restablecer la fuente de la imagen
-    uploadMessage.classList.add("hidden"); // Ocultar mensaje
-    uploadMessage.textContent = ""; // Limpiar texto del mensaje
+    const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+    if (imagePreviewContainer) {
+      imagePreviewContainer.style.display = "none";
+    }
+    // Verificar que uploadMessage existe antes de usarlo
+    if (uploadMessage) {
+        uploadMessage.classList.add("hidden"); // Ocultar mensaje
+        uploadMessage.textContent = ""; // Limpiar texto del mensaje
+    }
+    
+    // Mostrar el mensaje informativo
+    const fileFormatInfo = document.getElementById("fileFormatInfo");
+    if (fileFormatInfo) {
+      fileFormatInfo.style.display = "block";
+    }
+    
+    // Deshabilitar el botón de subir al abrir el modal
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = true;
+    }
 
     // Establecer el ID del ticket en el modal
     modalTicketIdSpan.textContent = ticketId;
@@ -2656,51 +2711,354 @@ function openUploadModal(ticketId, documentType) {
   }
 }
 
-/*function handleFileSelectForUpload(event) {
-  const file = event.target.files[0];
+function handleFileSelectForUpload(event) {
+  const input = event.target;
+  const file = input.files[0];
   const imagePreview = document.getElementById("imagePreview");
   const uploadMessage = document.getElementById("uploadMessage");
+  const uploadFileBtn = document.getElementById("uploadFileBtn");
+  const fileFormatInfo = document.getElementById("fileFormatInfo");
+  const uploadForm = document.getElementById("uploadForm");
 
-  imagePreview.style.display = "none";
-  uploadMessage.classList.add("hidden");
-  uploadMessage.textContent = "";
-
-  if (file) {
-    const fileType = file.type;
-    if (fileType.startsWith("image/") || fileType === "application/pdf") {
-      if (fileType.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          imagePreview.src = e.target.result;
-          imagePreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      } else if (fileType === "application/pdf") {
-        // Para PDFs, no hay previsualización de imagen directa
-        imagePreview.style.display = "none";
-        uploadMessage.textContent =
-          "PDF seleccionado. No se muestra previsualización.";
-        uploadMessage.classList.remove("hidden");
-      }
-    } else {
-      uploadMessage.textContent =
-        "Tipo de archivo no permitido. Seleccione una imagen o un PDF.";
-      uploadMessage.classList.remove("hidden");
-      event.target.value = ""; // Limpiar el input file
-      imagePreview.style.display = "none";
-    }
+  // Limpiar estados previos
+  input.classList.remove("is-valid", "is-invalid");
+  if (uploadForm) {
+    uploadForm.classList.remove("was-validated");
   }
-}*/
-
-async function handleUploadButtonClick(ticketId, documentType, uploadModalBootstrap, ticketNumber) {
-    const id_user = document.getElementById("userId").value;
-    const documentFileInput = document.getElementById("documentFile");
-    const uploadMessage = document.getElementById("uploadMessage");
-    const file = documentFileInput.files[0];
-
-    // Clear previous messages and check for file
+  
+  // Restaurar visibilidad de los mensajes de feedback de Bootstrap
+  const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+  const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+  if (validFeedback) {
+    validFeedback.style.display = '';
+  }
+  if (invalidFeedback) {
+    invalidFeedback.style.display = '';
+  }
+  
+  // Mostrar el mensaje informativo cuando no hay validación (se ocultará después si hay archivo)
+  if (fileFormatInfo) {
+    fileFormatInfo.style.display = "block";
+    fileFormatInfo.style.visibility = "visible";
+  }
+  
+  // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+  if (imagePreview) {
+    imagePreview.style.display = "none";
+    imagePreview.src = "#";
+  }
+  // Verificar que uploadMessage existe antes de usarlo
+  if (uploadMessage) {
     uploadMessage.classList.add("hidden");
     uploadMessage.textContent = "";
+  }
+
+  if (!file) {
+    // Si no hay archivo, deshabilitar el botón
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = true;
+    }
+    return;
+  }
+
+  // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
+  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf"];
+  const validMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "application/pdf"];
+  
+  const fileName = file.name.toLowerCase();
+  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+  
+  // Validar por extensión (más confiable) - DEBE estar en la lista
+  const isValidExtension = validExtensions.includes(fileExtension);
+  
+  // Si hay MIME type, también debe ser válido
+  const hasMimeType = file.type && file.type.trim() !== "";
+  const isValidMimeType = hasMimeType ? validMimeTypes.includes(file.type) : true;
+  
+  // El archivo es válido SOLO si la extensión es válida
+  // Si no hay extensión válida, el archivo es inválido independientemente del MIME type
+  const isValid = isValidExtension && (isValidMimeType || !hasMimeType);
+
+  // Agregar clase was-validated al formulario para que Bootstrap muestre los mensajes
+  // Esto es necesario para que Bootstrap muestre los estilos de validación (borde rojo/verde e íconos)
+  if (uploadForm) {
+    uploadForm.classList.add("was-validated");
+  }
+
+  if (isValid) {
+    // ARCHIVO VÁLIDO
+    // Primero remover is-invalid para asegurar que no haya conflicto
+    input.classList.remove("is-invalid");
+    
+    // Remover el background-image rojo (ícono de X) que Bootstrap aplica con is-invalid
+    input.style.removeProperty("background-image");
+    input.style.removeProperty("background-position");
+    input.style.removeProperty("background-repeat");
+    input.style.removeProperty("background-size");
+    input.style.removeProperty("padding-right");
+    
+    // Limpiar estilos inline que puedan interferir
+    input.style.removeProperty("border-color");
+    input.style.removeProperty("box-shadow");
+    
+    // Luego agregar is-valid - Bootstrap aplicará automáticamente el ícono verde (checkmark)
+    input.classList.add("is-valid");
+    
+    // OCULTAR COMPLETAMENTE el mensaje inválido y su ícono rojo
+    const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+    if (invalidFeedback) {
+      invalidFeedback.style.setProperty("display", "none", "important");
+      invalidFeedback.style.setProperty("visibility", "hidden", "important");
+      invalidFeedback.style.setProperty("opacity", "0", "important");
+      invalidFeedback.style.setProperty("height", "0", "important");
+      invalidFeedback.style.setProperty("margin", "0", "important");
+      invalidFeedback.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para forzar la ocultación
+    if (typeof $ !== 'undefined') {
+      $('.invalid-feedback').hide();
+    }
+    
+    // MOSTRAR el mensaje válido y su ícono verde
+    const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+    if (validFeedback) {
+      validFeedback.style.setProperty("display", "block", "important");
+      validFeedback.style.setProperty("visibility", "visible", "important");
+      validFeedback.style.setProperty("opacity", "1", "important");
+      validFeedback.style.removeProperty("height");
+      validFeedback.style.removeProperty("margin");
+      validFeedback.style.removeProperty("padding");
+    }
+    // También usar jQuery para forzar la visualización
+    if (typeof $ !== 'undefined') {
+      $('.valid-feedback').show();
+    }
+    
+    // OCULTAR el mensaje informativo cuando hay validación activa (archivo válido)
+    if (fileFormatInfo) {
+      fileFormatInfo.style.setProperty("display", "none", "important");
+      fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+      fileFormatInfo.style.setProperty("opacity", "0", "important");
+      fileFormatInfo.style.setProperty("height", "0", "important");
+      fileFormatInfo.style.setProperty("margin", "0", "important");
+      fileFormatInfo.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para asegurar que se oculte
+    if (typeof $ !== 'undefined') {
+      $('#fileFormatInfo').hide();
+    }
+    
+    // Habilitar el botón de subir
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = false;
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    if (imagePreview) {
+      imagePreview.style.display = "none";
+      imagePreview.src = "#";
+    }
+  } else {
+    // ARCHIVO INVÁLIDO
+    // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
+    input.classList.remove("is-valid");
+    
+    // Remover el background-image verde (ícono de checkmark) que Bootstrap aplica con is-valid
+    input.style.removeProperty("background-image");
+    input.style.removeProperty("background-position");
+    input.style.removeProperty("background-repeat");
+    input.style.removeProperty("background-size");
+    input.style.removeProperty("padding-right");
+    
+    // Remover cualquier estilo inline que pueda interferir
+    input.style.removeProperty("border-color");
+    input.style.removeProperty("box-shadow");
+    input.style.removeProperty("border");
+    
+    // SEGUNDO: Agregar is-invalid - Bootstrap aplicará automáticamente el borde rojo y el ícono rojo (X)
+    input.classList.add("is-invalid");
+    
+    // Asegurar que el formulario tenga was-validated (ya se agregó arriba, pero lo verificamos)
+    if (uploadForm && !uploadForm.classList.contains("was-validated")) {
+      uploadForm.classList.add("was-validated");
+    }
+    
+    // Forzar el ícono rojo (X) y el borde rojo de Bootstrap
+    // Bootstrap usa background-image con un SVG para el ícono de error
+    // SVG del ícono de error de Bootstrap (X roja)
+    const invalidIconSvg = "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e\")";
+    
+    // Aplicar estilos para el ícono rojo inmediatamente
+    input.style.setProperty("background-image", invalidIconSvg, "important");
+    input.style.setProperty("background-repeat", "no-repeat", "important");
+    input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+    input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+    input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+    
+    // Forzar el borde rojo de Bootstrap usando CSS inline como respaldo
+    // Bootstrap usa border-color: #dc3545 para is-invalid
+    // También usar setTimeout para asegurar que se ejecute después del reflow del DOM
+    setTimeout(() => {
+      // Verificar y forzar que NO tenga is-valid (muy importante)
+      if (input.classList.contains("is-valid")) {
+        input.classList.remove("is-valid");
+      }
+      // Verificar y forzar la clase is-invalid si no está presente
+      if (!input.classList.contains("is-invalid")) {
+        input.classList.add("is-invalid");
+      }
+      
+      // Forzar nuevamente el ícono rojo
+      input.style.setProperty("background-image", invalidIconSvg, "important");
+      input.style.setProperty("background-repeat", "no-repeat", "important");
+      input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+      input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+      input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+      
+      // Aplicar borde rojo directamente si Bootstrap no lo hace
+      const computedStyle = window.getComputedStyle(input);
+      if (computedStyle.borderColor !== 'rgb(220, 53, 69)' && computedStyle.borderColor !== '#dc3545') {
+        input.style.setProperty("border-color", "#dc3545", "important");
+        input.style.setProperty("box-shadow", "0 0 0 0.2rem rgba(220, 53, 69, 0.25)", "important");
+      }
+    }, 50);
+    
+    // También ejecutar después de un pequeño delay adicional para asegurar
+    setTimeout(() => {
+      // Forzar nuevamente que NO tenga is-valid
+      input.classList.remove("is-valid");
+      // Forzar que SÍ tenga is-invalid
+      if (!input.classList.contains("is-invalid")) {
+        input.classList.add("is-invalid");
+      }
+      // Forzar nuevamente el ícono rojo
+      input.style.setProperty("background-image", invalidIconSvg, "important");
+      input.style.setProperty("background-repeat", "no-repeat", "important");
+      input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+      input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+      input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+    }, 100);
+    
+    // OCULTAR COMPLETAMENTE el mensaje válido y su ícono verde
+    const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+    if (validFeedback) {
+      validFeedback.style.setProperty("display", "none", "important");
+      validFeedback.style.setProperty("visibility", "hidden", "important");
+      validFeedback.style.setProperty("opacity", "0", "important");
+      validFeedback.style.setProperty("height", "0", "important");
+      validFeedback.style.setProperty("margin", "0", "important");
+      validFeedback.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para forzar la ocultación
+    if (typeof $ !== 'undefined') {
+      $('.valid-feedback').hide();
+    }
+    
+    // MOSTRAR el mensaje inválido y su ícono rojo
+    const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+    if (invalidFeedback) {
+      invalidFeedback.style.setProperty("display", "block", "important");
+      invalidFeedback.style.setProperty("visibility", "visible", "important");
+      invalidFeedback.style.setProperty("opacity", "1", "important");
+      invalidFeedback.style.removeProperty("height");
+      invalidFeedback.style.removeProperty("margin");
+      invalidFeedback.style.removeProperty("padding");
+    }
+    // También usar jQuery para forzar la visualización
+    if (typeof $ !== 'undefined') {
+      $('.invalid-feedback').show();
+    }
+    
+    // OCULTAR el mensaje informativo cuando hay validación activa (archivo inválido)
+    if (fileFormatInfo) {
+      fileFormatInfo.style.setProperty("display", "none", "important");
+      fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+      fileFormatInfo.style.setProperty("opacity", "0", "important");
+      fileFormatInfo.style.setProperty("height", "0", "important");
+      fileFormatInfo.style.setProperty("margin", "0", "important");
+      fileFormatInfo.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para asegurar que se oculte
+    if (typeof $ !== 'undefined') {
+      $('#fileFormatInfo').hide();
+    }
+    
+    // Deshabilitar el botón de subir
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = true;
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    if (imagePreview) {
+      imagePreview.style.display = "none";
+      imagePreview.src = "#";
+    }
+    
+    // Limpiar el input después de 6 segundos (aumentado de 3 a 6 segundos)
+    setTimeout(() => {
+      input.value = "";
+      input.classList.remove("is-invalid");
+      input.style.borderColor = "";
+      input.style.boxShadow = "";
+      if (uploadForm) {
+        uploadForm.classList.remove("was-validated");
+      }
+      // Mostrar nuevamente el mensaje informativo
+      if (fileFormatInfo) {
+        fileFormatInfo.style.removeProperty("display");
+        fileFormatInfo.style.removeProperty("visibility");
+        fileFormatInfo.style.removeProperty("opacity");
+        fileFormatInfo.style.removeProperty("height");
+        fileFormatInfo.style.removeProperty("margin");
+        fileFormatInfo.style.removeProperty("padding");
+      }
+      // También usar jQuery para asegurar que se muestre
+      if (typeof $ !== 'undefined') {
+        $('#fileFormatInfo').show();
+      }
+      // Restaurar visibilidad de los mensajes de feedback
+      const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+      const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+      if (validFeedback) {
+        validFeedback.style.display = '';
+        validFeedback.style.visibility = '';
+      }
+      if (invalidFeedback) {
+        invalidFeedback.style.display = '';
+        invalidFeedback.style.visibility = '';
+      }
+    }, 6000); // Aumentado de 3000ms a 6000ms (6 segundos)
+  }
+}
+
+async function handleUploadButtonClick(ticketId, documentType, uploadModalBootstrap, ticketNumber) {
+    const id_user = document.getElementById("userId");
+    if (!id_user) {
+        console.error("Elemento userId no encontrado");
+        return;
+    }
+    
+    const documentFileInput = document.getElementById("documentFile");
+    if (!documentFileInput) {
+        console.error("Elemento documentFile no encontrado");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo encontrar el campo de archivo.',
+            confirmButtonText: 'Ok',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+    
+    const uploadMessage = document.getElementById("uploadMessage");
+    // El elemento uploadMessage puede no existir, así que verificamos antes de usarlo
+    if (uploadMessage) {
+        uploadMessage.classList.add("hidden");
+        uploadMessage.textContent = "";
+    }
+    
+    const file = documentFileInput.files[0];
 
     if (!file) {
         Swal.fire({
@@ -2723,7 +3081,7 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
     
     // 2. Append the file object directly. Do NOT use encodeURIComponent().
     formData.append("document_file", file); 
-    formData.append("id_user", id_user);
+    formData.append("id_user", id_user.value);
 
     const xhr = new XMLHttpRequest();
     const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentTec`;
