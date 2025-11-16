@@ -2669,9 +2669,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const buttonCerrarModal = document.getElementById("CancelarFecha");
 
+  // Función para resetear el select a su estado original
+  function resetModalNewStatusSelect() {
+    if (modalNewStatusSelect) {
+      // Resetear el select a su estado original (opción vacía/placeholder)
+      modalNewStatusSelect.selectedIndex = 0; // Seleccionar la primera opción (Seleccione)
+      modalNewStatusSelect.value = ""; // Asegurar que el valor esté vacío
+      
+      // Remover cualquier atributo de validación que pueda tener
+      modalNewStatusSelect.classList.remove("is-valid", "is-invalid");
+      
+      // Restaurar el estilo original si fue modificado
+      modalNewStatusSelect.style.color = "";
+    }
+  }
+
   if (buttonCerrarModal) {
     buttonCerrarModal.addEventListener("click", function () {
       rescheduleModal.hide(); // Oculta el modal de renovación
+      // Resetear el select cuando se cierra el modal
+      resetModalNewStatusSelect();
+    });
+  }
+
+  // También escuchar el evento de cierre del modal (por si se cierra de otra forma: ESC, clic fuera, etc.)
+  const rescheduleModalElement = document.getElementById("rescheduleModal");
+  if (rescheduleModalElement) {
+    rescheduleModalElement.addEventListener("hidden.bs.modal", function () {
+      // Resetear el select cuando el modal se oculta completamente
+      resetModalNewStatusSelect();
     });
   }
 

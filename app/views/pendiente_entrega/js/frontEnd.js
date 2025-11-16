@@ -2484,8 +2484,6 @@ $(document).ready(function () {
       $("#htmlTemplateTicketId").val(idTicket);
 
 
-
-
       // Rellena el modal con los datos del ticket
       if ($modalTicketIdSpan.length) 
         $modalTicketIdSpan.text(nroTicket);
@@ -2561,7 +2559,7 @@ $(document).ready(function () {
         return;
       }
 
-      showMessage("Subiendo documento...", "info");
+      //showMessage("Subiendo documento...", "info");
 
       const formData = new FormData();
       formData.append("nro_ticket", nro_ticket);
