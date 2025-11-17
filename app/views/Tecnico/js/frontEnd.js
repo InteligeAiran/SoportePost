@@ -307,6 +307,7 @@ function getTicketData() {
               <button class="btn btn-sm btn-wrench-custom"
                   data-bs-toggle="tooltip" data-bs-placement="top"
                   title="Enviar a Taller"
+                  data-rechazado="${ticket.has_rejected_document}"
                   data-ticket-id="${ticket.id_ticket}"
                   data-nro_ticket="${ticket.nro_ticket}"
                   data-id_document="${ticket.id_status_payment}"
@@ -638,6 +639,39 @@ function getTicketData() {
                 const pdfConvenioUrl = $(this).data("url_convenio") || "";
                 const serialPos = $(this).data("serial_pos") || "No disponible";
                 const estado = $(this).data("estado");
+                const rechazado = $(this).data("rechazado");
+
+                if (rechazado === true || rechazado === "t") {
+                  Swal.fire({
+                    icon: 'warning',
+                    iconColor: '#ff9800',
+                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Advertencia!</span>',
+                    html: `
+                      <div style="text-align: left; padding: 10px 0;">
+                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                          El ticket <strong style="color: #003594;">#${nroTicket}</strong> tiene <strong style="color: #dc3545;">documentos rechazados</strong>.
+                        </p>
+                        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                            <strong>⚠️ Acción requerida:</strong><br>
+                            Por favor, verifique los documentos antes de enviarlo a taller o cargue uno nuevo para su pronta revisión.
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                    width: '600px',
+                    padding: '2em',
+                    customClass: {
+                      popup: 'swal2-popup-custom',
+                      title: 'swal2-title-custom',
+                      htmlContainer: 'swal2-html-container-custom'
+                    }
+                  });
+                  return;
+                }
 
                 currentTicketId = ticketId;
                 currentnroTicket = nroTicket;
