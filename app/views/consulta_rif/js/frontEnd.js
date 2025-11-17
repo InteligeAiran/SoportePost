@@ -9,6 +9,24 @@ let garantiaAlertShown = false;
 let emailQueue = []; // Cola para almacenar las solicitudes de correo
 let isProcessing = false; // Indicador de si se está procesando una solicitud
 
+function showLoadingOverlay(message = "Procesando...") {
+  const overlay = document.getElementById("loadingOverlay");
+  const messageEl = document.getElementById("loadingOverlayMessage");
+  if (!overlay) return;
+  overlay.style.display = "flex";
+  if (messageEl) {
+    messageEl.textContent = message;
+  }
+  document.body.classList.add("loading-overlay-open");
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById("loadingOverlay");
+  if (!overlay) return;
+  overlay.style.display = "none";
+  document.body.classList.remove("loading-overlay-open");
+}
+
 // FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
 function restoreCoordinacionState() {
   const select = document.getElementById("AsiganrCoordinador");
@@ -5175,6 +5193,53 @@ modalComponentesEl.addEventListener('show.bs.modal', function () {
   // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
   document.getElementById('selectAllComponents').checked = false;
   contadorComponentes.textContent = '0';
+  
+  // OCULTAR EL NAVBAR/SIDEBAR PARA EVITAR QUE EL USUARIO SALGA DEL PROCESO
+  const sidenavMain = document.getElementById('sidenav-main');
+  if (sidenavMain) {
+    sidenavMain.style.display = 'none';
+    sidenavMain.style.visibility = 'hidden';
+    sidenavMain.style.opacity = '0';
+    sidenavMain.style.width = '0';
+    sidenavMain.style.transition = 'all 0.3s ease';
+  }
+  
+  // También ocultar el botón de toggle del navbar en móviles
+  const filterToggle = document.getElementById('filter-toggle');
+  if (filterToggle) {
+    filterToggle.style.display = 'none';
+  }
+  
+  // Ajustar el contenido principal para que ocupe todo el ancho
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) {
+    mainContent.style.marginLeft = '0';
+    mainContent.style.transition = 'margin-left 0.3s ease';
+  }
+});
+
+// Escuchar el evento 'hidden.bs.modal' para restaurar el navbar cuando se cierre el modal
+modalComponentesEl.addEventListener('hidden.bs.modal', function () {
+  // MOSTRAR EL NAVBAR/SIDEBAR NUEVAMENTE
+  const sidenavMain = document.getElementById('sidenav-main');
+  if (sidenavMain) {
+    sidenavMain.style.display = '';
+    sidenavMain.style.visibility = '';
+    sidenavMain.style.opacity = '';
+    sidenavMain.style.width = '';
+  }
+  
+  // Mostrar el botón de toggle del navbar en móviles
+  const filterToggle = document.getElementById('filter-toggle');
+  if (filterToggle) {
+    filterToggle.style.display = '';
+  }
+  
+  // Restaurar el margen del contenido principal
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) {
+    mainContent.style.marginLeft = '';
+  }
 });
 
 // Función para actualizar el contador de componentes seleccionados
@@ -5248,7 +5313,9 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                                           ticketId;
                                     
                                     // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
+                                    const emailToastDuration = 4000;
                                     setTimeout(() => {
+                                        showLoadingOverlay("Enviando correo...");
                                         Swal.fire({
                                             icon: "success",
                                             title: "Correo Enviado",
@@ -5259,23 +5326,31 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                             toast: true,
                                             position: 'top-end',
                                             color: 'black',
-                                            timer: 5000, // Se cierra automáticamente en 5 segundos
+                                            timer: emailToastDuration, // Se cierra automáticamente en 5 segundos
                                             timerProgressBar: true
                                         });
+                                        setTimeout(() => {
+                                            hideLoadingOverlay();
+                                            window.location.reload();
+                                        }, emailToastDuration + 200);
                                     }, 500); // Delay de 500ms para que aparezca después del modal principal
                                 } else {
                                     console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
+                                    hideLoadingOverlay();
                                 }
                             } catch (error) {
                                 console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
+                                hideLoadingOverlay();
                             }
                         } else {
                             console.error("❌ Error al solicitar el envío de correo (Nivel 2):", xhrEmail.status);
+                            hideLoadingOverlay();
                         }
                     };
 
                     xhrEmail.onerror = function () {
                         console.error("Error de red al solicitar el envío de correo.");
+                        hideLoadingOverlay();
                     };
                     const paramsEmail = `id_user=${encodeURIComponent(id_user)}`; // Asegúrate de enviar el ID del usuario para el correo
                     xhrEmail.send(paramsEmail); // No necesitas enviar datos adicionales si tu backend ya tiene la información
@@ -5296,16 +5371,18 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                         title: '¡Éxito!',
                         html: `Los componentes del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
                         icon: 'success',
-                        confirmButtonText: 'Aceptar',
+                        showConfirmButton: false,
                         color: 'black',
-                        confirmButtonColor: '#003594',
                         allowOutsideClick: false,
                         allowEscapeKey: false,
-                        keydownListenerCapture: true
+                        keydownListenerCapture: true,
+                        timer: 3000, // Se cierra automáticamente en 3 segundos
+                        timerProgressBar: true
                     }).then(() => {
                         modalComponentes.hide();
                         // Mostrar toast después de cerrar el modal - SOLO PARA COMPONENTES
                         setTimeout(() => {
+                            showLoadingOverlay("Mostrando notificaciones...");
                             Swal.fire({
                                 icon: "success",
                                 title: "✅ Componentes Agregados",
@@ -5316,7 +5393,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                 toast: true,
                                 position: 'top-end',
                                 color: 'black',
-                                timer: 4000, // Se cierra automáticamente en 4 segundos
+                                timer: 3000, // Se cierra automáticamente en 4 segundos
                                 timerProgressBar: true
                             });
                         }, 500); // Delay de 500ms después de cerrar el modal
@@ -5426,6 +5503,10 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 
                     // Finalmente, muestra el modal de Bootstrap
                     modalComponentes.show();
+                    const navbar = document.getElementById("sidenav-main");
+                    if (navbar) {
+                      navbar.style.display = "none";
+                    }
 
                     // Llama a actualizar contador después de cargar los componentes
                     actualizarContador();
@@ -5497,7 +5578,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (selectedComponents.length === 0) {
                 Swal.fire({
                     title: 'Atención',
-                    text: 'Debes seleccionar al menos un componente nuevo para guardar.',
+                    text: 'Debes seleccionar al menos un componente nuevo para guardar. Si el usuario no tiene accesorios, selecciona al menos el componente "Equipo".',
                     icon: 'warning',
                     confirmButtonText: 'Ok',
                     color: 'black',

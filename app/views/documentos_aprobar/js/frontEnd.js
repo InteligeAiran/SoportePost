@@ -1011,7 +1011,7 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     }
     
     // Deshabilitar el botón de subir al abrir el modal
-    uploadFileBtn.disabled = true;
+            uploadFileBtn.disabled = true;
     
     // Restaurar visibilidad de los mensajes de feedback
     if (documentFileInput && documentFileInput.parentElement) {
@@ -1767,8 +1767,8 @@ $(document).ready(function () {
       if (imagePreview) {
         imagePreview.style.display = "none";
         imagePreview.src = "#";
-      }
-    } else {
+        }
+      } else {
       // ARCHIVO INVÁLIDO
       // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
       input.classList.remove("is-valid");
@@ -2005,8 +2005,8 @@ $(document).ready(function () {
 
             // Clear previous messages and check for file
             if (uploadMessage) {
-                uploadMessage.classList.add("hidden");
-                uploadMessage.textContent = "";
+            uploadMessage.classList.add("hidden");
+            uploadMessage.textContent = "";
             }
 
       if (!file) {

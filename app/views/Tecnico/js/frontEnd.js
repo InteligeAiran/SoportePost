@@ -2671,8 +2671,8 @@ function openUploadModal(ticketId, documentType) {
     }
     // Verificar que uploadMessage existe antes de usarlo
     if (uploadMessage) {
-        uploadMessage.classList.add("hidden"); // Ocultar mensaje
-        uploadMessage.textContent = ""; // Limpiar texto del mensaje
+    uploadMessage.classList.add("hidden"); // Ocultar mensaje
+    uploadMessage.textContent = ""; // Limpiar texto del mensaje
     }
     
     // Mostrar el mensaje informativo
@@ -2744,13 +2744,13 @@ function handleFileSelectForUpload(event) {
   
   // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
   if (imagePreview) {
-    imagePreview.style.display = "none";
+  imagePreview.style.display = "none";
     imagePreview.src = "#";
   }
   // Verificar que uploadMessage existe antes de usarlo
   if (uploadMessage) {
-    uploadMessage.classList.add("hidden");
-    uploadMessage.textContent = "";
+  uploadMessage.classList.add("hidden");
+  uploadMessage.textContent = "";
   }
 
   if (!file) {
@@ -2855,10 +2855,10 @@ function handleFileSelectForUpload(event) {
     
     // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
     if (imagePreview) {
-      imagePreview.style.display = "none";
+        imagePreview.style.display = "none";
       imagePreview.src = "#";
-    }
-  } else {
+      }
+    } else {
     // ARCHIVO INVÁLIDO
     // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
     input.classList.remove("is-valid");
@@ -3054,8 +3054,8 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
     const uploadMessage = document.getElementById("uploadMessage");
     // El elemento uploadMessage puede no existir, así que verificamos antes de usarlo
     if (uploadMessage) {
-        uploadMessage.classList.add("hidden");
-        uploadMessage.textContent = "";
+    uploadMessage.classList.add("hidden");
+    uploadMessage.textContent = "";
     }
     
     const file = documentFileInput.files[0];

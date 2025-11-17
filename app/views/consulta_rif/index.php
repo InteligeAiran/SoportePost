@@ -271,6 +271,83 @@ function mi_navbar() {}
                 text-overflow: clip;
             }
 
+            .components-warning {
+                background: linear-gradient(9deg, #3F51B5 9%, /* Azul Índigo (Transición al frío) */ #81D4FA 101% /* Azul Claro (Final) */);
+                color: #ffffff;
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 12px 30px rgba(255, 95, 109, 0.25);
+                padding: 14px 20px;
+                font-size: 0.95rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .components-warning .icon-circle {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+            }
+
+            .components-warning .highlight {
+                background: rgba(255, 255, 255, 0.9);
+                color: red;
+                border-radius: 999px;
+                font-weight: 700;
+                padding: 4px 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .loading-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(7, 11, 30, 0.55);
+                backdrop-filter: blur(4px);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 1040;
+            }
+
+            .loading-overlay-open {
+                overflow: hidden;
+            }
+
+            .loading-card {
+                background: rgba(17, 25, 40, 0.9);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-radius: 20px;
+                padding: 28px 36px;
+                text-align: center;
+                color: #ffffff;
+                box-shadow: 0 20px 60px rgba(2, 12, 33, 0.45);
+                min-width: 260px;
+            }
+
+            .loading-spinner {
+                width: 58px;
+                height: 58px;
+                border-radius: 50%;
+                border: 4px solid rgba(255, 255, 255, 0.2);
+                border-top-color: #00d2ff;
+                animation: loading-spin 0.9s linear infinite;
+                margin: 0 auto;
+            }
+
+            @keyframes loading-spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
             #btnGuardarComponentes{
                 color: white;
                 background-color: #003594;
@@ -602,6 +679,19 @@ function mi_navbar() {}
                                             <i class="bi bi-info-circle me-2"></i>
                                             Selecciona los componentes que deseas cargar para este dispositivo.
                                         </div>
+                                        <div class="components-warning" role="alert">
+                                            <div class="d-flex align-items-center flex-wrap w-100">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <span class="icon-circle me-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16">
+                                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
+                                                        </svg>
+                                                    </span>
+                                                    <span class="fw-semibold">Si el Dispositivo no dispone de componentes adicionales, selecciona al menos la opción</span>
+                                                </div>
+                                                <span class="highlight ms-auto mt-2 mt-md-0">Equipo</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -626,7 +716,7 @@ function mi_navbar() {}
                                 
                                 <div class="row mt-3">
                                     <div class="col-12">
-                                        <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex justify-content-between align-items-center" style="margin-top: -3%;">
                                             <div>
                                                 <span class="text-muted">Componentes seleccionados: </span>
                                                 <span id="contadorComponentes" class="badge bg-primary">0</span>
@@ -832,7 +922,16 @@ function mi_navbar() {}
             </div>
         <!--END MODAL FALLA NIVEL 1-->
 
-        </div>
+        <!-- Loading Overlay -->
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="loading-card">
+                    <div class="loading-spinner"></div>
+                    <p id="loadingOverlayMessage" class="mt-3 mb-0">Procesando notificaciones...</p>
+                </div>
+            </div>
+        <!-- End Loading Overlay -->
+
+    </div>
         <!-- Github buttons -->
         <!--JQUERY-->
 
