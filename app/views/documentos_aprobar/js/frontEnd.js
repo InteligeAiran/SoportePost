@@ -326,7 +326,6 @@ function getTicketAprovalDocument() {
                                 const motivoRechazo = row.motivo_rechazo;
                                 const uploadedAt = row.uploaded_at;
                                 const idMotivoRechazo = row.id_motivo_rechazo;
-                                const rechazado = row.documento_rechazado;
                                 
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
                                 
@@ -348,7 +347,7 @@ function getTicketAprovalDocument() {
                                             data-motivo-rechazo="${motivoRechazo || ''}"
                                             data-uploaded-at="${uploadedAt || ''}"
                                             data-id-motivo-rechazo="${idMotivoRechazo || ''}"
-                                            data-rechazado="${rechazado || ''}"
+                                            data-rechazado="${isRejected ? 'true' : 'false'}"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#visualizarImagenModal" 
                                             title="Visualizar Imágenes">
@@ -718,7 +717,7 @@ function getTicketAprovalDocument() {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
                             const serialPos = $(this).data("serial-pos");
-                            const documentoRechazado = $(this).data("rechazado");
+                            const documentoRechazado = $(this).data("rechazado") === true || $(this).data("rechazado") === 'true';
                             
                             const envioValor = $(this).data("envio");
                             const exoValor = $(this).data("exoneracion");
@@ -743,7 +742,7 @@ function getTicketAprovalDocument() {
                             const VizualizarImage = document.getElementById('visualizarImagenModal');
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
                             VizualizarImage.setAttribute('data-serial-pos', serialPos);
-                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado);
+                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado ? 'true' : 'false');
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -791,6 +790,7 @@ function getTicketAprovalDocument() {
                             } else if (pagoValor === 'Sí') {
                                 PagoInputModal.checked = true;
                             }
+
 
                             visualizarImagenModal.show();
                         });
@@ -1230,7 +1230,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
         const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
-        const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado'); // AGREGAR ESTA LÍNEA
+        const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado') === 'true';
 
         if (!selectedOption) {
             Swal.fire({
@@ -1243,6 +1243,9 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             return;
         }
+
+        const BotonRechazo = document.getElementById('RechazoDocumento');
+        BotonRechazo.style.display = documentoRechazado ? 'none' : 'block';
 
         // Llamar a la API usando XMLHttpRequest
         const xhr = new XMLHttpRequest();
