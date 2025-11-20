@@ -915,10 +915,6 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", async () => {
   //console.log(`🌟 INICIANDO SISTEMA DE CARGA SECUENCIAL DE MÓDULOS`);
   
-  // Mostrar overlay de carga
-  showLoadingOverlay();
-  //console.log(`📱 Modal de carga mostrado`);
-  
   // Iniciar progreso automático
   startLoadingProgress();
   //console.log(`⚡ Progreso automático iniciado`);

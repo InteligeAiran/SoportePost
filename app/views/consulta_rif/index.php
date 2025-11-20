@@ -306,48 +306,6 @@ function mi_navbar() {}
                 letter-spacing: 0.5px;
             }
 
-            .loading-overlay {
-                position: fixed;
-                inset: 0;
-                background: rgba(7, 11, 30, 0.55);
-                backdrop-filter: blur(4px);
-                display: none;
-                align-items: center;
-                justify-content: center;
-                z-index: 1040;
-            }
-
-            .loading-overlay-open {
-                overflow: hidden;
-            }
-
-            .loading-card {
-                background: rgba(17, 25, 40, 0.9);
-                border: 1px solid rgba(255, 255, 255, 0.15);
-                border-radius: 20px;
-                padding: 28px 36px;
-                text-align: center;
-                color: #ffffff;
-                box-shadow: 0 20px 60px rgba(2, 12, 33, 0.45);
-                min-width: 260px;
-            }
-
-            .loading-spinner {
-                width: 58px;
-                height: 58px;
-                border-radius: 50%;
-                border: 4px solid rgba(255, 255, 255, 0.2);
-                border-top-color: #00d2ff;
-                animation: loading-spin 0.9s linear infinite;
-                margin: 0 auto;
-            }
-
-            @keyframes loading-spin {
-                to {
-                    transform: rotate(360deg);
-                }
-            }
-
             #btnGuardarComponentes{
                 color: white;
                 background-color: #003594;
@@ -921,15 +879,6 @@ function mi_navbar() {}
                 </div>
             </div>
         <!--END MODAL FALLA NIVEL 1-->
-
-        <!-- Loading Overlay -->
-            <div id="loadingOverlay" class="loading-overlay">
-                <div class="loading-card">
-                    <div class="loading-spinner"></div>
-                    <p id="loadingOverlayMessage" class="mt-3 mb-0">Procesando notificaciones...</p>
-                </div>
-            </div>
-        <!-- End Loading Overlay -->
 
     </div>
         <!-- Github buttons -->

@@ -45,19 +45,6 @@ function mi_navbar() {}
         <?php require_once 'app/core/components/navbar/index.php';
         mi_navbar(); ?>
         <div class="min-height-300 bg-dark position-absolute w-100"></div>
-        <!-- Loading Overlay -->
-            <div id="dashboard-loading-overlay" class="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                <div class="loading-container" style="text-align: center;">
-                    <div class="loading-spinner" style="width: 80px; height: 80px; border: 6px solid #f3f3f3; border-top: 6px solid #003594; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-                    <h4 style="color: #003594; margin-bottom: 10px; font-weight: 600;">Cargando Dashboard</h4>
-                    <p style="color: #666; margin-bottom: 0; font-size: 14px;">Preparando datos y estadísticas...</p>
-                    <div class="loading-progress" style="width: 300px; height: 4px; background: #e9ecef; border-radius: 2px; margin: 20px auto 0; overflow: hidden;">
-                        <div class="loading-progress-bar" style="height: 100%; background: linear-gradient(90deg, #003594, #007bff); width: 0%; transition: width 0.3s ease; border-radius: 2px;"></div>
-                    </div>
-                    <p id="loading-status" style="color: #888; margin-top: 10px; font-size: 12px;">Inicializando...</p>
-                </div>
-            </div>
-        <!-- Loading Overlay -->
 
         <main class="main-content position-relative border-radius-lg ">
             <div class="container-fluid py-4">

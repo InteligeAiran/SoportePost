@@ -482,33 +482,58 @@ function showNoDataMessage(container, message = "No hay datos disponibles.") {
   }
 }
 
-const minimumLoadingTime = 6000; // 6 segundos en milisegundos
-
 window.addEventListener("load", function () {
-    // Definición de variables y funciones auxiliares
-    // ===============================================
-
-    const dashboardLoadingOverlay = document.getElementById("dashboard-loading-overlay");
-    const loadingStatusElement = document.getElementById("loading-status");
-    const progressBarElement = document.querySelector(".loading-progress-bar");
+    const dashboardLoadingOverlay = document.getElementById("loadingOverlay");
+    const overlayMessageElement = document.getElementById("loadingOverlayMessage");
+    let progressWrapperElement = null;
+    let progressBarElement = null;
+    let loadingStatusElement = null;
     const minimumLoadingTime = 6000; // 6 segundos
 
-    // Función para actualizar el estado de la carga
+    function ensureDashboardOverlayUI() {
+        if (!dashboardLoadingOverlay) return;
+        const card = dashboardLoadingOverlay.querySelector(".loading-card") || dashboardLoadingOverlay;
+        if (!progressWrapperElement) {
+            progressWrapperElement = document.createElement("div");
+            progressWrapperElement.className = "dashboard-loading-progress";
+            progressWrapperElement.innerHTML = `
+                <div class="dashboard-progress-track">
+                    <div class="dashboard-progress-bar"></div>
+                </div>
+                <p class="dashboard-loading-status">Inicializando...</p>
+            `;
+            card.appendChild(progressWrapperElement);
+        }
+        progressBarElement = progressWrapperElement.querySelector(".dashboard-progress-bar");
+        loadingStatusElement = progressWrapperElement.querySelector(".dashboard-loading-status");
+    }
+
+    function cleanupDashboardOverlayUI() {
+        if (progressWrapperElement) {
+            progressWrapperElement.remove();
+            progressWrapperElement = null;
+            progressBarElement = null;
+            loadingStatusElement = null;
+        }
+    }
+
     function updateLoadingStatus(message, progress) {
+        if (overlayMessageElement) {
+            overlayMessageElement.textContent = message;
+        }
         if (loadingStatusElement) {
             loadingStatusElement.textContent = message;
         }
-        if (progressBarElement && progress !== undefined) {
-            // Se usa la propiedad 'transition' del CSS para la animación fluida
+        if (progressBarElement && typeof progress === "number") {
             progressBarElement.style.width = `${progress}%`;
         }
     }
 
-    // Mostrar el overlay de carga al inicio
-    if (dashboardLoadingOverlay) {
-        dashboardLoadingOverlay.style.display = 'flex';
-        updateLoadingStatus("Inicializando dashboard...", 0);
+    if (typeof showLoadingOverlay === "function") {
+        showLoadingOverlay("Preparando datos...");
     }
+    ensureDashboardOverlayUI();
+    updateLoadingStatus("Inicializando dashboard...", 0);
 
     // Lista de funciones de carga y sus mensajes/progreso (aproximado)
     // Se definen en orden secuencial
@@ -579,10 +604,16 @@ window.addEventListener("load", function () {
                 dashboardLoadingOverlay.style.transition = "opacity 0.5s ease-out";
                 dashboardLoadingOverlay.style.opacity = "0";
                 setTimeout(() => {
-                    dashboardLoadingOverlay.style.display = 'none';
-                    // Si hubo un error, muestra la alerta DESPUÉS de ocultar el overlay.
+                    cleanupDashboardOverlayUI();
+                    if (typeof hideLoadingOverlay === "function") {
+                        hideLoadingOverlay(true);
+                    } else {
+                        dashboardLoadingOverlay.style.display = "none";
+                    }
+                    dashboardLoadingOverlay.style.opacity = "";
+                    dashboardLoadingOverlay.style.transition = "";
                     if (hasError) {
-                         Swal.fire({
+                        Swal.fire({
                             icon: "warning",
                             title: "Carga Parcial",
                             text: "Algunos datos no se cargaron correctamente, pero el dashboard es visible. Revise la consola para detalles.",
@@ -590,14 +621,19 @@ window.addEventListener("load", function () {
                         });
                     }
                 }, 500);
+            } else if (typeof hideLoadingOverlay === "function") {
+                hideLoadingOverlay(true);
             }
         })
         .catch(error => {
             // Este catch solo se activa si loadInitialDataSequentially lanza un error fatal
             console.error("Error FATAL durante la carga secuencial:", error);
             updateLoadingStatus("Error crítico. Reintente.", 100);
-            if (dashboardLoadingOverlay) {
-                dashboardLoadingOverlay.style.display = 'none';
+            cleanupDashboardOverlayUI();
+            if (typeof hideLoadingOverlay === "function") {
+                hideLoadingOverlay(true);
+            } else if (dashboardLoadingOverlay) {
+                dashboardLoadingOverlay.style.display = "none";
             }
             Swal.fire({
                 icon: "error",

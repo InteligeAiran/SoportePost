@@ -502,6 +502,27 @@ function getTicketDataCoordinator() {
             ]);
           });
 
+        const rowCountForOverlay = dataForDataTable.length;
+        if (rowCountForOverlay > 0 && typeof showLoadingOverlay === "function") {
+          const tableJQ = $("#tabla-ticket");
+          showLoadingOverlay(`Renderizando ${rowCountForOverlay} tickets...`);
+          const handleDraw = () => {
+            tableJQ.off("draw.dt", handleDraw);
+            if (typeof hideLoadingOverlay === "function") {
+              hideLoadingOverlay();
+            }
+          };
+          tableJQ.on("draw.dt", handleDraw);
+          setTimeout(() => {
+            tableJQ.off("draw.dt", handleDraw);
+            if (typeof hideLoadingOverlay === "function") {
+              hideLoadingOverlay();
+            }
+          }, Math.min(8000, Math.max(1500, rowCountForOverlay * 6)));
+        } else if (typeof hideLoadingOverlay === "function") {
+          hideLoadingOverlay();
+        }
+
           // Inicialización de DataTables
           const dataTableInstance = $("#tabla-ticket").DataTable({
             data: dataForDataTable,

@@ -9,24 +9,6 @@ let garantiaAlertShown = false;
 let emailQueue = []; // Cola para almacenar las solicitudes de correo
 let isProcessing = false; // Indicador de si se está procesando una solicitud
 
-function showLoadingOverlay(message = "Procesando...") {
-  const overlay = document.getElementById("loadingOverlay");
-  const messageEl = document.getElementById("loadingOverlayMessage");
-  if (!overlay) return;
-  overlay.style.display = "flex";
-  if (messageEl) {
-    messageEl.textContent = message;
-  }
-  document.body.classList.add("loading-overlay-open");
-}
-
-function hideLoadingOverlay() {
-  const overlay = document.getElementById("loadingOverlay");
-  if (!overlay) return;
-  overlay.style.display = "none";
-  document.body.classList.remove("loading-overlay-open");
-}
-
 // FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
 function restoreCoordinacionState() {
   const select = document.getElementById("AsiganrCoordinador");
