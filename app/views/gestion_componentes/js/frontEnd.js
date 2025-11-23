@@ -159,7 +159,42 @@ function SearchTicketsComponents() {
 
                         $("#tabla-ticket tbody")
                             .off("click", "tr")
-                            .on("click", "tr", function () {
+                            .on("click", "tr", function (e) {
+                                // Verificar si el clic fue en un botón, enlace o input
+                                const clickedElement = $(e.target);
+                                const isButton = clickedElement.is('button') || 
+                                                clickedElement.closest('button').length > 0 ||
+                                                clickedElement.is('a') || 
+                                                clickedElement.closest('a').length > 0 ||
+                                                clickedElement.is('input') || 
+                                                clickedElement.closest('input').length > 0 ||
+                                                clickedElement.hasClass('truncated-cell') ||
+                                                clickedElement.hasClass('expanded-cell');
+                                
+                                // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                                if (isButton) {
+                                    return; // No hacer nada, dejar que el botón maneje su propio evento
+                                }
+                                
+                                // Solo ocultar overlay si el clic fue directamente en la fila
+                                // 1. Matamos cualquier otro handler (por si acaso)
+                                e.stopPropagation();
+                                
+                                // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                                $('#loadingOverlay').removeClass('show').hide();
+                                
+                                // 3. Si el script usa opacity o visibility, también lo matamos
+                                $('#loadingOverlay').css({
+                                    'display': 'none',
+                                    'opacity': '0',
+                                    'visibility': 'hidden'
+                                });
+                                
+                                // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                                setTimeout(() => {
+                                    $('#loadingOverlay').hide();
+                                }, 50);
+                            
                                 const tr = $(this);
                                 const rowData = dataTableInstance.row(tr).data();
 
@@ -478,6 +513,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                                                 <span class="pos-module-value">${posData.component_insert_date || 'No disponible'}</span>
                                                             </div>
                                                         </div>
+
+                                                        <div class="pos-module-cell pos-module-cell-region">
+                                                            <div class="pos-module-cell-header">
+                                                                <i class="fas fa-map-marker-alt me-2"></i>
+                                                                <span>Región Registro</span>
+                                                            </div>
+                                                            <div class="pos-module-cell-content">
+                                                                <span class="pos-module-value">${posData.name_region || 'No disponible'}</span>
+                                                            </div>
+                                                        </div>
+                                                        
                                                     </div>
                                                     <div class="pos-module-row pos-module-row-components">
                                                         <div class="pos-module-cell pos-module-cell-full">
@@ -823,11 +869,15 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             }
 
                             .pos-module-cell-user {
-                                flex: 0 0 50%;
+                                flex: 0 0 33.33%;
                             }
 
                             .pos-module-cell-date {
-                                flex: 0 0 50%;
+                                flex: 0 0 33.33%;
+                            }
+
+                            .pos-module-cell-region {
+                                flex: 0 0 33.33%;
                             }
 
                             .pos-module-cell-full {
@@ -970,7 +1020,8 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 }
                                 
                                 .pos-module-cell-user,
-                                .pos-module-cell-date {
+                                .pos-module-cell-date,
+                                .pos-module-cell-region {
                                     flex: 1;
                                 }
                             }

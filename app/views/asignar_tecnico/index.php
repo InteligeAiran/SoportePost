@@ -20,7 +20,6 @@ function mi_navbar() {}
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
 
-
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">

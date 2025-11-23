@@ -489,6 +489,32 @@ window.addEventListener("load", function () {
     let progressBarElement = null;
     let loadingStatusElement = null;
     const minimumLoadingTime = 6000; // 6 segundos
+    let dashboardLoadingActive = true; // Flag para mantener el overlay visible
+
+    // Función para forzar que el overlay permanezca visible
+    function forceOverlayVisible() {
+        if (dashboardLoadingOverlay) {
+            dashboardLoadingOverlay.style.display = "flex";
+            dashboardLoadingOverlay.style.opacity = "1";
+            dashboardLoadingOverlay.style.visibility = "visible";
+            dashboardLoadingOverlay.classList.add("show");
+            document.body.classList.add("loading-overlay-open");
+        }
+    }
+
+    // Interceptar las llamadas a hideLoadingOverlay para evitar que se oculte durante la carga
+    const originalHideLoadingOverlay = window.hideLoadingOverlay;
+    if (typeof originalHideLoadingOverlay === "function") {
+        window.hideLoadingOverlay = function(force) {
+            if (dashboardLoadingActive && !force) {
+                // Si el dashboard está cargando y no es un cierre forzado, mantener visible
+                forceOverlayVisible();
+                return;
+            }
+            // Si es un cierre forzado o el dashboard terminó, permitir ocultar
+            return originalHideLoadingOverlay.call(this, force);
+        };
+    }
 
     function ensureDashboardOverlayUI() {
         if (!dashboardLoadingOverlay) return;
@@ -527,6 +553,8 @@ window.addEventListener("load", function () {
         if (progressBarElement && typeof progress === "number") {
             progressBarElement.style.width = `${progress}%`;
         }
+        // Asegurar que el overlay permanezca visible después de cada actualización
+        forceOverlayVisible();
     }
 
     if (typeof showLoadingOverlay === "function") {
@@ -534,6 +562,8 @@ window.addEventListener("load", function () {
     }
     ensureDashboardOverlayUI();
     updateLoadingStatus("Inicializando dashboard...", 0);
+    // Forzar que el overlay esté visible al inicio
+    forceOverlayVisible();
 
     // Lista de funciones de carga y sus mensajes/progreso (aproximado)
     // Se definen en orden secuencial
@@ -583,6 +613,15 @@ window.addEventListener("load", function () {
     // Ejecución de la Carga Secuencial y Manejo del Tiempo Mínimo
     // =============================================================
 
+    // Intervalo para mantener el overlay visible durante la carga
+    const keepOverlayVisibleInterval = setInterval(() => {
+        if (dashboardLoadingActive) {
+            forceOverlayVisible();
+        } else {
+            clearInterval(keepOverlayVisibleInterval);
+        }
+    }, 100); // Verificar cada 100ms
+
     const startTime = Date.now();
 
     loadInitialDataSequentially()
@@ -599,7 +638,20 @@ window.addEventListener("load", function () {
                 await new Promise(resolve => setTimeout(resolve, remainingTime));
             }
 
-            // Paso 3: Ocultar el overlay de carga con transición
+            // Paso 3: Marcar que el dashboard terminó de cargar
+            dashboardLoadingActive = false;
+            
+            // Limpiar el intervalo que mantiene el overlay visible
+            if (keepOverlayVisibleInterval) {
+                clearInterval(keepOverlayVisibleInterval);
+            }
+            
+            // Restaurar la función original de hideLoadingOverlay
+            if (originalHideLoadingOverlay) {
+                window.hideLoadingOverlay = originalHideLoadingOverlay;
+            }
+            
+            // Paso 4: Ocultar el overlay de carga con transición
             if (dashboardLoadingOverlay) {
                 dashboardLoadingOverlay.style.transition = "opacity 0.5s ease-out";
                 dashboardLoadingOverlay.style.opacity = "0";
@@ -628,6 +680,18 @@ window.addEventListener("load", function () {
         .catch(error => {
             // Este catch solo se activa si loadInitialDataSequentially lanza un error fatal
             console.error("Error FATAL durante la carga secuencial:", error);
+            dashboardLoadingActive = false;
+            
+            // Limpiar el intervalo que mantiene el overlay visible
+            if (keepOverlayVisibleInterval) {
+                clearInterval(keepOverlayVisibleInterval);
+            }
+            
+            // Restaurar la función original de hideLoadingOverlay
+            if (originalHideLoadingOverlay) {
+                window.hideLoadingOverlay = originalHideLoadingOverlay;
+            }
+            
             updateLoadingStatus("Error crítico. Reintente.", 100);
             cleanupDashboardOverlayUI();
             if (typeof hideLoadingOverlay === "function") {

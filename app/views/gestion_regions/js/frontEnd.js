@@ -991,9 +991,40 @@ function getTicketDataFinaljs() {
             $("#tabla-ticket tbody")
               .off("click", "tr")
               .on("click", "tr", function (e) {
-                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('full-text-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                  return;
+                // Verificar si el clic fue en un botón, enlace o input
+                const clickedElement = $(e.target);
+                const isButton = clickedElement.is('button') || 
+                                clickedElement.closest('button').length > 0 ||
+                                clickedElement.is('a') || 
+                                clickedElement.closest('a').length > 0 ||
+                                clickedElement.is('input') || 
+                                clickedElement.closest('input').length > 0 ||
+                                clickedElement.hasClass('truncated-cell') ||
+                                clickedElement.hasClass('full-text-cell');
+                
+                // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                if (isButton) {
+                    return; // No hacer nada, dejar que el botón maneje su propio evento
                 }
+                
+                // Solo ocultar overlay si el clic fue directamente en la fila
+                // 1. Matamos cualquier otro handler (por si acaso)
+                e.stopPropagation();
+                
+                // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                $('#loadingOverlay').removeClass('show').hide();
+                
+                // 3. Si el script usa opacity o visibility, también lo matamos
+                $('#loadingOverlay').css({
+                    'display': 'none',
+                    'opacity': '0',
+                    'visibility': 'hidden'
+                });
+                
+                // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                setTimeout(() => {
+                    $('#loadingOverlay').hide();
+                }, 50);
 
                 const tr = $(this);
                 const rowData = dataTableInstance.row(tr).data();
