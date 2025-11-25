@@ -561,7 +561,7 @@ window.addEventListener("load", function () {
         showLoadingOverlay("Preparando datos...");
     }
     ensureDashboardOverlayUI();
-    updateLoadingStatus("Inicializando dashboard...", 0);
+        updateLoadingStatus("Inicializando dashboard...", 0);
     // Forzar que el overlay esté visible al inicio
     forceOverlayVisible();
 
@@ -665,7 +665,7 @@ window.addEventListener("load", function () {
                     dashboardLoadingOverlay.style.opacity = "";
                     dashboardLoadingOverlay.style.transition = "";
                     if (hasError) {
-                        Swal.fire({
+                         Swal.fire({
                             icon: "warning",
                             title: "Carga Parcial",
                             text: "Algunos datos no se cargaron correctamente, pero el dashboard es visible. Revise la consola para detalles.",
