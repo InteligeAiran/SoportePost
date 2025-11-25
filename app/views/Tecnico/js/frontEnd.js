@@ -2831,8 +2831,8 @@ function handleFileSelectForUpload(event) {
   }
 
   // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
-  const validExtensions = [".jpg", ".png", ".gif", ".pdf"];
-  const validMimeTypes = ["image/jpg", "image/png", "image/gif", "application/pdf"];
+  const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf"];
+  const validMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "application/pdf"];
   
   const fileName = file.name.toLowerCase();
   const fileExtension = fileName.substring(fileName.lastIndexOf("."));

@@ -3991,7 +3991,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Event listener para el botón de cerrar el modal
-    const cerrarBoton =
+      const cerrarBoton =
       uploadDocumentModalElement.querySelector("#CerrarBoton");
     if (cerrarBoton) {
       cerrarBoton.addEventListener("click", function () {
@@ -4009,7 +4009,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (uploadForm) {
           uploadForm.reset();
         }
-
+        
         if (documentFileInput) {
           documentFileInput.classList.remove("is-valid", "is-invalid");
           documentFileInput.style.removeProperty("background-image");
@@ -4248,8 +4248,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
-    const validExtensions = [".jpg", ".png", ".gif", ".pdf"];
-    const validMimeTypes = ["image/jpg", "image/png", "image/gif", "application/pdf"];
+    const validExtensions = [".jpg", ".jpeg", ".png", ".gif", ".pdf"];
+    const validMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "application/pdf"];
     
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.substring(fileName.lastIndexOf("."));
@@ -4342,7 +4342,7 @@ document.addEventListener("DOMContentLoaded", function () {
         imagePreview.style.display = "none";
         imagePreview.src = "#";
       }
-        } else {
+    } else {
       // ARCHIVO INVÁLIDO
       // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
       input.classList.remove("is-valid");
@@ -4472,7 +4472,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
       if (imagePreview) {
-          imagePreview.style.display = "none";
+        imagePreview.style.display = "none";
         imagePreview.src = "#";
       }
       
@@ -4523,7 +4523,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (uploadForm) {
         uploadForm.reset();
       }
-
+      
       if (documentFileInput) {
         documentFileInput.classList.remove("is-valid", "is-invalid");
         documentFileInput.style.removeProperty("background-image");

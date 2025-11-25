@@ -682,7 +682,6 @@ class Consulta extends Controller
     $nivelFalla_id = isset($_POST['nivelFalla']) ? $_POST['nivelFalla'] : '';
     $falla_text = isset($_POST['falla_text']) ? $_POST['falla_text'] : '';
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
-    $descripcion_falla = isset($_POST['descrpFailure_text']) ? $_POST['descrpFailure_text'] : '';
 
     $repository = new technicalConsultionRepository();
 
@@ -720,7 +719,7 @@ class Consulta extends Controller
     // --- FIN LÓGICA DE VALIDACIÓN DE TIEMPO ---
 
     // Si la validación pasa, continuamos con la creación
-    if ($serial != '' && $falla_id != '' && $nivelFalla_id != '' && $id_user != '' && $rif != '' && $descripcion_falla != '') {
+    if ($serial != '' && $falla_id != '' && $nivelFalla_id != '' && $id_user != '' && $rif != '') {
         $hoy = date('dmy');
         $fecha_para_db = date('Y-m-d');
         $resultado = $repository->GetTotalTickets($fecha_para_db);
@@ -731,7 +730,7 @@ class Consulta extends Controller
         // **Paso clave:** Llama al SaveDataFalla del REPOSITORIO
         // Este $result ahora es el array que el Model::SaveDataFalla devuelve,
         // conteniendo 'idTicketCreado' y 'status_info'.
-        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket, $descripcion_falla);
+        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket);
 
         // Verifica si la operación fue exitosa y si el array de resultado es válido
         if ($result && isset($result['success']) && $result['success'] === true) {

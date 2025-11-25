@@ -204,12 +204,12 @@ document.addEventListener("DOMContentLoaded", function () {
       var file = this.files[0];
       if (
         file &&
-        !["application/pdf", "image/jpg", "image/png"].includes(file.type)
+        !["application/pdf", "image/jpeg", "image/jpg", "image/png"].includes(file.type)
       ) {
         Swal.fire({
           icon: "warning",
           title: "Alerta!",
-          text: "Por favor, selecciona un archivo PDF, JPG o PNG.",
+          text: "Por favor, selecciona un archivo PDF, JPG o JPEG.",
           color: "black",
         });
         this.value = "";
@@ -243,12 +243,12 @@ document.addEventListener("DOMContentLoaded", function () {
       var file = this.files[0];
       if (
         file &&
-        !["application/pdf", "image/jpg", "image/png"].includes(file.type)
+        !["application/pdf", "image/jpeg", "image/jpg", "image/png"].includes(file.type)
       ) {
         Swal.fire({
           icon: "warning",
           title: "Alerta!",
-          text: "Por favor, selecciona un archivo PDF, JPG o PNG.",
+          text: "Por favor, selecciona un archivo PDF, JPG o JPEG.",
           color: "black",
         });
         this.value = "";
@@ -1666,7 +1666,6 @@ function SendDataFailure2(idStatusPayment) {
   verificarTicketEnProceso(serial)
     .then((response) => {
       if (response.ticket_en_proceso) {
-        hideExportLoading();
         const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
         Swal.fire({
@@ -1767,11 +1766,9 @@ function SendDataFailure2(idStatusPayment) {
     });
         return; // Detener la ejecución
       }
-      hideExportLoading();
       continuarCreacionTicket();
     })
     .catch((error) => {
-      hideExportLoading(); // Ensure loading is hidden on error
       console.error("Error al verificar ticket en proceso:", error);
       Swal.fire({
         icon: "error",
@@ -1823,10 +1820,6 @@ function SendDataFailure2(idStatusPayment) {
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveDataFalla2`);
     xhr.onload = function () {
       if (xhr.status === 200) {
-        // ⚠️ FIX: OCULTAR EL OVERLAY GLOBAL INMEDIATAMENTE DESPUÉS DEL ÉXITO DE LA XHR
-        if (typeof window.hideLoadingOverlay === 'function') {
-          window.hideLoadingOverlay(true); 
-        }
         try {
           const response = JSON.parse(xhr.responseText);
           if (response.success) {
@@ -1845,10 +1838,6 @@ function SendDataFailure2(idStatusPayment) {
                 Swal.showLoading();
               },
               willClose: () => {
-                const navbar = document.getElementById("sidenav-main");
-                if (navbar) {
-                  navbar.style.display = "none";
-                }
                 const ticketData = response.ticket_data;
                 const beautifulHtmlContent =
                  `<div style="text-align: left; padding: 15px;">
@@ -2430,9 +2419,6 @@ function SendDataFailure1() {
   const nivelFalla = nivelFallaSe.value;
   const nivelFallaText = nivelFallaSe.options[nivelFallaSe.selectedIndex].text; // Captura el texto
 
-  const textarea = document.getElementById("explicacionFalla");
-  const descrpFailure_text = textarea.options ? textarea.options[textarea.selectedIndex].text  : textarea.value;
-
   const serial = document.getElementById("serialSelect1").value; // Usar serialSelect
   const falla = document.getElementById("FallaSelect1").value;
   const id_user = document.getElementById("id_user").value;
@@ -2440,49 +2426,11 @@ function SendDataFailure1() {
   const fallaSelect = document.getElementById("FallaSelect1");
   const fallaValue = fallaSelect.value;
   const fallaText = fallaSelect.options[fallaSelect.selectedIndex].text; // Captura el texto
-
-  if (
-    // Campos que ya estabas verificando:
-    !descrpFailure_text || 
-    descrpFailure_text.trim() === "" || 
-    !nivelFalla || 
-    nivelFalla === "" || 
-    !nivelFallaText || 
-    nivelFallaText.trim() === "" || 
-    nivelFallaText === "Seleccione" || 
-    
-    // ⚠️ AÑADE ESTAS VALIDACIONES FALTANTES:
-    !serial || // Valida Serial
-    serial.trim() === "" ||
-    !falla || // Valida el ID de la Falla
-    falla === "" ||
-    falla === "Seleccione" // Si "Seleccione" es el valor por defecto
-) {
-    // ⚠️ FIX: Ocultar el overlay ANTES de mostrar el Swal y salir
-    if (typeof hideExportLoading === 'function') {
-        hideExportLoading(); 
-    }
-    
-    // Puedes actualizar el mensaje para que sea más claro sobre qué falta.
-    Swal.fire({
-      icon: "warning",
-      title: "Campos requeridos",
-      text: "Por favor, complete todos los campos obligatorios: Falla y Descripción.",
-      color: "black",
-      confirmButtonText: "OK",
-      confirmButtonColor: "#003594",
-    });
-    return; // Detener la ejecución si la validación falla
-}
-
+  console.log("SendDataFailure1: ", { nivelFalla, nivelFallaText, serial, falla, fallaText, id_user });
   // VERIFICAR SI YA EXISTE UN TICKET EN PROCESO PARA ESTE SERIAL
   verificarTicketEnProceso(serial)
     .then((response) => {
       if (response.ticket_en_proceso) {
-        // 🚨 FIX: Llamar al cierre forzado del Overlay.
-        if (typeof window.hideLoadingOverlay === 'function') {
-            window.hideLoadingOverlay(true); // Pasar 'true' para forzar el cierre inmediato
-        }
         const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
 
         Swal.fire({
@@ -2583,11 +2531,9 @@ function SendDataFailure1() {
     });
         return; // Detener la ejecución
       }
-      hideExportLoading();
       continuarCreacionTicket();
     })
     .catch((error) => {
-      hideExportLoading(); // Ensure loading is hidden on error
       console.error("Error al verificar ticket en proceso:", error);
       Swal.fire({
         icon: "error",
@@ -2608,11 +2554,6 @@ function SendDataFailure1() {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          // ⚠️ FIX: OCULTAR EL OVERLAY GLOBAL INMEDIATAMENTE DESPUÉS DEL ÉXITO DE LA XHR
-          if (typeof window.hideLoadingOverlay === 'function') {
-            window.hideLoadingOverlay(true); 
-          }
-
           // **MOVER LA LÓGICA DEL CORREO AQUÍ**
           const xhrEmail = new XMLHttpRequest();
           xhrEmail.open(
@@ -2635,8 +2576,7 @@ function SendDataFailure1() {
                 const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
                 
                 if (responseEmail.success || correoTecnicoEnviado) {
-                  showLoadingOverlay("Enviando correo...");
-              
+                  // Mostrar notificación toast de éxito DESPUÉS de enviar ambos correos
                   setTimeout(() => {
                     Swal.fire({
                       icon: "success",
@@ -2648,16 +2588,8 @@ function SendDataFailure1() {
                       toast: true,
                       position: 'top-end',
                       color: 'black',
-                      timer: 3500, // Se cierra automáticamente en 4 segundos
-                      timerProgressBar: true,
-                      customClass: {
-                          container: 'super-toast-z-index'
-                      },
-                      // 🎉 NUEVA PROPIEDAD: Ejecutar código al cerrarse
-                      didClose: () => {
-                          // Aquí se ejecuta el código cuando el toast desaparece
-                          window.location.reload(); 
-                      }
+                      timer: 5000, // Se cierra automáticamente en 4 segundos
+                      timerProgressBar: true
                     });
                   }, 500); // Delay de 3 segundos para que aparezca después del modal principal
             } else {
@@ -2688,7 +2620,10 @@ function SendDataFailure1() {
               Swal.showLoading();
             },
             willClose: () => {
+              // Cuando el primer modal se cierra, mostramos el segundo modal "bonito"
               const ticketData = response.ticket_data; // Datos del ticket desde el backend
+              // Construcción del contenido HTML para el modal de detalles
+              // Usaremos un estilo más visual
 
              const beautifulHtmlContent = `
               <div style="text-align: left; padding: 15px;">
@@ -2742,11 +2677,8 @@ function SendDataFailure1() {
                 icon: "success", // Un icono de éxito también para este modal
                 title: "Detalles del Ticket",
                 html: beautifulHtmlContent, // Contenido HTML personalizado
-                timer: 4500,
-                timerProgressBar: true,
-                didOpen: () => {
-                  Swal.showLoading();
-                },
+                confirmButtonText: "Cerrar",
+                confirmButtonColor: "#003594", // Botón de confirmación AZUL
                 color: 'black',
                 showClass: {
                   popup: "animate__animated animate__fadeInDown",
@@ -2756,6 +2688,16 @@ function SendDataFailure1() {
                 },
                 allowOutsideClick: false,
                 allowEscapeKey: false,
+              }).then(() => {
+                // Este bloque de código se ejecuta DESPUÉS de que el usuario interactúa y el modal de SweetAlert2 se cierra.
+
+                // Oculta tu modal personalizado (si lo tienes y estás usando jQuery)
+                // Es crucial que esto se haga ANTES de la recarga.
+                $("#miModal1").css("display", "none");
+                $("#miModal").css("display", "none");
+                // Establece un temporizador para recargar la página después de 2 segundos.
+                setTimeout(() => {
+                }, 1000); // 2000 milisegundos = 2 segundos
               }); // Este cierra el .then()
             },
           });
@@ -2855,7 +2797,15 @@ function SendDataFailure1() {
     });
   };
   const rif = document.getElementById("InputRif1").value;
-  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}&descrpFailure_text=${encodeURIComponent(descrpFailure_text)}`;
+  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(
+    serial
+  )}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(
+    nivelFalla
+  )}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(
+    rif
+  )}&falla_text=${encodeURIComponent(
+    fallaText
+  )}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}`;
   xhr.send(datos);
   }
 }
@@ -2899,9 +2849,6 @@ function clearFormFields() {
 
   const rifMensaje = document.getElementById("rifMensaje");
   if (rifMensaje) rifMensaje.innerHTML = "";
-
-  const explicacionFalla = document.getElementById("explicacionFalla");
-  if (explicacionFalla) explicacionFalla.value = "";
 
   const inputRazon = document.getElementById("InputRazon");
   if (inputRazon) inputRazon.value = "";
@@ -3119,87 +3066,6 @@ $("#rifInput").keyup(function () {
   $("#rifInput").val(string.replace(/ /g, ""));
 });
 
-// === GLOBAL LOADING OVERLAY FUNCTIONS ===
-
-// Agregar animación CSS para el spinner si no existe
-if (!document.getElementById('export-loading-spinner-style')) {
-  const style = document.createElement('style');
-  style.id = 'export-loading-spinner-style';
-  style.textContent = `
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-// Función para crear y mostrar el overlay de carga
-function showExportLoading() {
-  // Verificar si ya existe el overlay
-  let loadingOverlay = document.getElementById('export-loading-overlay');
-  if (!loadingOverlay) {
-    loadingOverlay = document.createElement('div');
-    loadingOverlay.id = 'export-loading-overlay';
-    loadingOverlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-    `;
-    
-    const spinner = document.createElement('div');
-    spinner.style.cssText = `
-      width: 80px;
-      height: 80px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #003594;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    `;
-    
-    const message = document.createElement('h4');
-    message.textContent = 'Generando documento...';
-    message.style.cssText = `
-      color: #003594;
-      margin-bottom: 10px;
-      font-weight: 600;
-    `;
-    
-    const subMessage = document.createElement('p');
-    subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
-    subMessage.style.cssText = `
-      color: #666;
-      font-size: 14px;
-    `;
-    
-    loadingOverlay.appendChild(spinner);
-    loadingOverlay.appendChild(message);
-    loadingOverlay.appendChild(subMessage);
-    document.body.appendChild(loadingOverlay);
-  } else {
-    loadingOverlay.style.display = 'flex';
-  }
-}
-
-// Función para ocultar el overlay de carga
-function hideExportLoading() {
-  const loadingOverlay = document.getElementById('export-loading-overlay');
-  if (loadingOverlay) {
-    loadingOverlay.style.display = 'none';
-  }
-}
-
 function SendRif() {
   // Get the welcome message element
   const welcomeMessage = document.getElementById("welcomeMessage");
@@ -3384,7 +3250,71 @@ function SendRif() {
               return String(value).trim() || 'N/A';
           }
 
-
+          // Función para crear y mostrar el overlay de carga
+          function showExportLoading() {
+            // Verificar si ya existe el overlay
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+              `;
+              
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px;
+                height: 80px;
+                border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+              `;
+              
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = `
+                color: #003594;
+                margin-bottom: 10px;
+                font-weight: 600;
+              `;
+              
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = `
+                color: #666;
+                font-size: 14px;
+              `;
+              
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          // Función para ocultar el overlay de carga
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
+          }
 
           // Inicialización de DataTables
           if ($.fn.DataTable.isDataTable("#rifCountTable")) {
@@ -3892,7 +3822,71 @@ function SendSerial() {
               return String(value).trim() || 'N/A';
           }
 
-
+                    // Función para crear y mostrar el overlay de carga
+          function showExportLoading() {
+            // Verificar si ya existe el overlay
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+              `;
+              
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px;
+                height: 80px;
+                border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+              `;
+              
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = `
+                color: #003594;
+                margin-bottom: 10px;
+                font-weight: 600;
+              `;
+              
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = `
+                color: #666;
+                font-size: 14px;
+              `;
+              
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          // Función para ocultar el overlay de carga
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
+          }
 
           $(newTable).DataTable({
             responsive: false,
@@ -4412,7 +4406,84 @@ function SendRazon() {
               return String(value).trim() || 'N/A';
           }
 
+          // Agregar animación CSS para el spinner si no existe
+          if (!document.getElementById('export-loading-spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'export-loading-spinner-style';
+            style.textContent = `
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `;
+            document.head.appendChild(style);
+          }
 
+          // Función para crear y mostrar el overlay de carga
+          function showExportLoading() {
+            // Verificar si ya existe el overlay
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                backdrop-filter: blur(2px);
+                -webkit-backdrop-filter: blur(2px);
+              `;
+              
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px;
+                height: 80px;
+                border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+              `;
+              
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = `
+                color: #003594;
+                margin-bottom: 10px;
+                font-weight: 600;
+              `;
+              
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = `
+                color: #666;
+                font-size: 14px;
+              `;
+              
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          // Función para ocultar el overlay de carga
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) {
+              loadingOverlay.style.display = 'none';
+            }
+          }
 
           // Inicialización de DataTables
           if ($.fn.DataTable.isDataTable("#rifCountTable")) {
@@ -5192,10 +5263,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success) {
-                    // ⚠️ FIX: OCULTAR EL OVERLAY GLOBAL INMEDIATAMENTE DESPUÉS DEL ÉXITO DE LA XHR
-                    if (typeof window.hideLoadingOverlay === 'function') {
-                      window.hideLoadingOverlay(true); 
-                    }
                     // **MOVER LA LÓGICA DEL CORREO AQUÍ**
                     const xhrEmail = new XMLHttpRequest();
                     xhrEmail.open(
@@ -5242,15 +5309,12 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                             position: 'top-end',
                                             color: 'black',
                                             timer: emailToastDuration, // Se cierra automáticamente en 5 segundos
-                                            timerProgressBar: true,
-                                            customClass: {
-                                              container: 'super-toast-z-index'
-                                            },
+                                            timerProgressBar: true
                                         });
                                         setTimeout(() => {
                                             hideLoadingOverlay();
                                             window.location.reload();
-                                        }, emailToastDuration + 2000);
+                                        }, emailToastDuration + 200);
                                     }, 500); // Delay de 500ms para que aparezca después del modal principal
                                 } else {
                                     console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
@@ -5312,10 +5376,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                 position: 'top-end',
                                 color: 'black',
                                 timer: 3000, // Se cierra automáticamente en 4 segundos
-                                timerProgressBar: true,
-                                customClass: {
-                                  container: 'super-toast-z-index'
-                                },
+                                timerProgressBar: true
                             });
                         }, 500); // Delay de 500ms después de cerrar el modal
                     });
@@ -5611,10 +5672,7 @@ function processEmailQueue() {
                             showConfirmButton: false,
                             toast: true,
                             position: 'top-end',
-                            color: 'black',
-                            customClass: {
-                              container: 'super-toast-z-index'
-                            },
+                            color: 'black'
                         });
                     }
                 } else {

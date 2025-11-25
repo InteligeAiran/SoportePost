@@ -37,15 +37,6 @@ function mi_navbar() {}
 
 
         <style>
-            /** Asegúrate de que este CSS se cargue *después* de SweetAlert2
-                * o de que esté disponible globalmente.
-            */
-
-            .super-toast-z-index {
-                /* El valor 99999 debe ser suficiente para superar cualquier modal o overlay */
-                z-index: 99999 !important; 
-            }
-
               /* Custom styles for SweetAlert2 modal */
             /* Custom styles for SweetAlert2 session expired modal */
             .modern-swal-popup1 {
@@ -808,7 +799,7 @@ function mi_navbar() {}
                                             <button id="DownloadEnvi" class="btn btn-outline-secondary btn-sm" type="button">Adjunte Documento Envio</button>
                                             <input class="form-control" id="EnvioInput" type="file"
                                                 style="display: none; margin-left: 10px;"
-                                                accept="application/pdf, image/jpg, image/png">
+                                                accept="application/pdf, image/jpeg, image/jpg, image/png">
                                             <div id="envioStatus"></div>
                                         </div><br>
 
@@ -818,7 +809,7 @@ function mi_navbar() {}
                                                 type="button">Adjunte Documento Exoneracion</button>
                                             <input class="form-control" id="ExoneracionInput" type="file"
                                                 style="display: none; margin-left: 10px;"
-                                                accept="application/pdf, image/jpg, image/png">
+                                                accept="application/pdf, image/jpeg, image/jpg, image/png">
                                             <div id="exoneracionStatus"></div>
                                         </div><br>
 
@@ -826,7 +817,7 @@ function mi_navbar() {}
                                             id="botonCargaAnticipo">
                                             <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">Adjunte Documento Anticipo</button>
                                             <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
-                                                accept="application/pdf, image/jpg, image/png">
+                                                accept="application/pdf, image/jpeg, image/jpg, image/png">
                                             <div id="anticipoStatus"></div>
                                         </div>
                                     </div>
@@ -873,11 +864,6 @@ function mi_navbar() {}
                                         <option value="1">Nivel 1</option>
                                     </select>
                                 </div>
-                                 <div id="TextExplicacionFalla">
-                                    <label for="explicacionFalla">Explique la Falla:</label>
-                                    <textarea id="explicacionFalla" class="form-control" rows="4" cols="50" maxlength="50"
-                                        placeholder="Describa la falla presentada por el cliente..."></textarea>
-                                </div>
                                 <input type="hidden" id="id_user" name="userId">
                                 <table id="serialCountTableDetalle1" class="table">
                                     <tbody></tbody>
@@ -893,6 +879,7 @@ function mi_navbar() {}
                 </div>
             </div>
         <!--END MODAL FALLA NIVEL 1-->
+
     </div>
         <!-- Github buttons -->
         <!--JQUERY-->

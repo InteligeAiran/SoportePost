@@ -286,7 +286,7 @@ class consulta_rifModel extends Model
 
 
     
-   public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla)
+   public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket)
 
     {
 
@@ -302,15 +302,13 @@ class consulta_rifModel extends Model
 
             $escaped_Nr_ticket = pg_escape_literal($this->db->getConnection(), $Nr_ticket);
 
-            $escaped_falla_descripcion = pg_escape_literal($this->db->getConnection(), $descripcion_falla);
-
 
 
             // Ejecutar la función para guardar la falla y obtener el ID del ticket creado
 
             // OJO: La función SQL `SaveDataFalla` espera 4 parámetros. Aquí le estás pasando 4. ¡Correcto!
 
-            $sqlSave = "SELECT public.SaveDataFalla(" . $escaped_serial . ", " . $escaped_nivelFalla . ", " . $escaped_rif . ", " . $escaped_Nr_ticket . ", ".$escaped_falla_descripcion.");";
+            $sqlSave = "SELECT public.SaveDataFalla(" . $escaped_serial . ", " . $escaped_nivelFalla . ", " . $escaped_rif . ", " . $escaped_Nr_ticket . ");";
 
             $resultSave = $this->db->pgquery($sqlSave);
 

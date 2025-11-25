@@ -111,11 +111,11 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla)
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket)
     {
         // Llama al método SaveDataFalla del modelo.
         // Este método ahora devolverá el array con 'idTicketCreado' y 'status_info'.
-        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, id_user: $id_user, $rif, $Nr_ticket, $descripcion_falla);
+        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
         return $result_from_model;
     }
 

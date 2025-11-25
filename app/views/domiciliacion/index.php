@@ -783,7 +783,7 @@ function mi_navbar() {}
                                         <!-- Mensajes de validación de Bootstrap -->
                                         <div class="valid-feedback">
                                             Formato correcto
-                                </div>
+                                        </div>
                                         <div class="invalid-feedback">
                                             Solo se permiten imágenes (JPG, PNG, GIF) o PDF
                                         </div>
