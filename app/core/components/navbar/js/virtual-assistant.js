@@ -2759,8 +2759,10 @@ class VirtualAssistant {
         this.bindEvents();
         this.showWelcomeAnimation();
     }
+
+    // CHAT BOT VIZUALIZACION
     
-    createAssistantHTML() {
+    /*createAssistantHTML() {
         // Crear el contenedor del asistente
         const assistantContainer = document.createElement('div');
         assistantContainer.className = 'virtual-assistant-container';
@@ -2777,7 +2779,7 @@ class VirtualAssistant {
                     </div>
                 </div>
             </div>
-        `;
+        `
         
         // Crear el panel de chat
         const panel = document.createElement('div');
@@ -2997,7 +2999,7 @@ class VirtualAssistant {
         this.panel = panel;
         this.overlay = overlay;
         this.avatar = document.getElementById('assistantAvatar');
-    }
+    }*/
     
     bindEvents() {
         // Click en el avatar

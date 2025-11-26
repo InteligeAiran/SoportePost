@@ -939,7 +939,7 @@ function mi_navbar() {}
         </footer>
         </div>
         </main>
-        <div class="fixed-plugin">
+        <!--div class="fixed-plugin">
             <a class="fixed-plugin-button text-dark position-fixed px-3 py-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="25" fill="black" class="bi bi-gear"
                     viewBox="0 0 16 16">
@@ -1019,7 +1019,7 @@ function mi_navbar() {}
                     </div>
                 </div>
             </div>
-        </div>
+        </div-->
         </div>
 
         <!-- Github buttons -->
