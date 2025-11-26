@@ -31,6 +31,7 @@ define("database", 'SoportePost');
 /*ENDPOINT*/
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
 $host = $_SERVER['HTTP_HOST'];
+define('HOST', $host);
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 define('APP_BASE_PATH', '/SoportePost/');
 define('tituloPagina', value: 'Soporte Post Venta');
@@ -42,7 +43,7 @@ define('UPLOAD_BASE_DIR', 'C:\Documentos_SoportePost\\');
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_AUTH', true);
 define('SMTP_USERNAME', 'soporte.sistemas@inteligensa.com');
-define('SMTP_PASSWORD', 'igld qnmb afzw ywgv');
+define('SMTP_PASSWORD', 'igqq foym bqhf kqrs');
 define('SMTP_SECURE', 'PHPMailer::ENCRYPTION_STARTTLS');
 define('SMTP_PORT', 587);
 // ¡¡¡ ACTIVA LA DEPURACIÓN AL MÁXIMO !!!
