@@ -3347,7 +3347,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     if (pathSegments.length > 1) {
       cleanPath = pathSegments[1];
     }
-    return `http://localhost/Documentos/${cleanPath}`;
+        return `http://${HOST}/Documentos/${cleanPath}`;
   }
 
     // CONFIGURAR EL CONTENIDO CON MANEJO DE ERRORES

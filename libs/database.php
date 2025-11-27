@@ -35,6 +35,7 @@ define("bd_clave", 'Int3l1punt0.VEN');*/
 /*ENDPOINT*/
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
 $host = $_SERVER['HTTP_HOST'];
+define('HOST', $host);
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 define('APP_BASE_PATH', '/SoportePost/');
 define('tituloPagina', value: 'Soporte Post Venta');
