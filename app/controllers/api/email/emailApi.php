@@ -670,14 +670,15 @@ class email extends Controller {
                     <div style="text-align: center;">
                         <span class="status-badge">✅ ' . htmlspecialchars($ticketstatus) . '</span>
                     </div>
-                </div>
-                <div style="text-align: center;">
+                </div>';
+                /*<div style="text-align: center;">
                     <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="button">
                         📋 Ver Detalles Completos
-                            </a>
+                    </a>
                         </div>
-            </div>
-                        <div class="footer">
+                </div>*/
+                        
+            $body_coordinador .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                             <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
@@ -778,14 +779,16 @@ class email extends Controller {
                     </ul>
                     <div style="text-align: center;">
                         <span class="status-badge">✅ ' . htmlspecialchars($ticketstatus) . '</span>
-                    </div>
-                    <div style="text-align: center;">
+                    </div>';
+
+                    /*<div style="text-align: center;">
                         <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="button">
-                            📋 Ver Detalles del Ticket
-                                </a>
-                            </div>
-                </div>
-                            <div class="footer">
+                        📋 Ver Detalles del Ticket
+                        </a>
+                    </div>
+                    </div>*/
+
+                    $body_tecnico .= '<div class="footer">
                     ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                     <p><strong>Sistema de Tickets Técnicos - InteliSoft</strong></p>
                     <p>Correo automático de confirmación técnica.</p>
@@ -1080,14 +1083,15 @@ class email extends Controller {
                                 ✅ ' . htmlspecialchars($ticketstatus) . '
                             </span>
                         </div>
-                    </div>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
-                            📋 Ver Detalles Completos del Ticket
-                        </a>
-                    </div>
-                </div>
-            <div class="footer">
+                    </div>';
+                        /*<div style="text-align: center; margin: 30px 0;">
+                            <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
+                                📋 Ver Detalles Completos del Ticket
+                            </a>
+                        </div>
+                    </div>*/
+
+                $body_coordinador .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                             <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
@@ -1331,14 +1335,16 @@ class email extends Controller {
                                     ✅ ' . htmlspecialchars($ticketstatus) . '
                                 </span>
                             </div>
-                        </div>
-                        <div style="text-align: center; margin: 25px 0;">
+                        </div>';
+
+                        /*<div style="text-align: center; margin: 25px 0;">
                             <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="action-button">
                                 🔍 Ver Detalles del Ticket
                             </a>
                         </div>
-                    </div>
-            <div class="footer">
+                        </div>*/
+
+            $body_tecnico .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                             <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
@@ -1553,13 +1559,13 @@ class email extends Controller {
                 <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
                 <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
                 <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
-                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-warning">' . htmlspecialchars($ticketstatus) . '</span></span></div>
+                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-warning">' . htmlspecialchars($ticketstatus) . '</span></span></div>';
 
-                <p style="text-align:center;margin-top:16px">
+                /*<p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
-                </p>
+                </p>*/
 
-            <div class="footer">
+            $body_coordinador .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                     <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
@@ -1618,13 +1624,13 @@ class email extends Controller {
                 <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
                 <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
                 <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
-                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-success">' . htmlspecialchars($ticketstatus) . '</span></span></div>
+                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-success">' . htmlspecialchars($ticketstatus) . '</span></span></div>';
 
-                <p style="text-align:center;margin-top:16px">
+                /*<p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
-                </p>
+                </p>*/
 
-            <div class="footer">
+            $body_persona_reject .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                     <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
@@ -1682,13 +1688,13 @@ class email extends Controller {
 
                 <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
                 <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
-                <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
+                <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>';
 
-                <p style="text-align:center;margin-top:16px">
+                /*<p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
-                </p>
+                </p>*/
 
-            <div class="footer">
+            $body_tecnico .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                     <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
@@ -1749,13 +1755,13 @@ class email extends Controller {
                 <div class="row"><span class="label">RIF Cliente:</span> <span class="value">' . htmlspecialchars($clientRif) . '</span></div>
                 <div class="row"><span class="label">Razón Social:</span> <span class="value">' . htmlspecialchars($clientName) . '</span></div>
                 <div class="row"><span class="label">Serial POS:</span> <span class="value">' . htmlspecialchars($ticketserial) . '</span></div>
-                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-admin">' . htmlspecialchars($ticketstatus) . '</span></span></div>
-
-                <p style="text-align:center;margin-top:16px">
+                <div class="row"><span class="label">Estatus Ticket:</span> <span class="value"><span class="badge badge-admin">' . htmlspecialchars($ticketstatus) . '</span></span></div>';
+                
+                /*<p style="text-align:center;margin-top:16px">
                     <a class="btn" href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '" style = "color: white;">Ver historial del ticket</a>
-                </p>
+                </p>*/
 
-            <div class="footer">
+            $body_admin .= '<div class="footer">
                 ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
                 <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                     <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
