@@ -51,17 +51,17 @@ class email extends Controller {
                 break;
 
                 case 'resetPassword':
-                        // Manejo del login
+                        // Manejo del Recuperar contrasena
                     $this->handleRestorePassword();
                 break;
 
                 case 'send_ticket1':
-                    // Manejo del envío de ticket
+                    // Manejo del envío de ticket finalizado de nivel 1
                     $this->handleSendTicket1();
                 break;
 
                 case 'send_ticket2':
-                    // Manejo del envío de ticket
+                    // Manejo del envío de ticket nivel 2 como procesado (tecnico) y abierto coordinador
                     $this->handleSendTicket2();
                 break;
 
@@ -201,6 +201,7 @@ class email extends Controller {
         $ticketaccion = $result1['name_accion_ticket'];
         $ticketserial = $result1['serial_pos'];
         $ticketnro = $result1['nro_ticket'];
+        $description_failure = $result1['description_falla1'];
         // 3. Get Client Information
         $result2 = $repository->GetClientInfo($ticketserial);
         $clientRif = $result2['coddocumento'];
@@ -214,122 +215,111 @@ class email extends Controller {
         // Check if we have essential data for both
         if (($result > 0 && !empty($email_coordinator)) && ($result_tecnico && !empty($email_tecnico))) {
 
-            $subject = 'Notificación de Ticket Finalizado';
+            $subject = 'Ticket Nro. ' . $ticketnro . ' - Notificación de Cierre Exitoso';
 
-            // Base HTML structure for the email
-            $base_body_html = '
+        // Estructura HTML del Correo (Elegante y Empresarial)
+        $base_body_html = '
             <!DOCTYPE html>
             <html lang="es">
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Ticket Finalizado</title>
-                <style>
-                    body {
-                        font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif;
-                        background-color: #f8f9fa;
-                        padding: 30px;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        min-height: 100vh;
-                        margin: 0;
-                    }
-                    .ticket-container {
-                        background-color: #fff;
-                        border: 1px solid #ced4da;
-                        border-radius: 10px;
-                        padding: 30px;
-                        max-width: 600px;
-                        width: 100%;
-                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-                    }
-                    .ticket-header {
-                        background-color: #0035F6;
-                        color: #fff;
-                        padding: 20px;
-                        text-align: center;
-                        border-radius: 8px 8px 0 0;
-                        margin-bottom: 25px;
-                    }
-                    .ticket-title {
-                        font-size: 1.8em;
-                        margin-bottom: 10px;
-                        font-weight: bold;
-                    }
-                    .greeting {
-                        margin-bottom: 20px;
-                        color: #495057;
-                        font-size: 1.1em;
-                    }
-                    .info-list {
-                        list-style: none;
-                        padding-left: 0;
-                        margin-bottom: 20px;
-                    }
-                    .info-item {
-                        margin-bottom: 12px;
-                        color: #343a40;
-                        font-size: 1em;
-                        display: flex;
-                        align-items: baseline;
-                    }
-                    .info-item strong {
-                        font-weight: bold;
-                        color: #007bff;
-                        margin-right: 10px;
-                        width: 150px;
-                        display: inline-block;
-                    }
-                    .footer {
-                        background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef;
-                        font-size: 0.9em;
-                    }
-                    .logo {
-                        max-width: 150px; margin: 10px 0;
-                        margin-top: -40px;
-                    }
-                    hr {
-                        border-top: 1px solid #dee2e6;
-                        margin: 20px 0;
-                        margin-top: -50px;
-                    }
-                </style>
             </head>
-            <body>
-                <div class="ticket-container">
-                    <div class="ticket-header">
-                        <h2 class="ticket-title">¡Ticket Finalizado!</h2>
-                    </div>
-                    <p class="greeting">Hola, [NOMBRE_DESTINATARIO]</p>
-                    <p style="color: #495057; font-size: 1.1em; margin-bottom: 20px;">[MENSAJE_PRINCIPAL]</p>
-                    <ul class="info-list">
-                        <li class="info-item"><strong>Nro. Ticket:</strong> ' . $ticketnro . '</li>
-                        <li class="info-item"><strong>RIF Cliente:</strong> ' . $clientRif . '</li>
-                        <li class="info-item"><strong>Serial POS:</strong> ' . $ticketserial . '</li>
-                        <li class="info-item"><strong>Nivel Falla:</strong> ' . $ticketNivelFalla . '</li>
-                        <li class="info-item"><strong>Falla: </strong> ' . $name_failure . '</li>
-                        <li class="info-item"><strong>Fecha de Cierre:</strong> ' . $ticketfinished . '</li>
-                        <li class="info-item"><strong>Estatus:</strong><span style=" color: red;">' . $ticketstatus . '</li></span>
-                        <li class="info-item"><strong>Acción:</strong> ' . $ticketaccion . '</li>
-                    </ul>
-                    <p><a href="http://localhost/SoportePost/consultationGeneral?Serial=' . $ticketserial . '&Proceso=' . $ticketprocess . '&id_level_failure=' . $ticketNivelFalla . '" style="color: #007bff; text-decoration: none; ">Ver el historial completo del ticket</a></p>
-                    <hr>
-                    <p style="text-align: center; margin-top: 30px;">
-                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" class="link-button" style = "color: white;">
-                            Ver Detalles del Ticket
-                        </a>
-                    </p>
+            <body style="font-family: \'Segoe UI\', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0;">
+                <center>
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; background-color: #f8f9fa;">
+                    <tr>
+                        <td align="center" style="padding: 30px 0;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                                
+                                <tr>
+                                    <td align="center" style="padding: 25px 20px; background-color: #003594; border-radius: 10px 10px 0 0; color: #ffffff;">
+                                        <h1 style="font-size: 26px; margin: 0; font-weight: 600;">✅ TICKET FINALIZADO</h1>
+                                        <p style="font-size: 15px; margin: 5px 0 0 0; opacity: 0.9;">Gestión de Soporte Técnico | InteliSoft</p>
+                                    </td>
+                                </tr>
 
-                    ' . (defined('FIRMA_CORREO') ? '<div class="logo-container"><img style = "margin-left: 28%; margin-top: 3%;" src="cid:imagen_adjunta" alt="Logo de la empresa" class="logo"></div>' : '') . '
+                                <tr>
+                                    <td style="padding: 40px 40px 20px 40px; color: #333333; font-size: 16px;">
+                                        <p style="margin-bottom: 25px;">Estimado(a), <strong style="color: #003594;">[NOMBRE_DESTINATARIO]</strong></p>
+                                        <p style="margin-bottom: 30px; line-height: 1.6;">[MENSAJE_PRINCIPAL]</p>
+                                    </td>
+                                </tr>
 
-            <div class="footer">
-                ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo">' : '') . '
-                <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                        <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-                <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
-                    </div>
-                </div>
+                                <tr>
+                                    <td style="padding: 0 40px;">
+                                        <table border="0" cellpadding="12" cellspacing="0" width="100%" style="background-color: #f4f6f8; border: 1px solid #e9ecef; border-radius: 8px;">
+                                            <tr>
+                                                <td colspan="2" style="background-color: #e9ecef; border-bottom: 1px solid #dcdcdc; border-radius: 8px 8px 0 0;">
+                                                    <p style="font-size: 15px; font-weight: bold; color: #003594; margin: 0;">📋 RESUMEN DEL SERVICIO</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td width="35%" style="font-weight: 600; color: #555555; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">Nro. Ticket:</td>
+                                                <td width="65%" style="color: #333333; font-size: 14px; font-weight: bold; border-bottom: 1px dotted #e0e0e0;">' . $ticketnro . '</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: 600; color: #555555; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">RIF Cliente:</td>
+                                                <td style="color: #333333; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">' . $clientRif . '</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: 600; color: #555555; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">Serial POS:</td>
+                                                <td style="color: #333333; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">' . $ticketserial . '</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: 600; color: #555555; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">Falla Reportada:</td>
+                                                <td style="color: #333333; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">' . $name_failure . ' (Nivel ' . $ticketNivelFalla . ')</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: 600; color: #555555; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">Acción:</td>
+                                                <td style="color: #333333; font-size: 14px; border-bottom: 1px dotted #e0e0e0;">' . $ticketaccion . '</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-weight: 600; color: #555555; font-size: 14px;">Fecha de Cierre:</td>
+                                                <td style="color: #333333; font-size: 14px;">' . $ticketfinished . '</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" style="padding-top: 15px;">
+                                                    <p style="font-weight: bold; color: #003594; margin-bottom: 5px; font-size: 15px;">Estatus Final:</p>
+                                                    <span style="display: inline-block; padding: 5px 12px; border-radius: 4px; background-color: #d4edda; color: #155724; font-weight: bold; font-size: 14px;">' . strtoupper($ticketstatus) . '</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding: 30px 40px 20px 40px; color: #333333; font-size: 14px;">
+                                        <p style="font-weight: bold; color: #003594; margin-bottom: 8px; font-size: 15px;">✍️ Descripción de la Falla:</p>
+                                        <p style="margin-top: 0; padding: 12px; border-left: 4px solid #003594; background-color: #f9f9f9; border-radius: 0 4px 4px 0; line-height: 1.5;">' . (empty($description_failure) ? 'Sin descripción detallada registrada por el técnico.' : $description_failure) . '</p>
+                                    </td>
+                                </tr>';
+
+                                /*<tr>
+                                    <td align="center" style="padding: 10px 40px 40px 40px;">
+                                        <a href="http://localhost/SoportePost/consultationGeneral?Serial=' . urlencode($ticketserial) . '&Proceso=' . urlencode($ticketprocess) . '&id_level_failure=' . urlencode($ticketNivelFalla) . '" 
+                                        style="background-color: #003594; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
+                                            🔍 VER EL HISTORIAL COMPLETO
+                                        </a>
+                                    </td>
+                                </tr>*/
+
+                                //PARA DESCOMENTAR SOLO QUITAR LA VARIABLE DE ABAJO Y EL ' 
+
+                               $base_body_html .= '<tr>
+                                    <td align="center" style="padding: 25px 40px; background-color: #f4f6f8; border-top: 1px solid #e9ecef; border-radius: 0 0 10px 10px; color: #666666; font-size: 12px;">
+                                        ' . (defined('FIRMA_CORREO') ? '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" style="max-width: 120px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">' : '') . '
+                                        <p style="margin: 5px 0;"><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                                        <p style="margin: 5px 0;">Este es un correo automático. Por favor, no responda a este mensaje.</p>
+                                        <p style="margin: 5px 0;">&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                </center>
             </body>
             </html>
             ';
