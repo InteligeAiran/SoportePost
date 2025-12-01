@@ -143,8 +143,8 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
                 cleanPath = pathSegments[1];
             }
 
-            // Construir la URL completa
-            return `http://localhost/Documentos/${cleanPath}`;
+          // Construir la URL completa
+          return `http://${HOST}/Documentos/${cleanPath}`;
         }
 
         if (imageUrl) {
