@@ -1057,75 +1057,29 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                pg_query($this->db->getConnection(), "BEGIN");
 
                 try {
-                    if (!is_array($components)) {
-                        $components = []; 
-                    }
+                if (!is_array($components) || empty($components)) {
+                    throw new Exception('Lista de componentes vacía');
+                }
 
-                    // 🌟 A. DESACTIVAR TODOS los componentes existentes para este ticket/serial
-                    // Esto es el "Soft Delete" para todos los registros previos.
-                    $sqlUpdateDeactivate = "UPDATE tickets_componets 
-                                            SET add = FALSE 
-                                            WHERE id_ticket = $1 AND serial_pos = $2;";
-                    $paramsDeactivate = [
-                        (int)$idticket,
-                        $serial_pos
+                $sqlcomponents = "INSERT INTO tickets_componets
+                    (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert)
+                    VALUES ($1, $2, $3, $4, NOW(), $5)";  // parámetros, sin concatenar
+
+                foreach ($components as $comp_id) {
+                    $params = [
+                    $serial_pos,           // text/varchar
+                    (int)$idticket,        // int
+                    (int)$comp_id,         // int (debe existir en tabla components)
+                    (int)$id_user,         // int (debe existir en users)
+                    $modulo         // text/varchar (verifica tipo de modulo_insert)
                     ];
 
-                    $resDeactivate = pg_query_params($this->db->getConnection(), $sqlUpdateDeactivate, $paramsDeactivate);
-                    if ($resDeactivate === false) {
-                        throw new Exception('UPDATE Desactivar componentes: ' . pg_last_error($this->db->getConnection()));
+                    $res = pg_query_params($this->db->getConnection(), $sqlcomponents, $params);
+                    if ($res === false) {
+                    throw new Exception('INSERT componentes: ' . pg_last_error($this->db->getConnection()));
                     }
-                    pg_free_result($resDeactivate);
-
-               if (!empty($components)) {
-                    foreach ($components as $comp_id) {
-                        $comp_id = (int)$comp_id;
-                        
-                        // 1. Intentar activar (UPDATE) si ya existe un registro de este componente
-                        $sqlUpdateActivate = "UPDATE tickets_componets 
-                                              SET add = TRUE, 
-                                                  id_user_carga = $3, 
-                                                  component_insert = NOW(), 
-                                                  modulo_insert = $4
-                                              WHERE id_ticket = $1 AND serial_pos = $2 AND id_components = $5;";
-                        $paramsUpdate = [
-                            (int)$idticket,
-                            $serial_pos,
-                            (int)$id_user,
-                            $modulo,
-                            $comp_id
-                        ];
-                        
-                        $resUpdate = pg_query_params($this->db->getConnection(), $sqlUpdateActivate, $paramsUpdate);
-                        if ($resUpdate === false) {
-                            throw new Exception('UPDATE Activar componentes: ' . pg_last_error($this->db->getConnection()));
-                        }
-                        
-                        // Verificar si se actualizó una fila
-                        if (pg_affected_rows($resUpdate) === 0) {
-                            // 2. Si no se actualizó (es un componente NUEVO), entonces se INSERTAR
-                            $sqlInsert = "INSERT INTO tickets_componets
-                                        (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert, add)
-                                        VALUES ($1, $2, $3, $4, NOW(), $5, TRUE)";
-                            $paramsInsert = [
-                                $serial_pos,
-                                (int)$idticket,
-                                $comp_id,
-                                (int)$id_user,
-                                $modulo
-                            ];
-                            
-                            $resInsert = pg_query_params($this->db->getConnection(), $sqlInsert, $paramsInsert);
-                            if ($resInsert === false) {
-                                throw new Exception('INSERT componentes nuevos: ' . pg_last_error($this->db->getConnection()));
-                            }
-                            pg_free_result($resInsert);
-                        }
-                        
-                        pg_free_result($resUpdate);
-                    }
-                }     
-
+                    pg_free_result($res);
+                }
 
                 // … resto de tu lógica …
                 pg_query($this->db->getConnection(), "COMMIT");

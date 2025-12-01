@@ -17,7 +17,6 @@
     <script>
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
-        const HOST = '<?php echo HOST; ?>';
     </script>
     <style>
         #sidenav-collapse-main ul{

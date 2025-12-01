@@ -2472,9 +2472,8 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         }
 
         // Construir la URL completa
-        return `http://${HOST}/Documentos/${cleanPath}`;
-
-    } 
+        return `http://localhost/Documentos/${cleanPath}`;
+    }
 
     // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
     if (imageUrl) {
@@ -4667,12 +4666,12 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                         components.forEach(comp => {
                             // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
                             const isChecked = comp.is_selected === 't' ? 'checked' : '';
-                            const isDisabled = '';
+                            const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
                             
                             componentsHtml += `
                                 <tr>
                                   <td>
-                                    <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked}>
+                                    <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked} ${isDisabled}>
                                     </td>
                                   <td>${comp.name_component}</td>
                                 </tr>
