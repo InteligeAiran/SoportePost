@@ -1042,77 +1042,191 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         }
     }
 
-    public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $modulo){
+// Nota: Asume que esta clase tiene acceso a $this->db, que maneja la conexión PostgreSQL.
+
+// Se añade el tipo de retorno array|bool o array|null si se permite que Model::getResult falle al inicio.
+// Usamos array|bool aquí para simplificar.
+public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $modulo): array|bool {
+    
+    // Asignación de variables iniciales
+    $id_ticket1 = (int)$id_ticket;
+    $id_user_action = (int)$id_user;
+    
+    // 💥 CORRECCIÓN DE LIMPIEZA: Manejo de serial_pos
+    // Si $serial_pos es una cadena vacía (''), lo convierte a NULL de PHP.
+    // Esto es NECESARIO si la columna 'serial_pos' es opcional o si es NUMÉRICA y recibe ''.
+    $serial_pos_clean = (is_string($serial_pos) && $serial_pos === '') ? null : $serial_pos;
+    
+    // 💥 CORRECCIÓN DE TIPO: Asegura la decodificación de JSON
+    if (is_string($components)) {
+        $components = json_decode($components, true) ?? []; 
+    }
+    
+    // Separar componentes marcados y desmarcados
+    // Si viene como objeto con 'selected' y 'deselected', usamos eso
+    // Si viene como array simple, asumimos que todos están marcados
+    $selected_ids = [];
+    $deselected_ids = [];
+    
+    if (is_array($components)) {
+        if (isset($components['selected']) && isset($components['deselected'])) {
+            // Formato nuevo: objeto con selected y deselected
+            $selected_ids = is_array($components['selected']) ? array_map('intval', $components['selected']) : [];
+            $deselected_ids = is_array($components['deselected']) ? array_map('intval', $components['deselected']) : [];
+        } else {
+            // Formato antiguo: array simple de IDs marcados
+            $selected_ids = array_map('intval', $components);
+        }
+    }
+
+    try {
+        // Actualizar el estado de componentes en el ticket
+        $sql_update_ticket = "UPDATE tickets SET id_status_components = TRUE WHERE id_ticket = " . (int)$id_ticket1 . ";";
+        $result_update = Model::getResult($sql_update_ticket, $this->db);
+        
+        if(!$result_update){
+            error_log("SaveComponents: Error al actualizar id_status_components para ticket " . $id_ticket1);
+            return ['success' => false, 'message' => "Fallo al actualizar el estado del ticket.", 'debug_info' => 'Ticket update failed.'];
+        }
+
+        // --- INICIO DE TRANSACCIÓN ---
+        pg_query($this->db->getConnection(), "BEGIN");
+
         try {
-            $id_ticket1 = (int)$id_ticket;
+            // SQL para verificar si existe el componente
+            $sql_check_exists = "SELECT id_tickets_components FROM tickets_componets 
+                WHERE id_ticket = $1 AND id_components = $2";
             
-            $sql = "UPDATE tickets set id_status_components = TRUE WHERE id_ticket = ".$id_ticket1.";";
-            $result = Model::getResult($sql, $this->db);
-
-            if($result){
-                $idticket = (int)$id_ticket;
-                $id_user = (int)$id_user;
+            // SQL para INSERT con add = true (marcado)
+            $sql_insert_selected = "INSERT INTO tickets_componets
+                (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert, add)
+                VALUES ($1, $2, $3, $4, NOW(), $5, TRUE)";
+            
+            // SQL para UPDATE con add = true (marcado)
+            $sql_update_selected = "UPDATE tickets_componets 
+                SET add = TRUE, id_user_carga = $1, component_insert = NOW(), modulo_insert = $2
+                WHERE id_ticket = $3 AND id_components = $4";
+            
+            // SQL para UPDATE con add = false (desmarcado)
+            $sql_update_deselected = "UPDATE tickets_componets 
+                SET add = FALSE, id_user_carga = $1, component_insert = NOW(), modulo_insert = $2
+                WHERE id_ticket = $3 AND id_components = $4";
+            
+            // SQL para historial
+            $sql_history_insert = "INSERT INTO tickets_componets_history 
+                (id_ticket, id_components, action_type, id_user_action, action_date, action_module)
+                VALUES ($1, $2, $3, $4, NOW(), $5)";
+            
+            // Procesar componentes marcados (add = true)
+            foreach ($selected_ids as $comp_id) {
+                // Verificar si existe
+                $params_check = [ (int)$id_ticket1, (int)$comp_id ];
+                $res_check = pg_query_params($this->db->getConnection(), $sql_check_exists, $params_check);
                 
-                // Inicia transacción
-               pg_query($this->db->getConnection(), "BEGIN");
-
-                try {
-                if (!is_array($components) || empty($components)) {
-                    throw new Exception('Lista de componentes vacía');
+                if ($res_check === false) {
+                    $error_message = pg_last_error($this->db->getConnection());
+                    throw new Exception('Error al verificar existencia de componente. Detalles: ' . $error_message);
                 }
-
-                $sqlcomponents = "INSERT INTO tickets_componets
-                    (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert)
-                    VALUES ($1, $2, $3, $4, NOW(), $5)";  // parámetros, sin concatenar
-
-                foreach ($components as $comp_id) {
-                    $params = [
-                    $serial_pos,           // text/varchar
-                    (int)$idticket,        // int
-                    (int)$comp_id,         // int (debe existir en tabla components)
-                    (int)$id_user,         // int (debe existir en users)
-                    $modulo         // text/varchar (verifica tipo de modulo_insert)
-                    ];
-
-                    $res = pg_query_params($this->db->getConnection(), $sqlcomponents, $params);
-                    if ($res === false) {
-                    throw new Exception('INSERT componentes: ' . pg_last_error($this->db->getConnection()));
+                
+                $exists = pg_num_rows($res_check) > 0;
+                $action_type = '';
+                
+                if ($exists) {
+                    // UPDATE existente
+                    $params_update = [ 
+                        (int)$id_user_action,
+                        $modulo,
+                        (int)$id_ticket1,
+                        (int)$comp_id
+                    ]; 
+                    
+                    $res_update = pg_query_params($this->db->getConnection(), $sql_update_selected, $params_update);
+                    
+                    if ($res_update === false) {
+                        $error_message = pg_last_error($this->db->getConnection());
+                        throw new Exception('UPDATE de componente marcado falló. Detalles: ' . $error_message);
                     }
-                    pg_free_result($res);
+                    $action_type = 'UPDATE';
+                } else {
+                    // INSERT nuevo
+                    $params_insert = [ 
+                        $serial_pos_clean,
+                        (int)$id_ticket1,
+                        (int)$comp_id,
+                        (int)$id_user_action,
+                        $modulo
+                    ]; 
+                    
+                    $res_insert = pg_query_params($this->db->getConnection(), $sql_insert_selected, $params_insert);
+                    
+                    if ($res_insert === false) {
+                        $error_message = pg_last_error($this->db->getConnection());
+                        throw new Exception('INSERT de componente marcado falló. Detalles: ' . $error_message);
+                    }
+                    $action_type = 'INSERT';
                 }
-
-                // … resto de tu lógica …
-                pg_query($this->db->getConnection(), "COMMIT");
-                } catch (Throwable $e) {
-                error_log('SaveComponents fallo: ' . $e->getMessage());
-                pg_query($this->db->getConnection(), "ROLLBACK");
-                return false;
+                
+                // Insertar en historial
+                $params_history = [ $id_ticket1, (int)$comp_id, $action_type, $id_user_action, $modulo ];
+                $res_history = pg_query_params($this->db->getConnection(), $sql_history_insert, $params_history);
+                if ($res_history === false) {
+                    throw new Exception('Fallo al insertar historial para componente marcado.');
                 }
+            }
+            
+            // Procesar componentes desmarcados (add = false)
+            foreach ($deselected_ids as $comp_id) {
+                $params_deselected = [ 
+                    (int)$id_user_action,
+                    $modulo,
+                    (int)$id_ticket1,
+                    (int)$comp_id
+                ]; 
+                
+                $res_update = pg_query_params($this->db->getConnection(), $sql_update_deselected, $params_deselected);
+                
+                if ($res_update === false) {
+                    $error_message = pg_last_error($this->db->getConnection());
+                    throw new Exception('UPDATE de componente desmarcado falló. Detalles: ' . $error_message);
+                }
+                
+                // Insertar en historial
+                // Usar 'CHECK' para INSERT y 'UPDATE' para UPDATE cuando se marca
+                $history_action_type = ($action_type === 'INSERT') ? 'INSERT' : 'UPDATE';
+                $params_history = [ $id_ticket1, (int)$comp_id, $history_action_type, $id_user_action, $modulo ];
+                $res_history = pg_query_params($this->db->getConnection(), $sql_history_insert, $params_history);
+                if ($res_history === false) {
+                    throw new Exception('Fallo al insertar historial para componente marcado.');
+                }
+            }
+            
+                // D. OBTENER ESTADOS Y COORDINADOR (sin cambios)
+                // ... (tu lógica para $id_status_ticket, $id_status_lab, etc.) ...
 
-                // Obtiene estados para el historial (FUERA del foreach)
+               // Obtiene estados para el historial (FUERA del foreach)
                 $id_status_ticket = 0;
-                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$idticket . ";";
+                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket1 . ";";
                 $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
                 if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
                     $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') ?? 0;
                 }
                             
                 $id_status_lab = 0;
-                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$idticket . ";";
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$id_ticket1 . ";";
                 $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
                 if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
                     $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
                 }
 
                 $id_new_status_payment = 'NULL';
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$idticket . ";";
+                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket1 . ";";
                 $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
                 if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
                     $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
                 }
 
                 $new_status_domiciliacion = 'NULL';
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$idticket . ";";
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$id_ticket1 . ";";
                 $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
                 if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
                     $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
@@ -1123,7 +1237,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                 $selectCoord = "
                     SELECT id_coordinador
                     FROM users_tickets
-                    WHERE id_ticket = {$idticket}
+                    WHERE id_ticket = {$id_ticket1}
                     ORDER BY id_user_ticket DESC
                     LIMIT 1
                     ";
@@ -1144,49 +1258,63 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                         error_log('UPDATE users_tickets no retornó filas. ' . pg_last_error($this->db->getConnection()));
                         $id_coordinador = null;
                     }
-             
-                $sqlInsertHistory = sprintf(
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-                    (int)$idticket,
-                    (int)$id_user,
-                    (int)$id_status_ticket,
-                    (int)$id_accion_ticket,
-                    $id_status_lab,
-                    $id_new_status_payment,
-                    $new_status_domiciliacion,
-                    (int)$id_coordinador
-                );
 
-                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+                // ... (tu lógica para $params_history_status y ejecución) ...
+                $sqlInsertHistory = "SELECT public.insert_ticket_status_history($1, $2, $3, $4, $5, $6, $7, $8);";
+
+                // 💥 CREACIÓN DE LA VARIABLE params_history_status
+                // PARÁMETROS LIMPIOS (NULLs de PHP para campos opcionales)
+                $params_history_status = [
+                    (int)$id_ticket1, // $1
+                    (int)$id_user,    // $2
+                    (int)$id_status_ticket, // $3 (Limpiado a 0 si era NULL)
+                    (int)$id_accion_ticket, // $4 (Valor fijo 20)
+                    $id_status_lab,         // $5 (INT o NULL)
+                    $id_new_status_payment, // $6 (INT o NULL)
+                    $new_status_domiciliacion, // $7 (INT o NULL)
+                    $id_coordinador         // $8 (INT o NULL)
+                ];
+
+                // ... (cálculo de $params_history_status) ...
+                $resultsqlInsertHistory = pg_query_params($this->db->getConnection(), $sqlInsertHistory, $params_history_status);
 
                 if (!$resultsqlInsertHistory) {
-                    pg_query($this->db->getConnection(), "ROLLBACK");
-                    return false;
+                    // 🛑 CAPTURA CRÍTICA DE ERROR DE POSTGRESQL
+                    $error_message = pg_last_error($this->db->getConnection());
+                    throw new Exception("Fallo al ejecutar insert_ticket_status_history. Detalles: " . $error_message);
                 }
 
-                // Obtener el número de ticket (nro_ticket) antes de confirmar la transacción
-                $nro_ticket_sql = "SELECT nro_ticket FROM tickets WHERE id_ticket = " . (int)$idticket . ";";
-                $nro_ticket_result = pg_query($this->db->getConnection(), $nro_ticket_sql);
-                $nro_ticket = null;
-                if ($nro_ticket_result && pg_num_rows($nro_ticket_result) > 0) {
-                    $nro_ticket = pg_fetch_result($nro_ticket_result, 0, 'nro_ticket');
-                    pg_free_result($nro_ticket_result);
-                }
+                pg_free_result($resultsqlInsertHistory);
 
-                // Si todo ha sido exitoso, confirma la transacción
+                // ... (Obtener nro_ticket, COMMIT y RETURN success) ...
                 pg_query($this->db->getConnection(), "COMMIT");
-                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'component_result' => true, 'nro_ticket' => $nro_ticket);
-
-            } else {
-                return false;
-            }
+                return [
+                    'success' => true, 
+                    'message' => 'Componentes guardados y historial actualizado correctamente',
+                    'nro_ticket' => $serial_pos
+                ];
 
         } catch (Throwable $e) {
-            pg_query($this->db->getConnection(), "ROLLBACK");
-            error_log("Error en SaveComponents: " . $e->getMessage());
-            return false;
+            // ... (Tu manejo de ROLLBACK y retorno de error) ...
+            pg_query($this->db->getConnection(), "ROLLBACK"); 
+            $final_error = "Error al guardar los componentes (Interno). " . $e->getMessage();
+            error_log($final_error);
+            
+            return [
+                'success' => false, 
+                'message' => "Error al guardar los componentes",
+                'debug_info' => $e->getMessage()
+            ];
         }
+    } catch (Throwable $e) {
+        error_log("Error en SaveComponents: " . $e->getMessage());
+        return [
+            'success' => false, 
+            'message' => "Error al iniciar el proceso de guardado de componentes",
+            'debug_info' => $e->getMessage()
+        ];
     }
+}
 
     public function GetDataEstatusTicket($estatus,$id_user, $idtipouser){
         try {

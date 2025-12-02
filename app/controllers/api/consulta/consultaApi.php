@@ -1760,21 +1760,37 @@ class Consulta extends Controller
     }
 
     public function handleGetComponents(){
-        $ticketId = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
+        // Intentar obtener ticketId de diferentes formas
+        $ticketId = '';
+        if (isset($_POST['ticketId'])) {
+            $ticketId = trim($_POST['ticketId']);
+        } elseif (isset($_GET['ticketId'])) {
+            $ticketId = trim($_GET['ticketId']);
+        }
 
-        if (!$ticketId) {
-            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+        // Validar que ticketId no esté vacío
+        if (empty($ticketId) || $ticketId === '' || $ticketId === '0' || $ticketId === 'undefined' || $ticketId === 'null') {
+            error_log("GetComponents: ticketId vacío o inválido. POST data: " . print_r($_POST, true));
+            $this->response(['success' => false,'message' => 'Hay un campo vacío. El ID del ticket es requerido.'], 400);
             return;
         }
 
         $id_ticket = (int)$ticketId;
+        
+        // Validar que sea un número válido
+        if ($id_ticket <= 0) {
+            error_log("GetComponents: ticketId no es un número válido. Valor recibido: " . $ticketId);
+            $this->response(['success' => false,'message' => 'El ID del ticket no es válido.'], 400);
+            return;
+        }
 
         $repository = new technicalConsultionRepository();
 
         $result = $repository->GetComponents($id_ticket);
-        if ($result) {
+        if ($result !== false && $result !== null) {
             $this->response(['success' => true,'components' => $result], 200);
         } else {
+            error_log("GetComponents: Error al obtener componentes para ticket ID: " . $id_ticket);
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
         }
     }

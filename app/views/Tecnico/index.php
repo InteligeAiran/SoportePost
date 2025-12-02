@@ -685,7 +685,7 @@ function mi_navbar() {}
                                     
                                     <!-- Wrapper con position-relative para que Bootstrap muestre los mensajes de feedback -->
                                     <div class="position-relative">
-                                        <input class="form-control" type="file" id="documentFile" accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf" required>
+                                        <input class="form-control" type="file" id="documentFile" accept="image/jpg,image/png,image/gif,application/pdf" required>
 
                                         <!-- Mensajes de validación de Bootstrap -->
                                         <div class="valid-feedback">
@@ -813,6 +813,30 @@ function mi_navbar() {}
                                 
                                 <div class="row mt-3">
                                     <div class="col-12">
+                                        <div class="alert alert-info mb-2 py-2" role="alert">
+                                            <small class="d-flex align-items-center mb-1">
+                                                <i class="bi bi-info-circle me-2"></i><strong>Leyenda de Estados:</strong>
+                                            </small>
+                                            <div class="d-flex flex-wrap gap-3 mt-2">
+                                                <span class="badge bg-info text-dark">
+                                                    <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #0dcaf0; border-radius: 2px;"></span>
+                                                    Marcado
+                                                </span>
+                                                <span class="badge bg-secondary opacity-75">
+                                                    <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #6c757d; border-radius: 2px;"></span>
+                                                    Desmarcado
+                                                </span>
+                                                <span class="badge bg-light text-dark border">
+                                                    <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 2px;"></span>
+                                                    Sin marcar
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-12">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
                                                 <span class="text-muted">Componentes seleccionados: </span>
@@ -825,7 +849,7 @@ function mi_navbar() {}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" id="BotonCerrarModal">

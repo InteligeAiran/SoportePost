@@ -791,7 +791,7 @@ function mi_navbar()
                                 
                                 <!-- Wrapper con position-relative para que Bootstrap muestre los mensajes de feedback -->
                                 <div class="position-relative">
-                                    <input class="form-control" type="file" id="documentFile" accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf" required>
+                                    <input class="form-control" type="file" id="documentFile" accept="image/jpg,image/png,image/gif,application/pdf" required>
 
                                     <!-- Mensajes de validación de Bootstrap -->
                                     <div class="valid-feedback">

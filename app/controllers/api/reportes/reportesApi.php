@@ -1589,31 +1589,48 @@ class reportes extends Controller {
         $components_json = isset($_POST['selectedComponents']) ? trim($_POST['selectedComponents']) : null;
         $serial_pos = isset($_POST['serialPos']) ? trim($_POST['serialPos']) : null;
         $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : null;
-        $modulo = isset($_POST['modulo']) ? trim ($_POST['modulo']) : null;
+        $modulo = isset($_POST['modulo']) ? trim($_POST['modulo']) : null;
 
-        // --- CORRECCIÓN AQUÍ ---
-        // Inicializa array de componentes
-        $componentes_array = [];
-        
-        // Solo procesa JSON si hay datos válidos
-        if (!empty($components_json) && $components_json !== 'null' && $components_json !== 'undefined') {
-            $decoded = json_decode($components_json, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                $componentes_array = $decoded;
-            }
-        }
-
+        // Validar campos requeridos primero
         if (!$id_ticket || !$id_user || !$serial_pos) {
+            error_log("SaveComponents: Campos vacíos - ticketId: " . ($id_ticket ?? 'null') . ", id_user: " . ($id_user ?? 'null') . ", serial_pos: " . ($serial_pos ?? 'null'));
             $this->response(['success' => false, 'message' => 'Hay un campo vacío.'], 400);
             return;
         }
 
+        // Validar que ticketId sea un número válido
+        $id_ticket_num = (int)$id_ticket;
+        if ($id_ticket_num <= 0) {
+            error_log("SaveComponents: ticketId inválido - " . $id_ticket);
+            $this->response(['success' => false, 'message' => 'El ID del ticket no es válido.'], 400);
+            return;
+        }
+
+        // Procesar JSON de componentes (puede ser objeto con selected/deselected o array simple)
+        $componentes_array = [];
+        
+        if (!empty($components_json) && $components_json !== 'null' && $components_json !== 'undefined') {
+            $decoded = json_decode($components_json, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                // Puede ser un objeto {selected: [], deselected: []} o un array simple
+                $componentes_array = $decoded;
+            } else {
+                error_log("SaveComponents: Error al decodificar JSON - " . json_last_error_msg() . " - JSON: " . $components_json);
+            }
+        }
+
         $repository = new ReportRepository();
-        $result = $repository->SaveComponents($id_ticket, $componentes_array, $serial_pos, $id_user, $modulo);
-        if ($result !== false) {
+        $result = $repository->SaveComponents($id_ticket_num, $componentes_array, $serial_pos, $id_user, $modulo);
+        
+        if ($result !== false && is_array($result) && isset($result['success'])) {
             $nro_ticket = isset($result['nro_ticket']) ? $result['nro_ticket'] : null;
-            $this->response(['success' => true, 'message' => 'Componentes guardados correctamente', 'nro_ticket' => $nro_ticket], 200);
+            if ($result['success']) {
+                $this->response(['success' => true, 'message' => $result['message'] ?? 'Componentes guardados correctamente', 'nro_ticket' => $nro_ticket], 200);
+            } else {
+                $this->response(['success' => false, 'message' => $result['message'] ?? 'Error al guardar los componentes', 'debug_info' => $result['debug_info'] ?? null], 500);
+            }
         } else {
+            error_log("SaveComponents: Resultado inesperado del repositorio - " . print_r($result, true));
             $this->response(['success' => false, 'message' => 'Error al guardar los componentes'], 500);
         }
     }
