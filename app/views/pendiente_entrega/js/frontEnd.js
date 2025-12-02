@@ -2475,7 +2475,7 @@ $(document).ready(function () {
   // 4. Listener para el clic en los botones "Subir Documento" en la tabla
   // Usamos delegación de eventos con $(document).on('click', ...)
   // para los botones generados dinámicamente por DataTables.
-  $(document).on("click", ".upload-document-btn", function () {
+   $(document).on("click", ".upload-document-btn", function () {
     // Verifica si la instancia del modal se creó correctamente
     if (uploadDocumentModalInstance) {
       const idTicket = $(this).data("id-ticket"); // Obtiene data-id-ticket del botón clicado
@@ -2484,42 +2484,99 @@ $(document).ready(function () {
       $('#uploadDocumentModal').attr('data-id-ticket', idTicket);
       $("#htmlTemplateTicketId").val(idTicket);
 
-      // Limpiar clases de validación del input y formulario
+      // Obtener referencias a los elementos
       const documentFileInput = document.getElementById('documentFile');
       const uploadFormElement = document.getElementById('uploadForm');
+      const imagePreview = document.getElementById('imagePreview');
+      const uploadMessage = document.getElementById('uploadMessage');
+      const uploadFileBtn = document.getElementById('uploadFileBtn');
+      const fileFormatInfo = document.getElementById('fileFormatInfo');
+
+      // Limpiar el formulario y mensajes previos
       if (documentFileInput) {
-        documentFileInput.classList.remove('is-valid', 'is-invalid');
+        documentFileInput.value = ""; // Limpiar el input file
+        documentFileInput.classList.remove('is-valid', 'is-invalid'); // Limpiar clases de validación
+        // Limpiar estilos inline que puedan interferir
+        documentFileInput.style.removeProperty("background-image");
+        documentFileInput.style.removeProperty("background-position");
+        documentFileInput.style.removeProperty("background-repeat");
+        documentFileInput.style.removeProperty("background-size");
+        documentFileInput.style.removeProperty("padding-right");
+        documentFileInput.style.removeProperty("border-color");
+        documentFileInput.style.removeProperty("box-shadow");
       }
       if (uploadFormElement) {
-        uploadFormElement.classList.remove('was-validated');
+        uploadFormElement.classList.remove('was-validated'); // Limpiar clase de validación del formulario
+      }
+
+      // Restaurar visibilidad de los mensajes de feedback de Bootstrap
+      const validFeedback = documentFileInput && documentFileInput.parentElement ? documentFileInput.parentElement.querySelector('.valid-feedback') : null;
+      const invalidFeedback = documentFileInput && documentFileInput.parentElement ? documentFileInput.parentElement.querySelector('.invalid-feedback') : null;
+      if (validFeedback) {
+        validFeedback.style.display = '';
+        validFeedback.style.visibility = '';
+        validFeedback.style.opacity = '';
+        validFeedback.style.removeProperty("height");
+        validFeedback.style.removeProperty("margin");
+        validFeedback.style.removeProperty("padding");
+      }
+      if (invalidFeedback) {
+        invalidFeedback.style.display = '';
+        invalidFeedback.style.visibility = '';
+        invalidFeedback.style.opacity = '';
+        invalidFeedback.style.removeProperty("height");
+        invalidFeedback.style.removeProperty("margin");
+        invalidFeedback.style.removeProperty("padding");
+      }
+
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+      if (imagePreview) {
+        imagePreview.style.display = "none"; // Ocultar previsualización
+        imagePreview.src = "#"; // Restablecer la fuente de la imagen
+      }
+      const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+      if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = "none";
+      }
+
+      // Verificar que uploadMessage existe antes de usarlo
+      if (uploadMessage) {
+        uploadMessage.classList.add("hidden"); // Ocultar mensaje
+        uploadMessage.textContent = ""; // Limpiar texto del mensaje
+      }
+
+      // Mostrar el mensaje informativo
+      if (fileFormatInfo) {
+        fileFormatInfo.style.display = "block";
+        fileFormatInfo.style.visibility = "visible";
+        fileFormatInfo.style.opacity = "1";
+        fileFormatInfo.style.removeProperty("height");
+        fileFormatInfo.style.removeProperty("margin");
+        fileFormatInfo.style.removeProperty("padding");
+      }
+
+      // Deshabilitar el botón de subir al abrir el modal
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
       }
 
       // Rellena el modal con los datos del ticket
-      if ($modalTicketIdSpan.length) 
+      if ($modalTicketIdSpan.length) {
         $modalTicketIdSpan.text(nroTicket);
-      // Limpia campos del modal
-      if ($documentFileInput.length) $documentFileInput.val("");
-      if ($imagePreview.length) {
-        $imagePreview.hide();
-        $imagePreview.attr("src", "#"); // Limpiar src de la imagen
-      }
-      if ($uploadMessage.length) {
-        $uploadMessage.text("");
-        $uploadMessage.hide(); // Ocultar mensaje
       }
 
-      
-    // Configurar el listener para el input de archivo
-    if (documentFileInput) {
-      // Remover listener previo para evitar duplicados
-      documentFileInput.removeEventListener('change', handleFileSelectForUpload);
-      // Añadir el listener
-      documentFileInput.addEventListener('change', handleFileSelectForUpload);
-    }
+      // Eliminar listeners previos para evitar duplicados
+      if (documentFileInput) {
+        documentFileInput.removeEventListener('change', handleFileSelectForUpload);
+      }
 
-    setTimeout(() => {
+      // Añadir el listener para validar el archivo seleccionado
+      if (documentFileInput) {
+        documentFileInput.addEventListener('change', handleFileSelectForUpload);
+      }
+
+      // Mostrar el modal
       uploadDocumentModalInstance.show();
-    }, 300);
     } else {
       console.error(
         "Error: Instancia de modal 'uploadDocumentModal' no encontrada. Asegúrate de que el elemento HTML del modal existe y Bootstrap JS está cargado."
@@ -2527,44 +2584,7 @@ $(document).ready(function () {
     }
   });
 
-  // 4. Previsualización de la imagen seleccionada (ya estaba bien estructurado)
-  if ($documentFileInput.length) {
-    $documentFileInput.on("change", function () {
-      const file = this.files[0];
 
-      if (file) {
-        if (file.type.startsWith("image/") || file.type === "application/pdf") {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            if (file.type.startsWith("image/")) {
-              $imagePreview.attr("src", e.target.result);
-              $imagePreview.show();
-            } else {
-              $imagePreview.hide();
-              $imagePreview.attr("src", "#");
-              showMessage(
-                "Archivo PDF seleccionado. No se muestra previsualización.",
-                "info"
-              );
-            }
-          };
-          reader.readAsDataURL(file);
-          $uploadMessage.hide(); // Limpiar mensajes si el archivo es válido
-        } else {
-          $documentFileInput.val("");
-          $imagePreview.attr("src", "#");
-          showMessage(
-            "Tipo de archivo no permitido. Solo imágenes (JPG, PNG, GIF) o PDF.",
-            "error"
-          );
-        }
-      } else {
-        $imagePreview.hide();
-        $imagePreview.attr("src", "#");
-        $uploadMessage.hide();
-      }
-    });
-  }
   
   function handleFileSelectForUpload(event) {
   const input = event.target;
