@@ -786,7 +786,10 @@ function mi_navbar() {}
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="alert bg-gradient-primary text-white" role="alert">
-                                            <i class="bi bi-info-circle me-2"></i>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.08-.41.2-.083c-.274-.223-.306-.35-.24-.555zm.405-3.567A.245.245 0 0 1 8 4.775V4.2a.24.24 0 0 1 .237-.245zm-.49-.122a.5.5 0 1 0-.97.124.5.5 0 0 0 .97-.124z"/>
+                                            </svg>
                                             Selecciona los componentes que deseas cargar para este dispositivo.
                                         </div>
                                     </div>
@@ -811,25 +814,30 @@ function mi_navbar() {}
                                     </div>
                                 </div>
                                 
-                                <div class="row mt-3">
-                                    <div class="col-12">
-                                        <div class="alert alert-info mb-2 py-2" role="alert">
-                                            <small class="d-flex align-items-center mb-1">
-                                                <i class="bi bi-info-circle me-2"></i><strong>Leyenda de Estados:</strong>
-                                            </small>
-                                            <div class="d-flex flex-wrap gap-3 mt-2">
-                                                <span class="badge bg-info text-dark">
-                                                    <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #0dcaf0; border-radius: 2px;"></span>
-                                                    Marcado
-                                                </span>
-                                                <span class="badge bg-secondary opacity-75">
-                                                    <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #6c757d; border-radius: 2px;"></span>
-                                                    Desmarcado
-                                                </span>
-                                                <span class="badge bg-light text-dark border">
-                                                    <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 2px;"></span>
-                                                    Sin marcar
-                                                </span>
+                                <div class="row">
+                                    <div class="col-12" class="bg-gradient-primary">
+                                        <div class="alert bg-gradient-primary text-white" role="alert">
+                                            <div style="margin-left: 3%;">
+                                                <small class="d-flex align-items-center mb-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.08-.41.2-.083c-.274-.223-.306-.35-.24-.555zm.405-3.567A.245.245 0 0 1 8 4.775V4.2a.24.24 0 0 1 .237-.245zm-.49-.122a.5.5 0 1 0-.97.124.5.5 0 0 0 .97-.124z"/>
+                                                    </svg><span style="color: white;"><strong>Leyenda de Estados:</strong></span>
+                                                </small>
+                                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                                    <span style="background: #faebd7" class="badge text-dark">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #0dcaf0; border-radius: 2px;"></span>
+                                                        Marcado
+                                                    </span>
+                                                    <span class="badge bg-secondary opacity-75">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #6c757d; border-radius: 2px;"></span>
+                                                        Desmarcado
+                                                    </span>
+                                                    <span class="badge bg-light text-dark border">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 2px;"></span>
+                                                        Sin marcar
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
