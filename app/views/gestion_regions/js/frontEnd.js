@@ -4,6 +4,635 @@ let confirmInTallerModalInstance = null;
 let currentSerialPos = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
 let currentTicketNroForImage = null;
 
+// Variables globales para componentes (se inicializarán en DOMContentLoaded)
+let modalComponentesEl = null;
+let tbodyComponentes = null;
+let contadorComponentes = null;
+let modalComponentes = null;
+
+// --- UTILIDADES DE UI Y ESTADO ---
+
+/**
+ * Actualiza el color de la fila basado en el estado del checkbox y su estado inicial.
+ * @param {HTMLInputElement} checkbox - El checkbox que disparó el evento.
+*/
+
+// Función para actualizar los colores de la fila según el estado del checkbox
+function actualizarColoresFila(checkbox) {
+    const row = checkbox.closest('tr');
+    if (!row) return;
+    
+    const isChecked = checkbox.checked;
+    const initialState = checkbox.getAttribute('data-initial-checked') === 'true';
+    
+    // Remover todas las clases de color
+    row.classList.remove('table-info', 'table-secondary', 'opacity-75');
+    
+    if (isChecked) {
+        // Si está marcado, mostrar en azul
+        row.classList.add('table-info');
+    } else if (initialState) {
+        // Si estaba marcado inicialmente y ahora está desmarcado, mostrar opaco
+        row.classList.add('table-secondary', 'opacity-75');
+    }
+    // Si no estaba marcado inicialmente y sigue sin marcar, no agregar clase (estado normal)
+}
+
+// Función para actualizar el contador de componentes seleccionados
+function actualizarContador() {
+  if (!tbodyComponentes || !contadorComponentes) return;
+  
+  // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+  const selectAllCheckbox = document.getElementById('selectAllComponents');
+    
+  // Actualizar contador
+  contadorComponentes.textContent = checkboxes.length;
+    
+  // Actualizar estado del checkbox "seleccionar todos"
+  if (selectAllCheckbox) {
+      // Solo consideramos los checkboxes que NO están deshabilitados para esta lógica
+      const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+      const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+      const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+        
+      selectAllCheckbox.checked = allChecked;
+      selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  }
+}
+
+// Función para limpiar la selección de componentes
+function limpiarSeleccion() {
+  if (!tbodyComponentes) return;
+  
+  // Solo desmarca los checkboxes que NO están deshabilitados
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"].component-checkbox:not([disabled])');
+  checkboxes.forEach(cb => {
+    cb.checked = false;
+    actualizarColoresFila(cb);
+  });
+    
+  const selectAllCheckbox = document.getElementById('selectAllComponents');
+  if (selectAllCheckbox) {
+      selectAllCheckbox.checked = false;
+  }
+  actualizarContador();
+}
+
+/**
+ * Envía los componentes seleccionados y deseleccionados al servidor para su guardado.
+ * @param {string|number} ticketId 
+ * @param {Array<number>} selectedComponents - IDs de componentes marcados o que siguen marcados.
+ * @param {Array<number>} deselectedComponents - IDs de componentes que fueron desmarcados.
+ * @param {string} serialPos - Número de serie del POS.
+ * * NOTA: Asume que 'ENDPOINT_BASE', 'APP_PATH', 'Swal', 'modalComponentes' están definidos globalmente.
+ */
+function guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos) {
+    const id_user = document.getElementById('userId').value;
+    const modulo = "Gestión Región";
+    
+    // 1. Validaciones y Limpieza de datos
+    const ticketIdClean = String(ticketId).trim().replace(/['"]/g, '');
+    const ticketIdNum = parseInt(ticketIdClean);
+    const serialPosClean = serialPos ? serialPos.trim() : '';
+    const idUserClean = id_user ? id_user.trim() : '';
+
+    if (isNaN(ticketIdNum) || ticketIdNum <= 0) {
+        Swal.fire({
+            title: 'Error de Datos',
+            text: 'El ID del ticket no es válido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
+    
+    if (!serialPosClean) {
+        Swal.fire({
+            title: 'Error de Datos',
+            text: 'El serial del POS es requerido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
+    
+    if (!idUserClean) {
+        Swal.fire({
+            title: 'Error de Usuario',
+            text: 'El ID de usuario es requerido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
+    
+    // Preparar objeto con componentes marcados y desmarcados
+    const componentsData = {
+        selected: selectedComponents || [],
+        deselected: deselectedComponents || []
+    };
+    
+    // 2. Configuración de la petición AJAX
+    const xhr = new XMLHttpRequest();
+    // Uso correcto de template literals para la URL
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    // 3. Manejo de la respuesta
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        // Uso correcto de template literals para el HTML
+                        html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPosClean}</span> han sido guardados correctamente.`,
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar',
+                        color: 'black',
+                        confirmButtonColor: '#003594',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        keydownListenerCapture: true
+                    }).then(() => {
+                        modalComponentes.hide();
+                        window.location.reload(); 
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: response.message || 'Error al guardar los componentes.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al procesar la respuesta del servidor.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        } else {
+            // Uso correcto de template literals
+            Swal.fire({
+                title: 'Error del Servidor',
+                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.fire({
+            title: 'Error de Red',
+            text: 'No se pudo conectar con el servidor.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+    };
+    
+    // 4. Preparación de los datos a enviar y envío
+    const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
+    
+    // Esto es útil para depuración y se mantiene como estaba
+    console.log('Enviando datos:', {
+        ticketId: ticketIdNum,
+        serialPos: serialPosClean,
+        components: componentsData,
+        id_user: idUserClean,
+        modulo: modulo
+    });
+    
+    xhr.send(dataToSend);
+}
+
+// --- FUNCIONES AUXILIARES DE CONTEXTO (Ajustar según tu entorno) ---
+
+// Función para obtener el ticket ID (ajusta según tu estructura)
+function obtenerTicketId() {
+  return currentTicketIdForConfirmTaller;
+}
+
+// Función para obtener el nombre de la región (ajusta según tu estructura)
+function obtenerRegionName() {
+  const regionSelect = document.getElementById('AsiganrCoordinador');
+  if (regionSelect && regionSelect.selectedOptions.length > 0) {
+    return regionSelect.selectedOptions[0].text;
+  }
+  return 'Sin región asignada';
+}
+
+/**
+ * Carga los componentes de un ticket desde el servidor, maneja la respuesta y muestra el modal.
+ * * NOTA: Asume que 'tbodyComponentes', 'modalComponentes', 'ENDPOINT_BASE', 'APP_PATH', 
+ * y 'actualizarContador' están definidos y son accesibles globalmente o en el scope.
+ * * @param {string|number} ticketId - ID del ticket a consultar.
+ * @param {string} regionName - Nombre de la región (actualmente no utilizado dentro de la función).
+ * @param {string} serialPos - Número de serie del POS.
+ */
+function showSelectComponentsModal(ticketId, regionName, serialPos) {
+    // 1. Validación de ticketId
+    const ticketIdNum = parseInt(ticketId);
+
+    if (!ticketId || isNaN(ticketIdNum) || ticketIdNum <= 0) {
+        Swal.fire({
+            title: 'Error',
+            text: 'El ID del ticket no es válido o está vacío.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+    
+    if (!tbodyComponentes || !modalComponentes) {
+        Swal.fire({
+            title: 'Error',
+            text: 'El modal de componentes no está disponible. Por favor, recargue la página.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+    
+    const xhr = new XMLHttpRequest();
+
+    // 2. Destruir cualquier instancia de DataTable antes de mostrar el estado de carga
+    if (typeof $ !== 'undefined' && $.fn.DataTable && $.fn.DataTable.isDataTable("#tablaComponentes")) {
+        $("#tablaComponentes").DataTable().destroy();
+    }
+    
+    // Mostrar estado de carga (Uso correcto de template literals)
+    tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
+    
+    // Uso correcto de template literals para la URL y Data
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+    const dataToSendString = `action=GetComponents&ticketId=${ticketIdNum}`; // Usamos la variable numérica validada
+    
+    // 3. Configuración y envío de la petición AJAX
+    xhr.open('POST', apiUrl, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+
+                if (response.success && response.components) {
+                    const components = response.components;
+                    let componentsHtml = '';
+                    
+                    if (components.length > 0) {
+                        const initialState = {};
+                        
+                        components.forEach(comp => {
+                            // Limpieza de valores booleanos de PostgreSQL ('t'/'f')
+                            const addValue = comp.add === true || comp.add === 't';
+                            const deselectedValue = comp.add === false || comp.add === 'f';
+                            
+                            // Lógica de estado inicial (true = marcado, false/null = no marcado)
+                            const isChecked = addValue;
+                            
+                            // Determinar clase CSS según el estado de la base de datos
+                            let rowClass = '';
+                            if (isChecked) {
+                                rowClass = 'table-info'; // Azul para marcado (add = true)
+                            } else if (deselectedValue) {
+                                rowClass = 'table-secondary opacity-75'; // Opaco para desmarcado (add = false)
+                            }
+                            // Si 'add' es null o 'falsy', no se agrega clase (estado normal)
+                            
+                            // Guardar estado inicial para la comparación de cambios
+                            initialState[comp.id_component] = isChecked;
+                            
+                            componentsHtml += `
+                                <tr class="${rowClass}" data-component-id="${comp.id_component}" data-initial-state="${isChecked}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input component-checkbox" 
+                                               value="${comp.id_component}" 
+                                               data-initial-checked="${isChecked}"
+                                               ${isChecked ? 'checked' : ''}>
+                                    </td>
+                                    <td>${comp.name_component}</td>
+                                </tr>
+                            `;
+                        });
+                        
+                        // Guardar estado inicial en el tbody para comparar cambios al guardar
+                        tbodyComponentes.setAttribute('data-initial-state', JSON.stringify(initialState));
+                        
+                        document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
+                        document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+
+                    } else {
+                        componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
+                    }
+                    
+                    // Destruir cualquier instancia de DataTable en la tabla de componentes si existe
+                    if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                        if ($.fn.DataTable.isDataTable("#tablaComponentes")) {
+                            $("#tablaComponentes").DataTable().destroy();
+                        }
+                    }
+                    
+                    // Guardar el contenido antes de establecerlo (por si DataTables lo modifica)
+                    tbodyComponentes.setAttribute('data-saved-content', componentsHtml);
+                    
+                    // Establecer el contenido directamente
+                    tbodyComponentes.innerHTML = componentsHtml;
+                    
+                    console.log('✅ Contenido establecido ANTES de mostrar modal');
+                    console.log('✅ Filas TR:', tbodyComponentes.querySelectorAll('tr').length);
+                    
+                    // Título del Modal (Uso correcto de template literals)
+                    document.getElementById('modalComponentesLabel').innerHTML = `
+                        <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
+                    `;
+
+                    // Mostrar el modal
+                    modalComponentes.show();
+                    
+                    // Verificar inmediatamente después de mostrar
+                    setTimeout(() => {
+                        console.log('🔍 Verificando contenido DESPUÉS de mostrar modal...');
+                        console.log('🔍 Contenido actual del tbody:', tbodyComponentes.innerHTML);
+                        console.log('🔍 Filas TR encontradas:', tbodyComponentes.querySelectorAll('tr').length);
+                        console.log('🔍 ¿tbodyComponentes existe?', !!tbodyComponentes);
+                        console.log('🔍 ¿tbodyComponentes es visible?', tbodyComponentes.offsetParent !== null);
+                        
+                        // FORZAR VISIBILIDAD del tbody y elementos relacionados
+                        const tableElement = document.getElementById('tablaComponentes');
+                        const tableContainer = tableElement ? tableElement.closest('.table-responsive') : null;
+                        const tableRow = tableContainer ? tableContainer.closest('.row') : null;
+                        
+                        // Hacer visible el tbody
+                        if (tbodyComponentes) {
+                            tbodyComponentes.style.display = '';
+                            tbodyComponentes.style.visibility = 'visible';
+                            tbodyComponentes.style.opacity = '1';
+                            tbodyComponentes.style.height = 'auto';
+                            tbodyComponentes.style.minHeight = 'auto';
+                        }
+                        
+                        // Hacer visible la tabla
+                        if (tableElement) {
+                            tableElement.style.display = '';
+                            tableElement.style.visibility = 'visible';
+                            tableElement.style.opacity = '1';
+                        }
+                        
+                        // Hacer visible el contenedor
+                        if (tableContainer) {
+                            tableContainer.style.display = '';
+                            tableContainer.style.visibility = 'visible';
+                            tableContainer.style.opacity = '1';
+                        }
+                        
+                        // Hacer visible la fila contenedora
+                        if (tableRow) {
+                            tableRow.style.display = '';
+                            tableRow.style.visibility = 'visible';
+                            tableRow.style.opacity = '1';
+                        }
+                        
+                        // Verificar que el contenido esté presente
+                        const currentContent = tbodyComponentes.innerHTML;
+                        const hasComponents = currentContent.includes('SimCard') || currentContent.includes('Pila') || currentContent.includes('Cargador');
+                        
+                        if (!hasComponents && componentsHtml) {
+                            console.log('⚠️ Contenido faltante, restaurando...');
+                            tbodyComponentes.innerHTML = componentsHtml;
+                        }
+                        
+                        // Asegurarse de que las filas sean visibles
+                        const rows = tbodyComponentes.querySelectorAll('tr');
+                        console.log('🔍 Filas encontradas después de verificación:', rows.length);
+                        rows.forEach((row, index) => {
+                            row.style.display = '';
+                            row.style.visibility = 'visible';
+                            row.style.opacity = '1';
+                            row.style.height = 'auto';
+                            // Verificar las celdas también
+                            const cells = row.querySelectorAll('td');
+                            cells.forEach(cell => {
+                                cell.style.display = '';
+                                cell.style.visibility = 'visible';
+                                cell.style.opacity = '1';
+                            });
+                        });
+                        
+                        // Eliminar solo elementos .dataTables_empty
+                        const dataTablesEmpty = document.querySelectorAll('#tablaComponentes .dataTables_empty, #tbodyComponentes .dataTables_empty');
+                        if (dataTablesEmpty.length > 0) {
+                            console.log('⚠️ Elementos .dataTables_empty encontrados:', dataTablesEmpty.length);
+                            dataTablesEmpty.forEach(el => el.remove());
+                        }
+                        
+                        // Verificar visibilidad final
+                        console.log('✅ ¿tbodyComponentes es visible ahora?', tbodyComponentes.offsetParent !== null);
+                        console.log('✅ Estilos del tbody:', {
+                            display: window.getComputedStyle(tbodyComponentes).display,
+                            visibility: window.getComputedStyle(tbodyComponentes).visibility,
+                            opacity: window.getComputedStyle(tbodyComponentes).opacity
+                        });
+                        
+                        // Actualizar contador
+                        actualizarContador();
+                    }, 50);
+
+                } else {
+                    Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
+            }
+        } else {
+            // Manejo de error del servidor (Uso correcto de template literals)
+            Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+    };  
+    
+    xhr.send(dataToSendString);
+}
+
+function abrirModalComponentes(boton) {
+    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
+    
+    // Obtener los valores de los atributos data
+    // Intentar obtener de diferentes formas por compatibilidad
+    const ticketId = boton.dataset.idTicket || boton.getAttribute('data-id-ticket') || boton.getAttribute('data-idTicket');
+    const serialPos = boton.dataset.serialPos || boton.getAttribute('data-serial-pos') || boton.getAttribute('data-serialPos');
+
+    // Validar ticketId
+    if (!ticketId || ticketId === 'undefined' || ticketId === 'null' || ticketId === '' || ticketId === '0') {
+        console.error('Error: ticketId no válido', { ticketId, boton: boton });
+        Swal.fire({
+            title: 'Atención',
+            text: 'No se pudo obtener el ID del ticket. Por favor, verifique que el ticket esté seleccionado correctamente.',
+            icon: 'warning',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    // Validar serialPos (puede ser opcional pero es mejor tenerlo)
+    if (!serialPos || serialPos === 'undefined' || serialPos === 'null') {
+        console.warn('Advertencia: serialPos no disponible', { serialPos, ticketId });
+        // No bloqueamos la ejecución si serialPos está vacío, pero lo notificamos
+    }
+
+    const regionName = obtenerRegionName();
+
+    if(modalCerrarComponnets){
+      modalCerrarComponnets.addEventListener('click', function() {
+        modalComponentes.hide();
+      });
+    }
+    
+    // Llamar a la función con el ticketId validado
+    showSelectComponentsModal(ticketId, regionName, serialPos || '');
+}
+
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+document.addEventListener('DOMContentLoaded', function () {
+    // Inicializar referencias a elementos del modal de componentes
+    modalComponentesEl = document.getElementById('modalComponentes');
+    tbodyComponentes = document.getElementById('tbodyComponentes');
+    contadorComponentes = document.getElementById('contadorComponentes');
+    
+    // Inicializa el modal de Bootstrap una sola vez.
+    if (modalComponentesEl) {
+        modalComponentes = new bootstrap.Modal(modalComponentesEl, {
+            keyboard: false, backdrop:'static'
+        });
+        
+        // Escuchar el evento 'show.bs.modal' para resetear el estado del modal cada vez que se abre
+        modalComponentesEl.addEventListener('show.bs.modal', function () {
+            // Destruir cualquier instancia de DataTable en la tabla de componentes si existe
+            if (typeof $ !== 'undefined' && $.fn.DataTable && $.fn.DataTable.isDataTable("#tablaComponentes")) {
+                $("#tablaComponentes").DataTable().destroy();
+            }
+            
+            // Limpiar el contador y el checkbox de "seleccionar todos" cada vez que se abra el modal
+            const selectAllCheckbox = document.getElementById('selectAllComponents');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+            }
+            if (contadorComponentes) {
+                contadorComponentes.textContent = '0';
+            }
+        });
+        
+        // Escuchar el evento 'shown.bs.modal' (después de que el modal se muestre completamente)
+        modalComponentesEl.addEventListener('shown.bs.modal', function () {
+            // Verificar y destruir DataTables después de que el modal esté completamente visible
+            if (typeof $ !== 'undefined' && $.fn.DataTable && $.fn.DataTable.isDataTable("#tablaComponentes")) {
+                $("#tablaComponentes").DataTable().destroy();
+                // Si el tbody tiene contenido guardado, restaurarlo
+                const savedContent = tbodyComponentes.getAttribute('data-saved-content');
+                if (savedContent) {
+                    tbodyComponentes.innerHTML = savedContent;
+                }
+            }
+        });
+    }
+    
+    // Escucha el evento click en el documento y usa delegación.
+    document.addEventListener('click', function (e) {
+        
+        // 1. Botón para abrir el modal ('hiperbinComponents')
+        if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
+            const botonClicado = e.target.closest('#hiperbinComponents');
+            if (botonClicado) {
+                abrirModalComponentes(botonClicado);
+            }
+        }
+
+        // 2. Botón "Limpiar Selección"
+        if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
+            limpiarSeleccion();
+        }
+
+        // 3. Botón "Guardar Componentes"
+        if (e.target && e.target.id === 'btnGuardarComponentes') {
+            const ticketId = e.target.dataset.ticketId;
+            const serialPos = e.target.dataset.serialPos;
+
+            // Obtener todos los checkboxes y determinar cambios
+            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"].component-checkbox');
+            const selectedComponents = [];
+            const deselectedComponents = [];
+            
+            // Obtener estado inicial guardado
+            const initialStateJson = tbodyComponentes.getAttribute('data-initial-state');
+            const initialState = initialStateJson ? JSON.parse(initialStateJson) : {};
+            
+            allCheckboxes.forEach(checkbox => {
+                const compId = parseInt(checkbox.value);
+                const isCurrentlyChecked = checkbox.checked;
+                const wasInitiallyChecked = initialState[compId] === true;
+                
+                // Lógica de envío:
+                // El backend necesita saber qué IDs deben tener 'add=TRUE' y cuáles 'add=FALSE'.
+                
+                // 1. Componentes que deben terminar como TRUE (Marcados)
+                if (isCurrentlyChecked) {
+                    selectedComponents.push(compId);
+                } 
+                
+                // 2. Componentes que deben terminar como FALSE (Desmarcados que estaban TRUE)
+                // Solo enviar a desmarcar si estaba originalmente marcado (TRUE)
+                if (!isCurrentlyChecked && wasInitiallyChecked) {
+                    deselectedComponents.push(compId);
+                } 
+            });
+            
+            // Enviar cambios (puede haber solo marcados, solo desmarcados, o ambos)
+            guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos);
+        }
+
+        // 4. Botón de cerrar el modal
+        if (e.target && e.target.id === 'BotonCerrarModal') {
+            modalComponentes.hide();
+        }
+
+        // 5. Checkbox "Seleccionar Todos"
+        if (e.target && e.target.id === 'selectAllComponents') {
+            const isChecked = e.target.checked;
+            const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
+            
+            enabledCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                // Aplicar el color de fila después de cambiar el estado
+                actualizarColoresFila(checkbox);
+            });
+            
+            actualizarContador();
+        }
+
+        // 6. Checkboxes individuales de componentes
+        if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+            actualizarContador();
+            actualizarColoresFila(e.target);
+        }
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function () {
         const confirmInTallerModalElement = document.getElementById("confirmInRosalModal");
         const CerramodalBtn = document.getElementById("CerrarButtonTallerRecib");
@@ -384,16 +1013,6 @@ function getTicketDataFinaljs() {
                 infoEmpty: "No hay datos disponibles",
                 infoFiltered: " de _MAX_ Disponibles",
                 search: "Buscar:",
-                language: {
-                emptyTable: `
-                  <div class="d-flex flex-column align-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                      <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                    </svg>
-                    <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                    <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                  </div>`
-                },
                 loadingRecords: "Cargando...",
                 processing: "Procesando...",
                 paginate: {
@@ -589,19 +1208,6 @@ function getTicketDataFinaljs() {
                   showTicketStatusIndicator('Cerrado', 'Sin estado');
 
                   const tbody = document.querySelector("#tabla-ticket tbody");
-                  if (tbody) {
-                    tbody.innerHTML = `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-                  }
 
                   if (nroTicket) {
                     Swal.fire({
@@ -1062,99 +1668,16 @@ function getTicketDataFinaljs() {
                 }
               });
 
-            if (tableContainer) {
-                tableContainer.innerHTML =  `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-              tableContainer.style.display = "";
-            }
-          } else {
-            if (tableContainer) {
-              tableContainer.innerHTML =  `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-              tableContainer.style.display = "";
-            }
           }
         } else {
-          if (tableContainer) {
-            tableContainer.innerHTML =  `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-            tableContainer.style.display = "";
-          }
           console.error("Error from API:", response.message);
         }
       } catch (error) {
-        if (tableContainer) {
-          tableContainer.innerHTML = `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-          tableContainer.style.display = "";
-        }
         console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 404) {
-      if (tableContainer) { `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-        tableContainer.style.display = "";
-      }
+      console.error("Error 404:", xhr.statusText);
     } else {
-      if (tableContainer) {
-        tableContainer.innerHTML =  `<tr>
-                      <td colspan="16" class="text-center text-muted py-5">
-                        <div class="d-flex flex-column align-items-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#6c757d" class="bi bi-inbox mb-3" viewBox="0 0 16 16">
-                            <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                          </svg>
-                          <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-                          <p class="text-muted mb-0">No hay tickets en la región para mostrar en este momento.</p>
-                        </div>
-                      </td>
-                    </tr>`;
-        tableContainer.style.display = "";
-      }
       console.error("Error:", xhr.status, xhr.statusText);
     }
   };
@@ -1669,6 +2192,11 @@ function formatTicketDetailsPanel(d) {
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
+                        <div class="col-sm-6 mb-2">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket || ""}" data-serial-pos = ${d.serial_pos || ""}>
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
+                          </button>
+                        </div>  
                     </div>
                 </div>
             </div>
@@ -1847,6 +2375,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -1937,6 +2466,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -2123,6 +2660,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}

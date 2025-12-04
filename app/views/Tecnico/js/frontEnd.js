@@ -4570,7 +4570,6 @@ function actualizarColoresFila(checkbox) {
     // Si no estaba marcado inicialmente y sigue sin marcar, no agregar clase (estado normal)
 }
 
-
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
   // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
@@ -4735,7 +4734,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, deselecte
     
     xhr.send(dataToSend);
 }
-
 
 // --- FUNCIONES AUXILIARES DE CONTEXTO (Ajustar según tu entorno) ---
 

@@ -499,7 +499,6 @@ function mi_navbar() {}
             </div>
         <!--END MODAL PARA SELECCIONAR LAS ACCIONES PARA VIZUALIZAR LA IMAGEN-->
 
-         
         <!-- MODAL PARA ACCIONES DE DOCUMENTOS -->
             <div class="modal fade" id="documentActionsModal" tabindex="-1" role="dialog" aria-labelledby="documentActionsModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
                 <div class="modal-dialog modal-dialog-centered" role="document">
@@ -535,8 +534,7 @@ function mi_navbar() {}
                             <form id="uploadForm">
                                 <div class="mb-3">
                                     <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
-                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
-                                        style="display:block">
+                                    <input class="form-control" type="file" id="documentFile" accept="image/jpg, image/png, image/gif, application/pdf" style="display:block" required>
                                     <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
                                 </div>
                                 <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
@@ -582,6 +580,105 @@ function mi_navbar() {}
                 </div>
             </div>
         <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
+
+        <!-- PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
+            <div class="modal fade" id="modalComponentes" tabindex="-1" aria-labelledby="modalComponentesLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-gradient-primary">
+                                <h5 class="modal-title text-white" id="modalComponentesLabel">
+                                    <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
+                                </h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="alert bg-gradient-primary text-white" role="alert">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.08-.41.2-.083c-.274-.223-.306-.35-.24-.555zm.405-3.567A.245.245 0 0 1 8 4.775V4.2a.24.24 0 0 1 .237-.245zm-.49-.122a.5.5 0 1 0-.97.124.5.5 0 0 0 .97-.124z"/>
+                                            </svg>
+                                            Selecciona los componentes que deseas cargar para este dispositivo.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover no-datatables" id="tablaComponentes" data-dt-disable="true">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>
+                                                            <input type="checkbox" id="selectAllComponents" class="form-check-input">
+                                                        </th>
+                                                        <th>Componente</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbodyComponentes">
+                                                    </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-12" class="bg-gradient-primary">
+                                        <div class="alert bg-gradient-primary text-white" role="alert">
+                                            <div style="margin-left: 3%;">
+                                                <small class="d-flex align-items-center mb-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.08-.41.2-.083c-.274-.223-.306-.35-.24-.555zm.405-3.567A.245.245 0 0 1 8 4.775V4.2a.24.24 0 0 1 .237-.245zm-.49-.122a.5.5 0 1 0-.97.124.5.5 0 0 0 .97-.124z"/>
+                                                    </svg><span style="color: white;"><strong>Leyenda de Estados:</strong></span>
+                                                </small>
+                                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                                    <span style="background: #faebd7" class="badge text-dark">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #0dcaf0; border-radius: 2px;"></span>
+                                                        Marcado
+                                                    </span>
+                                                    <span class="badge bg-secondary opacity-75">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #6c757d; border-radius: 2px;"></span>
+                                                        Desmarcado
+                                                    </span>
+                                                    <span class="badge bg-light text-dark border">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 2px;"></span>
+                                                        Sin marcar
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-muted">Componentes seleccionados: </span>
+                                                <span id="contadorComponentes" class="badge bg-primary">0</span>
+                                            </div>
+                                            <div>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="limpiarSeleccion()">
+                                                    <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Selección
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" id="BotonCerrarModal">
+                                    <i class="bi bi-x-circle me-1"></i>Cancelar
+                                </button>
+                                <button type="button" class="btn btn-primary" id="btnGuardarComponentes">
+                                    <i class="bi bi-check-circle me-1"></i>Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        <!-- END PARA SELECCIONAR LOS COMPONENTES ASOCIADOS AL SERIAL DEL POS -->
 
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
