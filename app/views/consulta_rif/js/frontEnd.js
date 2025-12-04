@@ -1830,8 +1830,47 @@ function SendDataFailure2(idStatusPayment) {
         try {
           const response = JSON.parse(xhr.responseText);
           if (response.success) {
-            // CORREO ELIMINADO: No se envía correo al crear el ticket
-            console.log(`📧 Ticket creado: ${response.ticket_data.Nr_ticket}. Correo NO enviado (solo al cerrar ticket).`);
+            // **ENVIAR CORREO AL CREAR TICKET NIVEL 2**
+            const xhrEmail = new XMLHttpRequest();
+            xhrEmail.open(
+              "POST",
+              `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
+            );
+            xhrEmail.setRequestHeader(
+              "Content-Type",
+              "application/x-www-form-urlencoded"
+            );
+
+            xhrEmail.onload = function () {
+              if (xhrEmail.status === 200) {
+                try {
+                  const responseEmail = JSON.parse(xhrEmail.responseText);
+                  console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
+                  
+                  // Verificar si al menos un correo se envió exitosamente
+                  const message = responseEmail.message || '';
+                  const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
+                  
+                  if (responseEmail.success || correoTecnicoEnviado) {
+                    console.log(`✅ Correo enviado exitosamente para el ticket ${response.ticket_data.Nr_ticket}`);
+                  } else {
+                    console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
+                  }
+                } catch (error) {
+                  console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
+                }
+              } else {
+                console.error("❌ Error al solicitar el envío de correo (Nivel 2):", xhrEmail.status);
+              }
+            };
+
+            xhrEmail.onerror = function () {
+              console.error("Error de red al solicitar el envío de correo.");
+            };
+            
+            const paramsEmail = `id_user=${encodeURIComponent(id_user)}`;
+            xhrEmail.send(paramsEmail);
+            // **FIN DE LA LÓGICA DEL CORREO**
 
             // Mostrar el primer modal (Guardado exitoso)
             Swal.fire({

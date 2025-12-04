@@ -382,19 +382,31 @@ class email extends Controller {
             // 2. Obtener datos del área de coordinación
             $result_email_area = $repository->GetEmailArea();
             if (!$result_email_area) {
+                error_log("ERROR: No se encontraron datos del área de coordinación");
                 $this->response(['success' => false, 'message' => 'Correo del coordinador no existe o no se encontraron datos.', 'color' => 'red']);
                 return;
             }
 
-            $email_area = $result_email_area['email_area'];
-            $nombre_area = $result_email_area['name_area'];
+            $email_area = $result_email_area['email_area'] ?? '';
+            $nombre_area = $result_email_area['name_area'] ?? 'Coordinación';
+            
+            if (empty($email_area)) {
+                error_log("ERROR: El correo del área de coordinación está vacío");
+                $this->response(['success' => false, 'message' => 'El correo del coordinador está vacío.', 'color' => 'red']);
+                return;
+            }
+            
+            error_log("EMAIL AREA COORDINACION: " . $email_area);
 
             // 3. Obtener datos del ticket
             $result_ticket = $repository->GetDataTicket2();
             if (!$result_ticket) {
+                error_log("ERROR: No se encontraron datos del ticket nivel 2");
                 $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
                 return;
             }
+            
+            error_log("DATOS TICKET OBTENIDOS: " . print_r($result_ticket, true));
 
             // Preparar datos del ticket
             $nombre_tecnico_ticket = $result_ticket['full_name_tecnico'];
@@ -454,16 +466,27 @@ class email extends Controller {
             ];
             
             // Enviar correo a COORDINACIÓN (Jerarquía Alta - Estilo Ejecutivo)
+            error_log("INTENTANDO ENVIAR CORREO A COORDINADOR: " . $email_area);
+            error_log("ASUNTO COORDINADOR: " . $subject_coordinador);
             $results['coordinador'] = $this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages);
             
             // Log para verificar envío
-            error_log("CORREO COORDINADOR ENVIADO: " . ($results['coordinador'] ? 'SI' : 'NO'));
+            if (!$results['coordinador']) {
+                $error_coordinador = $this->emailService->getLastError();
+                error_log("ERROR AL ENVIAR CORREO COORDINADOR: " . $error_coordinador);
+                $results['messages'][] = "Error al enviar correo a coordinación: " . $error_coordinador;
+            } else {
+                error_log("CORREO COORDINADOR ENVIADO: SI");
+            }
             
             // Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
             $result_tecnico = $repository->GetEmailUserDataById($id_user);
-                if ($result_tecnico && !empty($result_tecnico['user_email'])) {
+            error_log("DATOS TECNICO OBTENIDOS: " . ($result_tecnico ? 'SI' : 'NO'));
+            if ($result_tecnico && !empty($result_tecnico['user_email'])) {
                 $email_tecnico = $result_tecnico['user_email'];
                 $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
+                
+                error_log("INTENTANDO ENVIAR CORREO A TECNICO: " . $email_tecnico);
 
                 // Template para TÉCNICO (Estilo Técnico - Jerarquía Operativa)
                 $subject_tecnico = '✅ CONFIRMACIÓN TÉCNICA - Ticket Procesado';
@@ -488,10 +511,19 @@ class email extends Controller {
                 $results['tecnico'] = $this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages);
                 
                 // Log para verificar envío
-                error_log("CORREO TECNICO ENVIADO: " . ($results['tecnico'] ? 'SI' : 'NO'));
+                if (!$results['tecnico']) {
+                    $error_tecnico = $this->emailService->getLastError();
+                    error_log("ERROR AL ENVIAR CORREO TECNICO: " . $error_tecnico);
+                    $results['messages'][] = "Error al enviar correo al técnico: " . $error_tecnico;
+                } else {
+                    error_log("CORREO TECNICO ENVIADO: SI");
+                }
             } else {
                 $results['messages'][] = "No se pudo obtener el correo del técnico.";
-                error_log("ERROR: No se pudo obtener el correo del técnico");
+                error_log("ERROR: No se pudo obtener el correo del técnico. ID_USER: " . $id_user);
+                if ($result_tecnico) {
+                    error_log("DATOS TECNICO: " . print_r($result_tecnico, true));
+                }
             }
 
             // 7. Responder según resultados
@@ -499,14 +531,25 @@ class email extends Controller {
             $tecnico = $results['tecnico'];
             $messages = implode(' ', $results['messages']);
             
+            // Obtener errores detallados del EmailService
+            $error_coordinador = $this->emailService->getLastError();
+            $error_detalle = !empty($error_coordinador) ? " Detalle: " . $error_coordinador : "";
+            
             if ($coordinador && $tecnico) {
                 $this->response(['success' => true, 'message' => 'Correos enviados exitosamente a coordinación y técnico.', 'color' => 'green']);
             } elseif ($coordinador) {
                 $this->response(['success' => true, 'message' => 'Correo enviado a coordinación. ' . $messages, 'color' => 'orange']);
             } elseif ($tecnico) {
-                $this->response(['success' => false, 'message' => 'Error al enviar correo a coordinación. Correo del técnico enviado. ' . $messages, 'color' => 'red']);
+                $this->response(['success' => false, 'message' => 'Error al enviar correo a coordinación. Correo del técnico enviado. ' . $messages . $error_detalle, 'color' => 'red']);
             } else {
-                $this->response(['success' => false, 'message' => 'Error al enviar ambos correos. ' . $messages, 'color' => 'red']);
+                error_log("ERROR COMPLETO: Coordinador=" . ($coordinador ? 'SI' : 'NO') . ", Tecnico=" . ($tecnico ? 'SI' : 'NO') . ", Messages=" . $messages);
+                $this->response(['success' => false, 'message' => 'Error al enviar ambos correos. ' . $messages . $error_detalle, 'color' => 'red', 'debug' => [
+                    'coordinador_sent' => $coordinador,
+                    'tecnico_sent' => $tecnico,
+                    'email_area' => $email_area ?? 'N/A',
+                    'email_tecnico' => $email_tecnico ?? 'N/A',
+                    'error_detail' => $error_coordinador
+                ]]);
             }
             
         } catch (Exception $e) {
