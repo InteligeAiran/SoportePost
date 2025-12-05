@@ -103,6 +103,7 @@
 
   window.showLoadingOverlay = showOverlay;
   window.hideLoadingOverlay = hideOverlay;
+  window.clearTableCheckTimers = clearTableCheckTimers;
 
   const shouldTrackRequest = (url) => {
     if (!url) return false;
@@ -129,7 +130,12 @@
   const endAutoOverlay = () => {
     autoRequestCount = Math.max(autoRequestCount - 1, 0);
     if (autoRequestCount === 0) {
-      hideOverlay();
+      // Usar window.hideLoadingOverlay para que respete las interceptaciones (como en el dashboard)
+      if (typeof window.hideLoadingOverlay === "function") {
+        window.hideLoadingOverlay();
+      } else {
+        hideOverlay();
+      }
     }
   };
 

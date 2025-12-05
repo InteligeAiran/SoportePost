@@ -641,9 +641,14 @@ window.addEventListener("load", function () {
             // Paso 3: Marcar que el dashboard terminó de cargar
             dashboardLoadingActive = false;
             
-            // Limpiar el intervalo que mantiene el overlay visible
+            // Limpiar el intervalo que mantiene el overlay visible INMEDIATAMENTE
             if (keepOverlayVisibleInterval) {
                 clearInterval(keepOverlayVisibleInterval);
+            }
+            
+            // Limpiar cualquier timer del loading-overlay.js que pueda interferir
+            if (typeof window.clearTableCheckTimers === 'function') {
+                window.clearTableCheckTimers();
             }
             
             // Restaurar la función original de hideLoadingOverlay
@@ -651,28 +656,41 @@ window.addEventListener("load", function () {
                 window.hideLoadingOverlay = originalHideLoadingOverlay;
             }
             
-            // Paso 4: Ocultar el overlay de carga con transición
+            // Paso 4: Ocultar el overlay con transición suave
             if (dashboardLoadingOverlay) {
-                dashboardLoadingOverlay.style.transition = "opacity 0.5s ease-out";
+                // Limpiar UI primero
+                cleanupDashboardOverlayUI();
+                
+                // Aplicar transición suave de fade out
+                dashboardLoadingOverlay.style.transition = "opacity 0.4s ease-out";
                 dashboardLoadingOverlay.style.opacity = "0";
+                
+                // Esperar a que termine la transición antes de ocultar completamente
                 setTimeout(() => {
-                    cleanupDashboardOverlayUI();
-                    if (typeof hideLoadingOverlay === "function") {
-                        hideLoadingOverlay(true);
-                    } else {
-                        dashboardLoadingOverlay.style.display = "none";
-                    }
+                    dashboardLoadingOverlay.style.display = "none";
+                    dashboardLoadingOverlay.style.visibility = "hidden";
                     dashboardLoadingOverlay.style.opacity = "";
                     dashboardLoadingOverlay.style.transition = "";
+                    dashboardLoadingOverlay.classList.remove("show");
+                    
+                    // Limpiar clases del body
+                    document.body.classList.remove("loading-overlay-open");
+                    
+                    // Forzar el cierre en loading-overlay.js también
+                    if (typeof hideLoadingOverlay === "function") {
+                        hideLoadingOverlay(true);
+                    }
+                    
+                    // Mostrar error si existe
                     if (hasError) {
-                         Swal.fire({
+                        Swal.fire({
                             icon: "warning",
                             title: "Carga Parcial",
                             text: "Algunos datos no se cargaron correctamente, pero el dashboard es visible. Revise la consola para detalles.",
                             confirmButtonColor: "#003594",
                         });
                     }
-                }, 500);
+                }, 400); // Esperar 400ms para que termine la transición
             } else if (typeof hideLoadingOverlay === "function") {
                 hideLoadingOverlay(true);
             }
@@ -682,9 +700,14 @@ window.addEventListener("load", function () {
             console.error("Error FATAL durante la carga secuencial:", error);
             dashboardLoadingActive = false;
             
-            // Limpiar el intervalo que mantiene el overlay visible
+            // Limpiar el intervalo que mantiene el overlay visible INMEDIATAMENTE
             if (keepOverlayVisibleInterval) {
                 clearInterval(keepOverlayVisibleInterval);
+            }
+            
+            // Limpiar cualquier timer del loading-overlay.js que pueda interferir
+            if (typeof window.clearTableCheckTimers === 'function') {
+                window.clearTableCheckTimers();
             }
             
             // Restaurar la función original de hideLoadingOverlay
@@ -694,11 +717,28 @@ window.addEventListener("load", function () {
             
             updateLoadingStatus("Error crítico. Reintente.", 100);
             cleanupDashboardOverlayUI();
-            if (typeof hideLoadingOverlay === "function") {
+            
+            // Ocultar con transición suave
+            if (dashboardLoadingOverlay) {
+                dashboardLoadingOverlay.style.transition = "opacity 0.4s ease-out";
+                dashboardLoadingOverlay.style.opacity = "0";
+                
+                setTimeout(() => {
+                    dashboardLoadingOverlay.style.display = "none";
+                    dashboardLoadingOverlay.style.visibility = "hidden";
+                    dashboardLoadingOverlay.style.opacity = "";
+                    dashboardLoadingOverlay.style.transition = "";
+                    dashboardLoadingOverlay.classList.remove("show");
+                    document.body.classList.remove("loading-overlay-open");
+                    
+                    if (typeof hideLoadingOverlay === "function") {
+                        hideLoadingOverlay(true);
+                    }
+                }, 400);
+            } else if (typeof hideLoadingOverlay === "function") {
                 hideLoadingOverlay(true);
-            } else if (dashboardLoadingOverlay) {
-                dashboardLoadingOverlay.style.display = "none";
             }
+            
             Swal.fire({
                 icon: "error",
                 title: "Error de Carga Crítico",
