@@ -6250,6 +6250,26 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
+    public function GetAllComponentsPOS(){
+
+        try {
+
+            $sql = "SELECT * FROM component_pos_all();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetAllComponentsPOS: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
 }
 
 ?>

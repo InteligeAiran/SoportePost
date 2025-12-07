@@ -915,7 +915,7 @@ class email extends Controller {
         $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
 
         // --- Configuración y envío del correo para el COORDINADOR ---
-        $subject_coordinador = '🎯 NOTIFICACIÓN EJECUTIVA - Ticket Devuelto por Devolución';
+        $subject_coordinador = '🎯 NOTIFICACIÓN EJECUTIVA - Ticket por Devolución';
         $body_coordinador = '
             <!DOCTYPE html>
             <html lang="es">

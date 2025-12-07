@@ -930,6 +930,20 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetAllComponentsPOS(){
+        $result = $this->model->GetAllComponentsPOS();
+        if ($result) {
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
 
 }
 ?>
