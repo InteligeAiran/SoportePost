@@ -2802,7 +2802,7 @@ function limpiarSeleccion() {
  */
 function guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos) {
     const id_user = document.getElementById('id_user').value;
-    const modulo = "Gestión Técnico";
+    const modulo = "Gestión Coordinación";
     
     // 1. Validaciones y Limpieza de datos
     const ticketIdClean = String(ticketId).trim().replace(/['"]/g, '');
@@ -3120,19 +3120,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 const isCurrentlyChecked = checkbox.checked;
                 const wasInitiallyChecked = initialState[compId] === true;
                 
-                // Lógica de envío:
-                // El backend necesita saber qué IDs deben tener 'add=TRUE' y cuáles 'add=FALSE'.
+                // Lógica de envío: Solo enviar componentes que CAMBIARON de estado
+                // Esto evita duplicaciones y procesamiento innecesario
                 
-                // 1. Componentes que deben terminar como TRUE (Marcados)
-                if (isCurrentlyChecked) {
+                // 1. Componentes que cambiaron de desmarcado a marcado (nuevos)
+                if (isCurrentlyChecked && !wasInitiallyChecked) {
                     selectedComponents.push(compId);
                 } 
                 
-                // 2. Componentes que deben terminar como FALSE (Desmarcados que estaban TRUE)
+                // 2. Componentes que cambiaron de marcado a desmarcado
                 // Solo enviar a desmarcar si estaba originalmente marcado (TRUE)
                 if (!isCurrentlyChecked && wasInitiallyChecked) {
                     deselectedComponents.push(compId);
                 } 
+                // Si el estado no cambió (marcado sigue marcado, o desmarcado sigue desmarcado),
+                // no se envía al backend para evitar procesamiento innecesario
             });
             
             // Enviar cambios (puede haber solo marcados, solo desmarcados, o ambos)

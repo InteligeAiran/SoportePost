@@ -399,8 +399,112 @@ function getModuleNumber(posData, allPosData) {
 
 // Función para generar el HTML del contenido del POS
 function generatePosContentHtml(posData, currentIndex, totalPos) {
-    // Calcular el número del módulo basado en módulos únicos del mismo POS
-    const moduleNumber = getModuleNumber(posData, allPosDataGlobal);
+    // Obtener la clave única del POS (id_ticket + serial_pos)
+    const currentPosKey = `${posData.id_ticket}_${posData.serial_pos}`;
+    
+    // Usar todos los registros completos si están disponibles, sino usar allPosDataGlobal
+    const allRecords = window.allPosDataGlobalFull || allPosDataGlobal;
+    
+    // Filtrar todos los módulos del mismo POS
+    const samePosModules = allRecords.filter(p => {
+        const recordKey = `${p.id_ticket}_${p.serial_pos}`;
+        return recordKey === currentPosKey;
+    });
+        
+    // Ordenar módulos por fecha de inserción (cronológicamente, del más antiguo al más reciente)
+    const sortedModules = samePosModules.sort((a, b) => {
+        // Parsear fechas en formato 'YYYY-MM-DD HH24:MI' o 'YYYY-MM-DD HH:MI'
+        const parseDate = (dateStr) => {
+            if (!dateStr) return new Date(0);
+            // El formato viene como 'YYYY-MM-DD HH24:MI' o 'YYYY-MM-DD HH:MI'
+            // Reemplazar espacios por 'T' para compatibilidad con ISO 8601
+            const isoDate = dateStr.replace(' ', 'T');
+            const date = new Date(isoDate);
+            return isNaN(date.getTime()) ? new Date(0) : date;
+        };
+        
+        const dateA = parseDate(a.component_insert_date);
+        const dateB = parseDate(b.component_insert_date);
+        return dateA - dateB; // Orden ascendente (más antiguo primero)
+    });
+    
+    // Generar HTML para cada módulo
+    let modulesHtml = '';
+    if (sortedModules.length === 0) {
+        modulesHtml = `
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se encontraron módulos para este POS.
+                </div>
+            </div>
+        `;
+    } else {
+        sortedModules.forEach((moduleData, index) => {
+            const moduleNumber = index + 1;
+            modulesHtml += `
+            <div class="col-12 ${index > 0 ? 'mt-3' : ''}">
+                <div class="pos-module-card">
+                    <div class="pos-module-header">
+                        <div class="pos-module-title">
+                            <i class="fas fa-layer-group me-2"></i>
+                            <span>${moduleData.modulo_insert || 'Módulo Sin Nombre'}</span>
+                        </div>
+                        <div class="pos-module-badge">
+                            <span class="badge pos-module-number">#${moduleNumber}</span>
+                        </div>
+                    </div>
+                    <div class="pos-module-body">
+                        <div class="pos-module-table">
+                            <div class="pos-module-row">
+                                <div class="pos-module-cell pos-module-cell-user">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-user me-2"></i>
+                                        <span>Usuario Responsable</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <span class="pos-module-value">${moduleData.full_name || 'No disponible'}</span>
+                                    </div>
+                                </div>
+                                <div class="pos-module-cell pos-module-cell-date">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-calendar me-2"></i>
+                                        <span>Fecha de Registro</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <span class="pos-module-value">${moduleData.component_insert_date || 'No disponible'}</span>
+                                    </div>
+                                </div>
+                                <div class="pos-module-cell pos-module-cell-region">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span>Región Registro</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <span class="pos-module-value">${moduleData.name_region || 'No disponible'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pos-module-row pos-module-row-components">
+                                <div class="pos-module-cell pos-module-cell-full">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-puzzle-piece me-2"></i>
+                                        <span>Periférico Asociados</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <div class="pos-components-badge">
+                                            ${formatComponentsList(moduleData.aggregated_components_by_module || 'No disponible')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        });
+    }
     
     return `
         <!-- Información principal en grid responsivo -->
@@ -490,65 +594,7 @@ function generatePosContentHtml(posData, currentIndex, totalPos) {
             </div>
             
             <div class="row g-3">
-                <div class="col-12">
-                    <div class="pos-module-card">
-                        <div class="pos-module-header">
-                            <div class="pos-module-title">
-                                <i class="fas fa-layer-group me-2"></i>
-                                <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
-                            </div>
-                            <div class="pos-module-badge">
-                                <span class="badge pos-module-number">#${moduleNumber}</span>
-                            </div>
-                        </div>
-                        <div class="pos-module-body">
-                            <div class="pos-module-table">
-                                <div class="pos-module-row">
-                                    <div class="pos-module-cell pos-module-cell-user">
-                                        <div class="pos-module-cell-header">
-                                            <i class="fas fa-user me-2"></i>
-                                            <span>Usuario Responsable</span>
-                                        </div>
-                                        <div class="pos-module-cell-content">
-                                            <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                    <div class="pos-module-cell pos-module-cell-date">
-                                        <div class="pos-module-cell-header">
-                                            <i class="fas fa-calendar me-2"></i>
-                                            <span>Fecha de Registro</span>
-                                        </div>
-                                        <div class="pos-module-cell-content">
-                                            <span class="pos-module-value">${posData.component_insert_date || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                    <div class="pos-module-cell pos-module-cell-region">
-                                        <div class="pos-module-cell-header">
-                                            <i class="fas fa-map-marker-alt me-2"></i>
-                                            <span>Región Registro</span>
-                                        </div>
-                                        <div class="pos-module-cell-content">
-                                            <span class="pos-module-value">${posData.name_region || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="pos-module-row pos-module-row-components">
-                                    <div class="pos-module-cell pos-module-cell-full">
-                                        <div class="pos-module-cell-header">
-                                            <i class="fas fa-puzzle-piece me-2"></i>
-                                            <span>Periférico Asociados</span>
-                                        </div>
-                                        <div class="pos-module-cell-content">
-                                            <div class="pos-components-badge">
-                                                ${formatComponentsList(posData.aggregated_components_by_module || 'No disponible')}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                ${modulesHtml}
             </div>
         </div>
     `;
@@ -664,8 +710,24 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success && response.tickets && response.tickets.length > 0) {
-                    // Guardar todos los registros globalmente
-                    allPosDataGlobal = Array.isArray(response.tickets) ? response.tickets : [response.tickets];
+                    // Guardar todos los registros (incluyendo todos los módulos)
+                    const allRecords = Array.isArray(response.tickets) ? response.tickets : [response.tickets];
+                    
+                    // Agrupar por ticket + serial para obtener POS únicos
+                    const uniquePosMap = new Map();
+                    allRecords.forEach(record => {
+                        const posKey = `${record.id_ticket}_${record.serial_pos}`;
+                        if (!uniquePosMap.has(posKey)) {
+                            // Guardar el primer registro de cada POS único (usaremos todos los registros en generatePosContentHtml)
+                            uniquePosMap.set(posKey, record);
+                        }
+                    });
+                    
+                    // Convertir el Map a array para mantener el orden
+                    allPosDataGlobal = Array.from(uniquePosMap.values());
+                    
+                    // Guardar todos los registros originales para usar en generatePosContentHtml
+                    window.allPosDataGlobalFull = allRecords;
                     
                     // Normalizar valores para búsqueda
                     const normalizedSerialPos = String(serialPos || '').trim();

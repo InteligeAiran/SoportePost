@@ -1104,7 +1104,12 @@ public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $
         pg_query($this->db->getConnection(), "BEGIN");
 
         try {
-            // SQL para verificar si existe el componente
+            // SQL para verificar si existe el componente EN EL MISMO MÓDULO
+            // Esto evita que se actualicen registros de otros módulos
+            $sql_check_exists_same_module = "SELECT id_tickets_components FROM tickets_componets 
+                WHERE id_ticket = $1 AND id_components = $2 AND modulo_insert = $3";
+            
+            // SQL para verificar si existe el componente (cualquier módulo)
             $sql_check_exists = "SELECT id_tickets_components FROM tickets_componets 
                 WHERE id_ticket = $1 AND id_components = $2";
             
@@ -1113,15 +1118,24 @@ public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $
                 (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert, add)
                 VALUES ($1, $2, $3, $4, NOW(), $5, TRUE)";
             
-            // SQL para UPDATE con add = true (marcado)
+            // SQL para UPDATE con add = true (marcado) - SOLO en el mismo módulo
             $sql_update_selected = "UPDATE tickets_componets 
-                SET add = TRUE, id_user_carga = $1, component_insert = NOW(), modulo_insert = $2
-                WHERE id_ticket = $3 AND id_components = $4";
+                SET add = TRUE, id_user_carga = $1, component_insert = NOW()
+                WHERE id_ticket = $2 AND id_components = $3 AND modulo_insert = $4";
             
-            // SQL para UPDATE con add = false (desmarcado)
+            // SQL para verificar si existe el componente en el mismo módulo (para desmarcar)
+            $sql_check_exists_same_module_deselected = "SELECT id_tickets_components FROM tickets_componets 
+                WHERE id_ticket = $1 AND id_components = $2 AND modulo_insert = $3";
+            
+            // SQL para UPDATE con add = false (desmarcado) - SOLO en el mismo módulo
             $sql_update_deselected = "UPDATE tickets_componets 
-                SET add = FALSE, id_user_carga = $1, component_insert = NOW(), modulo_insert = $2
-                WHERE id_ticket = $3 AND id_components = $4";
+                SET add = FALSE, id_user_carga = $1, component_insert = NOW()
+                WHERE id_ticket = $2 AND id_components = $3 AND modulo_insert = $4";
+            
+            // SQL para INSERT con add = false (desmarcado) - cuando no existe en el módulo
+            $sql_insert_deselected = "INSERT INTO tickets_componets
+                (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert, add)
+                VALUES ($1, $2, $3, $4, NOW(), $5, FALSE)";
             
             // SQL para historial
             $sql_history_insert = "INSERT INTO tickets_componets_history 
@@ -1130,36 +1144,14 @@ public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $
             
             // Procesar componentes marcados (add = true)
             foreach ($selected_ids as $comp_id) {
-                // Verificar si existe
-                $params_check = [ (int)$id_ticket1, (int)$comp_id ];
-                $res_check = pg_query_params($this->db->getConnection(), $sql_check_exists, $params_check);
+                // Para el módulo "Creación Ticket", siempre hacer INSERT (no UPDATE)
+                // Esto permite mantener el historial completo con usuario, módulo y fecha de cada inserción
+                $is_creacion_ticket = (strtolower(trim($modulo)) === 'creación ticket' || strtolower(trim($modulo)) === 'creacion ticket');
                 
-                if ($res_check === false) {
-                    $error_message = pg_last_error($this->db->getConnection());
-                    throw new Exception('Error al verificar existencia de componente. Detalles: ' . $error_message);
-                }
-                
-                $exists = pg_num_rows($res_check) > 0;
                 $action_type = '';
                 
-                if ($exists) {
-                    // UPDATE existente
-                    $params_update = [ 
-                        (int)$id_user_action,
-                        $modulo,
-                        (int)$id_ticket1,
-                        (int)$comp_id
-                    ]; 
-                    
-                    $res_update = pg_query_params($this->db->getConnection(), $sql_update_selected, $params_update);
-                    
-                    if ($res_update === false) {
-                        $error_message = pg_last_error($this->db->getConnection());
-                        throw new Exception('UPDATE de componente marcado falló. Detalles: ' . $error_message);
-                    }
-                    $action_type = 'UPDATE';
-                } else {
-                    // INSERT nuevo
+                if ($is_creacion_ticket) {
+                    // Siempre INSERT para "Creación Ticket" (crear nuevo registro cada vez)
                     $params_insert = [ 
                         $serial_pos_clean,
                         (int)$id_ticket1,
@@ -1175,6 +1167,54 @@ public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $
                         throw new Exception('INSERT de componente marcado falló. Detalles: ' . $error_message);
                     }
                     $action_type = 'INSERT';
+                } else {
+                    // Para otros módulos, verificar si existe EN EL MISMO MÓDULO
+                    // Si existe en otro módulo, hacer INSERT para mantener historial completo
+                    $params_check_same_module = [ (int)$id_ticket1, (int)$comp_id, $modulo ];
+                    $res_check_same_module = pg_query_params($this->db->getConnection(), $sql_check_exists_same_module, $params_check_same_module);
+                    
+                    if ($res_check_same_module === false) {
+                        $error_message = pg_last_error($this->db->getConnection());
+                        throw new Exception('Error al verificar existencia de componente en el mismo módulo. Detalles: ' . $error_message);
+                    }
+                    
+                    $exists_same_module = pg_num_rows($res_check_same_module) > 0;
+                    
+                    if ($exists_same_module) {
+                        // UPDATE solo si existe en el MISMO módulo
+                        $params_update = [ 
+                            (int)$id_user_action,
+                            (int)$id_ticket1,
+                            (int)$comp_id,
+                            $modulo
+                        ]; 
+                        
+                        $res_update = pg_query_params($this->db->getConnection(), $sql_update_selected, $params_update);
+                        
+                        if ($res_update === false) {
+                            $error_message = pg_last_error($this->db->getConnection());
+                            throw new Exception('UPDATE de componente marcado falló. Detalles: ' . $error_message);
+                        }
+                        $action_type = 'UPDATE';
+                    } else {
+                        // INSERT nuevo si no existe en este módulo (aunque pueda existir en otro módulo)
+                        // Esto permite tener el mismo componente en diferentes módulos con diferentes usuarios y fechas
+                        $params_insert = [ 
+                            $serial_pos_clean,
+                            (int)$id_ticket1,
+                            (int)$comp_id,
+                            (int)$id_user_action,
+                            $modulo
+                        ]; 
+                        
+                        $res_insert = pg_query_params($this->db->getConnection(), $sql_insert_selected, $params_insert);
+                        
+                        if ($res_insert === false) {
+                            $error_message = pg_last_error($this->db->getConnection());
+                            throw new Exception('INSERT de componente marcado falló. Detalles: ' . $error_message);
+                        }
+                        $action_type = 'INSERT';
+                    }
                 }
                 
                 // Insertar en historial
@@ -1187,27 +1227,59 @@ public function SaveComponents($id_ticket, $components, $serial_pos, $id_user, $
             
             // Procesar componentes desmarcados (add = false)
             foreach ($deselected_ids as $comp_id) {
-                $params_deselected = [ 
-                    (int)$id_user_action,
-                    $modulo,
-                    (int)$id_ticket1,
-                    (int)$comp_id
-                ]; 
+                // Verificar si existe en el mismo módulo
+                $params_check_deselected = [ (int)$id_ticket1, (int)$comp_id, $modulo ];
+                $res_check_deselected = pg_query_params($this->db->getConnection(), $sql_check_exists_same_module_deselected, $params_check_deselected);
                 
-                $res_update = pg_query_params($this->db->getConnection(), $sql_update_deselected, $params_deselected);
-                
-                if ($res_update === false) {
+                if ($res_check_deselected === false) {
                     $error_message = pg_last_error($this->db->getConnection());
-                    throw new Exception('UPDATE de componente desmarcado falló. Detalles: ' . $error_message);
+                    throw new Exception('Error al verificar existencia de componente para desmarcar. Detalles: ' . $error_message);
+                }
+                
+                $exists_same_module_deselected = pg_num_rows($res_check_deselected) > 0;
+                $deselected_action_type = '';
+                
+                if ($exists_same_module_deselected) {
+                    // UPDATE si existe en el mismo módulo
+                    $params_update_deselected = [ 
+                        (int)$id_user_action,
+                        (int)$id_ticket1,
+                        (int)$comp_id,
+                        $modulo
+                    ]; 
+                    
+                    $res_update = pg_query_params($this->db->getConnection(), $sql_update_deselected, $params_update_deselected);
+                    
+                    if ($res_update === false) {
+                        $error_message = pg_last_error($this->db->getConnection());
+                        throw new Exception('UPDATE de componente desmarcado falló. Detalles: ' . $error_message);
+                    }
+                    $deselected_action_type = 'UPDATE';
+                } else {
+                    // INSERT nuevo registro con add = FALSE si no existe en este módulo
+                    // Esto permite registrar que se desmarcó en este módulo específico
+                    $params_insert_deselected = [ 
+                        $serial_pos_clean,
+                        (int)$id_ticket1,
+                        (int)$comp_id,
+                        (int)$id_user_action,
+                        $modulo
+                    ]; 
+                    
+                    $res_insert_deselected = pg_query_params($this->db->getConnection(), $sql_insert_deselected, $params_insert_deselected);
+                    
+                    if ($res_insert_deselected === false) {
+                        $error_message = pg_last_error($this->db->getConnection());
+                        throw new Exception('INSERT de componente desmarcado falló. Detalles: ' . $error_message);
+                    }
+                    $deselected_action_type = 'INSERT';
                 }
                 
                 // Insertar en historial
-                // Usar 'CHECK' para INSERT y 'UPDATE' para UPDATE cuando se marca
-                $history_action_type = ($action_type === 'INSERT') ? 'INSERT' : 'UPDATE';
-                $params_history = [ $id_ticket1, (int)$comp_id, $history_action_type, $id_user_action, $modulo ];
+                $params_history = [ $id_ticket1, (int)$comp_id, $deselected_action_type, $id_user_action, $modulo ];
                 $res_history = pg_query_params($this->db->getConnection(), $sql_history_insert, $params_history);
                 if ($res_history === false) {
-                    throw new Exception('Fallo al insertar historial para componente marcado.');
+                    throw new Exception('Fallo al insertar historial para componente desmarcado.');
                 }
             }
             
