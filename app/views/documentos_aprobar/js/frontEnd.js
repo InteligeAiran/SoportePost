@@ -578,8 +578,6 @@ function getTicketAprovalDocument() {
                                 });
 
                                 $("#btn-asignados").on("click", function () {
-                                    console.log('🔍 Filtrando por rechazados...');
-                                    
                                     // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
                                     api.columns().search('').draw(false);
                                     api.search('').draw(false);
@@ -1431,7 +1429,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                           try {
                             const responseEmail = JSON.parse(xhrEmail.responseText);
                             if (responseEmail.success) {
-                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
                             } else {
                               console.error('Error correo rechazo:', responseEmail.message);
                             }
@@ -2227,7 +2224,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -2511,6 +2507,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -2601,6 +2598,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -2787,6 +2792,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -3777,17 +3783,11 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Función para cerrar la ventana y recargar la página principal
 
                             function closeAndReload() {
-
-                                console.log('Cerrando ventana y recargando página principal...');
-
                                 if (window.opener) {
-
                                     window.opener.location.reload();
-
                                 }
 
                                 window.close();
-
                             }
 
                             
@@ -3795,11 +3795,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Detectar cuando se completa la impresión/guardado
 
                             window.addEventListener('afterprint', function() {
-
-                                console.log('Impresión completada - cerrando ventana');
-
                                 setTimeout(closeAndReload, 1000);
-
                             });
 
                             
@@ -3807,9 +3803,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
 
                             window.addEventListener('blur', function() {
-
-                                console.log('Foco perdido - verificando si se cerró');
-
                                 setTimeout(function() {
 
                                     if (document.hidden) {
@@ -3898,10 +3891,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!reloadExecuted) {
                   reloadExecuted = true;
 
-                  console.log(
-                    "Recargando página después de guardar documento..."
-                  );
-
                   // Cerrar la ventana de impresión si aún está abierta
 
                   if (printWindow && !printWindow.closed) {
@@ -3927,19 +3916,10 @@ document.addEventListener("DOMContentLoaded", function () {
               checkInterval = setInterval(() => {
                 try {
                   if (printWindow.closed) {
-                    console.log(
-                      "Ventana cerrada detectada - ejecutando recarga"
-                    );
-
                     reloadPage();
                   }
                 } catch (e) {
                   // Si hay error accediendo a la ventana, asumir que se cerró
-
-                  console.log(
-                    "Error accediendo a ventana - asumiendo que se cerró"
-                  );
-
                   reloadPage();
                 }
               }, 500); // Verificar cada 500ms
@@ -3947,18 +3927,12 @@ document.addEventListener("DOMContentLoaded", function () {
               // Método alternativo: Detectar cuando se completa la impresión
 
               printWindow.addEventListener("afterprint", function () {
-                console.log("Evento afterprint detectado");
-
                 reloadPage();
               });
 
               // Método alternativo: Detectar cuando se pierde el foco
 
               printWindow.addEventListener("blur", function () {
-                console.log(
-                  "Evento blur detectado - usuario interactuando con diálogo"
-                );
-
                 // Esperar un poco y verificar si la ventana sigue abierta
 
                 setTimeout(() => {
@@ -3975,8 +3949,6 @@ document.addEventListener("DOMContentLoaded", function () {
               // Método de respaldo: Detectar cuando se cierra la ventana
 
               printWindow.addEventListener("beforeunload", function () {
-                console.log("Evento beforeunload detectado");
-
                 reloadPage();
               });
 
@@ -3985,8 +3957,6 @@ document.addEventListener("DOMContentLoaded", function () {
               setTimeout(() => {
                 if (checkInterval) {
                   clearInterval(checkInterval);
-
-                  console.log("Timeout alcanzado - limpiando intervalo");
                 }
               }, 60000);
             };
@@ -4003,8 +3973,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           // El usuario hizo clic en "Cerrar"
-
-          console.log("Modal cerrado por el usuario");
         }
       });
     });

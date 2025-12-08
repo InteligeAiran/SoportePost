@@ -86,7 +86,6 @@ function getTicketData() {
   // Read nro_ticket from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
   const nroTicket = urlParams.get('nro_ticket');
-  console.log('nroTicket extraído de la URL:', nroTicket);
 
   // Limpiar DataTable si ya está inicializado
   if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
@@ -3215,7 +3214,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -4722,15 +4720,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, deselecte
     
     // 4. Preparación de los datos a enviar y envío
     const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
-    
-    // Esto es útil para depuración y se mantiene como estaba
-    console.log('Enviando datos:', {
-        ticketId: ticketIdNum,
-        serialPos: serialPosClean,
-        components: componentsData,
-        id_user: idUserClean,
-        modulo: modulo
-    });
     
     xhr.send(dataToSend);
 }

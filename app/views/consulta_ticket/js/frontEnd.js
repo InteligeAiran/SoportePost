@@ -990,7 +990,15 @@ function SendRegions() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: `${regionName}`,
+                    filename: () => {
+                        const selectRegion = document.getElementById("SelectRgions");
+                        const regionNombre = selectRegion?.options[selectRegion.selectedIndex]?.text.trim() || regionName || "Region_Desconocida";
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE TICKET - REGION ${regionNombre.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase()}_${fecha}`;
+                    },
+                    title: () => {
+                        return regionName || 'Reporte de Ticket por Región';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -1580,7 +1588,16 @@ function SendRif() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Reporte de Ticket por RIF',
+                    filename: () => {
+                        const tipoRif = document.getElementById('rifTipo')?.value?.toUpperCase() || 'V';
+                        const numeroRif = document.getElementById('rifInput')?.value?.trim() || '';
+                        const rifCompleto = numeroRif ? `${tipoRif}${numeroRif}` : 'SIN_RIF';
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE TICKET - RIF ${rifCompleto} - ${fecha}`;
+                    },
+                    title: () => {
+                        return 'Reporte de Ticket por RIF';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -2181,7 +2198,14 @@ function SendSerial() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Reporte de Ticket por Serial',
+                    filename: () => {
+                        const serial = document.getElementById('serialInput')?.value?.trim().toUpperCase() || 'SIN_SERIAL';
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE TICKET - SERIAL ${serial} - ${fecha}`;
+                    },
+                    title: () => {
+                        return 'Reporte de Ticket por Serial';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -2473,7 +2497,6 @@ function SendSerial() {
       welcomeMessage.style.opacity = "1";
     }
   };
-
   const datos = `action=SearchSerialData&serial=${encodeURIComponent(serialInputValue)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
@@ -2791,7 +2814,16 @@ function SendStatus() {
     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
     </svg>Excel`,
-    filename: `REPORTE TICKETS - ESTATUS ${EstatusName.toUpperCase()} - NOV 2025`,
+    filename: () => {
+        const selectStatus = document.getElementById("SelectStatus");
+        const estatusNombre = selectStatus?.options[selectStatus.selectedIndex]?.text.trim() || EstatusName || "Estatus_Desconocido";
+        const fecha = new Date().toISOString().split('T')[0];
+        return `REPORTE TICKETS - ESTATUS ${estatusNombre.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase()}_${fecha}`;
+    },
+    title: () => {
+        const selectStatus = document.getElementById("SelectStatus");
+        return selectStatus?.options[selectStatus.selectedIndex]?.text.trim() || EstatusName || 'Reporte de Tickets por Estatus';
+    },
     className: 'btn-excel-modern',
     attr: {
         id: 'btn-excel-modern-id',
@@ -3306,7 +3338,14 @@ function SendRango() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Reporte de tickets por Rango De Fecha',
+                    filename: () => {
+                        const ini = document.getElementById('date-ini')?.value || 'FechaIni';
+                        const fin = document.getElementById('date-end')?.value || 'FechaFin';
+                        return `REPORTE TICKET - RangoFecha ${ini} al ${fin}`;
+                    },
+                    title: () => {
+                        return 'Reporte de tickets por Rango De Fecha';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -3339,27 +3378,38 @@ function SendRango() {
                         }
                     },
                     customize: function(doc) {
-    // Preparar logo
-    if (window.PDF_LOGO_DATAURL) {
-        doc.images = doc.images || {};
-        doc.images.logo_inteligensa = window.PDF_LOGO_DATAURL;
-    }
+    // Verificar si es una exportación de PDF (tiene pageSize) o Excel
+    const isPDF = doc.hasOwnProperty('pageSize') || typeof doc.pageSize !== 'undefined';
+    
+    // Solo aplicar configuraciones de PDF si es PDF
+    if (isPDF) {
+        // Preparar logo
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = doc.images || {};
+            doc.images.logo_inteligensa = window.PDF_LOGO_DATAURL;
+        }
 
-    // Configuración básica
-    doc.pageOrientation = 'portrait';
-    doc.pageSize = 'A4';
-    doc.pageMargins = [40, 120, 40, 80]; // Más espacio arriba para la nota
-    doc.info = { title: 'Reporte de tickets por Rango De Fecha' };
+        // Configuración básica
+        doc.pageOrientation = 'portrait';
+        doc.pageSize = 'A4';
+        doc.pageMargins = [40, 120, 40, 80]; // Más espacio arriba para la nota
+        doc.info = { title: 'Reporte de tickets por Rango De Fecha' };
 
-    // Estilos
-    doc.defaultStyle = { fontSize: 10, color: '#333333' };
-    doc.styles.sectionTitle = { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 10, 0, 5] };
-    doc.styles.sectionSubtitle = { fontSize: 9, color: '#5f6368', margin: [0, 0, 0, 10] };
-    doc.styles.labelCell = { fontSize: 8, bold: true, color: '#1f4e8c' };
-    doc.styles.valueCell = { fontSize: 8, color: '#202124' };
+        // Estilos (solo para PDF)
+        doc.defaultStyle = { fontSize: 10, color: '#333333' };
+        
+        // Inicializar styles si no existe
+        if (!doc.styles) {
+            doc.styles = {};
+        }
+        
+        doc.styles.sectionTitle = { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 10, 0, 5] };
+        doc.styles.sectionSubtitle = { fontSize: 9, color: '#5f6368', margin: [0, 0, 0, 10] };
+        doc.styles.labelCell = { fontSize: 8, bold: true, color: '#1f4e8c' };
+        doc.styles.valueCell = { fontSize: 8, color: '#202124' };
 
-    // === HEADER SIMPLE (solo logo y datos) ===
-    doc.header = function(currentPage) {
+        // === HEADER SIMPLE (solo logo y datos) ===
+        doc.header = function(currentPage) {
         return {
             stack: [
                 {
@@ -3388,25 +3438,25 @@ function SendRango() {
             ],
             margin: [0, 0, 0, 0]
         };
-    };
-
-    // === FOOTER ===
-    doc.footer = function(currentPage, pageCount) {
-        return {
-            columns: [
-                { image: 'logo_inteligensa', width: 60, opacity: 0.8 },
-                { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8, color: '#666' }
-            ],
-            margin: [40, 20, 40, 20]
         };
-    };
 
-    // === AGREGAR NOTA EN LA PRIMERA PÁGINA (EN EL CONTENT) ===
-    const originalContent = doc.content;
-    doc.content = [];
+        // === FOOTER ===
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                columns: [
+                    { image: 'logo_inteligensa', width: 60, opacity: 0.8 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8, color: '#666' }
+                ],
+                margin: [40, 20, 40, 20]
+            };
+        };
 
-    // Solo en la primera página: Título + Nota bonita
-    if (doc.internal.getCurrentPageInfo().pageNumber === 1) {
+        // === AGREGAR NOTA EN LA PRIMERA PÁGINA (EN EL CONTENT) ===
+        const originalContent = doc.content;
+        doc.content = [];
+
+        // Solo en la primera página: Título + Nota bonita
+        if (doc.internal && doc.internal.getCurrentPageInfo && doc.internal.getCurrentPageInfo().pageNumber === 1) {
         doc.content.push(
             // Título ya está en header, pero si quieres duplicarlo:
             // { text: 'BÚSQUEDA POR RANGO DE FECHA', alignment: 'center', fontSize: 16, bold: true, color: '#1f4e8c', margin: [0, 0, 0, 20] },
@@ -3439,32 +3489,32 @@ function SendRango() {
             {
                 canvas: [{ type: 'line', x1: 40, y1: 0, x2: 555, y2: 0, lineWidth: 1, lineColor: '#003594' }],
                 absolutePosition: { x: 40, y: 285 }
-            }
-        );
-    }
-
-    // === TRANSFORMAR TABLA A BLOQUES VERTICALES ===
-    try {
-        let tableIndex = -1;
-        for (let i = 0; i < originalContent.length; i++) {
-            if (originalContent[i].table) {
-                tableIndex = i;
-                break;
-            }
+                }
+            );
         }
 
-        if (tableIndex !== -1) {
-            const body = originalContent[tableIndex].table.body;
-            if (body && body.length > 1) {
-                const headerRow = body[0];
-                const dataRows = body.slice(1);
-                const verticalSections = [];
+        // === TRANSFORMAR TABLA A BLOQUES VERTICALES ===
+        try {
+            let tableIndex = -1;
+            for (let i = 0; i < originalContent.length; i++) {
+                if (originalContent[i].table) {
+                    tableIndex = i;
+                    break;
+                }
+            }
 
-                dataRows.forEach((row, idx) => {
-                    const kvRows = [];
-                    let idTicketValue = '', razonSocialValue = '', rifValue = '';
+            if (tableIndex !== -1) {
+                const body = originalContent[tableIndex].table.body;
+                if (body && body.length > 1) {
+                    const headerRow = body[0];
+                    const dataRows = body.slice(1);
+                    const verticalSections = [];
 
-                    for (let c = 0; c < headerRow.length; c++) {
+                    dataRows.forEach((row, idx) => {
+                        const kvRows = [];
+                        let idTicketValue = '', razonSocialValue = '', rifValue = '';
+
+                        for (let c = 0; c < headerRow.length; c++) {
                         const label = String(headerRow[c].text || '').trim();
                         const value = String(row[c].text || '').trim();
 
@@ -3502,17 +3552,18 @@ function SendRango() {
                     });
                 });
 
-                // Insertar bloques después de la nota
-                doc.content = doc.content.concat(verticalSections);
-                return;
+                    // Insertar bloques después de la nota
+                    doc.content = doc.content.concat(verticalSections);
+                    return;
+                }
             }
+        } catch (e) {
+            console.error("Error en transformación:", e);
         }
-    } catch (e) {
-        console.error("Error en transformación:", e);
-    }
 
-    // Si falla todo, usar contenido original
-    doc.content = originalContent;
+        // Si falla todo, usar contenido original
+        doc.content = originalContent;
+    }
                     }
                 },
 {
@@ -4077,7 +4128,16 @@ function SendBancos() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'sfafa',
+                    filename: () => {
+                        const selectBanco = document.getElementById("SelectBancos");
+                        const bancoNombre = selectBanco?.options[selectBanco.selectedIndex]?.text.trim() || "Banco_Desconocido";
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE TICKET - BANCO ${bancoNombre.replace(/[^a-zA-Z0-9]/g, '_')}_${fecha}`;
+                    },
+                    title: () => {
+                        const selectBanco = document.getElementById("SelectBancos");
+                        return selectBanco?.options[selectBanco.selectedIndex]?.text.trim() || "Reporte de Bancos";
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
@@ -4342,7 +4402,6 @@ function SendBancos() {
       // }
       Swal.fire("No hay resultados para la búsqueda!");
 
-      console.log('errorr');
     }
   };
 

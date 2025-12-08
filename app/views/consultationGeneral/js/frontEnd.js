@@ -68,12 +68,10 @@ function SendDataSearching() {
         })
         .then(response => response.json())
         .then(data => {
-            //console.log('Respuesta de la API:', data);
             clearTable();
 
             if (data.success && data.data) {
                 const item = data.data;
-                console.log('Respuesta de la API:', item);
 
                 // Define the base headers
                 let headersHTML = `
@@ -173,7 +171,6 @@ function SendDataSearching() {
         });
 
     } else {
-        console.log('No se encontraron los parámetros "Serial" y/o "Proceso" en la URL.');
         clearTable();
         const row = tablaResultados.insertRow();
         const noParamsCell = row.insertCell();

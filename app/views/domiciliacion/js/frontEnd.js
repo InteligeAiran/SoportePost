@@ -682,34 +682,11 @@ function searchDomiciliacionTickets() {
                 // Función para buscar automáticamente el primer botón con datos
 
                 function findFirstButtonWithData() {
-                  console.log('🔍 findFirstButtonWithData iniciado');
-                  console.log('nroTicket:', nroTicket);
-                  
                   // Debug: Ver todos los datos disponibles
                   const allData = dataTableInstance.rows().data().toArray();
-                  console.log('📊 Todos los datos disponibles:', allData);
-                  console.log('📊 Total de tickets:', allData.length);
-                  
-                  // Debug: Ver la estructura del primer ticket
-                  if (allData.length > 0) {
-                    console.log('🔍 Estructura del primer ticket:', allData[0]);
-                    console.log('🔍 Columnas del primer ticket:', allData[0].length);
-                    console.log('🔍 nro_ticket del primer ticket:', allData[0][1]);
-                  }
-                  
-                  // Debug: Ver todos los nro_ticket disponibles
-                  const allTickets = allData.map(row => row.nro_ticket);
-                  console.log('🎫 Todos los nro_ticket disponibles:', allTickets);
                   
                   // Debug: Ver el ticket específico si existe
                   const targetTicket = allData.find(row => row.nro_ticket === nroTicket);
-                  if (targetTicket) {
-                    console.log('🎯 Ticket encontrado:', targetTicket);
-                    console.log('🎯 id_status_domiciliacion del ticket:', targetTicket.id_status_domiciliacion);
-                    console.log('🎯 name_status_domiciliacion del ticket:', targetTicket.name_status_domiciliacion);
-                  } else {
-                    console.log('❌ Ticket no encontrado en los datos');
-                  }
                   
                   const searchTerms = [
                     { button: "btn-pendiente-revisar", term: "^1$", column: 5, status: "Pendiente", action: "Pendiente Por revisar domiciliacion" },
@@ -721,22 +698,16 @@ function searchDomiciliacionTickets() {
 
                   // Si hay un nroTicket, buscar el filtro que contenga ese ticket
                   if (nroTicket) {
-                    console.log('🎯 Buscando ticket específico:', nroTicket);
                     let ticketFound = false;
                     
                     for (const { button, term, column, status, action } of searchTerms) {
-                      console.log(`🔍 Probando filtro: ${button} con término: ${term}`);
                       clearFilters(dataTableInstance);
                       dataTableInstance.column(column).search(term, true, false).draw();
                       const filteredData = dataTableInstance.rows({ filter: 'applied' }).data().toArray();
                       const filteredTickets = filteredData.map(row => row.nro_ticket);
-                      console.log(`📋 Tickets en filtro ${button}:`, filteredTickets);
-                      console.log(`📋 Datos completos del filtro ${button}:`, filteredData);
                       const ticketExists = filteredData.some(row => row.nro_ticket === nroTicket);
-                      console.log(`✅ Ticket ${nroTicket} encontrado en filtro ${button}:`, ticketExists);
                       
                       if (ticketExists) {
-                        console.log(`🎯 ¡TICKET ENCONTRADO! Activando filtro: ${button}`);
                         clearFilters(dataTableInstance);
                         dataTableInstance.column(column).search(term, true, false).draw();
                         if (button === "btn-desafiliado-deuda") {
@@ -744,15 +715,12 @@ function searchDomiciliacionTickets() {
                         } else {
                           dataTableInstance.column(9).visible(true);
                         }
-                        console.log('🎯 Llamando setActiveButton para:', button);
                         setActiveButton(button);
                         
                         // Aplicar búsqueda del ticket DESPUÉS de activar el filtro
-                        console.log('🔍 Aplicando búsqueda del ticket después del filtro');
                         const searchInput = $('.dataTables_filter input');
                         searchInput.val(nroTicket);
                         dataTableInstance.search(nroTicket).draw();
-                        console.log('✅ Búsqueda del ticket aplicada:', searchInput.val());
                         
                         // Resaltar la fila del ticket encontrado
                         setTimeout(() => {
@@ -760,7 +728,6 @@ function searchDomiciliacionTickets() {
                             const rowData = this.data();
                             if (rowData.nro_ticket === nroTicket) {
                               $(this.node()).addClass('table-active').css('background-color', '#e0f2f7');
-                              console.log('🎨 Fila del ticket resaltada con color azul claro');
                             } else {
                               $(this.node()).removeClass('table-active').css('background-color', '');
                             }
@@ -774,7 +741,6 @@ function searchDomiciliacionTickets() {
                     
                     // Si no se encuentra el ticket en ningún filtro
                     if (!ticketFound) {
-                      console.log('❌ Ticket no encontrado en ningún filtro');
                       Swal.fire({
                         icon: 'warning',
                         title: 'Ticket no encontrado',
@@ -789,12 +755,9 @@ function searchDomiciliacionTickets() {
                   }
 
                   // Buscar el primer filtro con datos
-                  console.log('🔍 Buscando primer filtro con datos');
                   for (const { button, term, column, status, action } of searchTerms) {
                     const hasData = checkDataExists(dataTableInstance, term, column);
-                    console.log(`📊 Filtro ${button} tiene datos:`, hasData);
                     if (hasData) {
-                      console.log(`🎯 Activando primer filtro con datos: ${button}`);
                       clearFilters(dataTableInstance);
                       dataTableInstance.column(column).search(term, true, false).draw();
                       if (button === "btn-desafiliado-deuda") {
@@ -806,11 +769,9 @@ function searchDomiciliacionTickets() {
                       
                       // Aplicar búsqueda del ticket DESPUÉS de activar el filtro
                       if (nroTicket) {
-                        console.log('🔍 Aplicando búsqueda del ticket después del filtro');
                         const searchInput = $('.dataTables_filter input');
                         searchInput.val(nroTicket);
                         dataTableInstance.search(nroTicket).draw();
-                        console.log('✅ Búsqueda del ticket aplicada:', searchInput.val());
                         
                         // Resaltar la fila del ticket encontrado
                         setTimeout(() => {
@@ -818,7 +779,6 @@ function searchDomiciliacionTickets() {
                             const rowData = this.data();
                             if (rowData.nro_ticket === nroTicket) {
                               $(this.node()).addClass('table-active').css('background-color', '#e0f2f7');
-                              console.log('🎨 Fila del ticket resaltada con color azul claro');
                             } else {
                               $(this.node()).removeClass('table-active').css('background-color', '');
                             }
@@ -831,7 +791,6 @@ function searchDomiciliacionTickets() {
                   }
 
                   // Si no hay datos
-                  console.log('❌ No hay datos en ningún filtro');
                   return false;
                 }
 
@@ -1555,8 +1514,6 @@ document.addEventListener('click', function(event) {
         const motivoId = motivoRechazoSelectElement ? motivoRechazoSelectElement.value : "";
         const id_user = document.getElementById('iduser').value;
         const documentType = 'convenio_firmado';
-
-        console.log('🔍 Datos para rechazo:', { ticketId, nroticket, motivoId, id_user, documentType });
         
         // Cerrar el modal de confirmación mientras se procesa la solicitud
         if (confirmarRechazoModal) {
@@ -1596,7 +1553,6 @@ document.addEventListener('click', function(event) {
                                         try {
                                             const responseEmail = JSON.parse(xhrEmail.responseText);
                                             if (responseEmail.success) {
-                                                console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
                                             } else {
                                                 console.error('Error correo rechazo:', responseEmail.message);
                                             }
@@ -1912,8 +1868,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-
-        //console.log(response);
 
         if (response.success) {
           const srcImagen = response.rutaImagen;
@@ -2288,6 +2242,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -2378,6 +2333,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -2564,6 +2527,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -3120,8 +3084,6 @@ $(document).ready(function () {
       const dataTableInstance = $("#tabla-ticket").DataTable();
       const rowData = dataTableInstance.row($(this).closest('tr')).data();
       const convenioFirmado = rowData.convenio_firmado || 'No';
-      
-      console.log('🔍 convenio_firmado:', convenioFirmado);
 
       document.getElementById("idTicket").value = idTicket;
 
@@ -3595,14 +3557,6 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
                 option.textContent = status.name_status_domiciliacion;
 
                 select.appendChild(option);
-              } else {
-                console.log(
-                  "Excluyendo status:",
-                  status.name_status_domiciliacion,
-                  "(ID:",
-                  status.id_status_domiciliacion,
-                  ")"
-                );
               }
             });
           } else {

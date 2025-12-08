@@ -58,7 +58,6 @@ function soloLetras(e) {
 //          if (nombreusuario!='' && apellidousuario!='') {
 
 //          const idusuario=inicialnombre+apellidousuario;
-//             //console.log(idusuario);
 
 //             document.getElementById("usuario").value=idusuario;
 //         }
@@ -165,7 +164,6 @@ function levelTecnico() {
 function levelTecnicoEditar() {
   var idtipousuario = document.getElementById("edit_tipousers").value;
   var infoDiv = document.getElementById("nivelEditar").value;
-  console.log(idtipousuario);
 
   if (idtipousuario == 3) {
     $("#nivelEditar").css("display", "block");
@@ -512,7 +510,6 @@ function GuardarUsuariosNew() {
   const id_user = document.getElementById("id_user").value;
 
   const identificacion = tipo_doc+'-'+documento;
-  console.log(identificacion);
 
   // Validaciones generales
   if ((nombre_usuario=='') || (apellido_usuario=='') || (documento=='') || (correo=='') || (area_usuario=='') || (tipo_usuario=='') || (regionusers=='')) {
@@ -575,7 +572,6 @@ function GuardarUsuariosNew() {
           }
         } catch (error) {
           console.error("Error parsing JSON:", error);
-          console.log(xhr.responseText);
           Swal.fire({
             icon: "error",
             title: "Error en el servidor",
@@ -634,7 +630,6 @@ function VerUsuario(idusuario) {
       $("#edit_idnivel").val(userData.idlevel);
 
       if (userData.idrol == 3) {
-        console.log(userData.idrol);
         $("#nivelEditar").css("display", "block");
       } else {
         $("#nivelEditar").css("display", "none");
@@ -664,7 +659,6 @@ function obtenerAreas(idAreaSeleccionada) {
   xhrAreas.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/users/GetAreaUsers`); // Cambié a GET
   xhrAreas.onload = function () {
     const responseAreas = JSON.parse(xhrAreas.responseText);
-    //console.log('Respuesta de GetAreaUsers:', responseAreas); // Agregué un log para inspeccionar la respuesta
     if (
       responseAreas.success &&
       responseAreas.area &&
@@ -681,7 +675,6 @@ function obtenerAreas(idAreaSeleccionada) {
         if (area.idarea == idAreaSeleccionada) {
           // Comparando con el ID del backend
           option.selected = true;
-          //console.log('Opción seleccionada:', area.desc_area); // Para verificar si se selecciona alguna
         }
         selectAreas.appendChild(option);
       });
@@ -700,7 +693,6 @@ function obtenerRegion(idRegionSelect) {
   xhrRegion.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/users/GetRegionUsers`); // Cambié a GET
   xhrRegion.onload = function () {
     const responseRegion = JSON.parse(xhrRegion.responseText);
-    //console.log('Respuesta de GetRegionUsers:', responseRegion); // Agregué un log para inspeccionar la respuesta
     if (
       responseRegion.success &&
       responseRegion.regionusers &&
@@ -717,7 +709,6 @@ function obtenerRegion(idRegionSelect) {
         if (regionusers.idreg == idRegionSelect) {
           // Comparando con el ID del backend
           option.selected = true;
-          //console.log('Opción seleccionada:', regionusers.desc_reg); // Para verificar si se selecciona alguna
         }
         selectRegion.appendChild(option);
       });
@@ -736,7 +727,6 @@ function obtenerRol(idTipoUserSelect) {
   xhrTipoU.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/users/GetTipoUsers`); // Cambié a GET
   xhrTipoU.onload = function () {
     const responseTipoU = JSON.parse(xhrTipoU.responseText);
-    //console.log('Respuesta de GetTipoUsers:', responseTipoU); // Agregué un log para inspeccionar la respuesta
     if (
       responseTipoU.success &&
       responseTipoU.tipousers &&
@@ -753,7 +743,6 @@ function obtenerRol(idTipoUserSelect) {
         if (tipousers.idtipo == idTipoUserSelect) {
           // Comparando con el ID del backend
           option.selected = true;
-          //console.log('Opción seleccionada:', tipousers.desc_tipo); // Para verificar si se selecciona alguna
         }
         selectTipoU.appendChild(option);
       });
@@ -788,9 +777,7 @@ function EditarUsuarios() {
   const usuariocarga = document.getElementById("id_user").value;
 
     const identificacion = tipo_doc_edit+'-'+documento;
-  console.log(identificacion);
 
-  //console.log(idusuario_edit);
   //alert(nombre_usuario +'/'+ apellido_usuario +'/'+ iusuario +'/'+ documento +'/'+ correo +'/'+ area_usuario +'/'+ tipo_usuario +'/'+ regionusers);
 
   // // Agregar datos al formData
@@ -813,9 +800,8 @@ function EditarUsuarios() {
 
   // Depuración
   /*for (const [key, value] of formData.entries()) {
-        console.log(${key}:, value);
     }
-    console.log(formData);*/
+*/
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/EditarUsuarios`);
@@ -852,7 +838,6 @@ function EditarUsuarios() {
         }
       } catch (error) {
         console.error("Error parsing JSON:", error);
-        console.log(xhr.responseText);
         Swal.fire({
           icon: "error",
           title: "Error en el servidor",
@@ -943,7 +928,6 @@ function EditarUsuarios() {
 //             };
 //           });
 
-//           //console.log('Datos de usuario insertados:', userData); // Agrega esta línea
 
 //           // Inicialización de DataTables
 //           if ($.fn.DataTable.isDataTable("#tabla-modulo")) {
@@ -1078,7 +1062,6 @@ function VerModulos(idusuario) {
                             const idmodulo = moduloData.idmodulo;
                             const idcheck = moduleCheckbox.checked ? "t" : "f";
                             // AsignacionModulo(idmodulo, iusuario, idcheck);
-                            console.log(`Módulo ${idmodulo} para usuario ${iusuario} ${idcheck === 't' ? 'activado' : 'desactivado'}`);
 
                             // Si deseas que marcar/desmarcar el módulo principal afecte a los submódulos,
                             // necesitas alternar sus checkboxes aquí y actualizar su estado a través de la API.
@@ -1222,7 +1205,6 @@ function formatSubmodules(submodules, userId, parentModuleId) {
             const isChecked = subCheckbox.prop('checked');
             // Llamar a tu función para guardar la asignación del submódulo
             // saveSubmoduloAssignment(userId, idmodulo, idsubmodulo, isChecked);
-            console.log(`Submódulo ${idsubmodulo} del módulo ${idmodulo} para usuario ${userId} ${isChecked ? 'activado' : 'desactivado'}`);
              
             AsignacionSubModulo(idmodulo, idsubmodulo, userId, isChecked);
 
@@ -1301,7 +1283,6 @@ function AsignacionModulo(idmodulo, iusuario, id_check) {
 
 function AsignacionSubModulo(idmodulo, idsubmodulo, iusuario, isChecked) {
 
-console.log('jasaj');
   const id_modulo = idmodulo;
   const id_submodulo = idsubmodulo;
   const id_usuario = iusuario;

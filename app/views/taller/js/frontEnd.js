@@ -852,7 +852,6 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
             xhr.send(dataToSendString); // Envía la solicitud solo si se confirmó
         } else {
             // Si el usuario hace clic en "No, cancelar" o cierra el modal, simplemente no se hace nada
-            console.log("Envío cancelado por el usuario.");
         }
     });
 }
@@ -1041,7 +1040,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -1324,6 +1322,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -1414,6 +1413,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -1600,6 +1607,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -2940,7 +2948,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.send(datos);
                         Swal.showLoading();
                     } else {
-                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
@@ -3023,7 +3030,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           xhr.send(datos);
                           Swal.showLoading();
                         } else {
-                            console.log("Envío a Gestión Comercial cancelado.");
                             overdueTicketsQueue.shift();
                             processNextOverdueTicket();
                         }
@@ -3031,8 +3037,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
                     // --- Lógica para "Cerrar" (si se usa la X o se hace clic fuera si allowOutsideClick está habilitado) ---
-                    console.log("Modal cerrado.");
-                    
                     // Después de cerrar, procesamos el siguiente ticket
                     overdueTicketsQueue.shift();
                     processNextOverdueTicket();
@@ -3238,7 +3242,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.send(datos);
                         Swal.showLoading();
                     } else {
-                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
@@ -3388,13 +3391,10 @@ document.addEventListener("DOMContentLoaded", () => {
              
             }
           } else if (result.dismiss === Swal.DismissReason.cancel) {
-            console.log("Modal de selección cerrado.");
             overdueTicketsQueue = []; // Clear the queue if user cancels main selection modal
           }
         });
       }
-    } else {
-      console.log("No hay más tickets vencidos para procesar.");
     }
   }
 
@@ -3425,12 +3425,8 @@ document.addEventListener("DOMContentLoaded", () => {
             response.tickets.length > 0
           ) {
             overdueTicketsQueue = response.tickets; // Llenar la cola
-            console.log("Tickets vencidos encontrados:", response);
             processNextOverdueTicket(); // Iniciar el procesamiento de la cola
           } else {
-            console.log(
-              "No hay tickets con fecha de repuesto vencida o error al obtenerlos."
-            );
             // Opcional: Mostrar un SweetAlert si no hay tickets vencidos
             // Swal.fire({
             //     icon: 'info',
@@ -3566,10 +3562,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         return;
       }
-
-      console.log(
-        `Sending Ticket ID: ${ticketId}, New Repuesto Date: ${selectedDate} to backend.`
-      );
       const xhr = new XMLHttpRequest();
       xhr.open(
         "POST",

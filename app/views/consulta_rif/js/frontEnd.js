@@ -1437,7 +1437,6 @@ function VerificarSucursales(rif) {
                 }
             } catch (error) {
                 console.error("Error al procesar la respuesta del servidor:", error);
-                console.log("Respuesta del servidor completa (para depurar):", xhrSucursales.responseText);
             }
         } else {
             console.error(
@@ -1563,7 +1562,6 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
     // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
 
     // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
-    //console.log("Validación de anticipo pasada.");
 });
 
 function verificarTicketEnProceso(serial) {
@@ -1845,14 +1843,12 @@ function SendDataFailure2(idStatusPayment) {
               if (xhrEmail.status === 200) {
                 try {
                   const responseEmail = JSON.parse(xhrEmail.responseText);
-                  console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
                   
                   // Verificar si al menos un correo se envió exitosamente
                   const message = responseEmail.message || '';
                   const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
                   
                   if (responseEmail.success || correoTecnicoEnviado) {
-                    console.log(`✅ Correo enviado exitosamente para el ticket ${response.ticket_data.Nr_ticket}`);
                   } else {
                     console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
                   }
@@ -1957,7 +1953,6 @@ function SendDataFailure2(idStatusPayment) {
               $("#miModal").css("display", "none");
               
             const ticketId = ticketData.id_ticket_creado;
-            console.log(`Ticket ID: ${ticketId}`);
             const serialPos = ticketData.serial;
             
             abrirModalComponentes({
@@ -1981,7 +1976,6 @@ function SendDataFailure2(idStatusPayment) {
             }
           } catch (error) {
             console.error("Error parsing JSON (200 OK) for SaveDataFalla2:", error);
-            console.log(xhr.responseText);
             Swal.fire({
               icon: "error",
               title: "Error en el servidor",
@@ -2667,7 +2661,6 @@ function SendDataFailure1() {
             if (xhrEmail.status === 200) {
               try {
               const responseEmail = JSON.parse(xhrEmail.responseText);
-                console.log("📧 Respuesta del envío de correo (Nivel 1):", responseEmail);
                 
                 // Verificar si al menos un correo se envió exitosamente
                 const message = responseEmail.message || '';
@@ -3004,15 +2997,12 @@ function restaurarVisibilidadCompleta() {
   
   if (checkExoneracionContainer) {
     checkExoneracionContainer.style.display = "block";
-    console.log("checkExoneracionContainer restaurado");
   }
   if (checkAnticipoContainer) {
     checkAnticipoContainer.style.display = "block";
-    console.log("checkAnticipoContainer restaurado");
   }
   if (checkEnvioContainer) {
     checkEnvioContainer.style.display = "block";
-    console.log("checkEnvioContainer restaurado");
   }
 
   // Restaurar botones de descarga
@@ -3021,11 +3011,9 @@ function restaurarVisibilidadCompleta() {
   
   if (downloadExo) {
     downloadExo.style.display = "inline-block";
-    console.log("downloadExo restaurado");
   }
   if (downloadAntici) {
     downloadAntici.style.display = "inline-block";
-    console.log("downloadAntici restaurado");
   }
 
   // Restaurar checkboxes individuales
@@ -3036,19 +3024,15 @@ function restaurarVisibilidadCompleta() {
   
   if (checkExoneracion) {
     checkExoneracion.style.display = "block";
-    console.log("checkExoneracion restaurado");
   }
   if (checkExoneracionLabel) {
     checkExoneracionLabel.style.display = "block";
-    console.log("checkExoneracionLabel restaurado");
   }
   if (checkAnticipo) {
     checkAnticipo.style.display = "block";
-    console.log("checkAnticipo restaurado");
   }
   if (checkAnticipoLabel) {
     checkAnticipoLabel.style.display = "block";
-    console.log("checkAnticipoLabel restaurado");
   }
 
   // Restaurar elementos de garantía
@@ -3058,20 +3042,17 @@ function restaurarVisibilidadCompleta() {
   if (resultadoGarantiaReingreso) {
     resultadoGarantiaReingreso.textContent = "Sin Garantía Por Reingreso";
     resultadoGarantiaReingreso.style.color = "";
-    console.log("resultadoGarantiaReingreso restaurado");
   }
   
   if (resultadoGarantiaInstalacion) {
     resultadoGarantiaInstalacion.textContent = "Sin Garantía de Instalación";
     resultadoGarantiaInstalacion.style.color = "";
-    console.log("resultadoGarantiaInstalacion restaurado");
   }
 
   // Restaurar opciones de carga de documentos
   const documentUploadOptions = document.getElementById("documentUploadOptions");
   if (documentUploadOptions) {
     documentUploadOptions.style.display = "none"; // Por defecto oculto hasta que se seleccione "Sí"
-    console.log("documentUploadOptions restaurado");
   }
 
   // Restaurar botones de carga
@@ -3081,18 +3062,14 @@ function restaurarVisibilidadCompleta() {
   
   if (botonCargaPDFEnv) {
     botonCargaPDFEnv.style.display = "none";
-    console.log("botonCargaPDFEnv restaurado");
   }
   if (botonCargaExoneracion) {
     botonCargaExoneracion.style.display = "none";
-    console.log("botonCargaExoneracion restaurado");
   }
   if (botonCargaAnticipo) {
     botonCargaAnticipo.style.display = "none";
-    console.log("botonCargaAnticipo restaurado");
   }
 
-  console.log("Visibilidad completa restaurada");
 }
 
 function clearFileSpan(spanElement) {
@@ -3175,60 +3152,64 @@ if (!document.getElementById('export-loading-spinner-style')) {
 
 // Función para crear y mostrar el overlay de carga
 function showExportLoading() {
-  // Verificar si ya existe el overlay
-  let loadingOverlay = document.getElementById('export-loading-overlay');
-  if (!loadingOverlay) {
-    loadingOverlay = document.createElement('div');
-    loadingOverlay.id = 'export-loading-overlay';
-    loadingOverlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
-    `;
-    
-    const spinner = document.createElement('div');
-    spinner.style.cssText = `
-      width: 80px;
-      height: 80px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #003594;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
-    `;
-    
-    const message = document.createElement('h4');
-    message.textContent = 'Generando documento...';
-    message.style.cssText = `
-      color: #003594;
-      margin-bottom: 10px;
-      font-weight: 600;
-    `;
-    
-    const subMessage = document.createElement('p');
-    subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
-    subMessage.style.cssText = `
-      color: #666;
-      font-size: 14px;
-    `;
-    
-    loadingOverlay.appendChild(spinner);
-    loadingOverlay.appendChild(message);
-    loadingOverlay.appendChild(subMessage);
-    document.body.appendChild(loadingOverlay);
-  } else {
-    loadingOverlay.style.display = 'flex';
-  }
+  // Usar setTimeout para asegurar que el overlay se muestre inmediatamente
+  setTimeout(function() {
+    // Verificar si ya existe el overlay
+    let loadingOverlay = document.getElementById('export-loading-overlay');
+    if (!loadingOverlay) {
+      loadingOverlay = document.createElement('div');
+      loadingOverlay.id = 'export-loading-overlay';
+      loadingOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+      `;
+      
+      const spinner = document.createElement('div');
+      spinner.style.cssText = `
+        width: 80px;
+        height: 80px;
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #003594;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      `;
+      
+      const message = document.createElement('h4');
+      message.textContent = 'Generando documento...';
+      message.style.cssText = `
+        color: #003594;
+        margin-bottom: 10px;
+        font-weight: 600;
+      `;
+      
+      const subMessage = document.createElement('p');
+      subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+      subMessage.style.cssText = `
+        color: #666;
+        font-size: 14px;
+      `;
+      
+      loadingOverlay.appendChild(spinner);
+      loadingOverlay.appendChild(message);
+      loadingOverlay.appendChild(subMessage);
+      document.body.appendChild(loadingOverlay);
+    } else {
+      loadingOverlay.style.display = 'flex';
+      loadingOverlay.style.zIndex = '99999';
+    }
+  }, 0);
 }
 
 // Función para ocultar el overlay de carga
@@ -3236,7 +3217,85 @@ function hideExportLoading() {
   const loadingOverlay = document.getElementById('export-loading-overlay');
   if (loadingOverlay) {
     loadingOverlay.style.display = 'none';
+    loadingOverlay.style.zIndex = '-1';
   }
+}
+
+// Variable global para rastrear el tiempo de inicio de la exportación y el timeout
+let exportStartTime = null;
+let exportTimeoutId = null;
+let downloadDetected = false;
+
+// Función para detectar cuando comienza la descarga
+function detectDownloadStart() {
+    downloadDetected = false;
+    let hideTimeout = null;
+    
+    // Función para ocultar el overlay cuando se detecta la descarga
+    const hideAfterDownload = function() {
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+        }
+        // Esperar 3 segundos después de detectar la descarga para dar tiempo a que termine
+        hideTimeout = setTimeout(function() {
+            hideExportLoading();
+            if (exportTimeoutId) {
+                clearTimeout(exportTimeoutId);
+                exportTimeoutId = null;
+            }
+            downloadDetected = true;
+        }, 3000);
+    };
+    
+    // Detectar cuando la ventana pierde el foco (suele pasar cuando se inicia la descarga)
+    const blurHandler = function() {
+        if (!downloadDetected) {
+            hideAfterDownload();
+            window.removeEventListener('blur', blurHandler);
+        }
+    };
+    
+    window.addEventListener('blur', blurHandler);
+    
+    // También verificar si hay cambios en el DOM que indiquen descarga
+    const observer = new MutationObserver(function() {
+        // Verificar si hay elementos de descarga o iframes creados
+        const downloadIndicators = document.querySelectorAll('a[download], iframe[src*="blob"], iframe[src*="data:"]');
+        if (downloadIndicators.length > 0 && !downloadDetected) {
+            hideAfterDownload();
+            observer.disconnect();
+        }
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+    
+    // También monitorear cuando la ventana recupera el foco (después de la descarga)
+    const focusHandler = function() {
+        if (!downloadDetected) {
+            // Si la ventana recupera el foco después de perderlo, probablemente la descarga comenzó
+            setTimeout(function() {
+                if (!downloadDetected) {
+                    hideAfterDownload();
+                }
+            }, 2000);
+        }
+        window.removeEventListener('focus', focusHandler);
+    };
+    
+    window.addEventListener('focus', focusHandler);
+    
+    // Limpiar después de 60 segundos si no se detecta nada
+    setTimeout(function() {
+        observer.disconnect();
+        window.removeEventListener('blur', blurHandler);
+        window.removeEventListener('focus', focusHandler);
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+        }
+    }, 60000);
 }
 
 function SendRif() {
@@ -3461,11 +3520,51 @@ function SendRif() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Busqueda por RIF',
+                    filename: () => {
+                        const tipoRif = document.getElementById('rifTipo')?.value || 'V';
+                        const numeroRif = document.getElementById('rifInput')?.value?.trim() || '';
+                        const rifCompleto = numeroRif ? `${tipoRif}${numeroRif}` : 'SIN_RIF';
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE EMPRESA - RIF ${rifCompleto.trim().toUpperCase().replace(/[^a-zA-Z0-9]/g, '_')} ${fecha}`;
+                    },
+                    title: () => {
+                        return 'REPORTE DE EMPRESA POR RIF';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
                         title: 'Exportar a Excel'
+                    },
+                    action: function(e, dt, button, config) {
+                        // Limpiar timeout anterior si existe
+                        if (exportTimeoutId) {
+                            clearTimeout(exportTimeoutId);
+                        }
+                        
+                        // Mostrar overlay inmediatamente
+                        showExportLoading();
+                        exportStartTime = Date.now();
+                        
+                        // Iniciar detección de descarga
+                        detectDownloadStart();
+                        
+                        // Calcular delay basado en número de registros (fallback si no se detecta descarga)
+                        const rowCount = dt.rows({search: 'applied'}).count();
+                        // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
+                        const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
+                        
+                        // Llamar a la acción por defecto de forma asíncrona
+                        setTimeout(function() {
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }.bind(this), 100);
+                        
+                        // Ocultar overlay después del delay calculado (fallback)
+                        exportTimeoutId = setTimeout(function() {
+                            if (!downloadDetected) {
+                                hideExportLoading();
+                                exportTimeoutId = null;
+                            }
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
@@ -3549,10 +3648,35 @@ function SendRif() {
                     className: 'btn-pdf-modern',
                     attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
                     action: function(e, dt, button, config) {
+                        // Limpiar timeout anterior si existe
+                        if (exportTimeoutId) {
+                            clearTimeout(exportTimeoutId);
+                        }
+                        
+                        // Mostrar overlay inmediatamente
                         showExportLoading();
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-                        const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
-                        setTimeout(hideExportLoading, delay);
+                        exportStartTime = Date.now();
+                        
+                        // Iniciar detección de descarga
+                        detectDownloadStart();
+                        
+                        // Calcular delay basado en número de registros (fallback si no se detecta descarga)
+                        const rowCount = dt.rows().count();
+                        // Para PDF: aproximadamente 150ms por registro, mínimo 5 segundos, máximo 30 segundos
+                        const delay = Math.min(Math.max(rowCount * 150, 5000), 30000);
+                        
+                        // Llamar a la acción por defecto de forma asíncrona
+                        setTimeout(function() {
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }.bind(this), 100);
+                        
+                        // Ocultar overlay después del delay calculado (fallback)
+                        exportTimeoutId = setTimeout(function() {
+                            if (!downloadDetected) {
+                                hideExportLoading();
+                                exportTimeoutId = null;
+                            }
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
@@ -3966,11 +4090,50 @@ function SendSerial() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Búsqueda por Serial',
+                    filename: () => {
+                        const serialInput = document.getElementById('serialInput');
+                        const serialInputValue = serialInput?.value?.trim() || 'SIN_SERIAL';
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE EMPRESA - SERIAL ${serialInputValue.trim().toUpperCase().replace(/[^a-zA-Z0-9]/g, '_')} ${fecha}`;
+                    },
+                    title: () => {
+                        return 'REPORTE DE EMPRESA POR SERIAL';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
                         title: 'Exportar a Excel'
+                    },
+                    action: function(e, dt, button, config) {
+                        // Limpiar timeout anterior si existe
+                        if (exportTimeoutId) {
+                            clearTimeout(exportTimeoutId);
+                        }
+                        
+                        // Mostrar overlay inmediatamente
+                        showExportLoading();
+                        exportStartTime = Date.now();
+                        
+                        // Iniciar detección de descarga
+                        detectDownloadStart();
+                        
+                        // Calcular delay basado en número de registros (fallback si no se detecta descarga)
+                        const rowCount = dt.rows({search: 'applied'}).count();
+                        // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
+                        const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
+                        
+                        // Llamar a la acción por defecto de forma asíncrona
+                        setTimeout(function() {
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }.bind(this), 100);
+                        
+                        // Ocultar overlay después del delay calculado (fallback)
+                        exportTimeoutId = setTimeout(function() {
+                            if (!downloadDetected) {
+                                hideExportLoading();
+                                exportTimeoutId = null;
+                            }
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
@@ -4055,10 +4218,30 @@ function SendSerial() {
                     className: 'btn-pdf-modern',
   attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
   action: function(e, dt, button, config) {
-    showExportLoading();
-    $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-    const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
-    setTimeout(hideExportLoading, delay);
+                        // Limpiar timeout anterior si existe
+                        if (exportTimeoutId) {
+                            clearTimeout(exportTimeoutId);
+                        }
+                        
+                        // Mostrar overlay inmediatamente
+                        showExportLoading();
+                        exportStartTime = Date.now();
+                        
+                        // Calcular delay basado en número de registros
+                        const rowCount = dt.rows().count();
+                        // Para PDF: aproximadamente 200ms por registro, mínimo 8 segundos, máximo 1 minuto (60,000ms)
+                        const delay = Math.min(Math.max(rowCount * 200, 8000), 60000);
+                        
+                        // Llamar a la acción por defecto de forma asíncrona
+                        setTimeout(function() {
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }.bind(this), 100);
+                        
+                        // Ocultar overlay después del delay calculado
+                        exportTimeoutId = setTimeout(function() {
+                            hideExportLoading();
+                            exportTimeoutId = null;
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
@@ -4463,6 +4646,46 @@ function SendRazon() {
               extend: "excelHtml5",
               footer: true,
               text: "Excel",
+              filename: () => {
+                  const razon = document.getElementById('RazonInput')?.value?.trim() || 'SIN_RAZON_SOCIAL';
+                  const razonLimpia = razon.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50).toUpperCase();
+                  const fecha = new Date().toISOString().split('T')[0];
+                  return `REPORTE CONSULTA - CONTEOS_RAZON_SOCIAL ${razonLimpia}_${fecha}`;
+              },
+              title: () => {
+                  return 'Conteos por Razón Social';
+              },
+              action: function(e, dt, button, config) {
+                  // Limpiar timeout anterior si existe
+                  if (exportTimeoutId) {
+                      clearTimeout(exportTimeoutId);
+                  }
+                  
+                  // Mostrar overlay inmediatamente
+                  showExportLoading();
+                  exportStartTime = Date.now();
+                  
+                  // Iniciar detección de descarga
+                  detectDownloadStart();
+                  
+                  // Calcular delay basado en número de registros (fallback si no se detecta descarga)
+                  const rowCount = dt.rows({search: 'applied'}).count();
+                  // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
+                  const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
+                  
+                  // Llamar a la acción por defecto de forma asíncrona
+                  setTimeout(function() {
+                      $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                  }.bind(this), 100);
+                  
+                  // Ocultar overlay después del delay calculado (fallback)
+                  exportTimeoutId = setTimeout(function() {
+                      if (!downloadDetected) {
+                          hideExportLoading();
+                          exportTimeoutId = null;
+                      }
+                  }, delay);
+              },
             }, ],
             responsive: false,
             pagingType: "simple_numbers",
@@ -4498,22 +4721,49 @@ function SendRazon() {
                     text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
                       <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
                     </svg>Excel`,
-                    title: 'Búsqueda por Razón Social',
+                    filename: () => {
+                        const razon = document.getElementById('RazonInput')?.value?.trim() || 'SIN_RAZON_SOCIAL';
+                        const razonLimpia = razon.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50).toUpperCase();
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE CONSULTA - RAZON_SOCIAL ${razonLimpia}_${fecha}`;
+                    },
+                    title: () => {
+                        return 'Búsqueda por Razón Social';
+                    },
                     className: 'btn-excel-modern',
                     attr: {
                         id: 'btn-excel-modern-id',
                         title: 'Exportar a Excel'
                     },
                     action: function(e, dt, button, config) {
+                        // Limpiar timeout anterior si existe
+                        if (exportTimeoutId) {
+                            clearTimeout(exportTimeoutId);
+                        }
+                        
+                        // Mostrar overlay inmediatamente
                         showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
+                        exportStartTime = Date.now();
+                        
+                        // Iniciar detección de descarga
+                        detectDownloadStart();
+                        
+                        // Calcular delay basado en número de registros (fallback si no se detecta descarga)
                         const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
+                        // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
+                        const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
+                        
+                        // Llamar a la acción por defecto de forma asíncrona
                         setTimeout(function() {
-                            hideExportLoading();
+                            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        }.bind(this), 100);
+                        
+                        // Ocultar overlay después del delay calculado (fallback)
+                        exportTimeoutId = setTimeout(function() {
+                            if (!downloadDetected) {
+                                hideExportLoading();
+                                exportTimeoutId = null;
+                            }
                         }, delay);
                     },
                     exportOptions: {
@@ -4599,10 +4849,35 @@ function SendRazon() {
                     className: 'btn-pdf-modern',
   attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
                     action: function(e, dt, button, config) {
+                        // Limpiar timeout anterior si existe
+                        if (exportTimeoutId) {
+                            clearTimeout(exportTimeoutId);
+                        }
+                        
+                        // Mostrar overlay inmediatamente
                         showExportLoading();
-                        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-    const delay = Math.min(Math.max(dt.rows().count() * 20, 4000), 18000);
-    setTimeout(hideExportLoading, delay);
+                        exportStartTime = Date.now();
+                        
+                        // Iniciar detección de descarga
+                        detectDownloadStart();
+                        
+                        // Calcular delay basado en número de registros (fallback si no se detecta descarga)
+                        const rowCount = dt.rows().count();
+                        // Para PDF: aproximadamente 150ms por registro, mínimo 5 segundos, máximo 30 segundos
+                        const delay = Math.min(Math.max(rowCount * 150, 5000), 30000);
+                        
+                        // Llamar a la acción por defecto de forma asíncrona
+                        setTimeout(function() {
+                            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+                        }.bind(this), 100);
+                        
+                        // Ocultar overlay después del delay calculado (fallback)
+                        exportTimeoutId = setTimeout(function() {
+                            if (!downloadDetected) {
+                                hideExportLoading();
+                                exportTimeoutId = null;
+                            }
+                        }, delay);
                     },
                     exportOptions: {
                         columns: ':visible',
@@ -4828,7 +5103,6 @@ function fetchSerialData(serial, rif,razonsocial) {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
-  console.log(razonsocial);
   globalSerial = serial;
   globalRif = rif;
   globalRazon = razonsocial;
@@ -4968,7 +5242,45 @@ function fetchSerialData(serial, rif,razonsocial) {
                   {
                       extend: 'excelHtml5',
                       text: 'Excel',
-                      title: 'Reporte', 
+                      filename: () => {
+                          const serial = globalSerial || 'SIN_SERIAL';
+                          const fecha = new Date().toISOString().split('T')[0];
+                          return `REPORTE CONSULTA - DETALLE_SERIAL ${serial.toUpperCase()}_${fecha}`;
+                      },
+                      title: () => {
+                          return 'Reporte de Detalle de Serial';
+                      },
+                      action: function(e, dt, button, config) {
+                          // Limpiar timeout anterior si existe
+                          if (exportTimeoutId) {
+                              clearTimeout(exportTimeoutId);
+                          }
+                          
+                          // Mostrar overlay inmediatamente
+                          showExportLoading();
+                          exportStartTime = Date.now();
+                          
+                          // Iniciar detección de descarga
+                          detectDownloadStart();
+                          
+                          // Calcular delay basado en número de registros (fallback si no se detecta descarga)
+                          const rowCount = dt.rows({search: 'applied'}).count();
+                          // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
+                          const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
+                          
+                          // Llamar a la acción por defecto de forma asíncrona
+                          setTimeout(function() {
+                              $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                          }.bind(this), 100);
+                          
+                          // Ocultar overlay después del delay calculado (fallback)
+                          exportTimeoutId = setTimeout(function() {
+                              if (!downloadDetected) {
+                                  hideExportLoading();
+                                  exportTimeoutId = null;
+                              }
+                          }, delay);
+                      },
                   }
               ]
             });
@@ -5005,7 +5317,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -5073,7 +5384,6 @@ document.addEventListener("DOMContentLoaded", function () {
       buscarSerial.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla.");
   }
 
   if (buscarPorRifBtn && rifCountTableCard) {
@@ -5094,7 +5404,6 @@ document.addEventListener("DOMContentLoaded", function () {
       razonInput.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla.");
   }
 
   if (buscarPorSerialBtn && serialCountTableCard) {
@@ -5114,7 +5423,6 @@ document.addEventListener("DOMContentLoaded", function () {
       razonInput.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla.");
   }
 });
 
@@ -5250,7 +5558,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                         if (xhrEmail.status === 200) {
                             try {
                                 const responseEmail = JSON.parse(xhrEmail.responseText);
-                                console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
                                 
                                 // Verificar si al menos un correo se envió exitosamente
                                 const message = responseEmail.message || '';
@@ -5322,7 +5629,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                      response.ticket_number || 
                                      ticketId;
                     
-                    console.log(`📧 Componentes guardados para ticket: ${nroTicket}. Correo enviado.`);
                     
                     Swal.fire({
                         title: '¡Éxito!',
@@ -5619,14 +5925,12 @@ function abrirModalComponentes(boton) {
 function processEmailQueue() {
     if (emailQueue.length === 0) {
         isProcessing = false;
-        console.log("✅ Cola de correos vacía. Procesamiento detenido.");
         return;
     }
 
     isProcessing = true;
     const emailData = emailQueue[0]; // Tomar el primer correo de la cola
 
-    console.log(`🔄 Procesando correo para ticket: ${emailData.ticketData.Nr_ticket}`);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
@@ -5638,7 +5942,6 @@ function processEmailQueue() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    console.log(`✅ Correo enviado exitosamente para ticket: ${emailData.ticketData.Nr_ticket}`, response.message);
                     
                     // Mostrar notificación de éxito
                     if (typeof Swal !== "undefined") {
@@ -5668,7 +5971,6 @@ function processEmailQueue() {
 
         // Remover el correo procesado de la cola
         emailQueue.shift();
-        console.log(`📧 Correo removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -5678,7 +5980,6 @@ function processEmailQueue() {
             }, 1000);
         } else {
             isProcessing = false;
-            console.log("🎉 Todos los correos de la cola han sido procesados.");
         }
     };
 
@@ -5698,7 +5999,6 @@ function processEmailQueue() {
         
         // Remover el correo fallido de la cola
         emailQueue.shift();
-        console.log(`📧 Correo fallido removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -5726,7 +6026,6 @@ function processEmailQueue() {
         
         // Remover el correo fallido de la cola
         emailQueue.shift();
-        console.log(`📧 Correo con timeout removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -5744,12 +6043,7 @@ function processEmailQueue() {
 
 // Función para mostrar el estado de la cola (opcional, para debugging)
 function mostrarEstadoCola() {
-    console.log(`📊 Estado de la cola de correos:`);
-    console.log(`   - Correos en cola: ${emailQueue.length}`);
-    console.log(`   - Procesando: ${isProcessing ? 'Sí' : 'No'}`);
-    
     if (emailQueue.length > 0) {
-        console.log(`   - Próximo correo: Ticket #${emailQueue[0].ticketData.Nr_ticket}`);
     }
     
     if (typeof Swal !== "undefined") {

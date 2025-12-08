@@ -54,6 +54,8 @@ function SearchTicketsComponents() {
                         dataForDataTable.push([
                             data.id_ticket,
                             data.nro_ticket,
+                            data.rif || '',
+                            data.razonsocial_cliente || '',
                             data.serial_pos,
                             data.banco_ibp,
                             data.tipo_pos,
@@ -66,7 +68,7 @@ function SearchTicketsComponents() {
                     const headerRow = thead.insertRow();
                     
                     // Crear headers manualmente
-                    const headers = ['N°', 'N° Ticket', 'Serial POS', 'Banco', 'Tipo POS', 'Acciones'];
+                    const headers = ['N°', 'N° Ticket', 'RIF', 'Razón Social', 'Serial POS', 'Banco', 'Tipo POS', 'Acciones'];
                     headers.forEach(headerText => {
                         const th = document.createElement('th');
                         th.textContent = headerText;
@@ -88,6 +90,16 @@ function SearchTicketsComponents() {
                                     },
                                 },
                                 { title: "Nro Ticket" },
+                                { title: "RIF" },
+                                { 
+                                    title: "Razón Social",
+                                    render: function (data, type, row) {
+                                        if (type === "display") {
+                                            return `<span class="truncated-cell" data-full-text="${data || ''}">${data || ''}</span>`;
+                                        }
+                                        return data || '';
+                                    },
+                                },
                                 { title: "Serial POS" },
                                 {
                                     title: "Banco",
@@ -129,12 +141,6 @@ function SearchTicketsComponents() {
                             const idTicket = $(this).data('id');
                             const serialPos = $(this).data('serial');
                             const nroTicket = $(this).data('ticket');
-                            
-                            console.log('Ver componentes para:', {
-                                idTicket: idTicket,
-                                serialPos: serialPos,
-                                nroTicket: nroTicket
-                            });
                             
                             showComponentsModal(idTicket, serialPos, nroTicket);
                         });
@@ -323,8 +329,316 @@ function SearchTicketsComponents() {
     xhr.send(datos);
 }
 
+// Variables globales para la navegación del modal
+let allPosDataGlobal = [];
+let currentPosIndex = 0;
+let currentModalData = { idTicket: null, serialPos: null, nroTicket: null };
+
+// Función para formatear la lista de componentes, destacando los desmarcados
+function formatComponentsList(componentsString) {
+    if (!componentsString || componentsString === 'No disponible') {
+        return componentsString;
+    }
+    
+    // Dividir por comas y procesar cada componente
+    const components = componentsString.split(',').map(comp => comp.trim());
+    
+    return components.map(component => {
+        if (component.includes('(Desmarcado)')) {
+            // Componente desmarcado - aplicar estilo especial que combine con el fondo púrpura/azul
+            const cleanName = component.replace('(Desmarcado)', '').trim();
+            return `<span style="text-decoration: line-through; opacity: 0.6; color: rgba(255, 255, 255, 0.6);">${cleanName}</span> <span style="font-size: 0.85em; color: #FFE082; font-weight: bold; background: rgba(255, 224, 130, 0.2); padding: 2px 6px; border-radius: 4px; margin-left: 4px;">(Desmarcado)</span>`;
+        } else {
+            // Componente activo
+            return `<span style="color: white;">${component}</span>`;
+        }
+    }).join(', ');
+}
+
+// Función para calcular el número del módulo basado en módulos únicos del mismo POS
+function getModuleNumber(posData, allPosData) {
+    if (!posData || !allPosData || allPosData.length === 0) {
+        return 1;
+    }
+    
+    // Obtener la clave única del POS (id_ticket + serial_pos)
+    const currentPosKey = `${posData.id_ticket}_${posData.serial_pos}`;
+    
+    // Filtrar todos los registros del mismo POS
+    const samePosModules = allPosData.filter(p => 
+        `${p.id_ticket}_${p.serial_pos}` === currentPosKey
+    );
+    
+    // Obtener módulos únicos del mismo POS, ordenados por fecha
+    const uniqueModules = [];
+    const seenModules = new Set();
+    
+    // Ordenar por fecha para mantener el orden cronológico
+    const sortedModules = samePosModules.sort((a, b) => {
+        const dateA = new Date(a.component_insert_date || 0);
+        const dateB = new Date(b.component_insert_date || 0);
+        return dateA - dateB;
+    });
+    
+    // Agregar módulos únicos en orden
+    sortedModules.forEach(module => {
+        const moduleKey = module.modulo_insert || 'Sin Módulo';
+        if (!seenModules.has(moduleKey)) {
+            seenModules.add(moduleKey);
+            uniqueModules.push(moduleKey);
+        }
+    });
+    
+    // Encontrar el índice del módulo actual en la lista de módulos únicos
+    const currentModuleKey = posData.modulo_insert || 'Sin Módulo';
+    const moduleIndex = uniqueModules.indexOf(currentModuleKey);
+    
+    // Retornar el número del módulo (1-based)
+    return moduleIndex >= 0 ? moduleIndex + 1 : 1;
+}
+
+// Función para generar el HTML del contenido del POS
+function generatePosContentHtml(posData, currentIndex, totalPos) {
+    // Calcular el número del módulo basado en módulos únicos del mismo POS
+    const moduleNumber = getModuleNumber(posData, allPosDataGlobal);
+    
+    return `
+        <!-- Información principal en grid responsivo -->
+        <div class="row g-3 mb-4">
+            <!-- Serial del POS -->
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="pos-card pos-card-info">
+                    <div class="pos-card-header">
+                        <i class="fas fa-barcode"></i>
+                        <span>Serial POS</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="pos-info-item">
+                            <span class="pos-value pos-serial">${posData.serial_pos || 'No disponible'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Banco -->
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="pos-card pos-card-success">
+                    <div class="pos-card-header">
+                        <i class="fas fa-university"></i>
+                        <span>Banco</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="pos-info-item">
+                            <span class="pos-value pos-bank">${posData.banco_ibp || 'No disponible'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipo de POS -->
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="pos-card pos-card-warning">
+                    <div class="pos-card-header">
+                        <i class="fas fa-cogs"></i>
+                        <span>Modelo</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="pos-info-item">
+                            <span class="pos-value pos-model">${posData.tipo_pos || 'No disponible'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Ticket -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="pos-card pos-card-primary">
+                    <div class="pos-card-header">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Información del Ticket</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="pos-info-item">
+                                    <label>N° Ticket</label>
+                                    <span class="pos-value">${posData.nro_ticket || 'No disponible'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="pos-info-item">
+                                    <label>ID Ticket</label>
+                                    <span class="pos-value">${posData.id_ticket || 'No disponible'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Componentes por Módulo -->
+        <div class="pos-modules-section">
+            <div class="pos-section-header">
+                <h5 class="pos-section-title">
+                    <i class="fas fa-puzzle-piece me-2"></i>
+                    Periférico por Gestión
+                </h5>
+                <div class="pos-section-line"></div>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="pos-module-card">
+                        <div class="pos-module-header">
+                            <div class="pos-module-title">
+                                <i class="fas fa-layer-group me-2"></i>
+                                <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
+                            </div>
+                            <div class="pos-module-badge">
+                                <span class="badge pos-module-number">#${moduleNumber}</span>
+                            </div>
+                        </div>
+                        <div class="pos-module-body">
+                            <div class="pos-module-table">
+                                <div class="pos-module-row">
+                                    <div class="pos-module-cell pos-module-cell-user">
+                                        <div class="pos-module-cell-header">
+                                            <i class="fas fa-user me-2"></i>
+                                            <span>Usuario Responsable</span>
+                                        </div>
+                                        <div class="pos-module-cell-content">
+                                            <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="pos-module-cell pos-module-cell-date">
+                                        <div class="pos-module-cell-header">
+                                            <i class="fas fa-calendar me-2"></i>
+                                            <span>Fecha de Registro</span>
+                                        </div>
+                                        <div class="pos-module-cell-content">
+                                            <span class="pos-module-value">${posData.component_insert_date || 'No disponible'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="pos-module-cell pos-module-cell-region">
+                                        <div class="pos-module-cell-header">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            <span>Región Registro</span>
+                                        </div>
+                                        <div class="pos-module-cell-content">
+                                            <span class="pos-module-value">${posData.name_region || 'No disponible'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pos-module-row pos-module-row-components">
+                                    <div class="pos-module-cell pos-module-cell-full">
+                                        <div class="pos-module-cell-header">
+                                            <i class="fas fa-puzzle-piece me-2"></i>
+                                            <span>Periférico Asociados</span>
+                                        </div>
+                                        <div class="pos-module-cell-content">
+                                            <div class="pos-components-badge">
+                                                ${formatComponentsList(posData.aggregated_components_by_module || 'No disponible')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Función para actualizar el contenido del modal
+function updateModalContent() {
+    if (allPosDataGlobal.length === 0) {
+        return;
+    }
+    
+    const posData = allPosDataGlobal[currentPosIndex];
+    if (!posData) {
+        return;
+    }
+    
+    const contentContainer = document.querySelector('.pos-modal-content-container');
+    
+    if (contentContainer) {
+        contentContainer.innerHTML = generatePosContentHtml(posData, currentPosIndex, allPosDataGlobal.length);
+        // Hacer scroll al inicio del contenedor para que el usuario vea el cambio
+        contentContainer.scrollTop = 0;
+    }
+    
+    // Actualizar estado de las flechas
+    const prevArrows = document.querySelectorAll('.pos-nav-arrow.prev');
+    const nextArrows = document.querySelectorAll('.pos-nav-arrow.next');
+    
+    prevArrows.forEach(prevArrow => {
+        if (currentPosIndex === 0) {
+            prevArrow.disabled = true;
+            prevArrow.style.opacity = '0.4';
+            prevArrow.style.cursor = 'not-allowed';
+            prevArrow.style.pointerEvents = 'none';
+        } else {
+            prevArrow.disabled = false;
+            prevArrow.style.opacity = '1';
+            prevArrow.style.cursor = 'pointer';
+            prevArrow.style.pointerEvents = 'auto';
+        }
+    });
+    
+    nextArrows.forEach(nextArrow => {
+        if (currentPosIndex >= allPosDataGlobal.length - 1) {
+            nextArrow.disabled = true;
+            nextArrow.style.opacity = '0.4';
+            nextArrow.style.cursor = 'not-allowed';
+            nextArrow.style.pointerEvents = 'none';
+        } else {
+            nextArrow.disabled = false;
+            nextArrow.style.opacity = '1';
+            nextArrow.style.cursor = 'pointer';
+            nextArrow.style.pointerEvents = 'auto';
+        }
+    });
+    
+    // Actualizar contador en el header
+    const counter = document.querySelector('.pos-nav-counter');
+    if (counter) {
+        counter.textContent = `${currentPosIndex + 1} / ${allPosDataGlobal.length}`;
+    }
+    
+    // Actualizar contador en la parte inferior
+    const counterText = document.querySelector('.pos-nav-counter-text');
+    if (counterText) {
+        counterText.textContent = `${currentPosIndex + 1} / ${allPosDataGlobal.length}`;
+    }
+}
+
+// Función para navegar al siguiente POS
+function navigateToNextPos() {
+    if (currentPosIndex < allPosDataGlobal.length - 1) {
+        currentPosIndex++;
+        updateModalContent();
+    }
+}
+
+// Función para navegar al POS anterior
+function navigateToPrevPos() {
+    if (currentPosIndex > 0) {
+        currentPosIndex--;
+        updateModalContent();
+    }
+}
+
 // Función para mostrar el modal de componentes con datos reales
 function showComponentsModal(idTicket, serialPos, nroTicket) {
+    // Guardar datos actuales
+    currentModalData = { idTicket, serialPos, nroTicket };
+    
     // Mostrar loading
     Swal.fire({
         title: 'Cargando información del POS...',
@@ -337,9 +651,9 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
         }
     });
 
-    // Llamada AJAX para obtener la información del POS
+    // Llamada AJAX para obtener TODOS los POS con componentes
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPOSInfo`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetAllPOSInfo`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -350,8 +664,54 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success && response.tickets && response.tickets.length > 0) {
-                    // CORRECCIÓN: Mostrar TODOS los registros, no solo el primero
-                    const allPosData = response.tickets; // Todos los registros
+                    // Guardar todos los registros globalmente
+                    allPosDataGlobal = Array.isArray(response.tickets) ? response.tickets : [response.tickets];
+                    
+                    // Normalizar valores para búsqueda
+                    const normalizedSerialPos = String(serialPos || '').trim();
+                    const normalizedIdTicket = parseInt(idTicket || 0);
+                    const normalizedNroTicket = String(nroTicket || '').trim();
+                    
+                    // Buscar el índice del POS que coincide con el serial e id_ticket seleccionado
+                    // Priorizar coincidencia exacta con serial + id_ticket + nro_ticket
+                    let selectedIndex = -1;
+                    
+                    // Primero intentar coincidencia exacta con todos los campos
+                    if (normalizedNroTicket) {
+                        selectedIndex = allPosDataGlobal.findIndex(pos => {
+                            const posSerial = String(pos.serial_pos || '').trim();
+                            const posTicket = parseInt(pos.id_ticket || 0);
+                            const posNroTicket = String(pos.nro_ticket || '').trim();
+                            
+                            return posSerial === normalizedSerialPos && 
+                                   posTicket === normalizedIdTicket &&
+                                   posNroTicket === normalizedNroTicket;
+                        });
+                    }
+                    
+                    // Si no se encuentra, buscar solo por serial e id_ticket
+                    if (selectedIndex === -1) {
+                        selectedIndex = allPosDataGlobal.findIndex(pos => {
+                            const posSerial = String(pos.serial_pos || '').trim();
+                            const posTicket = parseInt(pos.id_ticket || 0);
+                            
+                            return posSerial === normalizedSerialPos && posTicket === normalizedIdTicket;
+                        });
+                    }
+                    
+                    // Si aún no se encuentra, buscar solo por serial
+                    if (selectedIndex === -1) {
+                        selectedIndex = allPosDataGlobal.findIndex(pos => {
+                            const posSerial = String(pos.serial_pos || '').trim();
+                            return posSerial === normalizedSerialPos;
+                        });
+                    }
+                    
+                    // Si se encuentra, empezar desde ese índice, sino desde el primero
+                    currentPosIndex = selectedIndex >= 0 ? selectedIndex : 0;
+                    
+                    // Obtener el POS inicial para mostrar (el seleccionado o el primero)
+                    const initialPosData = allPosDataGlobal[currentPosIndex];
                     
                     // Crear HTML para mostrar la información del POS
                     let posInfoHtml = `
@@ -384,169 +744,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 <div class="pos-stats">
                                     <span class="badge pos-badge-primary">
                                         <i class="fas fa-layer-group me-1"></i>
-                                        ${allPosData.length} Periférico${allPosData.length !== 1 ? 's' : ''} Registrado${allPosData.length !== 1 ? 's' : ''}
+                                        ${allPosDataGlobal.length} Periférico${allPosDataGlobal.length !== 1 ? 's' : ''} Registrado${allPosDataGlobal.length !== 1 ? 's' : ''}
+                                    </span>
+                                    <span class="badge pos-badge-primary ms-2 pos-nav-counter" style="background: rgba(255, 255, 255, 0.3);">
+                                        ${currentPosIndex + 1} / ${allPosDataGlobal.length}
                                     </span>
                                 </div>
                             </div>
                             
-                            <!-- Información principal en grid responsivo -->
-                            <div class="row g-3 mb-4">
-                                <!-- Serial del POS -->
-                                <div class="col-xl-4 col-lg-6 col-md-6">
-                                    <div class="pos-card pos-card-info">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-barcode"></i>
-                                            <span>Serial POS</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="pos-info-item">
-                                                <span class="pos-value pos-serial">${serialPos}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                        </div>
-
-                                <!-- Información del Banco -->
-                                <div class="col-xl-4 col-lg-6 col-md-6">
-                                    <div class="pos-card pos-card-success">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-university"></i>
-                                            <span>Banco</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="pos-info-item">
-                                                <span class="pos-value pos-bank">${allPosData[0].banco_ibp || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                                <!-- Tipo de POS -->
-                                <div class="col-xl-4 col-lg-6 col-md-6">
-                                    <div class="pos-card pos-card-warning">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-cogs"></i>
-                                            <span>Modelo</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="pos-info-item">
-                                                <span class="pos-value pos-model">${allPosData[0].tipo_pos || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-
-                            <!-- Información del Ticket -->
-                            <div class="row mb-4">
-                                <div class="col-12">
-                                    <div class="pos-card pos-card-primary">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-ticket-alt"></i>
-                                            <span>Información del Ticket</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="row">
-                                <div class="col-md-6">
-                                                    <div class="pos-info-item">
-                                                        <label>N° Ticket</label>
-                                                        <span class="pos-value">${nroTicket}</span>
-                                        </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="pos-info-item">
-                                                        <label>ID Ticket</label>
-                                                        <span class="pos-value">${idTicket}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Componentes por Módulo -->
-                            <div class="pos-modules-section">
-                                <div class="pos-section-header">
-                                    <h5 class="pos-section-title">
-                                        <i class="fas fa-puzzle-piece me-2"></i>
-                                        Periférico por Gestión
-                                    </h5>
-                                    <div class="pos-section-line"></div>
-                                </div>
-                                
-                                <div class="row g-3">
-                    `;
-
-                    // ITERAR TODOS LOS REGISTROS DE COMPONENTES
-                    allPosData.forEach((posData, index) => {
-                        posInfoHtml += `
-                                <div class="col-12">
-                                        <div class="pos-module-card">
-                                            <div class="pos-module-header">
-                                                <div class="pos-module-title">
-                                                <i class="fas fa-layer-group me-2"></i>
-                                                    <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
-                                        </div>
-                                                <div class="pos-module-badge">
-                                                    <span class="badge pos-module-number">#${index + 1}</span>
-                                                </div>
-                                                </div>
-                                            <div class="pos-module-body">
-                                                <div class="pos-module-table">
-                                                    <div class="pos-module-row">
-                                                        <div class="pos-module-cell pos-module-cell-user">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-user me-2"></i>
-                                                                <span>Usuario Responsable</span>
-                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="pos-module-cell pos-module-cell-date">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-calendar me-2"></i>
-                                                                <span>Fecha de Registro</span>
-                                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <span class="pos-module-value">${posData.component_insert_date || 'No disponible'}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="pos-module-cell pos-module-cell-region">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-map-marker-alt me-2"></i>
-                                                                <span>Región Registro</span>
-                                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <span class="pos-module-value">${posData.name_region || 'No disponible'}</span>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                    </div>
-                                                    <div class="pos-module-row pos-module-row-components">
-                                                        <div class="pos-module-cell pos-module-cell-full">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-puzzle-piece me-2"></i>
-                                                                <span>Periférico Asociados</span>
-                                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <div class="pos-components-badge">
-                                                            ${posData.aggregated_components_by_module || 'No disponible'}
-                                                                </div>
-                                                            </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    posInfoHtml += `
-                                </div>
+                            <!-- Contenedor del contenido (se actualizará dinámicamente) -->
+                            <div class="pos-modal-content-container">
+                                ${generatePosContentHtml(initialPosData, currentPosIndex, allPosDataGlobal.length)}
                             </div>
 
                             <!-- Nota informativa empresarial -->
@@ -558,6 +766,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <p class="mb-0">Esta información se obtiene desde la base de datos de Soporte Post-Venta y muestra todos los registros de Periféricos registrados para este serial de POS, organizados por módulo de gestión técnica.</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Navegación con flechas en la parte inferior -->
+                            <div class="pos-navigation-footer">
+                                <button class="pos-nav-arrow prev" type="button" title="Anterior">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="pos-nav-counter-text">${currentPosIndex + 1} / ${allPosDataGlobal.length}</span>
+                                <button class="pos-nav-arrow next" type="button" title="Siguiente">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -640,6 +859,11 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             .pos-stats {
                                 position: relative;
                                 z-index: 1;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                flex-wrap: wrap;
+                                gap: 0.5rem;
                             }
 
                             .pos-badge-primary {
@@ -650,6 +874,72 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 font-weight: 500;
                                 backdrop-filter: blur(10px);
                                 border: 1px solid rgba(255, 255, 255, 0.3);
+                            }
+
+                            .pos-navigation-footer {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                gap: 1.5rem;
+                                margin-top: 2rem;
+                                padding: 1.5rem;
+                                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                                border-radius: 12px;
+                                border: 1px solid #dee2e6;
+                            }
+
+                            .pos-nav-arrow {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                                border: 2px solid rgba(102, 126, 234, 0.3) !important;
+                                border-radius: 50% !important;
+                                width: 50px !important;
+                                height: 50px !important;
+                                display: flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                                color: white !important;
+                                cursor: pointer !important;
+                                transition: all 0.3s ease !important;
+                                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+                                position: relative !important;
+                                z-index: 10 !important;
+                            }
+
+                            .pos-nav-arrow:hover:not(:disabled) {
+                                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+                                transform: scale(1.1) !important;
+                                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+                            }
+
+                            .pos-nav-arrow:active:not(:disabled) {
+                                transform: scale(0.95) !important;
+                            }
+
+                            .pos-nav-arrow:disabled {
+                                opacity: 0.4 !important;
+                                cursor: not-allowed !important;
+                                background: #6c757d !important;
+                            }
+
+                            .pos-nav-arrow i {
+                                font-size: 1.5rem !important;
+                                font-weight: bold !important;
+                            }
+
+                            .pos-nav-counter {
+                                background: rgba(255, 255, 255, 0.3) !important;
+                            }
+
+                            .pos-nav-counter-text {
+                                font-size: 1.1rem;
+                                font-weight: 600;
+                                color: #2c3e50;
+                                padding: 0.5rem 1.5rem;
+                                background: white;
+                                border-radius: 25px;
+                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                                min-width: 80px;
+                                text-align: center;
                             }
 
                             .pos-card {
@@ -1076,6 +1366,40 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 modal.style.overflow = 'hidden';
                                 modal.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)';
                             }
+                            
+                            // Esperar un momento para que el DOM esté completamente renderizado
+                            setTimeout(() => {
+                                // Inicializar estado de las flechas
+                                updateModalContent();
+                                
+                                // Agregar event listeners a las flechas (puede haber múltiples instancias)
+                                const prevArrows = document.querySelectorAll('.pos-nav-arrow.prev');
+                                const nextArrows = document.querySelectorAll('.pos-nav-arrow.next');
+                                
+                                prevArrows.forEach((arrow) => {
+                                    // Remover listeners anteriores si existen
+                                    const newArrow = arrow.cloneNode(true);
+                                    arrow.parentNode.replaceChild(newArrow, arrow);
+                                    
+                                    newArrow.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        navigateToPrevPos();
+                                    });
+                                });
+                                
+                                nextArrows.forEach((arrow) => {
+                                    // Remover listeners anteriores si existen
+                                    const newArrow = arrow.cloneNode(true);
+                                    arrow.parentNode.replaceChild(newArrow, arrow);
+                                    
+                                    newArrow.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        navigateToNextPos();
+                                    });
+                                });
+                            }, 100);
                         }
                     });
 
@@ -1129,7 +1453,7 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
     };
 
     // Enviar la solicitud
-    const datos = `action=GetPOSInfo&serial=${encodeURIComponent(serialPos)}&id_ticket=${idTicket}`;
+    const datos = 'action=GetAllPOSInfo';
     xhr.send(datos);
 }
 
@@ -1144,7 +1468,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -1432,6 +1755,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -1522,6 +1846,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -1708,6 +2040,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}

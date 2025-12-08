@@ -260,11 +260,6 @@ assignTechnicianBtn.addEventListener("click", async function () {
 // Función para enviar correos de reasignación (convertida a async/await)
 async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId) {
   try {
-    console.log("DEBUG: Iniciando sendReassignmentEmails", {
-      ticketId,
-      oldTechnicianId,
-      newTechnicianId,
-    });
 
     const xhrEmail = new XMLHttpRequest();
     const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_reassignment_email`;
@@ -280,11 +275,6 @@ async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId
     // Convertir xhrEmail a Promise para usar await
     const response = await new Promise((resolve, reject) => {
       xhrEmail.onload = function () {
-        console.log("DEBUG: Respuesta recibida del servidor", {
-          status: xhrEmail.status,
-          responseText: xhrEmail.responseText,
-        });
-
         if (xhrEmail.status === 200) {
           try {
             const responseEmail = JSON.parse(xhrEmail.responseText);
@@ -1227,7 +1217,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -2924,15 +2913,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, deselecte
     // 4. Preparación de los datos a enviar y envío
     const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
     
-    // Esto es útil para depuración y se mantiene como estaba
-    console.log('Enviando datos:', {
-        ticketId: ticketIdNum,
-        serialPos: serialPosClean,
-        components: componentsData,
-        id_user: idUserClean,
-        modulo: modulo
-    });
-    
     xhr.send(dataToSend);
 }
 
@@ -3374,7 +3354,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                           try {
                             const responseEmail = JSON.parse(xhrEmail.responseText);
                             if (responseEmail.success) {
-                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
                             } else {
                               console.error('Error correo rechazo:', responseEmail.message);
                             }

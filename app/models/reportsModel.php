@@ -46,15 +46,26 @@ class reportsModel extends Model
 
     public function SearchSerial($serial,$id_user,$idtipouser){
         try {
-            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
-            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user); // Assuming '$this->db' is now a valid PgSql\Connection
-            $escaped_idtipouser = pg_escape_literal($this->db->getConnection(), $idtipouser); // Assuming '$this->db' is now a valid PgSql\Connection
+            // Validar y convertir null a valores por defecto
+            $serial = ($serial !== null && $serial !== '') ? (string)$serial : '';
+            $id_user = ($id_user !== null && $id_user !== '') ? (string)$id_user : '0';
+            $idtipouser = ($idtipouser !== null && $idtipouser !== '') ? (string)$idtipouser : '0';
+            
+            // Si el serial está vacío, retornar false
+            if (empty($serial)) {
+                return false;
+            }
+            
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $escaped_idtipouser = pg_escape_literal($this->db->getConnection(), $idtipouser);
 
             $sql = "SELECT * FROM GetTicketsBySearchSerial('%" . substr($escaped_serial, 1, -1) . "%',".$escaped_id_user.",".$escaped_idtipouser.")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en SearchSerial: " . $e->getMessage());
+            return false;
         }
     }
 

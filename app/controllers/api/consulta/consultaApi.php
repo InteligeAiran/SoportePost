@@ -320,6 +320,10 @@ class Consulta extends Controller
                     $this->handleGetPOSInfo();
                     break;
 
+                case 'GetAllPOSInfo':
+                    $this->handleGetAllPOSInfo();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -2200,6 +2204,17 @@ class Consulta extends Controller
 
         if ($result) {
             $this->response(['success' => true, 'message' => 'Se ha encontrado la información del ticket.', 'tickets' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetAllPOSInfo(){
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetAllComponentsPOS();
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Se ha encontrado la información de todos los POS.', 'tickets' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
         }
