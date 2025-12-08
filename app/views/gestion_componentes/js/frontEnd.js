@@ -355,8 +355,53 @@ function formatComponentsList(componentsString) {
     }).join(', ');
 }
 
+// Función para calcular el número del módulo basado en módulos únicos del mismo POS
+function getModuleNumber(posData, allPosData) {
+    if (!posData || !allPosData || allPosData.length === 0) {
+        return 1;
+    }
+    
+    // Obtener la clave única del POS (id_ticket + serial_pos)
+    const currentPosKey = `${posData.id_ticket}_${posData.serial_pos}`;
+    
+    // Filtrar todos los registros del mismo POS
+    const samePosModules = allPosData.filter(p => 
+        `${p.id_ticket}_${p.serial_pos}` === currentPosKey
+    );
+    
+    // Obtener módulos únicos del mismo POS, ordenados por fecha
+    const uniqueModules = [];
+    const seenModules = new Set();
+    
+    // Ordenar por fecha para mantener el orden cronológico
+    const sortedModules = samePosModules.sort((a, b) => {
+        const dateA = new Date(a.component_insert_date || 0);
+        const dateB = new Date(b.component_insert_date || 0);
+        return dateA - dateB;
+    });
+    
+    // Agregar módulos únicos en orden
+    sortedModules.forEach(module => {
+        const moduleKey = module.modulo_insert || 'Sin Módulo';
+        if (!seenModules.has(moduleKey)) {
+            seenModules.add(moduleKey);
+            uniqueModules.push(moduleKey);
+        }
+    });
+    
+    // Encontrar el índice del módulo actual en la lista de módulos únicos
+    const currentModuleKey = posData.modulo_insert || 'Sin Módulo';
+    const moduleIndex = uniqueModules.indexOf(currentModuleKey);
+    
+    // Retornar el número del módulo (1-based)
+    return moduleIndex >= 0 ? moduleIndex + 1 : 1;
+}
+
 // Función para generar el HTML del contenido del POS
 function generatePosContentHtml(posData, currentIndex, totalPos) {
+    // Calcular el número del módulo basado en módulos únicos del mismo POS
+    const moduleNumber = getModuleNumber(posData, allPosDataGlobal);
+    
     return `
         <!-- Información principal en grid responsivo -->
         <div class="row g-3 mb-4">
@@ -453,7 +498,7 @@ function generatePosContentHtml(posData, currentIndex, totalPos) {
                                 <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
                             </div>
                             <div class="pos-module-badge">
-                                <span class="badge pos-module-number">#${currentIndex + 1}</span>
+                                <span class="badge pos-module-number">#${moduleNumber}</span>
                             </div>
                         </div>
                         <div class="pos-module-body">

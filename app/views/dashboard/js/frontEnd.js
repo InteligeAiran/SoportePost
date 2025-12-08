@@ -112,7 +112,7 @@ class ConsultaRifTutorial {
         this.overlay.id = 'tutorial-overlay';
         this.overlay.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 9998; transition: opacity 0.3s ease;
+            background: rgba(0,0,0,0.2); z-index: 9998; transition: opacity 0.3s ease;
         `;
         document.body.appendChild(this.overlay);
     }

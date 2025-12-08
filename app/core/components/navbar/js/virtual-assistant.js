@@ -98,7 +98,7 @@ class TicketManagementTutorial {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.2);
             z-index: 9998;
             transition: opacity 0.3s ease;
         `;
@@ -408,12 +408,14 @@ class TicketManagementTutorial {
         }
 
         tooltip.innerHTML = `
+            <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -25px -25px 20px -25px; border-radius: 12px 12px 0 0;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+            </div>
             <div style="margin-bottom: 15px;">
-                <h4 style="margin: 0 0 12px 0; color: #333; font-size: 20px; font-weight: bold;">${step.title}</h4>
-                <p style="margin: 0; color: #555; font-size: 16px; line-height: 1.5; font-weight: 500;">${step.description}</p>
+                <p style="margin: 0; color: #555; font-size: 15px; line-height: 1.6;">${step.description}</p>
                 ${additionalInfo}
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px;">
                 <div style="font-size: 13px; color: #666; font-weight: 500;">
                     Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}
                 </div>
@@ -699,7 +701,7 @@ class ConsultaRIFTutorial {
         this.overlay.id = 'tutorial-overlay';
         this.overlay.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); z-index: 9998;
+            background: rgba(0, 0, 0, 0.2); z-index: 9998;
         `;
         document.body.appendChild(this.overlay);
     }
@@ -839,15 +841,19 @@ class ConsultaRIFTutorial {
         `;
 
         tooltip.innerHTML = `
-            <h4 style="margin:0 0 12px; color:#333; font-size:20px; font-weight:bold;">${step.title}</h4>
-            <p style="margin:0; color:#555; font-size:16pxpx; line-height:1.5;">${step.description}</p>
-            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e9ecef; padding-top:12px;">
-                <div style="font-size:13px; color:#666;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
+            <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -25px -25px 20px -25px; border-radius: 12px 12px 0 0;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 0; color: #555; font-size: 15px; line-height: 1.6;">${step.description}</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px;">
+                <div style="font-size: 13px; color: #666; font-weight: 500;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
                 <div>
-                    <button id="tutorial-skip" style="background:#6c757d; color:white; border:none; padding:8px 16px; border-radius:6px; margin-right:8px; cursor:pointer;">Saltar</button>
+                    <button id="tutorial-skip" style="background:#6c757d; color:white; border:none; padding:10px 18px; border-radius:6px; margin-right:10px; cursor:pointer; font-size:13px; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
                     ${this.currentStep === this.tutorialSteps.length - 1
-                        ? '<button id="tutorial-finish" style="background:#28a745; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Finalizar</button>'
-                        : '<button id="tutorial-next" style="background:#007bff; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Siguiente</button>'
+                        ? '<button id="tutorial-finish" style="background:#28a745; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor=\'#218838\'" onmouseout="this.style.backgroundColor=\'#28a745\'">Finalizar</button>'
+                        : '<button id="tutorial-next" style="background:#007bff; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor=\'#0056b3\'" onmouseout="this.style.backgroundColor=\'#007bff\'">Siguiente</button>'
                     }
                 </div>
             </div>
@@ -1009,6 +1015,317 @@ class ConsultaRIFTutorial {
         const avatar = document.getElementById('assistantAvatar');
         if (panel) panel.style.display = '';
         if (avatar) avatar.style.display = '';
+    }
+}
+
+// TUTORIAL DE CONSULTA TICKET
+class ConsultaTicketTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+        this.tutorialSteps = [
+            {
+                selector: '#tipoBusqueda',
+                title: 'Tipo de Búsqueda',
+                description: 'Este módulo te permite buscar tickets de diferentes formas. Selecciona el tipo de búsqueda que necesites.',
+                position: 'bottom',
+            },
+            {
+                selector: '#regiones',
+                title: 'Selector de Tipo de Búsqueda',
+                description: 'Aquí puedes elegir entre: <strong>Rango de Fecha</strong>, <strong>Serial</strong>, <strong>RIF</strong>, <strong>Región</strong>, <strong>Estatus</strong> o <strong>Bancos</strong>. Cada opción mostrará campos diferentes para tu búsqueda.',
+                position: 'bottom',
+            },
+            {
+                selector: '#rifInput',
+                title: 'Búsqueda por RIF',
+                description: 'Si seleccionaste "RIF", aquí ingresas el número de RIF del cliente (ej: J-12345678-9). También puedes seleccionar el tipo de RIF (J, V, E, G) en el dropdown.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '3' && document.getElementById('rifInput') && document.getElementById('rifInput').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#serialInput',
+                title: 'Búsqueda por Serial',
+                description: 'Si seleccionaste "Serial", aquí ingresas el número de serial del POS (ej: 10000CT27000041).',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '2' && document.getElementById('serialInput') && document.getElementById('serialInput').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#inputsDate',
+                title: 'Búsqueda por Rango de Fecha',
+                description: 'Si seleccionaste "Rango de Fecha", aquí puedes elegir una fecha inicial y una fecha final para buscar tickets en ese período.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '1' && document.getElementById('inputsDate') && document.getElementById('inputsDate').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#SelectRgions',
+                title: 'Búsqueda por Región',
+                description: 'Si seleccionaste "Región", aquí puedes elegir una región específica para filtrar los tickets.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '4' && document.getElementById('SelectRgions') && document.getElementById('SelectRgions').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#SelectStatus',
+                title: 'Búsqueda por Estatus',
+                description: 'Si seleccionaste "Estatus", aquí puedes elegir un estatus específico para filtrar los tickets (ej: Abierto, Cerrado, En Proceso).',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '5' && document.getElementById('SelectStatus') && document.getElementById('SelectStatus').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#SelectBancos',
+                title: 'Búsqueda por Banco',
+                description: 'Si seleccionaste "Bancos", aquí puedes elegir un banco específico para filtrar los tickets.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '6' && document.getElementById('SelectBancos') && document.getElementById('SelectBancos').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#rifCountTable',
+                title: 'Resultados de la Búsqueda',
+                description: 'Aquí aparecerán todos los tickets que coincidan con tu búsqueda. Puedes ver información detallada de cada ticket y realizar acciones sobre ellos.',
+                position: 'top',
+                waitFor: () => {
+                    const table = document.getElementById('rifCountTable');
+                    return table && table.offsetParent !== null && table.style.display !== 'none';
+                }
+            }
+        ];
+    }
+
+    startTutorial() {
+        if (this.isActive) return;
+        this.isActive = true;
+        this.currentStep = 0;
+        this.createOverlay();
+        this.hideChatbot();
+        this.showStep(0);
+    }
+
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'tutorial-overlay';
+        this.overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.2); z-index: 9998;
+        `;
+        document.body.appendChild(this.overlay);
+    }
+
+    hideChatbot() {
+        const chatbot = document.getElementById('virtual-assistant-panel');
+        if (chatbot) chatbot.style.display = 'none';
+    }
+
+    async showStep(stepIndex) {
+        if (stepIndex >= this.tutorialSteps.length) {
+            this.endTutorial();
+            return;
+        }
+
+        const step = this.tutorialSteps[stepIndex];
+
+        // Esperar a que el elemento exista o condición
+        if (step.waitFor) {
+            await this.waitForCondition(step.waitFor);
+        }
+
+        let element = document.querySelector(step.selector);
+        if (!element) {
+            console.warn(`Elemento no encontrado: ${step.selector}`);
+            this.nextStep();
+            return;
+        }
+
+        // Scroll al elemento
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Remover highlight y tooltip anteriores
+        this.removeHighlight();
+        this.removeTooltip();
+
+        // Crear highlight
+        this.highlightElement(element);
+
+        // Crear tooltip
+        this.createTooltip(element, step);
+
+        // Agregar listeners
+        this.addListeners();
+    }
+
+    waitForCondition(condition) {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                try {
+                    if (condition()) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        reject(new Error('Timeout esperando condición'));
+                    }
+                } catch (error) {
+                    clearInterval(checkInterval);
+                    reject(error);
+                }
+            }, 200);
+        });
+    }
+
+    highlightElement(element) {
+        this.highlightedElement = element;
+        const rect = element.getBoundingClientRect();
+        const highlight = document.createElement('div');
+        highlight.id = 'tutorial-highlight';
+        highlight.style.cssText = `
+            position: fixed;
+            top: ${rect.top - 4}px;
+            left: ${rect.left - 4}px;
+            width: ${rect.width + 8}px;
+            height: ${rect.height + 8}px;
+            border: 3px solid #007bff;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+        `;
+        document.body.appendChild(highlight);
+    }
+
+    createTooltip(element, step) {
+        const tooltip = document.createElement('div');
+        tooltip.id = 'tutorial-tooltip';
+        const rect = element.getBoundingClientRect();
+        const position = step.position || 'bottom';
+        
+        let top, left;
+        const tooltipWidth = 350;
+        const tooltipHeight = 200;
+
+        switch (position) {
+            case 'top':
+                top = rect.top - tooltipHeight - 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                break;
+            case 'bottom':
+                top = rect.bottom + 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                break;
+            case 'left':
+                top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                left = rect.left - tooltipWidth - 20;
+                break;
+            case 'right':
+                top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                left = rect.right + 20;
+                break;
+            default:
+                top = rect.bottom + 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        }
+
+        // Ajustar si se sale de la pantalla
+        if (left < 10) left = 10;
+        if (left + tooltipWidth > window.innerWidth - 10) left = window.innerWidth - tooltipWidth - 10;
+        if (top < 10) top = 10;
+        if (top + tooltipHeight > window.innerHeight - 10) top = window.innerHeight - tooltipHeight - 10;
+
+        tooltip.style.cssText = `
+            position: fixed;
+            top: ${top}px;
+            left: ${left}px;
+            width: ${tooltipWidth}px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        `;
+
+        tooltip.innerHTML = `
+            <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -20px -20px 20px -20px; border-radius: 12px 12px 0 0;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 0; color: #555; font-size: 15px; line-height: 1.6;">${step.description}</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px;">
+                <span style="color: #666; font-size: 13px; font-weight: 500;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</span>
+                <div>
+                    <button id="tutorial-skip" style="background: #6c757d; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; margin-right: 10px; font-size: 13px; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
+                    <button id="tutorial-next" style="background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'">Siguiente</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(tooltip);
+    }
+
+    addListeners() {
+        const nextBtn = document.getElementById('tutorial-next');
+        const skipBtn = document.getElementById('tutorial-skip');
+        
+        if (nextBtn) {
+            nextBtn.onclick = () => this.nextStep();
+        }
+        
+        if (skipBtn) {
+            skipBtn.onclick = () => this.endTutorial();
+        }
+    }
+
+    nextStep() {
+        this.currentStep++;
+        if (this.currentStep >= this.tutorialSteps.length) {
+            this.endTutorial();
+            return;
+        }
+        this.showStep(this.currentStep);
+    }
+
+    removeHighlight() {
+        const highlight = document.getElementById('tutorial-highlight');
+        if (highlight) highlight.remove();
+    }
+
+    removeTooltip() {
+        const tooltip = document.getElementById('tutorial-tooltip');
+        if (tooltip) tooltip.remove();
+    }
+
+    endTutorial() {
+        this.isActive = false;
+        this.removeHighlight();
+        this.removeTooltip();
+        if (this.overlay) {
+            this.overlay.remove();
+        }
+        const chatbot = document.getElementById('virtual-assistant-panel');
+        if (chatbot) chatbot.style.display = '';
     }
 }
 
@@ -1254,7 +1571,7 @@ class GestionCoordinadorTutorial {
         this.createOverlay = () => {
             this.overlay = document.createElement('div');
             this.overlay.id = 'tutorial-overlay';
-            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;';
             document.body.appendChild(this.overlay);
         };
 
@@ -1412,11 +1729,18 @@ class GestionCoordinadorTutorial {
         <style>
             @keyframes popIn { from {opacity:0;transform:scale(0.9) translateY(-10px);} to {opacity:1;transform:scale(1);} }
         </style>
-        <h4 style="margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;">${step.title}</h4>
-        <p style="margin:0;color:#333;font-size:15px;line-height:1.6;">${step.description}</p>
-        <div style="display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
-            <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip" style="background:#6c757d; color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:600; margin-right:8px;">Saltar</button>
-            <button id="tutorial-next" class="tutorial-btn tutorial-btn-next" style="background:${nextBg}; color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:600;">${nextText}</button>
+        <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -24px -24px 20px -24px; border-radius: 18px 18px 0 0;">
+            <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <p style="margin:0;color:#555;font-size:15px;line-height:1.6;">${step.description}</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e9ecef;padding-top:15px;">
+            <div style="font-size:13px;color:#666;font-weight:500;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
+            <div>
+                <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip" style="background:#6c757d; color:white; border:none; padding:10px 18px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; margin-right:10px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
+                <button id="tutorial-next" class="tutorial-btn tutorial-btn-next" style="background:${nextBg}; color:white; border:none; padding:10px 18px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='${nextBg === '#28a745' ? '#218838' : '#0056b3'}'" onmouseout="this.style.backgroundColor='${nextBg}'">${nextText}</button>
+            </div>
         </div>
     `;
 
@@ -1755,7 +2079,7 @@ class GestionTecnicoTutorial {
         this.createOverlay = () => {
             this.overlay = document.createElement('div');
             this.overlay.id = 'tutorial-overlay';
-            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;';
             document.body.appendChild(this.overlay);
         };
         this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>80){rej();return;} setTimeout(tick,125);} ; tick(); });
@@ -1946,7 +2270,7 @@ class GestionTallerTutorial {
         this.createOverlay = () => {
             this.overlay = document.createElement('div');
             this.overlay.id = 'tutorial-overlay';
-            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;';
             document.body.appendChild(this.overlay);
         };
         this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
@@ -2136,7 +2460,7 @@ class GestionRosalTutorial {
         };
 
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
         this.prepareElementForHighlight = async (el) => {
             return new Promise(resolve => {
@@ -2255,7 +2579,7 @@ class GestionRegionTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => { if (idx >= this.tutorialSteps.length) return this.endTutorial(); const step = this.tutorialSteps[idx]; try { if (step.waitFor) await this.waitForCondition(step.waitFor); } catch { this.nextStep(); return; } if (typeof this.restoreButtons==='function') this.restoreButtons(); this.removeHighlight(); this.removeTooltip(); let el = document.querySelector(step.selector); if (!el) { this.nextStep(); return; } if (step.onShow) { try { await step.onShow(); } catch {} } el = document.querySelector(step.selector) || el; await this.prepareElementForHighlight(el); this.highlightElement(el); this.createTooltip(el, step); this.addListeners(); };
         this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
         this.nextStep = async () => { const prev = this.tutorialSteps[this.currentStep]; if (prev?.onNext) { try { await prev.onNext(); } catch {} } this.currentStep++; if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { this.endTutorial(); return; } this.removeHighlight(); this.removeTooltip(); this.showStep(this.currentStep); };
@@ -2355,7 +2679,7 @@ class GestionComponentesTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => { 
             if (idx >= this.tutorialSteps.length) return this.endTutorial(); 
             const step = this.tutorialSteps[idx]; 
@@ -2512,7 +2836,7 @@ class GestionDomiciliacionTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => { 
             if (idx >= this.tutorialSteps.length) return this.endTutorial(); 
             const step = this.tutorialSteps[idx]; 
@@ -2698,7 +3022,7 @@ class GestionComercialTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => {
             if (idx >= this.tutorialSteps.length) return this.endTutorial();
             const step = this.tutorialSteps[idx];
@@ -2728,6 +3052,7 @@ class VirtualAssistant {
         this.panelPosition = { x: 0, y: 0 };
         this.ticketTutorial = new TicketManagementTutorial();
         this.rifTutorial = new ConsultaRIFTutorial();
+        this.consultaTicketTutorial = new ConsultaTicketTutorial();
         this.gestioncoordinacionTutorial = new GestionCoordinadorTutorial();
         this.GestionTecnicoTutorial = new GestionTecnicoTutorial();
         this.GestionTallerTutorial = new GestionTallerTutorial();
@@ -4237,7 +4562,8 @@ addChartMessage(data) {
 
         // Solo redirigir si NO estamos en dashboard
         if (!window.location.pathname.includes('dashboard')) {
-            window.location.href = 'dashboard';
+            // Agregar parámetro para que el tutorial se ejecute automáticamente al cargar
+            window.location.href = 'dashboard?tutorial=tickets';
             return;
         }
 
@@ -4265,6 +4591,23 @@ addChartMessage(data) {
     }
         }, 800);
 
+    }
+
+    startConsultaTicketTutorial() {
+        this.closeModuleSelectionModal();
+
+        // Solo redirigir si NO estamos en consulta_ticket
+        if (!window.location.pathname.includes('consulta_ticket')) {
+            window.location.href = 'consulta_ticket?tutorial=consulta_ticket';
+            return;
+        }
+
+        // Si ya estamos en consulta_ticket → iniciar tutorial directamente
+        setTimeout(() => {
+            if (this.consultaTicketTutorial) {
+                this.consultaTicketTutorial.startTutorial();
+            }
+        }, 800);
     }
 
     startGestionCoordinacionTutorial() {
@@ -4574,7 +4917,7 @@ addChartMessage(data) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.2);
             z-index: 10000;
             display: flex;
             justify-content: center;
@@ -4846,7 +5189,7 @@ addChartMessage(data) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.2);
             z-index: 10000;
             display: flex;
             justify-content: center;
@@ -5353,6 +5696,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tutorialMap = {
         'rif': 'startRifTutorial',
         'tickets': 'startTicketTutorial',
+        'consulta_ticket': 'startConsultaTicketTutorial',
         'gestion_coordinacion': 'startGestionCoordinacionTutorial',
         'tecnicos': 'startTechnicianTutorial',
         'taller': 'startLabTutorial',
@@ -5376,14 +5720,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const cleanUrl = window.location.pathname + window.location.hash;
     window.history.replaceState({}, document.title, cleanUrl);
 
-    // Esperar a que el asistente esté listo
+    // Función para verificar si el overlay de carga está visible
+    const isLoadingOverlayVisible = () => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (!loadingOverlay) return false;
+        
+        const style = window.getComputedStyle(loadingOverlay);
+        // Verificar si el overlay está visible (display, visibility, opacity)
+        const isVisible = style.display !== 'none' && 
+                         style.visibility !== 'hidden' && 
+                         parseFloat(style.opacity) > 0;
+        
+        // También verificar si el body tiene la clase que indica overlay abierto
+        const bodyHasOverlayClass = document.body.classList.contains('loading-overlay-open');
+        
+        return isVisible || bodyHasOverlayClass;
+    };
+
+    // Función para esperar a que el overlay desaparezca
+    const waitForLoadingOverlayToHide = (callback) => {
+        let attempts = 0;
+        const maxAttempts = 100; // 20 segundos (200ms * 100)
+        
+        const checkInterval = setInterval(() => {
+            attempts++;
+            const overlayVisible = isLoadingOverlayVisible();
+            
+            if (!overlayVisible) {
+                clearInterval(checkInterval);
+                // Esperar un poco más para asegurar que la transición termine
+                setTimeout(callback, 300);
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkInterval);
+                // Si el overlay no desaparece después del timeout, ejecutar de todas formas
+                console.warn('⚠️ Overlay de carga no desapareció, ejecutando tutorial de todas formas');
+                setTimeout(callback, 300);
+            }
+        }, 200);
+    };
+
+    // Esperar a que el asistente esté listo Y que el overlay de carga desaparezca
     let attempts = 0;
     const maxAttempts = 50; // 10 segundos (200ms * 50)
     const waitForAssistant = setInterval(() => {
         attempts++;
         if (window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function') {
             clearInterval(waitForAssistant);
-            window.virtualAssistant[methodName]();
+            
+            // Ahora esperar a que el overlay de carga desaparezca antes de ejecutar
+            waitForLoadingOverlayToHide(() => {
+                window.virtualAssistant[methodName]();
+            });
         } else if (attempts >= maxAttempts) {
             clearInterval(waitForAssistant);
             console.error(`❌ Timeout: Método de tutorial no encontrado después de ${maxAttempts} intentos`);

@@ -7,18 +7,18 @@ require_once __DIR__ . '/../app/views/login/PHPMailer/SMTP.php';
 Use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 
-define("bd_hostname", '127.0.0.1');
+/*define("bd_hostname", '127.0.0.1');
 define("mvc_port", '5432');
 define("bd_clave", 'Airan1234');
 define("bd_usuario", 'postgres');
-define("database", 'SoportePost');  
+define("database", 'SoportePost');*/
 
 
-/*define("bd_hostname", '192.168.1.20');
+define("bd_hostname", '192.168.1.20');
 define("mvc_port", '5432');
 define("bd_usuario", 'postgres');
 define("bd_clave", 'Int3l1punt0.VEN');
-define("database", 'SoportePost');*/
+define("database", 'SoportePost');
 
 /*define("bd_hostname", '192.168.1.20');
 define("mvc_port", '5432');

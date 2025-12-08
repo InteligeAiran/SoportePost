@@ -4721,14 +4721,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, deselecte
     // 4. Preparación de los datos a enviar y envío
     const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
     
-    // Esto es útil para depuración y se mantiene como estaba
-        ticketId: ticketIdNum,
-        serialPos: serialPosClean,
-        components: componentsData,
-        id_user: idUserClean,
-        modulo: modulo
-    });
-    
     xhr.send(dataToSend);
 }
 

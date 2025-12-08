@@ -260,10 +260,6 @@ assignTechnicianBtn.addEventListener("click", async function () {
 // Función para enviar correos de reasignación (convertida a async/await)
 async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId) {
   try {
-      ticketId,
-      oldTechnicianId,
-      newTechnicianId,
-    });
 
     const xhrEmail = new XMLHttpRequest();
     const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_reassignment_email`;
@@ -279,10 +275,6 @@ async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId
     // Convertir xhrEmail a Promise para usar await
     const response = await new Promise((resolve, reject) => {
       xhrEmail.onload = function () {
-          status: xhrEmail.status,
-          responseText: xhrEmail.responseText,
-        });
-
         if (xhrEmail.status === 200) {
           try {
             const responseEmail = JSON.parse(xhrEmail.responseText);
@@ -2920,14 +2912,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, deselecte
     
     // 4. Preparación de los datos a enviar y envío
     const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
-    
-    // Esto es útil para depuración y se mantiene como estaba
-        ticketId: ticketIdNum,
-        serialPos: serialPosClean,
-        components: componentsData,
-        id_user: idUserClean,
-        modulo: modulo
-    });
     
     xhr.send(dataToSend);
 }

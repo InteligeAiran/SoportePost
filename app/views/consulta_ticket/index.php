@@ -30,7 +30,6 @@ require 'app/footer.php';
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
         <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
-        <link rel="stylesheet" href="app/views/consulta_rif/css/tipo-busqueda-style.css">
 
         <style>
             #rifTipo {
