@@ -107,22 +107,18 @@ class TicketManagementTutorial {
 
     // Mostrar paso específico del tutorial
     async showStep(stepIndex) {
-        console.log(`🤖 Tutorial: Mostrando paso ${stepIndex + 1} de ${this.tutorialSteps.length}`);
         
         if (stepIndex >= this.tutorialSteps.length) {
-            console.log('🤖 Tutorial: Finalizando tutorial - todos los pasos completados');
             this.endTutorial();
             return;
         }
 
         const step = this.tutorialSteps[stepIndex];
-        console.log(`🤖 Tutorial: Buscando elemento para "${step.title}" con selector: ${step.selector}`);
         
         let element = document.querySelector(step.selector);
         
         // Si no se encuentra el elemento, intentar con selectores alternativos
         if (!element) {
-            console.log(`🤖 Tutorial: Elemento no encontrado con selector principal, buscando alternativos...`);
             element = this.findAlternativeElement(step);
         }
         
@@ -135,7 +131,6 @@ class TicketManagementTutorial {
             return;
         }
 
-        console.log(`🤖 Tutorial: Elemento encontrado para "${step.title}"`);
 
         // Remover highlight anterior
         this.removeHighlight();
@@ -152,7 +147,6 @@ class TicketManagementTutorial {
         // Agregar listeners
         this.addStepListeners();
         
-        console.log(`🤖 Tutorial: Paso ${stepIndex + 1} configurado correctamente`);
     }
     
     // Buscar elemento alternativo si el selector principal no funciona
@@ -202,21 +196,17 @@ class TicketManagementTutorial {
         
         const selectors = alternativeSelectors[step.title];
         if (selectors) {
-            console.log(`🤖 Tutorial: Buscando selectores alternativos para "${step.title}"`);
             for (const selector of selectors) {
                 try {
                     const element = document.querySelector(selector);
                     if (element) {
-                        console.log(`🤖 Tutorial: Elemento alternativo encontrado para "${step.title}": ${selector}`);
                         return element;
                     }
                 } catch (e) {
-                    console.log(`🤖 Tutorial: Error con selector alternativo "${selector}": ${e.message}`);
                 }
             }
         }
         
-        console.log(`🤖 Tutorial: No se encontraron elementos alternativos para "${step.title}"`);
         return null;
     }
     
@@ -387,7 +377,6 @@ class TicketManagementTutorial {
 
         // Debug final para "Estatus de Taller"
         if (step.title === 'Estatus de Taller') {
-            console.log(`🤖 Tutorial: Estatus de Taller - Posición final: top=${top}, left=${left}`);
         }
 
         tooltip.style.cssText = `
@@ -884,7 +873,6 @@ class ConsultaRIFTutorial {
         if (this.currentStep === 2) {
             const buscarPorNombreBtn = document.getElementById('buscarPorNombreBtn');
             if (buscarPorNombreBtn) {
-                console.log("🤖 Tutorial: Haciendo click automático en 'Buscar por Razón Social'");
                 buscarPorNombreBtn.click();
                 // Esperar un momento para que se muestren los elementos
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -903,7 +891,6 @@ class ConsultaRIFTutorial {
             const razonInput = document.getElementById('RazonInput');
             
             if (buscarRazonBtn && razonInput) {
-                console.log("🤖 Tutorial: Escribiendo 'INV' en el campo y haciendo búsqueda automática");
                 
                 // Limpiar tooltip actual
                 this.removeHighlight();
@@ -938,7 +925,6 @@ class ConsultaRIFTutorial {
         
        // Si estamos avanzando DESDE el paso 6 (Serial del POS), hacer click automático
        if (this.currentStep === 6) {
-            console.log("Tutorial: Haciendo click automático en el serial POS");
 
             this.removeHighlight();
             this.removeTooltip();
@@ -947,7 +933,6 @@ class ConsultaRIFTutorial {
             const serialLink = document.querySelector('#rifCountTable tbody tr td.serial-pos-column a');
 
             if (serialLink) {
-                console.log("Encontrado enlace serial:", serialLink.textContent.trim());
 
                 // Scroll a la tabla
                 const table = document.getElementById('rifCountTable');
@@ -3190,7 +3175,6 @@ class VirtualAssistant {
         this.panel.style.transform = 'translate(-50%, -50%)';
         
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual abierto - Posición centrada');
     }
     
     closePanel() {
@@ -3203,7 +3187,6 @@ class VirtualAssistant {
         this.clearChat();
         
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual cerrado - Chat borrado');
     }
     
     // Función para borrar el chat (manteniendo mensaje inicial de Ana y posición del panel)
@@ -3223,11 +3206,9 @@ class VirtualAssistant {
                 // Borrar todo y volver a agregar solo el mensaje inicial
                 chatMessages.innerHTML = '';
                 chatMessages.appendChild(initialMessage);
-                console.log('🤖 Chat borrado - Manteniendo mensaje inicial de Ana');
             } else {
                 // Si no hay mensaje inicial, borrar todo
                 chatMessages.innerHTML = '';
-                console.log('🤖 Chat completamente borrado');
             }
             
             // Restaurar la posición del panel
@@ -3242,7 +3223,6 @@ class VirtualAssistant {
         const targetHeader = document.querySelector(`[data-category="${categoryName}"]`);
         
         if (!targetOptions || !targetHeader) {
-            console.log(`🤖 No se encontró la categoría "${categoryName}"`);
             return;
         }
         
@@ -3257,7 +3237,6 @@ class VirtualAssistant {
             if (arrow) {
                 arrow.style.transform = 'rotate(0deg)';
             }
-            console.log(`🤖 Categoría "${categoryName}" cerrada`);
         } else {
             // Si está cerrada, cerrar todas las demás y abrir esta
             const allCategoryOptions = document.querySelectorAll('.category-options');
@@ -3293,12 +3272,10 @@ class VirtualAssistant {
                 targetOptions.style.transform = 'translateY(0)';
             }, 10);
             
-            console.log(`🤖 Categoría "${categoryName}" abierta`);
         }
     }
     
     handleChatQuery(query, buttonElement) {
-        console.log(`🤖 Consulta IA: ${query}`);
         
         // Obtener el texto del botón
         const queryText = buttonElement.querySelector('.option-text').textContent;
@@ -3362,7 +3339,6 @@ class VirtualAssistant {
     }
     
     addAssistantMessage(message, data = null) {
-        console.log('🤖 addAssistantMessage llamada con:', message, data);
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message assistant-message';
@@ -3389,7 +3365,6 @@ class VirtualAssistant {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        console.log('🤖 Mensaje agregado al DOM');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -3420,11 +3395,9 @@ class VirtualAssistant {
     
     async processAIQuery(query, params = {}) {
         try {
-            console.log('🤖 processAIQuery llamada con:', query, params);
             
             // Hacer consulta real a la API
             const bodyParams = { action: query, ...params };
-            console.log('🤖 Parámetros enviados:', bodyParams);
             
             const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/ai/${query}`, {
                 method: 'POST',
@@ -3434,15 +3407,12 @@ class VirtualAssistant {
                 body: new URLSearchParams(bodyParams)
             });
 
-            console.log('🤖 Respuesta recibida:', response);
-            console.log('🤖 Status:', response.status);
 
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('🤖 Resultado JSON:', result);
             
             if (result.success) {
                 // Procesar respuesta exitosa
@@ -3505,7 +3475,6 @@ class VirtualAssistant {
 
         case 'technician_individual_efficiency':
             // Mostrar lista de técnicos para seleccionar
-            console.log('🤖 Datos recibidos para technician_individual_efficiency:', data);
             this.showTechnicianSelection(data);
             break;
 
@@ -3682,12 +3651,8 @@ addChartMessage(data) {
 
     // Función para mostrar la lista de técnicos para seleccionar
     showTechnicianSelection(technicians) {
-        console.log('🤖 showTechnicianSelection llamada con:', technicians);
-        console.log('🤖 Es array?', Array.isArray(technicians));
-        console.log('🤖 Longitud:', technicians ? technicians.length : 'undefined');
         
         if (!technicians || !Array.isArray(technicians) || technicians.length === 0) {
-            console.log('🤖 No se encontraron técnicos disponibles');
             this.addAssistantMessage('❌ No se encontraron técnicos disponibles.');
             return;
         }
@@ -3718,7 +3683,6 @@ addChartMessage(data) {
             </div>
         `;
 
-        console.log('🤖 HTML generado para técnicos:', techniciansHtml);
         
         // Crear mensaje con HTML directamente
         const chatMessages = document.getElementById('chatMessages');
@@ -3737,7 +3701,6 @@ addChartMessage(data) {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        console.log('🤖 Mensaje agregado al chat');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -3747,7 +3710,6 @@ addChartMessage(data) {
 
     // Función para seleccionar un técnico
     selectTechnician(technicianId, technicianName) {
-        console.log('🤖 selectTechnician llamada con:', technicianId, technicianName);
         
         // Mostrar mensaje de carga
         this.addAssistantMessage(`🔍 Analizando el rendimiento de <strong>${technicianName}</strong>...`);
@@ -3758,10 +3720,8 @@ addChartMessage(data) {
 
     // Función para mostrar el rendimiento del técnico seleccionado
     showTechnicianPerformance(data) {
-        console.log('🤖 showTechnicianPerformance llamada con:', data);
         
         if (!data) {
-            console.log('🤖 No hay datos de rendimiento');
             this.addAssistantMessage('❌ No se pudo obtener el rendimiento del técnico.');
             return;
         }
@@ -3781,7 +3741,6 @@ addChartMessage(data) {
             }
         }
 
-        console.log('🤖 recentTickets parseado:', recentTickets);
 
         const performanceHtml = `
             <div class="technician-performance-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
@@ -3852,7 +3811,6 @@ addChartMessage(data) {
             </div>
         `;
 
-        console.log('🤖 HTML generado para rendimiento:', performanceHtml);
         
         // Crear mensaje con HTML directamente
         const chatMessages = document.getElementById('chatMessages');
@@ -3871,7 +3829,6 @@ addChartMessage(data) {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        console.log('🤖 Mensaje de rendimiento agregado al chat');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -4054,9 +4011,6 @@ addChartMessage(data) {
 
     // Función para mostrar tickets pendientes con configuración de días críticos
     showPendingTicketsWithConfig(data) {
-        console.log('🤖 showPendingTicketsWithConfig llamada con:', data);
-        console.log('🤖 Tipo de data:', typeof data);
-        console.log('🤖 Keys de data:', Object.keys(data || {}));
         
         if (!data) {
             this.addAssistantMessage('❌ No se pudieron obtener los tickets pendientes.');
@@ -4064,7 +4018,6 @@ addChartMessage(data) {
         }
 
         const daysCritical = data.days_critical || 5;
-        console.log('🤖 daysCritical:', daysCritical);
         
         // Generar ID único para el input
         const inputId = `daysCriticalInput_${Date.now()}`;
@@ -4127,7 +4080,6 @@ addChartMessage(data) {
             html: configHtml
         });
         
-        console.log('🤖 Mensaje enviado con HTML personalizado');
     }
 
     // Función para actualizar días críticos
@@ -4147,21 +4099,16 @@ addChartMessage(data) {
             return;
         }
 
-        console.log('🤖 Actualizando días críticos a:', daysCritical);
-        console.log('🤖 Input value:', input.value);
-        console.log('🤖 Input ID:', inputId);
         
         // Mostrar mensaje de carga
         this.addAssistantMessage(`🔄 Actualizando prioridades con ${daysCritical} días críticos...`);
         
         // Hacer nueva consulta con los días críticos actualizados
-        console.log('🤖 Enviando consulta con days_critical:', daysCritical);
         this.processAIQuery('pending_tickets', { days_critical: daysCritical });
     }
 
     // Función para mostrar tickets por prioridad específica
     showTicketsByPriority(priority, daysCritical) {
-        console.log('🤖 showTicketsByPriority llamada con:', priority, daysCritical);
         
         // Mostrar mensaje de carga
         const priorityNames = {
@@ -4181,7 +4128,6 @@ addChartMessage(data) {
 
     // Función para mostrar la lista de tickets por prioridad
     showTicketsList(data) {
-        console.log('🤖 showTicketsList llamada con:', data);
         
         if (!data || !data.tickets) {
             this.addAssistantMessage('❌ No se pudieron obtener los tickets.');
@@ -4363,23 +4309,18 @@ addChartMessage(data) {
     }
 
     startComponentesTutorial() {
-        console.log('🎬 startComponentesTutorial llamado');
         this.closeModuleSelectionModal();
         
         // Verificar si estamos en el módulo correcto (con o sin acento)
         const pathname = window.location.pathname;
         const isInModule = pathname.includes('periférico_pos') || pathname.includes('periferico_pos') || decodeURIComponent(pathname).includes('periférico_pos');
         
-        console.log(`📍 Pathname actual: ${pathname}`);
-        console.log(`📍 ¿Estamos en el módulo? ${isInModule}`);
 
         if (!isInModule) {
-            console.log('🔄 Redirigiendo a periférico_pos...');
             window.location.href = 'periférico_pos';
             return;
         }
         
-        console.log('✅ Iniciando tutorial de componentes...');
         setTimeout(() => {
             if (this.GestionComponentesTutorial) {
                 this.GestionComponentesTutorial.startTutorial();
@@ -4431,13 +4372,11 @@ addChartMessage(data) {
 
 
     startReportsTutorial() {
-        console.log('Iniciando tutorial: Reportes');
         // this.reportsTutorial.startT  utorial();
     }
 
     // Procesar consultas de ayuda localmente (sin hacer peticiones HTTP)
     processLocalHelpQuery(query) {
-        console.log('🤖 Procesando consulta de ayuda local:', query);
         
         // Ocultar indicador de carga
         this.hideChatLoading();
@@ -4564,7 +4503,6 @@ addChartMessage(data) {
             }
 
             const data = await response.json();
-            console.log('📋 Datos recibidos del API:', data);
             
             if (data.success && Array.isArray(data.modules)) {
                 // Filtrar solo módulos activos y con permisos
@@ -4837,8 +4775,6 @@ addChartMessage(data) {
             }
 
             const data = await response.json();
-            console.log('📋 Submódulos recibidos:', data);
-            console.log('📋 Estructura del primer submódulo:', data.submodules && data.submodules[0]);
             
             if (data.success && Array.isArray(data.submodules)) {
                 return data.submodules;
@@ -4853,7 +4789,6 @@ addChartMessage(data) {
 
     // Crear modal de submódulos
     createSubmodulesModal(moduleName, submodules) {
-        console.log('📋 Creando modal para submódulos:', submodules);
         
         // Crear overlay
         const overlay = document.createElement('div');
@@ -5002,14 +4937,11 @@ addChartMessage(data) {
 
         // En addSubmodulesListeners()
         const submoduleCards = document.querySelectorAll('.submodule-card');
-        console.log(`📋 Encontrados ${submoduleCards.length} cards de submódulos`);
         
         submoduleCards.forEach((card, index) => {
                 const urlArchivo = card.dataset.urlArchivo?.trim();
-            console.log(`📝 Card ${index + 1}: urlArchivo="${urlArchivo}"`);
             
             card.onclick = () => {
-                console.log(`🖱️ Click en card ${index + 1} con urlArchivo="${urlArchivo}"`);
                 
                 if (!urlArchivo) {
                     console.warn('⚠️ Este submódulo no tiene tutorial disponible (urlArchivo vacío)');
@@ -5029,7 +4961,6 @@ addChartMessage(data) {
         // Asegúrate de que urlArchivo sea algo como: "consulta_rif" o "reporte_ticket"
         const cleanPath = urlArchivo.trim().replace(/^\/+/, ''); // Quita slashes iniciales
         const fullUrl = `${window.location.origin}/SoportePost/${cleanPath}`;
-        console.log(`🔗 buildSubmoduleUrl: urlArchivo="${urlArchivo}" → fullUrl="${fullUrl}"`);
         return fullUrl;
     }
 
@@ -5067,14 +4998,12 @@ addChartMessage(data) {
         // Normalizar: convertir a minúsculas y quitar espacios
         clean = clean.toLowerCase().trim();
 
-        console.log(`🔍 getTutorialParam: urlArchivo="${urlArchivo}" → clean="${clean}"`);
 
         return map[clean] || null;
     }
 
   // Iniciar tutorial de submódulo específico
     startSubmoduleTutorial(fullUrl) {
-        console.log(`🚀 startSubmoduleTutorial llamado con fullUrl: "${fullUrl}"`);
         this.closeSubmodulesModal();
         this.showRedirectMessage();
 
@@ -5084,14 +5013,11 @@ addChartMessage(data) {
                 const pathnameParts = tutorialUrl.pathname.split('/').filter(p => p);
                 const urlArchivo = pathnameParts[pathnameParts.length - 1] || pathnameParts[pathnameParts.length - 2] || '';
                 
-                console.log(`📂 URL extraída: pathname="${tutorialUrl.pathname}", urlArchivo="${urlArchivo}"`);
                 
             const tutorialType = this.getTutorialParam(urlArchivo);
 
             if (tutorialType) {
                 tutorialUrl.searchParams.set('tutorial', tutorialType);
-                    console.log(`✅ Redirigiendo con tutorial: ${tutorialType}`);
-                    console.log(`🔗 URL final: ${tutorialUrl.toString()}`);
             } else {
                     console.warn(`⚠️ Submódulo sin tutorial: ${urlArchivo} → redirigiendo sin parámetro`);
                 // NO agrega 'tutorial=active'
@@ -5191,7 +5117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Esperar un poco para que se cargue el sidenav
     setTimeout(() => {
         window.virtualAssistant = new VirtualAssistant();
-        console.log('🤖 Asistente Virtual Ana inicializado');
     }, 1000);
 });
 
@@ -5361,23 +5286,19 @@ document.head.appendChild(styleSheet);
 
 // === DETECCIÓN Y EJECUCIÓN AUTOMÁTICA DEL TUTORIAL ===
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOMContentLoaded: Buscando parámetro de tutorial...');
     const urlParams = new URLSearchParams(window.location.search);
     let tutorialParam = urlParams.get('tutorial');
 
-    console.log(`🔍 Parámetro 'tutorial' directo: "${tutorialParam}"`);
 
     // Soporte para ?tutorial-rif o ?tutorial=rif
     if (!tutorialParam) {
         const match = window.location.search.match(/[?&]tutorial[-=]([a-z]+)/i);
         if (match) {
             tutorialParam = match[1].toLowerCase();
-            console.log(`🔍 Parámetro 'tutorial' encontrado en regex: "${tutorialParam}"`);
         }
     }
 
     if (!tutorialParam) {
-        console.log('ℹ️ No se encontró parámetro de tutorial en la URL');
         return;
     }
 
@@ -5403,7 +5324,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    console.log(`✅ Tutorial activado desde URL: ?tutorial=${tutorialParam} → método: ${methodName}()`);
 
     // Limpiar URL
     const cleanUrl = window.location.pathname + window.location.hash;
@@ -5416,7 +5336,6 @@ document.addEventListener('DOMContentLoaded', () => {
         attempts++;
         if (window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function') {
             clearInterval(waitForAssistant);
-            console.log(`🎬 Ejecutando tutorial: ${methodName}()`);
             window.virtualAssistant[methodName]();
         } else if (attempts >= maxAttempts) {
             clearInterval(waitForAssistant);
@@ -5424,7 +5343,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(`   window.virtualAssistant existe: ${!!window.virtualAssistant}`);
             console.error(`   método ${methodName} existe: ${window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function'}`);
         } else if (attempts % 10 === 0) {
-            console.log(`⏳ Esperando asistente... (intento ${attempts}/${maxAttempts})`);
         }
     }, 200);
 

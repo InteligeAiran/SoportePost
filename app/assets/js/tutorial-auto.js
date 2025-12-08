@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         if (startFn && typeof startFn === 'function') {
             startFn();
-            console.log(`Tutorial iniciado: ${submoduleKey}`);
         } else {
             console.warn(`No hay tutorial para: ${submoduleKey}`);
             // Opcional: mostrar mensaje genérico

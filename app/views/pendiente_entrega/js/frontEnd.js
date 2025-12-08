@@ -358,16 +358,10 @@ function checkTicketComponents(ticketId, serialPos, regionName) {
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     xhr.onload = function() {
-        // Debug: Log the response details
-        console.log('Response status:', xhr.status);
-        console.log('Response headers:', xhr.getAllResponseHeaders());
-        console.log('Response text (first 200 chars):', xhr.responseText.substring(0, 200));
-        
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
                 const validationResponse = JSON.parse(xhr.responseText);
                 if (validationResponse.success && validationResponse.hasComponents) {
-                    console.log(validationResponse.message);
                     // Si el ticket ya tiene componentes, muestra el modal de selección
                     showSelectComponentsModal(ticketId, regionName, serialPos);
                 } else {
@@ -1850,7 +1844,6 @@ function processEmailQueuePendiente() {
     isProcessingPendiente = true;
     const emailData = emailQueuePendiente.shift();
 
-    console.log(`🔄 Procesando correo ${emailData.type} para ticket: ${emailData.ticketNumber}`);
 
     const xhrEmail = new XMLHttpRequest();
     xhrEmail.open("POST", emailData.endpoint);
@@ -1861,7 +1854,6 @@ function processEmailQueuePendiente() {
         if (xhrEmail.status === 200) {
             try {
                 const responseEmail = JSON.parse(xhrEmail.responseText);
-                console.log(`📧 Respuesta del envío de correo (${emailData.type}):`, responseEmail);
                 
                 if (responseEmail.success) {
                     // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
@@ -1939,14 +1931,11 @@ function processEmailQueuePendiente() {
 function processEmailQueue() {
     if (emailQueue.length === 0) {
         isProcessing = false;
-        console.log("✅ Cola de correos vacía. Procesamiento detenido.");
         return;
     }
 
     isProcessing = true;
     const emailData = emailQueue[0]; // Tomar el primer correo de la cola
-
-    console.log(`🔄 Procesando correo para ticket: ${emailData.ticketData.Nr_ticket}`);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
@@ -1958,7 +1947,6 @@ function processEmailQueue() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    console.log(`✅ Correo enviado exitosamente para ticket: ${emailData.ticketData.Nr_ticket}`, response.message);
                     
                     // Mostrar notificación de éxito
                     if (typeof Swal !== "undefined") {
@@ -1985,7 +1973,6 @@ function processEmailQueue() {
 
         // Remover el correo procesado de la cola
         emailQueue.shift();
-        console.log(`📧 Correo removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -1995,7 +1982,6 @@ function processEmailQueue() {
             }, 1000);
         } else {
             isProcessing = false;
-            console.log("🎉 Todos los correos de la cola han sido procesados.");
         }
     };
 
@@ -2015,7 +2001,6 @@ function processEmailQueue() {
         
         // Remover el correo fallido de la cola
         emailQueue.shift();
-        console.log(`📧 Correo fallido removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -2043,7 +2028,6 @@ function processEmailQueue() {
         
         // Remover el correo fallido de la cola
         emailQueue.shift();
-        console.log(`📧 Correo con timeout removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -2065,7 +2049,6 @@ function enviarCorreoTicketCerrado(ticketData) {
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
     const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    console.log(`📧 Agregando correo de Ticket Cerrado a la cola para ticket: ${ticketNumber}`);
     
     // Agregar a la cola de correos
     emailQueuePendiente.push({
@@ -2087,7 +2070,6 @@ function enviarCorreoTicketDevuelto(ticketData) {
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
     const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    console.log(`📧 Agregando correo de Ticket Devuelto a la cola para ticket: ${ticketNumber}`);
     
     // Agregar a la cola de correos
     emailQueuePendiente.push({
@@ -2104,12 +2086,7 @@ function enviarCorreoTicketDevuelto(ticketData) {
 
 // ✅ FUNCIÓN PARA MOSTRAR ESTADO DE COLA DE PENDIENTE_ENTREGA (opcional, para debugging)
 function mostrarEstadoColaPendiente() {
-    console.log(`📊 Estado de la cola de correos (Pendiente Entrega):`);
-    console.log(`   - Correos en cola: ${emailQueuePendiente.length}`);
-    console.log(`   - Procesando: ${isProcessingPendiente ? 'Sí' : 'No'}`);
-    
     if (emailQueuePendiente.length > 0) {
-        console.log(`   - Próximo correo: ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}`);
     }
     
     if (typeof Swal !== "undefined") {
@@ -2355,7 +2332,6 @@ function MarkDateKey(ticketId, nroTicket, serialPos) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        console.log(response);
         if (response.success === true) {
                     Swal.fire({
                         icon: "success",
@@ -3163,7 +3139,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     try {
                         const data = JSON.parse(xhr.responseText);
-                        console.log("Datos recibidos de la API:", data);
 
                         // **CORREGIDO:** Acceder al primer elemento del array 'document'
                         if (data.success && data.document && data.document.length > 0) { 
@@ -3320,7 +3295,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -4833,7 +4807,6 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
   };
 
   const html = buildDeliveryNoteHtml(data);
-  console.log('Datos para buildDeliveryNoteHtml:', data);
 
   const iframe = document.getElementById('htmlTemplatePreview');
   const doc = iframe.contentDocument || iframe.contentWindow.document;
@@ -5644,7 +5617,6 @@ function processEmailQueuePendiente() {
     isProcessingPendiente = true;
     const emailData = emailQueuePendiente.shift();
 
-    console.log(`🔄 Procesando correo ${emailData.type} para ticket: ${emailData.ticketNumber}`);
 
     const xhrEmail = new XMLHttpRequest();
     xhrEmail.open("POST", emailData.endpoint);
@@ -5655,7 +5627,6 @@ function processEmailQueuePendiente() {
         if (xhrEmail.status === 200) {
             try {
                 const responseEmail = JSON.parse(xhrEmail.responseText);
-                console.log(`📧 Respuesta del envío de correo (${emailData.type}):`, responseEmail);
                 
                 if (responseEmail.success) {
                     // ✅ NOTIFICACIÓN TOAST DE ÉXITO - INMEDIATA
@@ -5736,7 +5707,6 @@ function enviarCorreoTicketCerrado(ticketData) {
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
     const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    console.log(`📧 Agregando correo de Ticket Cerrado a la cola para ticket: ${ticketNumber}`);
     
     // Agregar a la cola de correos
     emailQueuePendiente.push({
@@ -5758,7 +5728,6 @@ function enviarCorreoTicketDevuelto(ticketData) {
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
     const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    console.log(`📧 Agregando correo de Ticket Devuelto a la cola para ticket: ${ticketNumber}`);
     
     // Agregar a la cola de correos
     emailQueuePendiente.push({
@@ -5775,12 +5744,7 @@ function enviarCorreoTicketDevuelto(ticketData) {
 
 // ✅ FUNCIÓN PARA MOSTRAR ESTADO DE COLA DE PENDIENTE_ENTREGA (opcional, para debugging)
 function mostrarEstadoColaPendiente() {
-    console.log(`📊 Estado de la cola de correos (Pendiente Entrega):`);
-    console.log(`   - Correos en cola: ${emailQueuePendiente.length}`);
-    console.log(`   - Procesando: ${isProcessingPendiente ? 'Sí' : 'No'}`);
-    
     if (emailQueuePendiente.length > 0) {
-        console.log(`   - Próximo correo: ${emailQueuePendiente[0].type} - Ticket #${emailQueuePendiente[0].ticketNumber}`);
     }
     
     if (typeof Swal !== "undefined") {

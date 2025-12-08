@@ -852,7 +852,6 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
             xhr.send(dataToSendString); // Envía la solicitud solo si se confirmó
         } else {
             // Si el usuario hace clic en "No, cancelar" o cierra el modal, simplemente no se hace nada
-            console.log("Envío cancelado por el usuario.");
         }
     });
 }
@@ -1041,7 +1040,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -2950,7 +2948,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.send(datos);
                         Swal.showLoading();
                     } else {
-                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
@@ -3033,7 +3030,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           xhr.send(datos);
                           Swal.showLoading();
                         } else {
-                            console.log("Envío a Gestión Comercial cancelado.");
                             overdueTicketsQueue.shift();
                             processNextOverdueTicket();
                         }
@@ -3041,8 +3037,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
                     // --- Lógica para "Cerrar" (si se usa la X o se hace clic fuera si allowOutsideClick está habilitado) ---
-                    console.log("Modal cerrado.");
-                    
                     // Después de cerrar, procesamos el siguiente ticket
                     overdueTicketsQueue.shift();
                     processNextOverdueTicket();
@@ -3248,7 +3242,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.send(datos);
                         Swal.showLoading();
                     } else {
-                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
@@ -3398,13 +3391,10 @@ document.addEventListener("DOMContentLoaded", () => {
              
             }
           } else if (result.dismiss === Swal.DismissReason.cancel) {
-            console.log("Modal de selección cerrado.");
             overdueTicketsQueue = []; // Clear the queue if user cancels main selection modal
           }
         });
       }
-    } else {
-      console.log("No hay más tickets vencidos para procesar.");
     }
   }
 
@@ -3435,12 +3425,8 @@ document.addEventListener("DOMContentLoaded", () => {
             response.tickets.length > 0
           ) {
             overdueTicketsQueue = response.tickets; // Llenar la cola
-            console.log("Tickets vencidos encontrados:", response);
             processNextOverdueTicket(); // Iniciar el procesamiento de la cola
           } else {
-            console.log(
-              "No hay tickets con fecha de repuesto vencida o error al obtenerlos."
-            );
             // Opcional: Mostrar un SweetAlert si no hay tickets vencidos
             // Swal.fire({
             //     icon: 'info',
@@ -3576,10 +3562,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         return;
       }
-
-      console.log(
-        `Sending Ticket ID: ${ticketId}, New Repuesto Date: ${selectedDate} to backend.`
-      );
       const xhr = new XMLHttpRequest();
       xhr.open(
         "POST",

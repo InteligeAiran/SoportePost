@@ -578,8 +578,6 @@ function getTicketAprovalDocument() {
                                 });
 
                                 $("#btn-asignados").on("click", function () {
-                                    console.log('🔍 Filtrando por rechazados...');
-                                    
                                     // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
                                     api.columns().search('').draw(false);
                                     api.search('').draw(false);
@@ -1431,7 +1429,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                           try {
                             const responseEmail = JSON.parse(xhrEmail.responseText);
                             if (responseEmail.success) {
-                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
                             } else {
                               console.error('Error correo rechazo:', responseEmail.message);
                             }
@@ -2227,7 +2224,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -3787,17 +3783,11 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Función para cerrar la ventana y recargar la página principal
 
                             function closeAndReload() {
-
-                                console.log('Cerrando ventana y recargando página principal...');
-
                                 if (window.opener) {
-
                                     window.opener.location.reload();
-
                                 }
 
                                 window.close();
-
                             }
 
                             
@@ -3805,11 +3795,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Detectar cuando se completa la impresión/guardado
 
                             window.addEventListener('afterprint', function() {
-
-                                console.log('Impresión completada - cerrando ventana');
-
                                 setTimeout(closeAndReload, 1000);
-
                             });
 
                             
@@ -3817,9 +3803,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
 
                             window.addEventListener('blur', function() {
-
-                                console.log('Foco perdido - verificando si se cerró');
-
                                 setTimeout(function() {
 
                                     if (document.hidden) {
@@ -3908,10 +3891,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!reloadExecuted) {
                   reloadExecuted = true;
 
-                  console.log(
-                    "Recargando página después de guardar documento..."
-                  );
-
                   // Cerrar la ventana de impresión si aún está abierta
 
                   if (printWindow && !printWindow.closed) {
@@ -3937,19 +3916,10 @@ document.addEventListener("DOMContentLoaded", function () {
               checkInterval = setInterval(() => {
                 try {
                   if (printWindow.closed) {
-                    console.log(
-                      "Ventana cerrada detectada - ejecutando recarga"
-                    );
-
                     reloadPage();
                   }
                 } catch (e) {
                   // Si hay error accediendo a la ventana, asumir que se cerró
-
-                  console.log(
-                    "Error accediendo a ventana - asumiendo que se cerró"
-                  );
-
                   reloadPage();
                 }
               }, 500); // Verificar cada 500ms
@@ -3957,18 +3927,12 @@ document.addEventListener("DOMContentLoaded", function () {
               // Método alternativo: Detectar cuando se completa la impresión
 
               printWindow.addEventListener("afterprint", function () {
-                console.log("Evento afterprint detectado");
-
                 reloadPage();
               });
 
               // Método alternativo: Detectar cuando se pierde el foco
 
               printWindow.addEventListener("blur", function () {
-                console.log(
-                  "Evento blur detectado - usuario interactuando con diálogo"
-                );
-
                 // Esperar un poco y verificar si la ventana sigue abierta
 
                 setTimeout(() => {
@@ -3985,8 +3949,6 @@ document.addEventListener("DOMContentLoaded", function () {
               // Método de respaldo: Detectar cuando se cierra la ventana
 
               printWindow.addEventListener("beforeunload", function () {
-                console.log("Evento beforeunload detectado");
-
                 reloadPage();
               });
 
@@ -3995,8 +3957,6 @@ document.addEventListener("DOMContentLoaded", function () {
               setTimeout(() => {
                 if (checkInterval) {
                   clearInterval(checkInterval);
-
-                  console.log("Timeout alcanzado - limpiando intervalo");
                 }
               }, 60000);
             };
@@ -4013,8 +3973,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           // El usuario hizo clic en "Cerrar"
-
-          console.log("Modal cerrado por el usuario");
         }
       });
     });

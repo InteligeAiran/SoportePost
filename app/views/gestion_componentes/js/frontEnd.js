@@ -54,6 +54,8 @@ function SearchTicketsComponents() {
                         dataForDataTable.push([
                             data.id_ticket,
                             data.nro_ticket,
+                            data.rif || '',
+                            data.razonsocial_cliente || '',
                             data.serial_pos,
                             data.banco_ibp,
                             data.tipo_pos,
@@ -66,7 +68,7 @@ function SearchTicketsComponents() {
                     const headerRow = thead.insertRow();
                     
                     // Crear headers manualmente
-                    const headers = ['N°', 'N° Ticket', 'Serial POS', 'Banco', 'Tipo POS', 'Acciones'];
+                    const headers = ['N°', 'N° Ticket', 'RIF', 'Razón Social', 'Serial POS', 'Banco', 'Tipo POS', 'Acciones'];
                     headers.forEach(headerText => {
                         const th = document.createElement('th');
                         th.textContent = headerText;
@@ -88,6 +90,16 @@ function SearchTicketsComponents() {
                                     },
                                 },
                                 { title: "Nro Ticket" },
+                                { title: "RIF" },
+                                { 
+                                    title: "Razón Social",
+                                    render: function (data, type, row) {
+                                        if (type === "display") {
+                                            return `<span class="truncated-cell" data-full-text="${data || ''}">${data || ''}</span>`;
+                                        }
+                                        return data || '';
+                                    },
+                                },
                                 { title: "Serial POS" },
                                 {
                                     title: "Banco",
@@ -129,12 +141,6 @@ function SearchTicketsComponents() {
                             const idTicket = $(this).data('id');
                             const serialPos = $(this).data('serial');
                             const nroTicket = $(this).data('ticket');
-                            
-                            console.log('Ver componentes para:', {
-                                idTicket: idTicket,
-                                serialPos: serialPos,
-                                nroTicket: nroTicket
-                            });
                             
                             showComponentsModal(idTicket, serialPos, nroTicket);
                         });
@@ -506,27 +512,20 @@ function generatePosContentHtml(posData, currentIndex, totalPos) {
 // Función para actualizar el contenido del modal
 function updateModalContent() {
     if (allPosDataGlobal.length === 0) {
-        console.log('No hay datos para mostrar');
         return;
     }
     
-    console.log('Actualizando contenido. Índice actual:', currentPosIndex, 'Total:', allPosDataGlobal.length);
-    
     const posData = allPosDataGlobal[currentPosIndex];
     if (!posData) {
-        console.error('No hay datos en el índice:', currentPosIndex);
         return;
     }
     
     const contentContainer = document.querySelector('.pos-modal-content-container');
     
     if (contentContainer) {
-        console.log('Actualizando contenido del POS:', posData);
         contentContainer.innerHTML = generatePosContentHtml(posData, currentPosIndex, allPosDataGlobal.length);
         // Hacer scroll al inicio del contenedor para que el usuario vea el cambio
         contentContainer.scrollTop = 0;
-    } else {
-        console.error('No se encontró el contenedor .pos-modal-content-container');
     }
     
     // Actualizar estado de las flechas
@@ -576,25 +575,17 @@ function updateModalContent() {
 
 // Función para navegar al siguiente POS
 function navigateToNextPos() {
-    console.log('Navegando siguiente. Índice actual:', currentPosIndex, 'Total:', allPosDataGlobal.length);
     if (currentPosIndex < allPosDataGlobal.length - 1) {
         currentPosIndex++;
-        console.log('Nuevo índice:', currentPosIndex);
         updateModalContent();
-    } else {
-        console.log('Ya está en el último registro');
     }
 }
 
 // Función para navegar al POS anterior
 function navigateToPrevPos() {
-    console.log('Navegando anterior. Índice actual:', currentPosIndex, 'Total:', allPosDataGlobal.length);
     if (currentPosIndex > 0) {
         currentPosIndex--;
-        console.log('Nuevo índice:', currentPosIndex);
         updateModalContent();
-    } else {
-        console.log('Ya está en el primer registro');
     }
 }
 
@@ -627,9 +618,6 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 
-                console.log('Respuesta del servidor:', response);
-                console.log('Número de tickets recibidos:', response.tickets ? response.tickets.length : 0);
-                
                 if (response.success && response.tickets && response.tickets.length > 0) {
                     // Guardar todos los registros globalmente
                     allPosDataGlobal = Array.isArray(response.tickets) ? response.tickets : [response.tickets];
@@ -638,13 +626,6 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                     const normalizedSerialPos = String(serialPos || '').trim();
                     const normalizedIdTicket = parseInt(idTicket || 0);
                     const normalizedNroTicket = String(nroTicket || '').trim();
-                    
-                    console.log('🔍 Buscando POS con:', {
-                        serialPos: normalizedSerialPos,
-                        idTicket: normalizedIdTicket,
-                        nroTicket: normalizedNroTicket,
-                        totalRegistros: allPosDataGlobal.length
-                    });
                     
                     // Buscar el índice del POS que coincide con el serial e id_ticket seleccionado
                     // Priorizar coincidencia exacta con serial + id_ticket + nro_ticket
@@ -683,22 +664,6 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                     
                     // Si se encuentra, empezar desde ese índice, sino desde el primero
                     currentPosIndex = selectedIndex >= 0 ? selectedIndex : 0;
-                    
-                    console.log('✅ Resultado de búsqueda:', {
-                        encontrado: selectedIndex >= 0,
-                        indiceSeleccionado: currentPosIndex,
-                        registroSeleccionado: allPosDataGlobal[currentPosIndex] ? {
-                            serial: allPosDataGlobal[currentPosIndex].serial_pos,
-                            ticket: allPosDataGlobal[currentPosIndex].id_ticket,
-                            nro_ticket: allPosDataGlobal[currentPosIndex].nro_ticket
-                        } : 'No encontrado',
-                        primeros3Registros: allPosDataGlobal.slice(0, 3).map((p, i) => ({
-                            index: i,
-                            serial: p.serial_pos,
-                            ticket: p.id_ticket,
-                            nro_ticket: p.nro_ticket
-                        }))
-                    });
                     
                     // Obtener el POS inicial para mostrar (el seleccionado o el primero)
                     const initialPosData = allPosDataGlobal[currentPosIndex];
@@ -1359,17 +1324,12 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             
                             // Esperar un momento para que el DOM esté completamente renderizado
                             setTimeout(() => {
-                                console.log('Inicializando modal. Total de registros:', allPosDataGlobal.length);
-                                console.log('Índice actual:', currentPosIndex);
-                                
                                 // Inicializar estado de las flechas
                                 updateModalContent();
                                 
                                 // Agregar event listeners a las flechas (puede haber múltiples instancias)
                                 const prevArrows = document.querySelectorAll('.pos-nav-arrow.prev');
                                 const nextArrows = document.querySelectorAll('.pos-nav-arrow.next');
-                                
-                                console.log('Flechas encontradas - Prev:', prevArrows.length, 'Next:', nextArrows.length);
                                 
                                 prevArrows.forEach((arrow) => {
                                     // Remover listeners anteriores si existen
@@ -1379,7 +1339,6 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                     newArrow.addEventListener('click', (e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('Click en flecha anterior. Índice antes:', currentPosIndex);
                                         navigateToPrevPos();
                                     });
                                 });
@@ -1392,13 +1351,9 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                     newArrow.addEventListener('click', (e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        console.log('Click en flecha siguiente. Índice antes:', currentPosIndex);
                                         navigateToNextPos();
                                     });
                                 });
-                                
-                                // Verificar estado final
-                                console.log('Estado final - Total:', allPosDataGlobal.length, 'Índice:', currentPosIndex);
                             }, 100);
                         }
                     });
@@ -1468,7 +1423,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS

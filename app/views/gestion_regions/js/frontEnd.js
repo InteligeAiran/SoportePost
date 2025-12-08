@@ -201,7 +201,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, deselecte
     const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
     
     // Esto es útil para depuración y se mantiene como estaba
-    console.log('Enviando datos:', {
         ticketId: ticketIdNum,
         serialPos: serialPosClean,
         components: componentsData,
@@ -350,8 +349,6 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     // Establecer el contenido directamente
                     tbodyComponentes.innerHTML = componentsHtml;
                     
-                    console.log('✅ Contenido establecido ANTES de mostrar modal');
-                    console.log('✅ Filas TR:', tbodyComponentes.querySelectorAll('tr').length);
                     
                     // Título del Modal (Uso correcto de template literals)
                     document.getElementById('modalComponentesLabel').innerHTML = `
@@ -363,11 +360,6 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     
                     // Verificar inmediatamente después de mostrar
                     setTimeout(() => {
-                        console.log('🔍 Verificando contenido DESPUÉS de mostrar modal...');
-                        console.log('🔍 Contenido actual del tbody:', tbodyComponentes.innerHTML);
-                        console.log('🔍 Filas TR encontradas:', tbodyComponentes.querySelectorAll('tr').length);
-                        console.log('🔍 ¿tbodyComponentes existe?', !!tbodyComponentes);
-                        console.log('🔍 ¿tbodyComponentes es visible?', tbodyComponentes.offsetParent !== null);
                         
                         // FORZAR VISIBILIDAD del tbody y elementos relacionados
                         const tableElement = document.getElementById('tablaComponentes');
@@ -409,13 +401,11 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                         const hasComponents = currentContent.includes('SimCard') || currentContent.includes('Pila') || currentContent.includes('Cargador');
                         
                         if (!hasComponents && componentsHtml) {
-                            console.log('⚠️ Contenido faltante, restaurando...');
                             tbodyComponentes.innerHTML = componentsHtml;
                         }
                         
                         // Asegurarse de que las filas sean visibles
                         const rows = tbodyComponentes.querySelectorAll('tr');
-                        console.log('🔍 Filas encontradas después de verificación:', rows.length);
                         rows.forEach((row, index) => {
                             row.style.display = '';
                             row.style.visibility = 'visible';
@@ -433,13 +423,10 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                         // Eliminar solo elementos .dataTables_empty
                         const dataTablesEmpty = document.querySelectorAll('#tablaComponentes .dataTables_empty, #tbodyComponentes .dataTables_empty');
                         if (dataTablesEmpty.length > 0) {
-                            console.log('⚠️ Elementos .dataTables_empty encontrados:', dataTablesEmpty.length);
                             dataTablesEmpty.forEach(el => el.remove());
                         }
                         
                         // Verificar visibilidad final
-                        console.log('✅ ¿tbodyComponentes es visible ahora?', tbodyComponentes.offsetParent !== null);
-                        console.log('✅ Estilos del tbody:', {
                             display: window.getComputedStyle(tbodyComponentes).display,
                             visibility: window.getComputedStyle(tbodyComponentes).visibility,
                             opacity: window.getComputedStyle(tbodyComponentes).opacity
@@ -743,7 +730,6 @@ function getTicketDataFinaljs() {
   // Read nro_ticket from URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const nroTicket = urlParams.get('nro_ticket');
-    console.log('nroTicket extraído de la URL:', nroTicket);
 
   const tableElement = document.getElementById("tabla-ticket");
   const theadElement = tableElement
@@ -1913,7 +1899,6 @@ function enviarCorreoTicketCerrado(ticketData) {
     const xhrEmail = new XMLHttpRequest();
     xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`);
     xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-console.log(ticketData);
     xhrEmail.onload = function() {
         if (xhrEmail.status === 200) {
             try {
@@ -2086,7 +2071,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS

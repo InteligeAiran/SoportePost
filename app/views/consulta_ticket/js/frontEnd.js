@@ -4342,7 +4342,6 @@ function SendBancos() {
       // }
       Swal.fire("No hay resultados para la búsqueda!");
 
-      console.log('errorr');
     }
   };
 

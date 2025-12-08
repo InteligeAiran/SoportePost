@@ -359,7 +359,6 @@ let usuariosAcciones = {
 };
 
 function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
-  console.log(`Redirigiendo para acción: ${idStatusAccion}, Ticket ID: ${idTicket}, Nro Ticket: ${nroTicket}`);
   for (const usuario in usuariosAcciones) {
     if (usuariosAcciones[usuario].acciones.includes(idStatusAccion)) {
       const modulo = usuariosAcciones[usuario].modulo;
@@ -378,7 +377,6 @@ function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
     }
   }
   // If no matching action is found
-  console.log(`Acción ${idStatusAccion} no encontrada. No se pudo redirigir.`);
   Swal.fire({
     icon: 'error',
     title: 'Error',
@@ -424,8 +422,6 @@ let resolvedTicketSearchHandler = null;
 /*document.addEventListener("DOMContentLoaded", (event) => {
   const anchoPantalla = window.innerWidth;
   const altoPantalla = window.innerHeight;
-  console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
-  console.log(`Alto de la pantalla: ${altoPantalla}px`);
 });*/
 
 
@@ -598,7 +594,6 @@ window.addEventListener("load", function () {
                 try {
                     updateLoadingStatus(item.status, item.progress);
                     await item.func(); // <--- Ejecución secuencial (await)
-                    //console.log(`Función completada: ${item.func.name}`);
                 } catch (error) {
                     console.error(`Error al cargar ${item.func.name}:`, error);
                     hasError = true;
@@ -634,7 +629,6 @@ window.addEventListener("load", function () {
 
             // Paso 2: Esperar el tiempo restante para alcanzar el mínimo de 10 segundos
             if (remainingTime > 0) {
-                //console.log(`Esperando ${remainingTime}ms para el tiempo mínimo de carga.`);
                 await new Promise(resolve => setTimeout(resolve, remainingTime));
             }
 
@@ -859,7 +853,6 @@ window.addEventListener("load", function () {
         if (modalElement && modalTimelineInstance) {
             modalTimelineInstance.hide();
             forceCleanupAfterModalClose();
-            console.log("Cierre forzado del modal de línea de tiempo.");
         } else {
             console.error("No se encontró el elemento #TimelineModal o la instancia para cierre forzado.");
         }
@@ -1189,7 +1182,6 @@ window.addEventListener("load", function () {
             const clickedButton = event.target.closest(".taller-ticket-detail");
       if (clickedButton) {
         const ticketId = clickedButton.dataset.ticketId;
-        console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
       }
     });
   }
@@ -2880,7 +2872,6 @@ function loadTallerTicketDetails() {
     .then((data) => {
       if (data.success) {
         allTallerTickets = data.details; // Almacenar todos los tickets
-        console.log(data.details);
         displayFilteredTickets(allTallerTickets, 'TallerTicketsContent'); // Mostrar todos al principio
         attachMarkReceivedListeners(); // Adjuntar listeners a los botones "Marcar como Recibido"
 
@@ -3688,7 +3679,6 @@ fetch("/SoportePost/app/controllers/dashboard.php", {
   .then((responseText) => {
     if (responseText) {
       try {
-        console.log("Response text:", responseText); // Mostrar la respuesta para depuración
         const data = JSON.parse(responseText); // Intentar parsear como JSON
         if (data.expired_sessions) {
           window.location.href = data.redirect;
@@ -3703,7 +3693,6 @@ fetch("/SoportePost/app/controllers/dashboard.php", {
         }
       } catch (error) {
         console.error("JSON parse error:", error);
-        console.log("Response text:", responseText); // Mostrar la respuesta para depuración
       }
     } else {
       console.error("Empty response from server");
@@ -6048,7 +6037,6 @@ window.addEventListener("load", async () => {
     backdrops.forEach(backdrop => backdrop.remove());
   }
 
-  console.log("Page fully loaded. Starting async loads...");
   try {
     await Promise.all([
       loadMonthlyCreatedTicketsChart(),
@@ -6073,7 +6061,6 @@ window.addEventListener("load", async () => {
       getTicketPercentage(),
       // Agrega aquí todas tus funciones load async similares
     ]);
-    console.log("All data loaded successfully");
   } catch (error) {
     console.error("Error in parallel loads:", error);
     // Muestra un mensaje global si falla la carga inicial

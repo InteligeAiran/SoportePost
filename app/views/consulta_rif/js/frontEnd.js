@@ -1437,7 +1437,6 @@ function VerificarSucursales(rif) {
                 }
             } catch (error) {
                 console.error("Error al procesar la respuesta del servidor:", error);
-                console.log("Respuesta del servidor completa (para depurar):", xhrSucursales.responseText);
             }
         } else {
             console.error(
@@ -1563,7 +1562,6 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
     // Puedes agregar aquí validación de tamaño para el archivo de anticipo si es necesario
 
     // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
-    //console.log("Validación de anticipo pasada.");
 });
 
 function verificarTicketEnProceso(serial) {
@@ -1845,14 +1843,12 @@ function SendDataFailure2(idStatusPayment) {
               if (xhrEmail.status === 200) {
                 try {
                   const responseEmail = JSON.parse(xhrEmail.responseText);
-                  console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
                   
                   // Verificar si al menos un correo se envió exitosamente
                   const message = responseEmail.message || '';
                   const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
                   
                   if (responseEmail.success || correoTecnicoEnviado) {
-                    console.log(`✅ Correo enviado exitosamente para el ticket ${response.ticket_data.Nr_ticket}`);
                   } else {
                     console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
                   }
@@ -1957,7 +1953,6 @@ function SendDataFailure2(idStatusPayment) {
               $("#miModal").css("display", "none");
               
             const ticketId = ticketData.id_ticket_creado;
-            console.log(`Ticket ID: ${ticketId}`);
             const serialPos = ticketData.serial;
             
             abrirModalComponentes({
@@ -1981,7 +1976,6 @@ function SendDataFailure2(idStatusPayment) {
             }
           } catch (error) {
             console.error("Error parsing JSON (200 OK) for SaveDataFalla2:", error);
-            console.log(xhr.responseText);
             Swal.fire({
               icon: "error",
               title: "Error en el servidor",
@@ -2667,7 +2661,6 @@ function SendDataFailure1() {
             if (xhrEmail.status === 200) {
               try {
               const responseEmail = JSON.parse(xhrEmail.responseText);
-                console.log("📧 Respuesta del envío de correo (Nivel 1):", responseEmail);
                 
                 // Verificar si al menos un correo se envió exitosamente
                 const message = responseEmail.message || '';
@@ -3004,15 +2997,12 @@ function restaurarVisibilidadCompleta() {
   
   if (checkExoneracionContainer) {
     checkExoneracionContainer.style.display = "block";
-    console.log("checkExoneracionContainer restaurado");
   }
   if (checkAnticipoContainer) {
     checkAnticipoContainer.style.display = "block";
-    console.log("checkAnticipoContainer restaurado");
   }
   if (checkEnvioContainer) {
     checkEnvioContainer.style.display = "block";
-    console.log("checkEnvioContainer restaurado");
   }
 
   // Restaurar botones de descarga
@@ -3021,11 +3011,9 @@ function restaurarVisibilidadCompleta() {
   
   if (downloadExo) {
     downloadExo.style.display = "inline-block";
-    console.log("downloadExo restaurado");
   }
   if (downloadAntici) {
     downloadAntici.style.display = "inline-block";
-    console.log("downloadAntici restaurado");
   }
 
   // Restaurar checkboxes individuales
@@ -3036,19 +3024,15 @@ function restaurarVisibilidadCompleta() {
   
   if (checkExoneracion) {
     checkExoneracion.style.display = "block";
-    console.log("checkExoneracion restaurado");
   }
   if (checkExoneracionLabel) {
     checkExoneracionLabel.style.display = "block";
-    console.log("checkExoneracionLabel restaurado");
   }
   if (checkAnticipo) {
     checkAnticipo.style.display = "block";
-    console.log("checkAnticipo restaurado");
   }
   if (checkAnticipoLabel) {
     checkAnticipoLabel.style.display = "block";
-    console.log("checkAnticipoLabel restaurado");
   }
 
   // Restaurar elementos de garantía
@@ -3058,20 +3042,17 @@ function restaurarVisibilidadCompleta() {
   if (resultadoGarantiaReingreso) {
     resultadoGarantiaReingreso.textContent = "Sin Garantía Por Reingreso";
     resultadoGarantiaReingreso.style.color = "";
-    console.log("resultadoGarantiaReingreso restaurado");
   }
   
   if (resultadoGarantiaInstalacion) {
     resultadoGarantiaInstalacion.textContent = "Sin Garantía de Instalación";
     resultadoGarantiaInstalacion.style.color = "";
-    console.log("resultadoGarantiaInstalacion restaurado");
   }
 
   // Restaurar opciones de carga de documentos
   const documentUploadOptions = document.getElementById("documentUploadOptions");
   if (documentUploadOptions) {
     documentUploadOptions.style.display = "none"; // Por defecto oculto hasta que se seleccione "Sí"
-    console.log("documentUploadOptions restaurado");
   }
 
   // Restaurar botones de carga
@@ -3081,18 +3062,14 @@ function restaurarVisibilidadCompleta() {
   
   if (botonCargaPDFEnv) {
     botonCargaPDFEnv.style.display = "none";
-    console.log("botonCargaPDFEnv restaurado");
   }
   if (botonCargaExoneracion) {
     botonCargaExoneracion.style.display = "none";
-    console.log("botonCargaExoneracion restaurado");
   }
   if (botonCargaAnticipo) {
     botonCargaAnticipo.style.display = "none";
-    console.log("botonCargaAnticipo restaurado");
   }
 
-  console.log("Visibilidad completa restaurada");
 }
 
 function clearFileSpan(spanElement) {
@@ -4828,7 +4805,6 @@ function fetchSerialData(serial, rif,razonsocial) {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
-  console.log(razonsocial);
   globalSerial = serial;
   globalRif = rif;
   globalRazon = razonsocial;
@@ -5005,7 +4981,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -5073,7 +5048,6 @@ document.addEventListener("DOMContentLoaded", function () {
       buscarSerial.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla.");
   }
 
   if (buscarPorRifBtn && rifCountTableCard) {
@@ -5094,7 +5068,6 @@ document.addEventListener("DOMContentLoaded", function () {
       razonInput.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla.");
   }
 
   if (buscarPorSerialBtn && serialCountTableCard) {
@@ -5114,7 +5087,6 @@ document.addEventListener("DOMContentLoaded", function () {
       razonInput.style.display = "none";
     });
   } else {
-    console.log("Error: No se encontraron el botón o la tabla.");
   }
 });
 
@@ -5250,7 +5222,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                         if (xhrEmail.status === 200) {
                             try {
                                 const responseEmail = JSON.parse(xhrEmail.responseText);
-                                console.log("📧 Respuesta del envío de correo (Nivel 2):", responseEmail);
                                 
                                 // Verificar si al menos un correo se envió exitosamente
                                 const message = responseEmail.message || '';
@@ -5322,7 +5293,6 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                      response.ticket_number || 
                                      ticketId;
                     
-                    console.log(`📧 Componentes guardados para ticket: ${nroTicket}. Correo enviado.`);
                     
                     Swal.fire({
                         title: '¡Éxito!',
@@ -5619,14 +5589,12 @@ function abrirModalComponentes(boton) {
 function processEmailQueue() {
     if (emailQueue.length === 0) {
         isProcessing = false;
-        console.log("✅ Cola de correos vacía. Procesamiento detenido.");
         return;
     }
 
     isProcessing = true;
     const emailData = emailQueue[0]; // Tomar el primer correo de la cola
 
-    console.log(`🔄 Procesando correo para ticket: ${emailData.ticketData.Nr_ticket}`);
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`);
@@ -5638,7 +5606,6 @@ function processEmailQueue() {
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
-                    console.log(`✅ Correo enviado exitosamente para ticket: ${emailData.ticketData.Nr_ticket}`, response.message);
                     
                     // Mostrar notificación de éxito
                     if (typeof Swal !== "undefined") {
@@ -5668,7 +5635,6 @@ function processEmailQueue() {
 
         // Remover el correo procesado de la cola
         emailQueue.shift();
-        console.log(`📧 Correo removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -5678,7 +5644,6 @@ function processEmailQueue() {
             }, 1000);
         } else {
             isProcessing = false;
-            console.log("🎉 Todos los correos de la cola han sido procesados.");
         }
     };
 
@@ -5698,7 +5663,6 @@ function processEmailQueue() {
         
         // Remover el correo fallido de la cola
         emailQueue.shift();
-        console.log(`📧 Correo fallido removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -5726,7 +5690,6 @@ function processEmailQueue() {
         
         // Remover el correo fallido de la cola
         emailQueue.shift();
-        console.log(`📧 Correo con timeout removido de la cola. Restantes: ${emailQueue.length}`);
         
         // Procesar la siguiente solicitud en la cola
         if (emailQueue.length > 0) {
@@ -5744,12 +5707,7 @@ function processEmailQueue() {
 
 // Función para mostrar el estado de la cola (opcional, para debugging)
 function mostrarEstadoCola() {
-    console.log(`📊 Estado de la cola de correos:`);
-    console.log(`   - Correos en cola: ${emailQueue.length}`);
-    console.log(`   - Procesando: ${isProcessing ? 'Sí' : 'No'}`);
-    
     if (emailQueue.length > 0) {
-        console.log(`   - Próximo correo: Ticket #${emailQueue[0].ticketData.Nr_ticket}`);
     }
     
     if (typeof Swal !== "undefined") {

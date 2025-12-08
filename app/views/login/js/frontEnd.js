@@ -1,8 +1,6 @@
 /*document.addEventListener('DOMContentLoaded', (event) => {
     const anchoPantalla = window.innerWidth;
     const altoPantalla = window.innerHeight;
-    console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
-    console.log(`Alto de la pantalla: ${altoPantalla}px`);
 });*/
 
 let emailQueue = []; // Cola para almacenar las solicitudes de correo
@@ -76,7 +74,6 @@ function SendForm() {
 
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) { // Manejar códigos de éxito (2xx)
-            console.log(xhr.responseText);
             try {
                 const response = JSON.parse(xhr.responseText);
                 if (response.success) {
@@ -94,7 +91,6 @@ function SendForm() {
                 }
             } catch (error) {
                 console.error('Error parsing JSON:', error);
-                console.log(xhr.responseText);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error en el servidor',
@@ -318,7 +314,6 @@ async function checkUser() {
         const data = await response.json();
         mensajeDivt.innerHTML = data.message;
        // Aplicar clase basada en el color (asumiendo que data.color es 'green' para success, 'red' para error)
-       console.log(data.color);
         if (data.color === "green") {
           mensajeDivt.classList.add('success');
         } else if (data.color === 'red') {
