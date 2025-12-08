@@ -3174,6 +3174,9 @@ class VirtualAssistant {
         this.panel.style.top = '';
         this.panel.style.transform = 'translate(-50%, -50%)';
         
+        // Restaurar mensaje de bienvenida si no existe
+        this.restoreWelcomeMessage();
+        
         // Log para debugging
     }
     
@@ -3189,7 +3192,7 @@ class VirtualAssistant {
         // Log para debugging
     }
     
-    // Función para borrar el chat (manteniendo mensaje inicial de Ana y posición del panel)
+    // Función para borrar el chat (manteniendo mensaje inicial de Intelix y posición del panel)
     clearChat() {
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
@@ -3198,11 +3201,11 @@ class VirtualAssistant {
             const currentTop = this.panel.style.top;
             const currentTransform = this.panel.style.transform;
             
-            // Buscar el mensaje inicial de Ana
-            const initialMessage = chatMessages.querySelector('.message.assistant-message');
+            // Buscar el mensaje inicial de Intelix
+            const initialMessage = chatMessages.querySelector('.message.assistant-message.welcome-msg');
             
-            // Si hay un mensaje inicial de Ana, mantenerlo
-            if (initialMessage && initialMessage.textContent.includes('¡Hola! Soy Ana')) {
+            // Si hay un mensaje inicial de Intelix, mantenerlo
+            if (initialMessage && initialMessage.textContent.includes('¡Hola! Soy Intelix')) {
                 // Borrar todo y volver a agregar solo el mensaje inicial
                 chatMessages.innerHTML = '';
                 chatMessages.appendChild(initialMessage);
@@ -3216,6 +3219,50 @@ class VirtualAssistant {
             this.panel.style.top = currentTop;
             this.panel.style.transform = currentTransform;
         }
+    }
+    
+    // Función para restaurar el mensaje de bienvenida
+    restoreWelcomeMessage() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        // Verificar si ya existe el mensaje de bienvenida
+        const existingWelcomeMsg = chatMessages.querySelector('.message.assistant-message.welcome-msg');
+        if (existingWelcomeMsg && existingWelcomeMsg.textContent.includes('¡Hola! Soy Intelix')) {
+            return; // Ya existe, no hacer nada
+        }
+        
+        // Obtener la ruta de la imagen del avatar del panel header o usar APP_PATH global
+        let avatarPath = '';
+        const panelAvatar = document.querySelector('.panel-avatar');
+        if (panelAvatar && panelAvatar.src) {
+            avatarPath = panelAvatar.src;
+        } else if (typeof APP_PATH !== 'undefined') {
+            avatarPath = `${APP_PATH}app/public/img/assistant/woman-avatar.png`;
+        } else {
+            // Fallback: intentar obtener de la URL base
+            const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+            avatarPath = `${baseUrl}/app/public/img/assistant/woman-avatar.png`;
+        }
+        
+        // Si no existe, crear el mensaje de bienvenida
+        const welcomeMessageHTML = `
+            <div class="message assistant-message welcome-msg">
+                <div class="message-avatar">
+                    <img src="${avatarPath}" alt="Intelix" class="msg-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHZpZXdCb3g9IjAgMCA0NSA0NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjIuNSIgY3k9IjIyLjUiIHI9IjIyLjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxMSIgeT0iMTEiIHdpZHRoPSIyMyIgaGVpZ2h0PSIyMyIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIgMTRDOS4zMzMgMTQgNCAxNS43NzkxIDQgMTlIMjBDMjAgMTUuNzc5MSAxOC42NjcgMTQgMTYgMTRIMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+';">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>¡Hola! Soy Intelix, tu asistente virtual. Puedo ayudarte con consultas inteligentes del sistema.</p>
+                        <p><strong>¿En qué te puedo ayudar hoy?</strong></p>
+                    </div>
+                    <div class="message-time">Ahora</div>
+                </div>
+            </div>
+        `;
+        
+        // Insertar el mensaje de bienvenida al inicio
+        chatMessages.insertAdjacentHTML('afterbegin', welcomeMessageHTML);
     }
     
     toggleCategory(categoryName) {
