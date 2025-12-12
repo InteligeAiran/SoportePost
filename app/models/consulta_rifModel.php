@@ -6274,7 +6274,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
         try {
 
-            $sql = "SELECT * FROM get_active_payment_methods();";
+            $sql = "SELECT id_payment_method, payment_method_code, payment_method_name, payment_method_description FROM public.payment_methods WHERE is_active = TRUE ORDER BY payment_method_name ASC";
 
             $result = Model::getResult($sql, $this->db);
 
@@ -6283,6 +6283,46 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         } catch (Throwable $e) {
 
             error_log("Error en GetPaymentMethods: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    public function GetExchangeRate(){
+
+        try {
+
+            $sql = "SELECT * FROM public.getexchangerate();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetExchangeRate: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    public function GetBancos(){
+
+        try {
+
+            $sql = "SELECT * FROM obtener_datos_banco();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetBancos: " . $e->getMessage());
 
             return false;
 

@@ -91,14 +91,9 @@ function restoreCoordinacionState() {
             select.disabled = true;
           }
           
-        } else {
-          console.error("Error al restaurar coordinaciones:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON al restaurar coordinaciones:", error);
       }
-    } else {
-      console.error("Error al restaurar coordinaciones:", xhr.status, xhr.statusText);
     }
   };
 
@@ -124,7 +119,6 @@ document.addEventListener("DOMContentLoaded", function () {
           ctx.drawImage(img, 0, 0);
           window.PDF_LOGO_DATAURL = canvas.toDataURL('image/png');
         } catch (innerErr) {
-          console.error('Error generando DataURL del logo PDF:', innerErr);
         }
       };
       const basePath = typeof APP_PATH === 'string' ? APP_PATH : '/';
@@ -132,7 +126,6 @@ document.addEventListener("DOMContentLoaded", function () {
       img.src = normalizedBase + 'app/public/img/Nota_Entrega/INTELIGENSA.PNG';
     }
   } catch (logoErr) {
-    console.warn('No fue posible precargar el logo para PDF:', logoErr);
   }
 
   const noFileChosenStyle =
@@ -608,12 +601,10 @@ function getPosSerials1(rif) {
             "<br>Error al obtener los seriales.";
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         document.getElementById("rifMensaje").innerHTML +=
           "<br>Error al procesar la respuesta de seriales.";
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       document.getElementById("rifMensaje").innerHTML +=
         "<br>Error de conexión con el servidor para seriales.";
     }
@@ -649,11 +640,9 @@ function getPosSerials1(rif) {
                     document.getElementById('rifMensaje').innerHTML += '<br>Error al obtener los seriales.';
                 }
             } catch (error) {
-                console.error('Error parsing JSON:', error);
                 document.getElementById('rifMensaje').innerHTML += '<br>Error al procesar la respuesta de seriales.';
             }
         } else {
-            console.error('Error:', xhr.status, xhr.statusText);
             document.getElementById('rifMensaje').innerHTML += '<br>Error de conexión con el servidor para seriales.';
         }
     };
@@ -696,15 +685,12 @@ function getFailure() {
         } else {
           document.getElementById("rifMensaje").innerHTML +=
             "<br>Error al obtener las fallas.";
-          console.error("Error al obtener las fallas:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         document.getElementById("rifMensaje").innerHTML +=
           "<br>Error al procesar la respuesta de las fallas.";
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       document.getElementById("rifMensaje").innerHTML +=
         "<br>Error de conexión con el servidor para las fallas.";
     }
@@ -748,15 +734,12 @@ function getFailure2() {
         } else {
           document.getElementById("rifMensaje").innerHTML +=
             "<br>Error al obtener las fallas.";
-          console.error("Error al obtener las fallas:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         document.getElementById("rifMensaje").innerHTML +=
           "<br>Error al procesar la respuesta de las fallas.";
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       document.getElementById("rifMensaje").innerHTML +=
         "<br>Error de conexión con el servidor para las fallas.";
     }
@@ -802,15 +785,12 @@ function getCoordinador() {
         } else {
           document.getElementById("rifMensaje").innerHTML +=
             "<br>Error al obtener los Coordinadores.";
-          console.error("Error al obtener las fallas:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         document.getElementById("rifMensaje").innerHTML +=
           "<br>Error al procesar la respuesta de los Coordinadores.";
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       document.getElementById("rifMensaje").innerHTML +=
         "<br>Error de conexión con el servidor para los Coordinadores.";
     }
@@ -903,15 +883,12 @@ function getCoordinacion() {
           // MANEJO DE ERRORES
           document.getElementById("rifMensaje").innerHTML +=
             "<br>Error al obtener las Coordinaciones.";
-          console.error("Error al obtener las coordinaciones:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         document.getElementById("rifMensaje").innerHTML +=
           "<br>Error al procesar la respuesta de las Coordinaciones.";
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       document.getElementById("rifMensaje").innerHTML +=
         "<br>Error de conexión con el servidor para las Coordinaciones.";
     }
@@ -964,7 +941,6 @@ function getPosSerials(rif) {
           mensajeDiv.innerHTML += "<br>" + response.message;
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         mensajeDiv.innerHTML +=
           "<br>Error al procesar la respuesta de seriales.";
       }
@@ -977,10 +953,8 @@ function getPosSerials(rif) {
         mensajeDiv.innerHTML += "<br>" + response.message;
       } catch (parseError) {
         mensajeDiv.innerHTML += "<br>Error en la solicitud de seriales.";
-        console.error("Error parsing 400 response:", parseError);
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       mensajeDiv.innerHTML +=
         "<br>Error de conexión con el servidor para seriales.";
     }
@@ -989,7 +963,6 @@ function getPosSerials(rif) {
   xhr.onerror = function () {
     document.getElementById("rifMensaje").innerHTML +=
       "<br>Error de red al intentar obtener los seriales.";
-    console.error("Error de red");
   };
 
   const datos = `action=GetPosSerials&rif=${encodeURIComponent(rif)}`;
@@ -1021,13 +994,8 @@ function getUltimateTicket(serial) {
             document.getElementById("ultimateTicketInput").value =
               "No disponible";
             validarGarantiaReingreso("No disponible");
-            console.warn(
-              "Respuesta exitosa sin fecha o mensaje esperado:",
-              response
-            );
           }
         } else {
-          console.error("Error:", response.message);
           Swal.fire({
             title: "Error",
             text: "Error al obtener la fecha del último ticket.",
@@ -1036,7 +1004,6 @@ function getUltimateTicket(serial) {
           });
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
         Swal.fire({
           title: "Error",
           text: "Error al procesar la respuesta del servidor.",
@@ -1059,7 +1026,6 @@ function getUltimateTicket(serial) {
         fechaUltimoTicketGlobal = "No disponible";
         validarGarantiaReingreso("No disponible");
       } catch (error) {
-        console.error("Error parsing JSON for 400:", error);
         Swal.fire({
           title: "Error",
           text: "Error en la solicitud de la fecha del último ticket.",
@@ -1069,7 +1035,6 @@ function getUltimateTicket(serial) {
         });
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
       Swal.fire({
         title: "Error",
         text: "Error de conexión con el servidor.",
@@ -1102,18 +1067,11 @@ function getInstalationDate(serial) {
           document.getElementById("InputFechaInstall").value = "No disponible";
           fechaInstalacionGlobal = null;
           validarGarantiaInstalacion("No disponible");
-          console.error(
-            "Error:",
-            response
-              ? response.message
-              : "Respuesta de éxito falsa sin mensaje."
-          );
         }
       } catch (error) {
         document.getElementById("InputFechaInstall").value = "No disponible";
         fechaInstalacionGlobal = null;
         validarGarantiaInstalacion("No disponible");
-        console.error("Error parsing JSON:", error);
       }
     } else if (xhr.status === 400) {
       try {
@@ -1121,19 +1079,16 @@ function getInstalationDate(serial) {
         document.getElementById("InputFechaInstall").value = "No disponible";
         fechaInstalacionGlobal = null;
         validarGarantiaInstalacion("No disponible");
-        console.warn("Advertencia:", response.message);
         // Puedes mostrar un mensaje al usuario si lo deseas, por ejemplo, con Swal.fire()
       } catch (error) {
         document.getElementById("InputFechaInstall").value = "No disponible";
         fechaInstalacionGlobal = null;
         validarGarantiaInstalacion("No disponible");
-        console.error("Error parsing JSON for 400:", error);
       }
     } else {
       document.getElementById("InputFechaInstall").value = "No disponible";
       fechaInstalacionGlobal = null;
       validarGarantiaInstalacion("No disponible");
-      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
@@ -1141,7 +1096,6 @@ function getInstalationDate(serial) {
     document.getElementById("InputFechaInstall").value = "No disponible";
     fechaInstalacionGlobal = null;
     validarGarantiaInstalacion("No disponible");
-    console.error("Error de red al intentar obtener la fecha de instalación.");
   };
 
   const datos = `action=GetInstallPosDate&serial=${encodeURIComponent(serial)}`;
@@ -1442,25 +1396,14 @@ function VerificarSucursales(rif) {
                         checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
                       }
                 } else {
-                    console.error(
-                        "Error al verificar las sucursales:",
-                        responseSucursales ? responseSucursales.message : "Error desconocido"
-                    );
                 }
             } catch (error) {
-                console.error("Error al procesar la respuesta del servidor:", error);
             }
         } else {
-            console.error(
-                "Error en la petición para verificar sucursales. Status:",
-                xhrSucursales.status,
-                xhrSucursales.responseText
-            );
         }
     };
 
     xhrSucursales.onerror = function() {
-        console.error("Error de red en la petición para verificar sucursales.");
         // Asegúrate de que los elementos se muestren si hay un error de re
     };
 
@@ -1782,7 +1725,6 @@ function SendDataFailure2(idStatusPayment) {
     })
     .catch((error) => {
       hideExportLoading(); // Ensure loading is hidden on error
-      console.error("Error al verificar ticket en proceso:", error);
       Swal.fire({
         icon: "error",
         title: "Error de Verificación",
@@ -1987,7 +1929,6 @@ function SendDataFailure2(idStatusPayment) {
               });
             }
           } catch (error) {
-            console.error("Error parsing JSON (200 OK) for SaveDataFalla2:", error);
             Swal.fire({
               icon: "error",
               title: "Error en el servidor",
@@ -2005,10 +1946,6 @@ function SendDataFailure2(idStatusPayment) {
               color: "black",
             });
           } catch (error) {
-            console.error(
-              "Error parsing JSON (400 Bad Request) for SaveDataFalla2:",
-              error
-            );
             Swal.fire({
               icon: "warning",
               title: "Error en la solicitud",
@@ -2028,10 +1965,6 @@ function SendDataFailure2(idStatusPayment) {
               confirmButtonColor: "#003594",
             });
           } catch (error) {
-            console.error(
-              "Error al parsear JSON (429 Too Many Requests) for SaveDataFalla2:",
-              error
-            );
             Swal.fire({
               icon: "warning",
               title: "Error de Validación de Tiempo",
@@ -2050,10 +1983,6 @@ function SendDataFailure2(idStatusPayment) {
               color: "black",
             });
           } catch (error) {
-            console.error(
-              "Error parsing JSON (500 Internal Server Error) for SaveDataFalla2:",
-              error
-            );
             Swal.fire({
               icon: "error",
               title: "Error interno del servidor",
@@ -2062,12 +1991,6 @@ function SendDataFailure2(idStatusPayment) {
             });
           }
         } else {
-          console.error(
-            "Error inesperado en la respuesta del servidor (SaveDataFalla2). Código de estado:",
-            xhr.status,
-            "Respuesta:",
-            xhr.responseText
-          );
           Swal.fire({
             icon: "error",
             title: "Error inesperado",
@@ -2077,7 +2000,6 @@ function SendDataFailure2(idStatusPayment) {
         }
       };
       xhr.onerror = function () {
-        console.error("Error de red al enviar la solicitud XHR (SaveDataFalla2).");
         Swal.fire({
           icon: "error",
           title: "Error de conexión",
@@ -2547,13 +2469,14 @@ checkExoneracion.addEventListener("change", function() {
       const registro = document.getElementById("registro");
       const fechaCarga = document.getElementById("fechaCarga");
       const estatus = document.getElementById("estatus");
+      const serialPosPago = document.getElementById("serialPosPago");
+      const montoEquipo = document.getElementById("montoEquipo");
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
       
       // Limpiar campos de texto e inputs
       if (fechaPago) fechaPago.value = "";
       if (formaPago) formaPago.value = "";
-      if (moneda) moneda.value = "";
-      if (montoRef) montoRef.value = "";
-      if (montoBs) montoBs.value = "";
       if (referencia) referencia.value = "";
       if (depositante) depositante.value = "";
       if (confirmacion) confirmacion.value = "";
@@ -2562,16 +2485,390 @@ checkExoneracion.addEventListener("change", function() {
       if (registro) registro.value = "";
       if (fechaCarga) fechaCarga.value = "";
       if (estatus) estatus.value = "";
+      if (serialPosPago) serialPosPago.value = "";
+      
+      // Resetear el select de moneda a "Seleccionar" y desbloquearlo
+      if (moneda) {
+        moneda.value = "";
+        moneda.disabled = false;
+        moneda.removeAttribute("disabled");
+        moneda.style.backgroundColor = "";
+        moneda.style.cursor = "";
+      }
+      
+      // Ocultar campos de banco y limpiarlos
+      if (bancoFieldsContainer) {
+        bancoFieldsContainer.style.display = "none";
+      }
+      if (bancoOrigen) {
+        bancoOrigen.value = "";
+        bancoOrigen.required = false;
+      }
+      if (bancoDestino) {
+        bancoDestino.value = "";
+        bancoDestino.required = false;
+      }
+      
+      // Resetear campos de Monto Bs y Monto REF a "0.00" y deshabilitarlos
+      if (montoBs) {
+        montoBs.value = "0.00";
+        montoBs.disabled = true;
+        montoBs.setAttribute("disabled", "disabled");
+        // Remover listeners de conversión
+        montoBs.removeEventListener("input", calculateBsToUsd);
+        montoBs.removeEventListener("keyup", calculateBsToUsd);
+        montoBs.removeEventListener("blur", formatBsDecimal);
+      }
+      
+      if (montoRef) {
+        montoRef.value = "0.00";
+        montoRef.disabled = true;
+        montoRef.setAttribute("disabled", "disabled");
+        // Remover listeners de conversión
+        montoRef.removeEventListener("input", calculateUsdToBs);
+        montoRef.removeEventListener("keyup", calculateUsdToBs);
+        montoRef.removeEventListener("input", updateMontoEquipo);
+        montoRef.removeEventListener("keyup", updateMontoEquipo);
+      }
+      
+      // Ocultar sufijos de moneda
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "none";
+      }
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "none";
+      }
+      
+      // Resetear el monto del equipo a "$0.00"
+      if (montoEquipo) {
+        montoEquipo.textContent = "$0.00";
+      }
       
       // Resetear el formulario (método alternativo)
       formAgregarDatosPago.reset();
+      
+      // Asegurar que los valores se mantengan después del reset
+      // (el reset puede limpiar los valores que establecimos, así que los reestablecemos)
+      // Usar setTimeout para asegurar que se ejecute después del reset
+      setTimeout(function() {
+        if (montoBs) {
+          montoBs.value = "0.00";
+          montoBs.disabled = true;
+          montoBs.setAttribute("disabled", "disabled");
+          montoBs.removeAttribute("readonly");
+        }
+        if (montoRef) {
+          montoRef.value = "0.00";
+          montoRef.disabled = true;
+          montoRef.setAttribute("disabled", "disabled");
+          montoRef.removeAttribute("readonly");
+        }
+        if (moneda) {
+          moneda.value = "";
+        }
+        // Asegurar que los sufijos estén ocultos
+        if (montoBsSuffix) {
+          montoBsSuffix.style.display = "none";
+          montoBsSuffix.style.visibility = "hidden";
+        }
+        if (montoRefSuffix) {
+          montoRefSuffix.style.display = "none";
+          montoRefSuffix.style.visibility = "hidden";
+        }
+        if (montoEquipo) {
+          montoEquipo.textContent = "$0.00";
+        }
+      }, 10);
+    }
+  }
+
+  // Función para generar número de registro único
+  // Opciones de formato disponibles:
+  // 1. Pago{4 últimos de referencia}_{4 últimos de serial} (formato actual: Pago0945_4354)
+  // 2. REG-{4 últimos de referencia}-{4 últimos de serial}
+  // 3. {Año}-{4 últimos de referencia}-{4 últimos de serial}
+  // 4. {Fecha YYYYMMDD}-{4 últimos de referencia}-{4 últimos de serial}
+  // 5. PA-{Timestamp corto}-{4 últimos de serial}
+  function generateRegistrationNumber(formatType = 1) {
+    const referenciaInput = document.getElementById("referencia");
+    const serialPosPagoInput = document.getElementById("serialPosPago");
+    const registroInput = document.getElementById("registro");
+    
+    if (!referenciaInput || !serialPosPagoInput || !registroInput) {
+      return;
+    }
+
+    const referencia = referenciaInput.value.trim();
+    const serial = serialPosPagoInput.value.trim();
+
+    // Validar que ambos campos tengan al menos 4 caracteres
+    if (!referencia || referencia.length < 4) {
+      return;
+    }
+
+    if (!serial || serial.length < 4) {
+      return;
+    }
+
+    // Obtener los últimos 4 dígitos/caracteres de referencia y serial
+    // Para referencia: solo números, rellenar con ceros a la izquierda si es necesario
+    const ultimos4Referencia = referencia.slice(-4).replace(/\D/g, ''); // Solo números
+    const refFinal = ultimos4Referencia.length >= 4 
+      ? ultimos4Referencia 
+      : ultimos4Referencia.padStart(4, '0'); // Rellenar con ceros si tiene menos de 4 dígitos
+    
+    // Para serial: últimos 4 caracteres (pueden ser números o letras)
+    const ultimos4Serial = serial.slice(-4);
+
+    let numeroRegistro = "";
+
+    switch(formatType) {
+      case 1: // Pago{4 últimos de referencia}_{4 últimos de serial}
+        numeroRegistro = `Pago${refFinal}_${ultimos4Serial}`;
+        break;
+      case 2: // REG-{4 últimos de referencia}-{4 últimos de serial}
+        numeroRegistro = `REG-${refFinal}-${ultimos4Serial}`;
+        break;
+      case 3: // {Año}-{4 últimos de referencia}-{4 últimos de serial}
+        const año = new Date().getFullYear();
+        numeroRegistro = `${año}-${refFinal}-${ultimos4Serial}`;
+        break;
+      case 4: // {Fecha YYYYMMDD}-{4 últimos de referencia}-{4 últimos de serial}
+        const fecha = new Date();
+        const fechaStr = fecha.getFullYear() + 
+                        String(fecha.getMonth() + 1).padStart(2, '0') + 
+                        String(fecha.getDate()).padStart(2, '0');
+        numeroRegistro = `${fechaStr}-${refFinal}-${ultimos4Serial}`;
+        break;
+      case 5: // PA-{Timestamp corto}-{4 últimos de serial}
+        const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos del timestamp
+        numeroRegistro = `PA-${timestamp}-${ultimos4Serial}`;
+        break;
+      default:
+        numeroRegistro = `Pago${refFinal}_${ultimos4Serial}`;
+    }
+
+    registroInput.value = numeroRegistro;
+  }
+
+  // Función para validar que solo se ingresen números (BLOQUEA completamente caracteres no numéricos)
+  function validateNumericInput(event) {
+    // Permitir teclas de control (backspace, delete, tab, escape, enter, etc.)
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    
+    if (allowedKeys.includes(event.key)) {
+      return true;
+    }
+    
+    // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
+    if (event.ctrlKey || event.metaKey) {
+      if (['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())) {
+        return true;
+      }
+    }
+    
+    // BLOQUEAR todo lo que no sea número (0-9)
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Función para validar campos numéricos con decimales (monto Bs y Monto REF)
+  function validateNumericField(event) {
+    const input = event.target;
+    // Permitir teclas de control
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    
+    if (allowedKeys.includes(event.key)) {
+      return true;
+    }
+    
+    // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
+    if (event.ctrlKey || event.metaKey) {
+      if (['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())) {
+        return true;
+      }
+    }
+    
+    // BLOQUEAR todo lo que no sea número (0-9) o punto decimal (.)
+    if (!/^[0-9.]$/.test(event.key)) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    }
+    
+    // Evitar múltiples puntos decimales
+    if (event.key === '.' && input.value.includes('.')) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Función para limpiar el input en tiempo real (elimina cualquier carácter no permitido)
+  function cleanNumericInput(event) {
+    const input = event.target;
+    const originalValue = input.value;
+    // Eliminar todo lo que no sea número
+    const cleaned = originalValue.replace(/\D/g, '');
+    if (originalValue !== cleaned) {
+      input.value = cleaned;
+    }
+  }
+
+  // Función para limpiar el input de decimales en tiempo real
+  function cleanDecimalInput(event) {
+    const input = event.target;
+    const originalValue = input.value;
+    // Eliminar todo lo que no sea número o punto
+    let cleaned = originalValue.replace(/[^0-9.]/g, '');
+    // Asegurar solo un punto decimal
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (originalValue !== cleaned) {
+      input.value = cleaned;
+    }
+  }
+
+  // Configurar validación de campos numéricos
+  function setupNumericValidation() {
+    // Campo de referencia: solo números (BLOQUEA completamente)
+    const referenciaInput = document.getElementById("referencia");
+    if (referenciaInput) {
+      referenciaInput.addEventListener("keydown", validateNumericInput);
+      referenciaInput.addEventListener("input", cleanNumericInput);
+      referenciaInput.addEventListener("paste", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const numericOnly = paste.replace(/\D/g, '');
+        referenciaInput.value = numericOnly;
+        referenciaInput.dispatchEvent(new Event('input'));
+      });
+    }
+
+    // Campos de Monto Bs y Monto REF: solo números y punto decimal (BLOQUEA completamente)
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    
+    if (montoBsInput) {
+      montoBsInput.addEventListener("keydown", validateNumericField);
+      montoBsInput.addEventListener("input", cleanDecimalInput);
+      montoBsInput.addEventListener("paste", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        // Permitir solo números y un punto decimal
+        let numericOnly = paste.replace(/[^0-9.]/g, '');
+        // Asegurar solo un punto decimal
+        const parts = numericOnly.split('.');
+        if (parts.length > 2) {
+          numericOnly = parts[0] + '.' + parts.slice(1).join('');
+        }
+        montoBsInput.value = numericOnly;
+        montoBsInput.dispatchEvent(new Event('input'));
+      });
+    }
+
+    if (montoRefInput) {
+      montoRefInput.addEventListener("keydown", validateNumericField);
+      montoRefInput.addEventListener("input", cleanDecimalInput);
+      montoRefInput.addEventListener("paste", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        // Permitir solo números y un punto decimal
+        let numericOnly = paste.replace(/[^0-9.]/g, '');
+        // Asegurar solo un punto decimal
+        const parts = numericOnly.split('.');
+        if (parts.length > 2) {
+          numericOnly = parts[0] + '.' + parts.slice(1).join('');
+        }
+        montoRefInput.value = numericOnly;
+        montoRefInput.dispatchEvent(new Event('input'));
+      });
+    }
+  }
+
+  // Configurar generación automática del número de registro
+  function setupAutoRegistrationNumber() {
+    const referenciaInput = document.getElementById("referencia");
+    const serialPosPagoInput = document.getElementById("serialPosPago");
+    
+    if (!referenciaInput || !serialPosPagoInput) {
+      return;
+    }
+
+    // Función que se ejecuta cuando cambian los campos
+    const updateRegistrationNumber = () => {
+      // Usar formato 1 por defecto (Pago{ref}_{serial})
+      // Cambiar este número (1-5) para usar otro formato
+      generateRegistrationNumber(1);
+    };
+
+    // Agregar listeners a los campos
+    referenciaInput.addEventListener("input", updateRegistrationNumber);
+    referenciaInput.addEventListener("blur", updateRegistrationNumber);
+    serialPosPagoInput.addEventListener("input", updateRegistrationNumber);
+    serialPosPagoInput.addEventListener("blur", updateRegistrationNumber);
+
+    // También generar cuando el modal se muestra si ya hay valores
+    const modal = document.getElementById("modalAgregarDatosPago");
+    if (modal) {
+      modal.addEventListener("shown.bs.modal", function() {
+        // Pequeño delay para asegurar que los valores estén cargados
+        setTimeout(() => {
+          if (referenciaInput.value && serialPosPagoInput.value) {
+            updateRegistrationNumber();
+          }
+        }, 100);
+      });
     }
   }
 
   // Función para cerrar el modal y limpiar campos
   function cerrarModalYLimpiar() {
-    // Limpiar el formulario
+    // Limpiar el formulario ANTES de cerrar el modal
     limpiarFormularioDatosPago();
+    
+    // Asegurar que los sufijos estén ocultos y los campos estén en estado inicial
+    setTimeout(function() {
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      const montoBs = document.getElementById("montoBs");
+      const montoRef = document.getElementById("montoRef");
+      const moneda = document.getElementById("moneda");
+      
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "none";
+        montoBsSuffix.style.visibility = "hidden";
+      }
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "none";
+        montoRefSuffix.style.visibility = "hidden";
+      }
+      if (montoBs) {
+        montoBs.value = "0.00";
+        montoBs.disabled = true;
+        montoBs.setAttribute("disabled", "disabled");
+      }
+      if (montoRef) {
+        montoRef.value = "0.00";
+        montoRef.disabled = true;
+        montoRef.setAttribute("disabled", "disabled");
+      }
+      if (moneda) {
+        moneda.value = "";
+      }
+    }, 50);
     
     // Cerrar el modal con transición suave
     const modalElement = document.getElementById("modalAgregarDatosPago");
@@ -2602,7 +2899,6 @@ checkExoneracion.addEventListener("change", function() {
               }
             }, 100);
           } catch (error) {
-            console.error("Error al cerrar modal con Bootstrap:", error);
             // Fallback manual directo
             modalElement.style.display = "none";
             modalElement.classList.remove("show", "fade-out");
@@ -2672,15 +2968,12 @@ checkExoneracion.addEventListener("change", function() {
   function loadPaymentMethods() {
     const formaPagoSelect = document.getElementById("formaPago");
     if (!formaPagoSelect) {
-      console.error("No se encontró el select con id formaPago");
       return;
     }
 
     // Verificar que las variables estén definidas
     if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
-      console.error("ENDPOINT_BASE o APP_PATH no están definidos");
-      console.error("ENDPOINT_BASE:", typeof ENDPOINT_BASE);
-      console.error("APP_PATH:", typeof APP_PATH);
+      return;
       return;
     }
 
@@ -2704,48 +2997,562 @@ checkExoneracion.addEventListener("change", function() {
               const option = document.createElement("option");
               option.value = method.id_payment_method;
               option.textContent = method.payment_method_name;
+              option.setAttribute("data-id", method.id_payment_method);
               formaPagoSelect.appendChild(option);
             });
             
+            // Configurar listener para detectar cuando se selecciona "Transferencia" (id = 2)
+            // Usar setTimeout para asegurar que el DOM esté listo
+            setTimeout(function() {
+              setupFormaPagoListener();
+            }, 100);
+            
           } else {
             var errorMsg = data.message || "Sin mensaje";
-            console.warn("No se encontraron métodos de pago o hubo un error:", errorMsg);
-            console.warn("Datos recibidos:", data);
             // Mantener al menos la opción "Seleccione"
             if (formaPagoSelect.innerHTML.trim() === "") {
               formaPagoSelect.innerHTML = '<option value="">Seleccione</option>';
             }
           }
         } catch (error) {
-          console.error("Error al parsear respuesta:", error);
-          console.error("Respuesta recibida:", xhr.responseText);
         }
       } else {
-        console.error("Error al cargar métodos de pago. Status:", xhr.status);
-        console.error("Response:", xhr.responseText);
       }
     };
     
     xhr.onerror = function() {
-      console.error("Error de red al cargar métodos de pago");
     };
     
     xhr.send();
   }
 
-  loadPaymentMethods();
+      loadPaymentMethods();
+
+  // Función para cargar los bancos desde la API
+  function loadBancos() {
+    const bancoOrigenSelect = document.getElementById("bancoOrigen");
+    const bancoDestinoSelect = document.getElementById("bancoDestino");
+    
+    if (!bancoOrigenSelect || !bancoDestinoSelect) {
+      return;
+    }
+
+    // Verificar que las variables estén definidas
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      return;
+      return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetBancos";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          
+          if (data.success && data.bancos && data.bancos.length > 0) {
+            // Limpiar opciones existentes
+            bancoOrigenSelect.innerHTML = '<option value="">Seleccione</option>';
+            bancoDestinoSelect.innerHTML = '<option value="">Seleccione</option>';
+            
+            // Agregar opciones desde la base de datos
+            data.bancos.forEach(function(banco) {
+              const optionOrigen = document.createElement("option");
+              optionOrigen.value = banco.codigobanco;
+              optionOrigen.textContent = banco.ibp;
+              bancoOrigenSelect.appendChild(optionOrigen);
+              
+              const optionDestino = document.createElement("option");
+              optionDestino.value = banco.codigobanco;
+              optionDestino.textContent = banco.ibp;
+              bancoDestinoSelect.appendChild(optionDestino);
+            });
+            
+          } else {
+            var errorMsg = data.message || "Sin mensaje";
+            // Mantener al menos la opción "Seleccione"
+            if (bancoOrigenSelect.innerHTML.trim() === "") {
+              bancoOrigenSelect.innerHTML = '<option value="">Seleccione</option>';
+            }
+            if (bancoDestinoSelect.innerHTML.trim() === "") {
+              bancoDestinoSelect.innerHTML = '<option value="">Seleccione</option>';
+            }
+          }
+        } catch (error) {
+        }
+      } else {
+      }
+    };
+    
+    xhr.onerror = function() {
+    };
+    
+    xhr.send();
+  }
+
+  // Variable global para almacenar la tasa de cambio
+  let exchangeRate = null;
+
+  // Función para cargar la tasa de cambio desde la API
+  function loadExchangeRate() {
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      return;
+      return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRate";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success && data.exchange_rate && data.exchange_rate.tasa_dolar) {
+            exchangeRate = parseFloat(data.exchange_rate.tasa_dolar);
+          } else {
+            exchangeRate = null;
+          }
+        } catch (error) {
+          exchangeRate = null;
+        }
+      } else {
+        exchangeRate = null;
+      }
+    };
+    
+    xhr.onerror = function() {
+      exchangeRate = null;
+    };
+    
+    xhr.send();
+  }
+
+  // Función para manejar el cambio de moneda
+  function handleCurrencyChange() {
+    const monedaSelect = document.getElementById("moneda");
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+
+    if (!monedaSelect || !montoBsInput || !montoRefInput) {
+      return;
+    }
+
+    const selectedCurrency = monedaSelect.value;
+
+    // Limpiar valores y listeners anteriores
+    montoBsInput.removeEventListener("input", calculateBsToUsd);
+    montoBsInput.removeEventListener("keyup", calculateBsToUsd);
+    montoBsInput.removeEventListener("input", calculateUsdToBs);
+    montoBsInput.removeEventListener("keyup", calculateUsdToBs);
+    montoRefInput.removeEventListener("input", calculateBsToUsd);
+    montoRefInput.removeEventListener("keyup", calculateBsToUsd);
+    montoRefInput.removeEventListener("input", calculateUsdToBs);
+    montoRefInput.removeEventListener("keyup", calculateUsdToBs);
+
+    if (selectedCurrency === "bs") {
+      // Bolívares seleccionado: habilitar Monto Bs, bloquear Monto REF
+      montoBsInput.removeAttribute("disabled");
+      montoBsInput.removeAttribute("readonly");
+      montoBsInput.required = true;
+      montoBsInput.style.backgroundColor = "#fff";
+      montoBsInput.style.cursor = "text";
+      montoBsInput.style.opacity = "1";
+      
+      // Mostrar sufijo "Bs" en Monto Bs
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "block";
+        montoBsSuffix.textContent = "Bs";
+      }
+      
+      montoRefInput.setAttribute("disabled", "disabled");
+      montoRefInput.removeAttribute("required");
+      montoRefInput.value = "";
+      montoRefInput.style.backgroundColor = "#e9ecef";
+      montoRefInput.style.cursor = "not-allowed";
+      montoRefInput.style.opacity = "0.6";
+      
+      // Ocultar sufijo "USD" en Monto REF
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "none";
+      }
+
+      // Remover listeners anteriores y agregar nuevos para calcular conversión a USD
+      montoBsInput.removeEventListener("input", calculateBsToUsd);
+      montoBsInput.removeEventListener("keyup", calculateBsToUsd);
+      montoBsInput.removeEventListener("blur", formatBsDecimal);
+      montoBsInput.removeEventListener("input", calculateUsdToBs);
+      montoBsInput.addEventListener("input", calculateBsToUsd);
+      montoBsInput.addEventListener("keyup", calculateBsToUsd);
+      montoBsInput.addEventListener("blur", formatBsDecimal);
+      
+      // Agregar listener al campo Monto REF para actualizar Monto del Equipo cuando se calcula la conversión
+      montoRefInput.removeEventListener("input", updateMontoEquipo);
+      montoRefInput.removeEventListener("keyup", updateMontoEquipo);
+      montoRefInput.addEventListener("input", updateMontoEquipo);
+      montoRefInput.addEventListener("keyup", updateMontoEquipo);
+      
+      // Inicializar el campo Monto del Equipo
+      updateMontoEquipo();
+      
+    } else if (selectedCurrency === "usd") {
+      // Dólares seleccionado: bloquear Monto Bs, habilitar Monto REF
+      montoBsInput.setAttribute("disabled", "disabled");
+      montoBsInput.removeAttribute("required");
+      montoBsInput.value = "";
+      montoBsInput.style.backgroundColor = "#e9ecef";
+      montoBsInput.style.cursor = "not-allowed";
+      montoBsInput.style.opacity = "0.6";
+      
+      // Ocultar sufijo "Bs" en Monto Bs
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "none";
+      }
+      
+      montoRefInput.removeAttribute("disabled");
+      montoRefInput.removeAttribute("readonly");
+      montoRefInput.required = true;
+      montoRefInput.style.backgroundColor = "#fff";
+      montoRefInput.style.cursor = "text";
+      montoRefInput.style.opacity = "1";
+      
+      // Mostrar sufijo "USD" en Monto REF
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "block";
+        montoRefSuffix.textContent = "USD";
+      }
+
+      // Remover listeners anteriores y agregar nuevos para calcular conversión a Bs
+      montoRefInput.removeEventListener("input", calculateBsToUsd);
+      montoRefInput.removeEventListener("input", calculateUsdToBs);
+      montoRefInput.removeEventListener("keyup", calculateUsdToBs);
+      montoRefInput.addEventListener("input", calculateUsdToBs);
+      montoRefInput.addEventListener("keyup", calculateUsdToBs);
+      
+      // Agregar listener al campo Monto REF para actualizar Monto del Equipo cuando se escribe directamente
+      montoRefInput.removeEventListener("input", updateMontoEquipo);
+      montoRefInput.removeEventListener("keyup", updateMontoEquipo);
+      montoRefInput.addEventListener("input", updateMontoEquipo);
+      montoRefInput.addEventListener("keyup", updateMontoEquipo);
+      
+      // Inicializar el campo Monto del Equipo
+      updateMontoEquipo();
+      
+    } else {
+      // Ninguna selección: deshabilitar ambos
+      montoBsInput.setAttribute("disabled", "disabled");
+      montoBsInput.removeAttribute("required");
+      montoBsInput.value = "";
+      montoBsInput.style.backgroundColor = "#e9ecef";
+      montoBsInput.style.cursor = "not-allowed";
+      montoBsInput.style.opacity = "0.6";
+      
+      // Ocultar sufijo "Bs" en Monto Bs
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "none";
+      }
+      
+      montoRefInput.setAttribute("disabled", "disabled");
+      montoRefInput.removeAttribute("required");
+      montoRefInput.value = "";
+      montoRefInput.style.backgroundColor = "#e9ecef";
+      montoRefInput.style.cursor = "not-allowed";
+      montoRefInput.style.opacity = "0.6";
+      
+      // Ocultar sufijo "USD" en Monto REF
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "none";
+      }
+      
+    }
+  }
+
+  // Función para formatear el campo Monto Bs con 2 decimales
+  function formatBsDecimal() {
+    const montoBsInput = document.getElementById("montoBs");
+    if (!montoBsInput || montoBsInput.disabled) {
+      return;
+    }
+
+    const value = montoBsInput.value;
+    if (value && value.trim() !== "") {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        montoBsInput.value = numValue.toFixed(2);
+      }
+    }
+  }
+
+  // Función para actualizar el campo "Monto del Equipo" con el valor de USD
+  function updateMontoEquipo() {
+    const montoRefInput = document.getElementById("montoRef");
+    const montoEquipoElement = document.getElementById("montoEquipo");
+    
+    if (!montoRefInput || !montoEquipoElement) {
+      return;
+    }
+
+    const montoUsd = parseFloat(montoRefInput.value) || 0;
+    if (montoUsd > 0) {
+      montoEquipoElement.textContent = "$" + montoUsd.toFixed(2);
+    } else {
+      montoEquipoElement.textContent = "$0.00";
+    }
+  }
+
+  // Función para calcular conversión de Bs a USD
+  function calculateBsToUsd() {
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+
+    if (!montoBsInput || !montoRefInput) {
+      return;
+    }
+
+    if (!exchangeRate) {
+      loadExchangeRate();
+      // Esperar un momento y reintentar
+      setTimeout(function() {
+        if (exchangeRate) {
+          calculateBsToUsd();
+        } else {
+          montoRefInput.value = "";
+        }
+      }, 500);
+      return;
+    }
+
+    const montoBs = parseFloat(montoBsInput.value) || 0;
+    
+    if (montoBs > 0 && exchangeRate > 0) {
+      const montoUsd = montoBs / exchangeRate;
+      montoRefInput.value = montoUsd.toFixed(2);
+      
+      // Mostrar sufijo USD cuando se calcula la conversión
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "block";
+        montoRefSuffix.textContent = "USD";
+      }
+      
+      // Formatear Monto Bs con 2 decimales
+      montoBsInput.value = montoBs.toFixed(2);
+      
+      // Actualizar el campo "Monto del Equipo"
+      updateMontoEquipo();
+      
+    } else {
+      montoRefInput.value = "";
+      // Formatear Monto Bs con 2 decimales incluso si está vacío o es 0
+      if (montoBsInput.value && montoBsInput.value.trim() !== "") {
+        const numValue = parseFloat(montoBsInput.value);
+        if (!isNaN(numValue) && numValue > 0) {
+          montoBsInput.value = numValue.toFixed(2);
+        }
+      }
+      // Ocultar sufijo si no hay valor
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "none";
+      }
+      // Actualizar el campo "Monto del Equipo" a $0.00
+      updateMontoEquipo();
+    }
+  }
+
+  // Función para calcular conversión de USD a Bs
+  function calculateUsdToBs() {
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+
+    if (!montoBsInput || !montoRefInput) {
+      return;
+    }
+
+    if (!exchangeRate) {
+      loadExchangeRate();
+      // Esperar un momento y reintentar
+      setTimeout(function() {
+        if (exchangeRate) {
+          calculateUsdToBs();
+        } else {
+          montoBsInput.value = "";
+        }
+      }, 500);
+      return;
+    }
+
+    const montoUsd = parseFloat(montoRefInput.value) || 0;
+    
+    if (montoUsd > 0 && exchangeRate > 0) {
+      const montoBs = montoUsd * exchangeRate;
+      montoBsInput.value = montoBs.toFixed(2);
+      
+      // Mostrar sufijo Bs cuando se calcula la conversión
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "block";
+        montoBsSuffix.textContent = "Bs";
+      }
+      
+      // Actualizar el campo "Monto del Equipo"
+      updateMontoEquipo();
+      
+    } else {
+      montoBsInput.value = "";
+      // Ocultar sufijo si no hay valor
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "none";
+      }
+      // Actualizar el campo "Monto del Equipo" a $0.00
+      updateMontoEquipo();
+    }
+  }
 
   // Cargar métodos de pago cuando se abre el modal
   function setupPaymentMethodsLoader() {
     const modal = document.getElementById("modalAgregarDatosPago");
     if (!modal) {
-      console.error("No se encontró el modal con id modalAgregarDatosPago");
       return;
     }
+
+    // Usar el evento de Bootstrap 5
+    modal.addEventListener("show.bs.modal", function() {
+      loadExchangeRate();
+      
+      // INICIALIZAR campos de moneda en estado inicial (deshabilitados)
+      const montoBs = document.getElementById("montoBs");
+      const montoRef = document.getElementById("montoRef");
+      const moneda = document.getElementById("moneda");
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      
+      // Resetear select de moneda a "Seleccionar"
+      if (moneda) {
+        moneda.value = "";
+      }
+      
+      // Asegurar que los campos de Monto Bs y Monto REF estén deshabilitados y en "0.00"
+      if (montoBs) {
+        montoBs.value = "0.00";
+        montoBs.disabled = true;
+        montoBs.setAttribute("disabled", "disabled");
+        // Remover cualquier listener que pueda estar activo
+        montoBs.removeEventListener("input", calculateBsToUsd);
+        montoBs.removeEventListener("keyup", calculateBsToUsd);
+        montoBs.removeEventListener("blur", formatBsDecimal);
+      }
+      
+      if (montoRef) {
+        montoRef.value = "0.00";
+        montoRef.disabled = true;
+        montoRef.setAttribute("disabled", "disabled");
+        // Remover cualquier listener que pueda estar activo
+        montoRef.removeEventListener("input", calculateUsdToBs);
+        montoRef.removeEventListener("keyup", calculateUsdToBs);
+        montoRef.removeEventListener("input", updateMontoEquipo);
+        montoRef.removeEventListener("keyup", updateMontoEquipo);
+      }
+      
+      // Ocultar sufijos de moneda
+      if (montoBsSuffix) {
+        montoBsSuffix.style.display = "none";
+        montoBsSuffix.style.visibility = "hidden";
+      }
+      if (montoRefSuffix) {
+        montoRefSuffix.style.display = "none";
+        montoRefSuffix.style.visibility = "hidden";
+      }
+      
+      // Ocultar campos de banco al abrir el modal
+      const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
+      const bancoOrigen = document.getElementById("bancoOrigen");
+      const bancoDestino = document.getElementById("bancoDestino");
+      
+      if (bancoFieldsContainer) {
+        bancoFieldsContainer.style.display = "none";
+      }
+      if (bancoOrigen) {
+        bancoOrigen.value = "";
+        bancoOrigen.required = false;
+      }
+      if (bancoDestino) {
+        bancoDestino.value = "";
+        bancoDestino.required = false;
+      }
+      
+      // Asegurar que el campo de moneda esté desbloqueado al abrir
+      if (moneda) {
+        moneda.disabled = false;
+        moneda.removeAttribute("disabled");
+        moneda.style.backgroundColor = "";
+        moneda.style.cursor = "";
+      }
+      
+      // Cargar el serial del modal anterior (Falla Nivel 2) si aún no está cargado
+      const serialSelect = document.getElementById("serialSelect");
+      const serialPosPago = document.getElementById("serialPosPago");
+      
+      if (serialSelect && serialPosPago && !serialPosPago.value) {
+        const serialValue = serialSelect.value || "";
+        serialPosPago.value = serialValue;
+      }
+    });
 
     modal.addEventListener("hidden.bs.modal", function() {
       // Limpiar el formulario cuando se cierra el modal
       limpiarFormularioDatosPago();
+      
+      // Asegurar que todo esté en estado inicial después de cerrar
+      setTimeout(function() {
+        const montoBsSuffix = document.getElementById("montoBsSuffix");
+        const montoRefSuffix = document.getElementById("montoRefSuffix");
+        const montoBs = document.getElementById("montoBs");
+        const montoRef = document.getElementById("montoRef");
+        const moneda = document.getElementById("moneda");
+        const montoEquipoElement = document.getElementById("montoEquipo");
+        
+        // Ocultar sufijos completamente
+        if (montoBsSuffix) {
+          montoBsSuffix.style.display = "none";
+          montoBsSuffix.style.visibility = "hidden";
+        }
+        if (montoRefSuffix) {
+          montoRefSuffix.style.display = "none";
+          montoRefSuffix.style.visibility = "hidden";
+        }
+        
+        // Asegurar campos en estado inicial
+        if (montoBs) {
+          montoBs.value = "0.00";
+          montoBs.disabled = true;
+          montoBs.setAttribute("disabled", "disabled");
+        }
+        if (montoRef) {
+          montoRef.value = "0.00";
+          montoRef.disabled = true;
+          montoRef.setAttribute("disabled", "disabled");
+        }
+        if (moneda) {
+          moneda.value = "";
+        }
+        if (montoEquipoElement) {
+          montoEquipoElement.textContent = "$0.00";
+        }
+      }, 100);
       
       // Deshabilitar el botón al cerrar
       if (downloadAnticiBtn) {
@@ -2772,14 +3579,150 @@ checkExoneracion.addEventListener("change", function() {
 
   // Configurar el loader cuando el DOM esté listo
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupPaymentMethodsLoader);
+    document.addEventListener("DOMContentLoaded", function() {
+      setupPaymentMethodsLoader();
+      // También configurar el listener del select de moneda directamente
+      setupCurrencyListener();
+      // Configurar listener de forma de pago
+      setupFormaPagoListener();
+      // Configurar generación automática del número de registro
+      setupAutoRegistrationNumber();
+      // Configurar validación de campos numéricos
+      setupNumericValidation();
+    });
   } else {
     setupPaymentMethodsLoader();
+    setupCurrencyListener();
+    setupFormaPagoListener();
+    setupAutoRegistrationNumber();
+    setupNumericValidation();
   }
 
   // También configurar si modalAgregarDatosPago ya está definido
   if (modalAgregarDatosPago) {
     setupPaymentMethodsLoader();
+    setupCurrencyListener();
+    setupFormaPagoListener();
+    setupAutoRegistrationNumber();
+    setupNumericValidation();
+  }
+
+  // Función para configurar el listener del select de forma de pago
+  function setupFormaPagoListener() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    if (!formaPagoSelect) {
+      return;
+    }
+
+    // Remover listener anterior si existe
+    formaPagoSelect.removeEventListener("change", handleFormaPagoChange);
+    
+    // Agregar nuevo listener
+    formaPagoSelect.addEventListener("change", handleFormaPagoChange);
+    
+  }
+
+  // Función para manejar el cambio en la forma de pago
+  function handleFormaPagoChange() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    const monedaSelect = document.getElementById("moneda");
+    const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
+    const bancoOrigen = document.getElementById("bancoOrigen");
+    const bancoDestino = document.getElementById("bancoDestino");
+    
+    
+    if (!formaPagoSelect || !monedaSelect) {
+      return;
+    }
+
+    const selectedPaymentMethodId = parseInt(formaPagoSelect.value);
+    
+    // Si se selecciona "Transferencia" (id_payment_method = 2)
+    if (selectedPaymentMethodId === 2) {
+      
+      // Establecer moneda en "Bolívares (Bs)"
+      monedaSelect.value = "bs";
+      
+      // Bloquear el campo de moneda
+      monedaSelect.disabled = true;
+      monedaSelect.setAttribute("disabled", "disabled");
+      monedaSelect.style.backgroundColor = "#e9ecef";
+      monedaSelect.style.cursor = "not-allowed";
+      
+      // Mostrar campos de Banco Origen y Banco Destino
+      if (bancoFieldsContainer) {
+        bancoFieldsContainer.style.display = "block";
+        // Asegurar que las clases de Bootstrap estén aplicadas
+        if (!bancoFieldsContainer.classList.contains("row")) {
+          bancoFieldsContainer.classList.add("row");
+        }
+        if (!bancoFieldsContainer.classList.contains("g-2")) {
+          bancoFieldsContainer.classList.add("g-2");
+        }
+        
+        // Cargar los bancos desde la base de datos
+        loadBancos();
+      } else {
+      }
+      
+      // Hacer los campos de banco requeridos
+      if (bancoOrigen) {
+        bancoOrigen.required = true;
+      }
+      if (bancoDestino) {
+        bancoDestino.required = true;
+      }
+      
+      // Activar la lógica de conversión para Bolívares
+      if (typeof handleCurrencyChange === 'function') {
+        handleCurrencyChange();
+      }
+      
+    } else {
+      
+      // Si se selecciona otra forma de pago
+      // Desbloquear el campo de moneda
+      monedaSelect.disabled = false;
+      monedaSelect.removeAttribute("disabled");
+      monedaSelect.style.backgroundColor = "";
+      monedaSelect.style.cursor = "";
+      
+      // Ocultar campos de Banco Origen y Banco Destino
+      if (bancoFieldsContainer) {
+        bancoFieldsContainer.style.display = "none";
+      }
+      
+      // Limpiar y hacer opcionales los campos de banco
+      if (bancoOrigen) {
+        bancoOrigen.value = "";
+        bancoOrigen.required = false;
+      }
+      if (bancoDestino) {
+        bancoDestino.value = "";
+        bancoDestino.required = false;
+      }
+      
+    }
+  }
+
+  // Función para configurar el listener del select de moneda
+  function setupCurrencyListener() {
+    const monedaSelect = document.getElementById("moneda");
+    if (monedaSelect) {
+      // Remover listener anterior si existe
+      monedaSelect.removeEventListener("change", handleCurrencyChange);
+      // Agregar nuevo listener solo si no está deshabilitado
+      if (!monedaSelect.disabled) {
+        monedaSelect.addEventListener("change", function(e) {
+          handleCurrencyChange();
+        });
+      }
+      // Ejecutar una vez para establecer el estado inicial
+      handleCurrencyChange();
+    } else {
+      // Si no existe, intentar de nuevo después de un delay
+      setTimeout(setupCurrencyListener, 500);
+    }
   }
 
   checkEnvio.addEventListener("change", function() {
@@ -2895,6 +3838,21 @@ checkExoneracion.addEventListener("change", function() {
     iconoAgregarInfo.addEventListener("click", function(e) {
       e.preventDefault();
       e.stopPropagation();
+      
+      // Obtener el serial del modal anterior (Falla Nivel 2)
+      const serialSelect = document.getElementById("serialSelect");
+      const serialPosPago = document.getElementById("serialPosPago");
+      
+      if (serialSelect && serialPosPago) {
+        const serialValue = serialSelect.value || "";
+        serialPosPago.value = serialValue;
+      } else {
+        console.warn("No se encontró el campo serialSelect o serialPosPago");
+        if (serialPosPago) {
+          serialPosPago.value = "";
+        }
+      }
+      
       const modalElement = document.getElementById("modalAgregarDatosPago");
       if (modalElement) {
         // Verificar si Bootstrap está disponible
@@ -3177,7 +4135,6 @@ function SendDataFailure1() {
     })
     .catch((error) => {
       hideExportLoading(); // Ensure loading is hidden on error
-      console.error("Error al verificar ticket en proceso:", error);
       Swal.fire({
         icon: "error",
         title: "Error de Verificación",
@@ -4401,7 +5358,6 @@ function SendRif() {
         }
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
-        console.error("Error parsing JSON:", error);
         // Show the welcome message if there's an error
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "visible";
@@ -4412,13 +5368,11 @@ function SendRif() {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
     } else {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
-      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
     tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
-    console.error("Error de red");
   };
   
   const datos = `action=SearchRif&rif=${encodeURIComponent(rifCompleto)}`;
@@ -4977,7 +5931,6 @@ function SendSerial() {
         const errorMessage = document.createElement("p");
         errorMessage.textContent = "Error al procesar la respuesta.";
         mainTableCard.appendChild(errorMessage);
-        console.error("Error parsing JSON:", error);
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "visible";
           welcomeMessage.style.opacity = "1";
@@ -4988,7 +5941,6 @@ function SendSerial() {
       const errorMessage = document.createElement("p");
       errorMessage.textContent = "Error de conexión con el servidor.";
       mainTableCard.appendChild(errorMessage);
-      console.error("Error:", xhr.status, xhr.statusText);
       if (welcomeMessage) {
         welcomeMessage.style.visibility = "visible";
         welcomeMessage.style.opacity = "1";
@@ -5003,7 +5955,6 @@ function SendSerial() {
     const errorMessage = document.createElement("p");
     errorMessage.textContent = "Error de red. Verifique su conexión.";
     mainTableCard.appendChild(errorMessage);
-    console.error("Error de red");
     if (welcomeMessage) {
       welcomeMessage.style.visibility = "visible";
       welcomeMessage.style.opacity = "1";
@@ -5601,7 +6552,6 @@ function SendRazon() {
         }
       } catch (error) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
-        console.error("Error parsing JSON:", error);
         // Show the welcome message on parsing error
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "visible";
@@ -5617,7 +6567,6 @@ function SendRazon() {
       }
     } else {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
-      console.error("Error:", xhr.status, xhr.statusText);
       // Show the welcome message on other HTTP errors
       if (welcomeMessage) {
         welcomeMessage.style.visibility = "visible";
@@ -5628,7 +6577,6 @@ function SendRazon() {
 
   xhr.onerror = function () {
     tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
-    console.error("Error de red");
     // Show the welcome message on network error
     if (welcomeMessage) {
       welcomeMessage.style.visibility = "visible";
@@ -5848,16 +6796,13 @@ function fetchSerialData(serial, rif,razonsocial) {
       } catch (error) {
         tbody.innerHTML =
           '<tr><td colspan="2">Error al procesar la respuesta.</td></tr>';
-        console.error("Error parsing JSON:", error);
       }
     } else {
       tbody.innerHTML = '<tr><td colspan="2">Error de conexión.</td></tr>';
-      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
-    console.error("Error de red");
   };
 
   const datos = `action=SearchSerial&serial=${encodeURIComponent(serial)}`;
@@ -5887,15 +6832,12 @@ function downloadImageModal(serial) {
           console.error("Error al obtener la imagen:", response.message);
         }
       } catch (error) {
-        console.error("Error parsing JSON:", error);
       }
     } else {
-      console.error("Error:", xhr.status, xhr.statusText);
     }
   };
 
   xhr.onerror = function () {
-    console.error("Error de red");
   };
 
   const datos = `action=GetPhoto&serial=${encodeURIComponent(serial)}`;

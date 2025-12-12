@@ -946,15 +946,47 @@ class TechnicalConsultionRepository
 
     public function GetPaymentMethods(){
         $result = $this->model->GetPaymentMethods();
-        if ($result) {
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
             $paymentMethods = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
                 $agente = pg_fetch_assoc($result['query'], $i);
                 $paymentMethods[] = $agente;
             }
-            return $paymentMethods;
+            return $paymentMethods;        
         } else {
             return null;
+        }
+    }
+
+    public function GetExchangeRate(){
+        $result = $this->model->GetExchangeRate();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $exchangeRate = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $exchangeRate;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetBancos(){
+        $result = $this->model->GetBancos();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $bancos = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $banco = pg_fetch_assoc($result['query'], $i);
+                $bancos[] = $banco;
+            }
+            pg_free_result($result['query']);
+            return $bancos;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return [];
         }
     }
 

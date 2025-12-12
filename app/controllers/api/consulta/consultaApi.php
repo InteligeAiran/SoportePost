@@ -328,6 +328,14 @@ class Consulta extends Controller
                     $this->handleGetPaymentMethods();
                     break;
 
+                case 'GetExchangeRate':
+                    $this->handleGetExchangeRate();
+                    break;
+
+                case 'GetBancos':
+                    $this->handleGetBancos();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -2234,6 +2242,30 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'No hay métodos de pago disponibles.', 'payment_methods' => []], 404);
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los métodos de pago.'], 500);
+        }
+    }
+
+    public function handleGetExchangeRate(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetExchangeRate();
+
+        if ($result !== null && isset($result['tasa_dolar'])) {
+            $this->response(['success' => true, 'exchange_rate' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se pudo obtener la tasa de cambio.'], 500);
+        }
+    }
+
+    public function handleGetBancos(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetBancos();
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'bancos' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay bancos disponibles.', 'bancos' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los bancos.'], 500);
         }
     }
 }
