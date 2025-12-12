@@ -400,6 +400,24 @@ function mi_navbar() {}
                 100% { transform: scale(1); }
             }
 
+            /* Animación de fade out para el modal */
+            .fade-out {
+                animation: fadeOut 0.3s ease-out forwards !important;
+            }
+
+            .modal-backdrop.fade-out {
+                animation: fadeOut 0.3s ease-out forwards !important;
+            }
+
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                }
+                to {
+                    opacity: 0;
+                }
+            }
+
             /* Badge del serial */
             .serial-badge {
                 display: inline-block;
@@ -755,6 +773,12 @@ function mi_navbar() {}
                                                 Ticket:</label>
                                             <input class="form-control" type="text" id="ultimateTicketInput" disabled>
                                             <div style=" margin-left: 5%;" id="resultadoGarantiaReingreso"></div>
+                                            <div id="iconoAgregarInfoContainer" style="margin-top: 10px; margin-left: 5%; display: none;">
+                                                <svg id="iconoAgregarInfo" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#17a2b8" class="bi bi-credit-card-2-front-fill" viewBox="0 0 16 16" style="cursor: pointer; transition: all 0.3s ease; z-index: 1000; position: relative;" 
+                                                   title="Agregar información de pago">
+                                                    <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm0 3a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                                                </svg>
+                                            </div>
                                         </div><br>
 
                                         <div>
@@ -822,9 +846,12 @@ function mi_navbar() {}
                                             <div id="exoneracionStatus"></div>
                                         </div><br>
 
-                                        <div style="display: flex; align-items: center; margin-bottom: 2%; display: none;"
+                                        <div style="display: flex; align-items: center; margin-bottom: 2%; display: none; position: relative;"
                                             id="botonCargaAnticipo">
-                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">Adjunte Documento Anticipo</button>
+                                            <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button" disabled style="opacity: 0.6; cursor: not-allowed; position: relative;">
+                                                <span>Adjunte Documento Anticipo</span>
+                                            </button>
+                                            <small id="disabledTooltipAnticipo" style="display: none; position: absolute; bottom: -30px; left: 0; background: #333; color: white; padding: 6px 10px; border-radius: 4px; font-size: 11px; white-space: nowrap; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">Debe cargar un documento de pago primero</small>
                                             <input id="AnticipoInput" type="file" style="display: none; margin-left: 10px;"
                                                 accept="application/pdf, image/jpg, image/png">
                                             <div id="anticipoStatus"></div>
@@ -844,6 +871,149 @@ function mi_navbar() {}
                 </div>
             </div>
         <!--END MODAL FALLA NIVEL 2-->
+
+        <!--MODAL AGREGAR DATOS DE PAGO-->
+        <div class="modal fade" id="modalAgregarDatosPago" tabindex="-1" aria-labelledby="modalAgregarDatosPagoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px 12px 0 0; padding: 20px 30px;">
+                        <h5 class="modal-title" id="modalAgregarDatosPagoLabel" style="font-weight: 600; font-size: 1.5rem;">
+                            <i class="fas fa-money-bill-wave me-2"></i>Agregar Datos de Pago
+                        </h5>
+                    </div>
+                    <div class="modal-body" style="padding: 30px; background: #f8f9fa; max-height: 70vh; overflow-y: auto; overflow-x: hidden;">
+                        <!-- Header con montos -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; padding: 20px;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-dollar-sign fa-2x me-3"></i>
+                                        <div>
+                                            <small style="opacity: 0.9; font-size: 0.85rem;">Monto del Equipo</small>
+                                            <h4 class="mb-0 fw-bold" id="montoEquipo">$0.00</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border-radius: 10px; padding: 20px;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                                        <div>
+                                            <small style="opacity: 0.9; font-size: 0.85rem;">Saldo Deudor</small>
+                                            <h4 class="mb-0 fw-bold" id="saldoDeudor">$0.00</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formulario -->
+                        <form id="formAgregarDatosPago">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="fechaPago" class="form-label fw-semibold">
+                                        <i class="fas fa-calendar-alt me-2 text-primary"></i>Fecha Pago
+                                    </label>
+                                    <input type="date" class="form-control form-control-lg" id="fechaPago" placeholder="dd/mm/aaaa" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="formaPago" class="form-label fw-semibold">
+                                        <i class="fas fa-credit-card me-2 text-primary"></i>Forma pago
+                                    </label>
+                                    <select class="form-select form-select-lg" id="formaPago" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="moneda" class="form-label fw-semibold">
+                                        <i class="fas fa-coins me-2 text-primary"></i>Moneda
+                                    </label>
+                                    <select class="form-select form-select-lg" id="moneda" required>
+                                        <option value="">Seleccionar</option>
+                                        <option value="bs">Bolívares (Bs)</option>
+                                        <option value="usd">Dólares (USD)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="montoBs" class="form-label fw-semibold">
+                                        <i class="fas fa-money-bill me-2 text-primary"></i>Monto Bs
+                                    </label>
+                                    <input type="number" class="form-control form-control-lg" id="montoBs" step="0.01" placeholder="0.00" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="montoRef" class="form-label fw-semibold">
+                                        <i class="fas fa-exchange-alt me-2 text-primary"></i>Monto REF
+                                    </label>
+                                    <input type="number" class="form-control form-control-lg" id="montoRef" step="0.01" placeholder="0.00">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="referencia" class="form-label fw-semibold">
+                                        <i class="fas fa-hashtag me-2 text-primary"></i>Referencia
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="referencia" placeholder="Número de referencia">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="depositante" class="form-label fw-semibold">
+                                        <i class="fas fa-user me-2 text-primary"></i>Depositante
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="depositante" placeholder="Nombre del depositante">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="obsAdministracion" class="form-label fw-semibold">
+                                        <i class="fas fa-sticky-note me-2 text-primary"></i>Obs. Administración
+                                    </label>
+                                    <textarea class="form-control" id="obsAdministracion" rows="2" placeholder="Observaciones de administración"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="registro" class="form-label fw-semibold">
+                                        <i class="fas fa-book me-2 text-primary"></i>Registro
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="registro" placeholder="Número de registro">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="fechaCarga" class="form-label fw-semibold">
+                                        <i class="fas fa-calendar-check me-2 text-primary"></i>Fecha carga
+                                    </label>
+                                    <input type="date" class="form-control form-control-lg" id="fechaCarga" placeholder="dd/mm/aaaa">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="estatus" class="form-label fw-semibold">
+                                        <i class="fas fa-info-circle me-2 text-primary"></i>Estatus
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="estatus" placeholder="Estatus del pago" readonly>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer" style="background: #f8f9fa; border-radius: 0 0 12px 12px; padding: 20px 30px; border-top: 1px solid #dee2e6;">
+                        <button type="button" class="btn btn-secondary btn-lg px-4" id="btnCancelarModalPagoFooter">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg px-4" id="btnGuardarDatosPago" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            <i class="fas fa-save me-2"></i>Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--END MODAL AGREGAR DATOS DE PAGO-->
 
         <!--MODAL FALLA NIVEL 1-->
             <div class="modal" id="miModal1" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1"

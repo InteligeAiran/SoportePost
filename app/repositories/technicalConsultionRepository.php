@@ -944,6 +944,19 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetPaymentMethods(){
+        $result = $this->model->GetPaymentMethods();
+        if ($result) {
+            $paymentMethods = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $paymentMethods[] = $agente;
+            }
+            return $paymentMethods;
+        } else {
+            return null;
+        }
+    }
 
 }
 ?>

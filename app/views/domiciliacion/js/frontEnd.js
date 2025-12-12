@@ -2225,7 +2225,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 <div class="mt-3 pt-3 border-top border-light">
                                     <div style="text-align: center; margin-bottom: 12px;">
                                         <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
-                                    </div>
+                            </div>
                                     <div class="d-flex flex-wrap gap-3 justify-content-center">
                                         <div class="d-flex align-items-center">
                                             <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
@@ -2785,7 +2785,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
             let totalTallerMinutes = 0;
             for (let i = index + 1; i < history.length; i++) {
-                const histItem = history[i];
+                    const histItem = history[i];
                 const prevHistItem = history[i - 1] || null; // La gestión más reciente que esta
                 
                 if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {
@@ -2839,34 +2839,34 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         const statusDomChanged = previous ? getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) : false;
         
         if (previous && statusDomChanged && cleanString(item.name_status_domiciliacion)) {
-            // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
-            if (previous && previous.fecha_de_cambio) {
-                const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
-                if (elapsedFromPrevious) {
+                // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
                     durationFromPreviousText = elapsedFromPrevious.text;
-                }
-            }
-            
-            // Tiempo 2: Desde la creación del ticket
-            let ticketCreationDate = null;
-            const lastHistoryItem = history[history.length - 1];
-            if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
-                ticketCreationDate = lastHistoryItem.fecha_de_cambio;
-            } else {
-                // Buscar el elemento con "Ticket Creado"
-                for (let i = history.length - 1; i >= 0; i--) {
-                    const histItem = history[i];
-                    if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
-                        ticketCreationDate = histItem.fecha_de_cambio;
-                        break;
                     }
                 }
-            }
-            
-            if (ticketCreationDate) {
-                // Calcular duración desde la creación del ticket hasta el cambio actual
-                const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
-                if (duration) {
+                
+                // Tiempo 2: Desde la creación del ticket
+                let ticketCreationDate = null;
+                const lastHistoryItem = history[history.length - 1];
+                if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                    ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                } else {
+                    // Buscar el elemento con "Ticket Creado"
+                    for (let i = history.length - 1; i >= 0; i--) {
+                        const histItem = history[i];
+                        if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                            ticketCreationDate = histItem.fecha_de_cambio;
+                            break;
+                        }
+                    }
+                }
+                
+                if (ticketCreationDate) {
+                    // Calcular duración desde la creación del ticket hasta el cambio actual
+                    const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                    if (duration) {
                     durationFromCreationText = duration.text;
                 }
             }
@@ -2902,7 +2902,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         ${previous && statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
                             ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
-                        ` : ''}
+                                                ` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
                         ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}

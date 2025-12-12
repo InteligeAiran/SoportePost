@@ -324,6 +324,10 @@ class Consulta extends Controller
                     $this->handleGetAllPOSInfo();
                     break;
 
+                case 'GetPaymentMethods':
+                    $this->handleGetPaymentMethods();
+                    break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
                     break;
@@ -2217,6 +2221,19 @@ class Consulta extends Controller
             $this->response(['success' => true, 'message' => 'Se ha encontrado la información de todos los POS.', 'tickets' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetPaymentMethods(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentMethods();
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'payment_methods' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay métodos de pago disponibles.', 'payment_methods' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los métodos de pago.'], 500);
         }
     }
 }

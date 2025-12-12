@@ -254,13 +254,25 @@ document.addEventListener("DOMContentLoaded", function () {
         this.value = "";
         fileChosenSpanAntici.textContent = "";
         fileChosenSpanAntici.style.cssText = noFileChosenStyle;
+        // Deshabilitar el botón si el archivo no es válido
+        if (typeof updateAnticipoButtonState === "function") {
+          updateAnticipoButtonState();
+        }
       } else if (file) {
         fileChosenSpanAntici.textContent = shortenFileName(file.name);
         fileChosenSpanAntici.style.cssText =
           "margin-left: 16%; margin-top: -1%; font-size: 12px; display: block; position: absolute;";
+        // Habilitar el botón cuando se carga un archivo válido
+        if (typeof updateAnticipoButtonState === "function") {
+          updateAnticipoButtonState();
+        }
       } else {
         fileChosenSpanAntici.textContent = "";
         fileChosenSpanAntici.style.cssText = noFileChosenStyle;
+        // Deshabilitar el botón si no hay archivo
+        if (typeof updateAnticipoButtonState === "function") {
+          updateAnticipoButtonState();
+        }
       }
     });
   }
@@ -2273,14 +2285,79 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --- Funciones de Lógica de Visibilidad ---
 
+  // Referencias adicionales
+  const iconoAgregarInfo = document.getElementById("iconoAgregarInfo");
+  const iconoAgregarInfoContainer = document.getElementById("iconoAgregarInfoContainer");
+  const modalAgregarDatosPago = document.getElementById("modalAgregarDatosPago");
+  const btnCancelarModalPago = document.getElementById("btnCancelarModalPago");
+  const btnCancelarModalPagoFooter = document.getElementById("btnCancelarModalPagoFooter");
+  const disabledTooltipAnticipo = document.getElementById("disabledTooltipAnticipo");
+
+  // Función para actualizar la visibilidad del icono de agregar información
+  // El icono aparece cuando "Anticipo" está seleccionado Y "Sí" está marcado en "¿Deseas cargar los documentos ahora?"
+  function updateIconoAgregarInfoVisibility() {
+    if (iconoAgregarInfoContainer && checkAnticipo && uploadNowRadio) {
+      // El icono aparece cuando:
+      // 1. El radio "Sí" está marcado (uploadNowRadio.checked)
+      // 2. Y el radio "Anticipo" está seleccionado (checkAnticipo.checked)
+      if (uploadNowRadio.checked && checkAnticipo.checked) {
+        iconoAgregarInfoContainer.style.display = "block";
+        if (iconoAgregarInfo) {
+          iconoAgregarInfo.style.visibility = "visible";
+          iconoAgregarInfo.style.opacity = "1";
+          iconoAgregarInfo.style.pointerEvents = "auto";
+          iconoAgregarInfo.style.display = "inline-block";
+        }
+      } else {
+        iconoAgregarInfoContainer.style.display = "none";
+        if (iconoAgregarInfo) {
+          iconoAgregarInfo.style.visibility = "hidden";
+          iconoAgregarInfo.style.opacity = "0";
+          iconoAgregarInfo.style.display = "none";
+        }
+      }
+    }
+  }
+
+  // Función para actualizar el estado del botón de anticipo
+  function updateAnticipoButtonState() {
+    if (downloadAnticiBtn && anticipoInput) {
+      const hasFile = anticipoInput.files && anticipoInput.files.length > 0;
+      
+      if (hasFile) {
+        // Habilitar el botón
+        downloadAnticiBtn.disabled = false;
+        downloadAnticiBtn.style.opacity = "1";
+        downloadAnticiBtn.style.cursor = "pointer";
+        if (disabledTooltipAnticipo) {
+          disabledTooltipAnticipo.style.display = "none";
+        }
+      } else {
+        // Deshabilitar el botón
+        downloadAnticiBtn.disabled = true;
+        downloadAnticiBtn.style.opacity = "0.6";
+        downloadAnticiBtn.style.cursor = "not-allowed";
+        if (disabledTooltipAnticipo) {
+          disabledTooltipAnticipo.style.display = "block";
+        }
+      }
+    }
+  }
+
   // Función para actualizar la visibilidad de las opciones de carga de documentos (checkboxes y sus botones)
   function updateDocumentUploadVisibility() {
     if (uploadNowRadio.checked) {
       documentUploadOptions.style.display = "block";
       // Llamar a esta función para actualizar la visibilidad de los botones individuales
       updateFileUploadButtonVisibility();
+      // Actualizar la visibilidad del icono (aparece cuando Anticipo está seleccionado)
+      updateIconoAgregarInfoVisibility();
     } else {
       documentUploadOptions.style.display = "none";
+      // Ocultar el icono cuando se selecciona "No"
+      if (iconoAgregarInfoContainer) {
+        iconoAgregarInfoContainer.style.display = "none";
+      }
       // Ocultar todos los botones de carga de archivos y limpiar checkboxes
       botonCargaPDFEnv.style.display = "none";
       botonCargaExoneracion.style.display = "none";
@@ -2292,6 +2369,12 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("envioStatus").textContent = "";
       document.getElementById("exoneracionStatus").textContent = "";
       document.getElementById("anticipoStatus").textContent = "";
+      // Deshabilitar el botón de anticipo cuando se oculta
+      if (downloadAnticiBtn) {
+        downloadAnticiBtn.disabled = true;
+        downloadAnticiBtn.style.opacity = "0.6";
+        downloadAnticiBtn.style.cursor = "not-allowed";
+      }
     }
     // Nota: Si necesitas que esta sección de carga de documentos se oculte si hay garantía activa,
     // tendrías que integrar esa lógica aquí o hacer que UpdateGuarantees() dispare un evento
@@ -2311,6 +2394,36 @@ document.addEventListener("DOMContentLoaded", function () {
     botonCargaAnticipo.style.display =
       uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
     
+    // Actualizar el estado del botón de anticipo cuando se muestra (siempre deshabilitado al inicio)
+    if (uploadNowRadio.checked && checkAnticipo.checked) {
+      // Asegurar que el botón esté deshabilitado inicialmente si no hay archivo
+      if (downloadAnticiBtn && anticipoInput) {
+        const hasFile = anticipoInput.files && anticipoInput.files.length > 0;
+        if (!hasFile) {
+          downloadAnticiBtn.disabled = true;
+          downloadAnticiBtn.style.opacity = "0.6";
+          downloadAnticiBtn.style.cursor = "not-allowed";
+          if (disabledTooltipAnticipo) {
+            disabledTooltipAnticipo.style.display = "block";
+          }
+        } else {
+          updateAnticipoButtonState();
+        }
+      } else {
+        updateAnticipoButtonState();
+      }
+    } else {
+      // Si no se muestra, también deshabilitar
+      if (downloadAnticiBtn) {
+        downloadAnticiBtn.disabled = true;
+        downloadAnticiBtn.style.opacity = "0.6";
+        downloadAnticiBtn.style.cursor = "not-allowed";
+        if (disabledTooltipAnticipo) {
+          disabledTooltipAnticipo.style.display = "block";
+        }
+      }
+    }
+    
     // NUEVA FUNCIONALIDAD: Limpiar archivos cuando se deselecciona un checkbox/radio
     if (!checkEnvio.checked) {
         clearFileInput("EnvioInput");
@@ -2323,8 +2436,10 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!checkAnticipo.checked) {
         clearFileInput("AnticipoInput");
         clearFileSpan(fileChosenSpanAntici);
+        // Deshabilitar el botón cuando se deselecciona
+        updateAnticipoButtonState();
     }
-}
+  }
 
 // NUEVA FUNCIÓN: Limpiar input de archivo
 function clearFileInput(inputId) {
@@ -2363,21 +2478,309 @@ checkExoneracion.addEventListener("change", function() {
     }
 });
 
-checkAnticipo.addEventListener("change", function() {
+  checkAnticipo.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
+    // Actualizar la visibilidad del icono cuando se selecciona/deselecciona Anticipo
+    updateIconoAgregarInfoVisibility();
     
     // Si se deselecciona, limpiar inmediatamente el archivo
     if (!this.checked) {
         clearFileInput("AnticipoInput");
         clearFileSpan(fileChosenSpanAntici);
+        if (typeof updateAnticipoButtonState === "function") {
+          updateAnticipoButtonState();
+        }
+    } else {
+      // Si se selecciona, mostrar el botón pero deshabilitado hasta que se cargue un archivo
+      if (typeof updateAnticipoButtonState === "function") {
+        updateAnticipoButtonState();
+      }
     }
-});
+  });
 
   // --- Event Listeners ---
 
   // Event listeners para los radio buttons
-  uploadNowRadio.addEventListener("change", updateDocumentUploadVisibility);
-  uploadLaterRadio.addEventListener("change", updateDocumentUploadVisibility);
+  uploadNowRadio.addEventListener("change", function() {
+    updateDocumentUploadVisibility();
+    updateIconoAgregarInfoVisibility();
+  });
+  uploadLaterRadio.addEventListener("change", function() {
+    updateDocumentUploadVisibility();
+    // El icono se oculta cuando se selecciona "No"
+    updateIconoAgregarInfoVisibility();
+  });
+
+  // Event listener para el cambio de archivo en AnticipoInput
+  if (anticipoInput) {
+    anticipoInput.addEventListener("change", function() {
+      updateAnticipoButtonState();
+      // Actualizar el span del archivo si existe
+      if (fileChosenSpanAntici) {
+        const file = this.files[0];
+        if (file) {
+          fileChosenSpanAntici.textContent = shortenFileName(file.name);
+          fileChosenSpanAntici.style.cssText = "margin-left: 16%; margin-top: -1%; font-size: 12px; display: block; position: absolute;";
+        } else {
+          fileChosenSpanAntici.textContent = "";
+          fileChosenSpanAntici.style.cssText = "color: gray; font-style: italic; margin-left: 5px;";
+        }
+      }
+    });
+  }
+
+  // Función para limpiar todos los campos del formulario de datos de pago
+  function limpiarFormularioDatosPago() {
+    const formAgregarDatosPago = document.getElementById("formAgregarDatosPago");
+    if (formAgregarDatosPago) {
+      // Limpiar todos los campos del formulario
+      const fechaPago = document.getElementById("fechaPago");
+      const formaPago = document.getElementById("formaPago");
+      const moneda = document.getElementById("moneda");
+      const montoRef = document.getElementById("montoRef");
+      const montoBs = document.getElementById("montoBs");
+      const referencia = document.getElementById("referencia");
+      const depositante = document.getElementById("depositante");
+      const confirmacion = document.getElementById("confirmacion");
+      const obsAdministracion = document.getElementById("obsAdministracion");
+      const obsComercial = document.getElementById("obsComercial");
+      const registro = document.getElementById("registro");
+      const fechaCarga = document.getElementById("fechaCarga");
+      const estatus = document.getElementById("estatus");
+      
+      // Limpiar campos de texto e inputs
+      if (fechaPago) fechaPago.value = "";
+      if (formaPago) formaPago.value = "";
+      if (moneda) moneda.value = "";
+      if (montoRef) montoRef.value = "";
+      if (montoBs) montoBs.value = "";
+      if (referencia) referencia.value = "";
+      if (depositante) depositante.value = "";
+      if (confirmacion) confirmacion.value = "";
+      if (obsAdministracion) obsAdministracion.value = "";
+      if (obsComercial) obsComercial.value = "";
+      if (registro) registro.value = "";
+      if (fechaCarga) fechaCarga.value = "";
+      if (estatus) estatus.value = "";
+      
+      // Resetear el formulario (método alternativo)
+      formAgregarDatosPago.reset();
+    }
+  }
+
+  // Función para cerrar el modal y limpiar campos
+  function cerrarModalYLimpiar() {
+    // Limpiar el formulario
+    limpiarFormularioDatosPago();
+    
+    // Cerrar el modal con transición suave
+    const modalElement = document.getElementById("modalAgregarDatosPago");
+    if (modalElement) {
+      // Agregar clase de fade out para la transición
+      modalElement.classList.add("fade-out");
+      const backdrop = document.querySelector(".modal-backdrop");
+      if (backdrop) {
+        backdrop.classList.add("fade-out");
+      }
+      
+      // Esperar a que termine la animación (300ms) antes de cerrar completamente
+      setTimeout(function() {
+        // Usar método directo que siempre funciona
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+          try {
+            // Crear nueva instancia y cerrar
+            const modal = new bootstrap.Modal(modalElement);
+            modal.hide();
+            // También forzar el cierre manualmente por si acaso
+            setTimeout(function() {
+              modalElement.style.display = "none";
+              modalElement.classList.remove("show", "fade-out");
+              document.body.classList.remove("modal-open");
+              const backdrop = document.querySelector(".modal-backdrop");
+              if (backdrop) {
+                backdrop.remove();
+              }
+            }, 100);
+          } catch (error) {
+            console.error("Error al cerrar modal con Bootstrap:", error);
+            // Fallback manual directo
+            modalElement.style.display = "none";
+            modalElement.classList.remove("show", "fade-out");
+            document.body.classList.remove("modal-open");
+            const backdrop = document.querySelector(".modal-backdrop");
+            if (backdrop) {
+              backdrop.remove();
+            }
+          }
+        } else if (typeof $ !== 'undefined' && $.fn.modal) {
+          $(modalElement).modal('hide');
+          modalElement.classList.remove("fade-out");
+        } else {
+          // Fallback manual - método más directo
+          modalElement.style.display = "none";
+          modalElement.classList.remove("show", "fade-out");
+          document.body.classList.remove("modal-open");
+          const backdrop = document.querySelector(".modal-backdrop");
+          if (backdrop) {
+            backdrop.remove();
+          }
+        }
+      }, 300); // Duración de la animación de fade out
+    }
+    
+    // Deshabilitar el botón de anticipo al cancelar
+    if (downloadAnticiBtn) {
+      downloadAnticiBtn.disabled = true;
+      downloadAnticiBtn.style.opacity = "0.6";
+      downloadAnticiBtn.style.cursor = "not-allowed";
+      if (disabledTooltipAnticipo) {
+        disabledTooltipAnticipo.style.display = "block";
+      }
+    }
+    
+    // Limpiar el input de archivo
+    if (anticipoInput) {
+      anticipoInput.value = "";
+      updateAnticipoButtonState();
+    }
+    
+    // Actualizar la visibilidad del icono (se ocultará si no se cumplen las condiciones)
+    setTimeout(function() {
+      updateIconoAgregarInfoVisibility();
+    }, 100);
+  }
+
+  // Event listeners para el modal de agregar datos de pago
+  if (btnCancelarModalPago) {
+    btnCancelarModalPago.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      cerrarModalYLimpiar();
+    });
+  }
+
+  if (btnCancelarModalPagoFooter) {
+    btnCancelarModalPagoFooter.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      cerrarModalYLimpiar();
+    });
+  }
+
+  // Event listener para cuando se cierra el modal (por cualquier método)
+  // Función para cargar los métodos de pago desde la API
+  function loadPaymentMethods() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    if (!formaPagoSelect) {
+      console.error("No se encontró el select con id formaPago");
+      return;
+    }
+
+    // Verificar que las variables estén definidas
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      console.error("ENDPOINT_BASE o APP_PATH no están definidos");
+      console.error("ENDPOINT_BASE:", typeof ENDPOINT_BASE);
+      console.error("APP_PATH:", typeof APP_PATH);
+      return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetPaymentMethods";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          
+          if (data.success && data.payment_methods && data.payment_methods.length > 0) {
+            // Limpiar opciones existentes
+            formaPagoSelect.innerHTML = '<option value="">Seleccione</option>';
+            
+            // Agregar opciones desde la base de datos
+            data.payment_methods.forEach(function(method) {
+              const option = document.createElement("option");
+              option.value = method.id_payment_method;
+              option.textContent = method.payment_method_name;
+              formaPagoSelect.appendChild(option);
+            });
+            
+          } else {
+            var errorMsg = data.message || "Sin mensaje";
+            console.warn("No se encontraron métodos de pago o hubo un error:", errorMsg);
+            console.warn("Datos recibidos:", data);
+            // Mantener al menos la opción "Seleccione"
+            if (formaPagoSelect.innerHTML.trim() === "") {
+              formaPagoSelect.innerHTML = '<option value="">Seleccione</option>';
+            }
+          }
+        } catch (error) {
+          console.error("Error al parsear respuesta:", error);
+          console.error("Respuesta recibida:", xhr.responseText);
+        }
+      } else {
+        console.error("Error al cargar métodos de pago. Status:", xhr.status);
+        console.error("Response:", xhr.responseText);
+      }
+    };
+    
+    xhr.onerror = function() {
+      console.error("Error de red al cargar métodos de pago");
+    };
+    
+    xhr.send();
+  }
+
+  loadPaymentMethods();
+
+  // Cargar métodos de pago cuando se abre el modal
+  function setupPaymentMethodsLoader() {
+    const modal = document.getElementById("modalAgregarDatosPago");
+    if (!modal) {
+      console.error("No se encontró el modal con id modalAgregarDatosPago");
+      return;
+    }
+
+    modal.addEventListener("hidden.bs.modal", function() {
+      // Limpiar el formulario cuando se cierra el modal
+      limpiarFormularioDatosPago();
+      
+      // Deshabilitar el botón al cerrar
+      if (downloadAnticiBtn) {
+        downloadAnticiBtn.disabled = true;
+        downloadAnticiBtn.style.opacity = "0.6";
+        downloadAnticiBtn.style.cursor = "not-allowed";
+        if (disabledTooltipAnticipo) {
+          disabledTooltipAnticipo.style.display = "block";
+        }
+      }
+      
+      // Limpiar el input de archivo
+      if (anticipoInput) {
+        anticipoInput.value = "";
+        updateAnticipoButtonState();
+      }
+      
+      // Actualizar la visibilidad del icono basándose en las condiciones actuales
+      setTimeout(function() {
+        updateIconoAgregarInfoVisibility();
+      }, 100);
+    });
+  }
+
+  // Configurar el loader cuando el DOM esté listo
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupPaymentMethodsLoader);
+  } else {
+    setupPaymentMethodsLoader();
+  }
+
+  // También configurar si modalAgregarDatosPago ya está definido
+  if (modalAgregarDatosPago) {
+    setupPaymentMethodsLoader();
+  }
 
   checkEnvio.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
@@ -2401,18 +2804,58 @@ checkAnticipo.addEventListener("change", function() {
 
   checkAnticipo.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
+    // Actualizar la visibilidad del icono cuando se selecciona/deselecciona Anticipo
+    updateIconoAgregarInfoVisibility();
       
     // Si se deselecciona, limpiar inmediatamente el archivo
     if (!this.checked) {
       clearFileInput("AnticipoInput");
       clearFileSpan(fileChosenSpanAntici);
+      updateAnticipoButtonState();
+    } else {
+      // Si se selecciona, mostrar el botón pero deshabilitado hasta que se cargue un archivo
+      updateAnticipoButtonState();
     }
   });
 
   // Handle button clicks to trigger file input click (simula un clic en el input de tipo file oculto)
   downloadEnvioBtn.addEventListener("click", () => envioInput.click());
   downloadExoBtn.addEventListener("click", () => exoneracionInput.click());
-  downloadAnticiBtn.addEventListener("click", () => anticipoInput.click());
+  
+  // Event listener para el botón de anticipo con validación de estado
+  if (downloadAnticiBtn) {
+    downloadAnticiBtn.addEventListener("click", function(e) {
+      if (this.disabled) {
+        e.preventDefault();
+        e.stopPropagation();
+        // Mostrar tooltip cuando se intenta hacer click en el botón deshabilitado
+        if (disabledTooltipAnticipo) {
+          disabledTooltipAnticipo.style.display = "block";
+          setTimeout(() => {
+            if (disabledTooltipAnticipo) {
+              disabledTooltipAnticipo.style.display = "none";
+            }
+          }, 3000);
+        }
+        return false;
+      } else {
+        anticipoInput.click();
+      }
+    });
+
+    // Mostrar tooltip al hacer hover sobre el botón deshabilitado
+    downloadAnticiBtn.addEventListener("mouseenter", function() {
+      if (this.disabled && disabledTooltipAnticipo) {
+        disabledTooltipAnticipo.style.display = "block";
+      }
+    });
+
+    downloadAnticiBtn.addEventListener("mouseleave", function() {
+      if (disabledTooltipAnticipo) {
+        disabledTooltipAnticipo.style.display = "none";
+      }
+    });
+  }
 
   // Event listener para el botón de envío principal del formulario
   sendForm2Button.addEventListener("click", function () {
@@ -2423,6 +2866,119 @@ checkAnticipo.addEventListener("change", function() {
 
   // --- Inicialización al Cargar la Página ---
   updateDocumentUploadVisibility(); // Establecer la visibilidad correcta de los elementos al cargar.
+  
+  // Función para actualizar el icono cuando el modal se muestra
+  function actualizarIconoAlMostrarModal() {
+    setTimeout(function() {
+      updateIconoAgregarInfoVisibility();
+    }, 200);
+  }
+  
+  // Forzar la actualización del icono después de un pequeño delay para asegurar que el DOM esté completamente cargado
+  actualizarIconoAlMostrarModal();
+  
+  // Event listener para cuando el modal "miModal" se muestra
+  const miModalElement = document.getElementById("miModal");
+  if (miModalElement) {
+    miModalElement.addEventListener("shown.bs.modal", function() {
+      // Actualizar la visibilidad del icono cuando el modal se muestra
+      setTimeout(function() {
+        updateIconoAgregarInfoVisibility();
+      }, 200);
+      // Asegurar que el botón de anticipo esté deshabilitado al mostrar el modal
+      updateAnticipoButtonState();
+    });
+  }
+  
+  // Event listener para abrir el modal cuando se hace clic en el icono
+  if (iconoAgregarInfo) {
+    iconoAgregarInfo.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const modalElement = document.getElementById("modalAgregarDatosPago");
+      if (modalElement) {
+        // Verificar si Bootstrap está disponible
+        if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+          // Usar Bootstrap 5 para abrir el modal
+          try {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+          } catch (error) {
+            console.error("Error al abrir modal con Bootstrap:", error);
+            // Fallback manual
+            modalElement.style.display = "block";
+            modalElement.classList.add("show");
+            document.body.classList.add("modal-open");
+            const existingBackdrop = document.querySelector(".modal-backdrop");
+            if (!existingBackdrop) {
+              const backdrop = document.createElement("div");
+              backdrop.className = "modal-backdrop fade show";
+              document.body.appendChild(backdrop);
+            }
+          }
+        } else if (typeof $ !== 'undefined' && $.fn.modal) {
+          // Fallback para Bootstrap 4 o jQuery
+          $(modalElement).modal('show');
+        } else {
+          // Fallback manual
+          modalElement.style.display = "block";
+          modalElement.classList.add("show");
+          document.body.classList.add("modal-open");
+          const existingBackdrop = document.querySelector(".modal-backdrop");
+          if (!existingBackdrop) {
+            const backdrop = document.createElement("div");
+            backdrop.className = "modal-backdrop fade show";
+            document.body.appendChild(backdrop);
+          }
+        }
+      } else {
+        console.error("No se encontró el elemento modal con ID: modalAgregarDatosPago");
+      }
+    });
+    
+    // También agregar un hover effect para mejor UX (solo si es SVG)
+    if (iconoAgregarInfo.tagName === "svg" || iconoAgregarInfo.tagName === "SVG") {
+      iconoAgregarInfo.addEventListener("mouseenter", function() {
+        this.style.fill = "#0d6efd";
+        this.style.transform = "scale(1.1)";
+      });
+      
+      iconoAgregarInfo.addEventListener("mouseleave", function() {
+        this.style.fill = "#17a2b8";
+        this.style.transform = "scale(1)";
+      });
+    } else {
+      // Si es un icono de FontAwesome, usar color en lugar de fill
+      iconoAgregarInfo.addEventListener("mouseenter", function() {
+        this.style.color = "#0d6efd";
+        this.style.transform = "scale(1.1)";
+      });
+      
+      iconoAgregarInfo.addEventListener("mouseleave", function() {
+        this.style.color = "#17a2b8";
+        this.style.transform = "scale(1)";
+      });
+    }
+  }
+  
+  // Asegurar que el botón de anticipo esté deshabilitado al inicio
+  // Primero deshabilitar explícitamente
+  if (downloadAnticiBtn) {
+    downloadAnticiBtn.disabled = true;
+    downloadAnticiBtn.style.opacity = "0.6";
+    downloadAnticiBtn.style.cursor = "not-allowed";
+    if (disabledTooltipAnticipo) {
+      disabledTooltipAnticipo.style.display = "block";
+    }
+  }
+  
+  // Asegurar que el icono se actualice al cargar la página
+  setTimeout(function() {
+    updateIconoAgregarInfoVisibility();
+  }, 500);
+  
+  // Luego llamar a la función que verifica el estado
+  updateAnticipoButtonState(); // Establecer el estado inicial del botón de anticipo (deshabilitado).
 
   // Puedes agregar aquí la lógica para cargar las opciones de tus selects
   // por ejemplo, si vienen de una API.

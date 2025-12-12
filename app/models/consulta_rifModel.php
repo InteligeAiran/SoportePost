@@ -6270,6 +6270,26 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
+    public function GetPaymentMethods(){
+
+        try {
+
+            $sql = "SELECT * FROM get_active_payment_methods();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetPaymentMethods: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
 }
 
 ?>
