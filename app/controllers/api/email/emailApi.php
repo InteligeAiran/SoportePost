@@ -528,41 +528,59 @@ class email extends Controller {
 
             // 6. Enviar correo a ADMINISTRACIÓN (Jerarquía Administrativa - Estilo de Notificación)
             $results['admin'] = false; // Inicializar
-            $result_email_areaAdmin = $repository->GetEmailAreaAdmin();
-            $email_area_admin = $result_email_areaAdmin['email_area'] ?? '';
-            $name_area_admin = $result_email_areaAdmin['name_area'] ?? 'Administración';
+            // Correos específicos para domiciliación
+            $emails_admin = [
+                'domiciliacion.intelipunto@inteligensa.com',
+                'olga.rojas@intelipunto.com',
+                'neishy.tupano@inteligensa.com'
+            ];
+            $name_area_admin = 'Administración';
             
-            if (!empty($email_area_admin)) {
-                error_log("INTENTANDO ENVIAR CORREO A ADMINISTRACION: " . $email_area_admin);
-                $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Domiciliación del Ticket';
-                $body_admin = $this->getAdminEmailBodyForTicketCreation(
-                    $name_area_admin,
-                    $nombre_tecnico_ticket,
-                    $ticketnro,
-                    $clientRif,
-                    $clientName,
-                    $ticketserial,
-                    $ticketNivelFalla,
-                    $name_failure,
-                    $ticketfinished,
-                    $ticketaccion,
-                    $ticketstatus,
-                    $ticketprocess,
-                    $ticketpaymnet,
-                    $ticketdomiciliacion
-                );
-                $results['admin'] = $this->emailService->sendEmail($email_area_admin, $subject_admin, $body_admin, [], $embeddedImages);
-
-                if (!$results['admin']) {
-                    $error_admin = $this->emailService->getLastError();
-                    error_log("ERROR AL ENVIAR CORREO ADMINISTRACION: " . $error_admin);
-                    $results['messages'][] = "Error al enviar correo a administración: " . $error_admin;
+            $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Domiciliación del Ticket';
+            $body_admin = $this->getAdminEmailBodyForTicketCreation(
+                $name_area_admin,
+                $nombre_tecnico_ticket,
+                $ticketnro,
+                $clientRif,
+                $clientName,
+                $ticketserial,
+                $ticketNivelFalla,
+                $name_failure,
+                $ticketfinished,
+                $ticketaccion,
+                $ticketstatus,
+                $ticketprocess,
+                $ticketpaymnet,
+                $ticketdomiciliacion
+            );
+            
+            // Enviar correo a cada dirección de administración
+            $emails_enviados_admin = 0;
+            $total_emails_admin = count($emails_admin);
+            
+            foreach ($emails_admin as $email_admin) {
+                error_log("INTENTANDO ENVIAR CORREO A ADMINISTRACION: " . $email_admin);
+                $email_sent = $this->emailService->sendEmail($email_admin, $subject_admin, $body_admin, [], $embeddedImages);
+                
+                if ($email_sent) {
+                    $emails_enviados_admin++;
+                    error_log("CORREO ADMINISTRACION ENVIADO A: " . $email_admin);
                 } else {
-                    error_log("CORREO ADMINISTRACION ENVIADO: SI");
+                    $error_admin = $this->emailService->getLastError();
+                    error_log("ERROR AL ENVIAR CORREO ADMINISTRACION A " . $email_admin . ": " . $error_admin);
+                    $results['messages'][] = "Error al enviar correo a " . $email_admin . ": " . $error_admin;
                 }
+            }
+            
+            // Considerar exitoso si se envió al menos a uno de los correos
+            $results['admin'] = ($emails_enviados_admin > 0);
+            
+            if ($emails_enviados_admin == $total_emails_admin) {
+                error_log("TODOS LOS CORREOS DE ADMINISTRACION ENVIADOS: " . $emails_enviados_admin . "/" . $total_emails_admin);
+            } elseif ($emails_enviados_admin > 0) {
+                error_log("ALGUNOS CORREOS DE ADMINISTRACION ENVIADOS: " . $emails_enviados_admin . "/" . $total_emails_admin);
             } else {
-                $results['messages'][] = "El correo del área de administración está vacío.";
-                error_log("ERROR: El correo del área de administración está vacío.");
+                error_log("NINGUN CORREO DE ADMINISTRACION FUE ENVIADO");
             }
 
             // 7. Responder según resultados
