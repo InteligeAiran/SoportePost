@@ -790,8 +790,8 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type){
-        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = ''){
+        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
         return $result;
     }
 
@@ -1045,6 +1045,10 @@ class TechnicalConsultionRepository
 
     public function SaveBudget($nro_ticket, $monto_taller, $diferencia_usd, $diferencia_bs, $descripcion_reparacion, $fecha_presupuesto, $presupuesto_numero, $user_creator){
         return $this->model->SaveBudget($nro_ticket, $monto_taller, $diferencia_usd, $diferencia_bs, $descripcion_reparacion, $fecha_presupuesto, $presupuesto_numero, $user_creator);
+    }
+    
+    public function UpdateVerifiedPaymentData($nro_ticket, $nro_payment_reference_verified, $payment_date_verified){
+        return $this->model->UpdateVerifiedPaymentData($nro_ticket, $nro_payment_reference_verified, $payment_date_verified);
     }
     
     public function UpdatePresupuestoPDFPath($id_budget, $pdf_path){

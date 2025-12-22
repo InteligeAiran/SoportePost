@@ -2188,9 +2188,12 @@ class Consulta extends Controller
         $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $document_type = isset($_POST['document_type'])? $_POST['document_type'] : '';
+        $nro_payment_reference_verified = isset($_POST['nro_payment_reference_verified'])? trim($_POST['nro_payment_reference_verified']) : '';
+        $payment_date_verified = isset($_POST['payment_date_verified'])? trim($_POST['payment_date_verified']) : '';
         
         // Log para debug
         error_log("Datos recibidos - nro_ticket: $nro_ticket, id_ticket: $id_ticket, id_user: $id_user, document_type: $document_type");
+        error_log("Datos verificados - nro_payment_reference_verified: $nro_payment_reference_verified, payment_date_verified: $payment_date_verified");
         
         if (!$id_ticket || !$nro_ticket || !$id_user || !$document_type) {
             $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
@@ -2198,7 +2201,8 @@ class Consulta extends Controller
         }
 
         $repository = new technicalConsultionRepository();
-        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+        // Pasar los datos verificados directamente a AprobarDocumento
+        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
 
         // Log del resultado
         error_log("Resultado de AprobarDocumento: " . ($result ? 'true' : 'false'));
@@ -2456,7 +2460,17 @@ class Consulta extends Controller
         $result = $repository->GetPaymentData($nro_ticket);
 
         if ($result !== null && !empty($result)) {
-            $this->response(['success' => true, 'data' => $result], 200);
+            // Asegurarse de que los campos estén presentes
+            $paymentData = [
+                'payment_reference' => isset($result['payment_reference']) ? $result['payment_reference'] : '',
+                'payment_date' => isset($result['payment_date']) ? $result['payment_date'] : '',
+                'nro_ticket' => isset($result['nro_ticket']) ? $result['nro_ticket'] : $nro_ticket,
+                'serial_pos' => isset($result['serial_pos']) ? $result['serial_pos'] : '',
+                'amount_bs' => isset($result['amount_bs']) ? $result['amount_bs'] : '',
+                'currency' => isset($result['currency']) ? $result['currency'] : '',
+                'payment_method' => isset($result['payment_method']) ? $result['payment_method'] : ''
+            ];
+            $this->response(['success' => true, 'data' => $paymentData], 200);
         } else {
             $this->response(['success' => false, 'message' => 'No se encontró información de pago para este ticket'], 404);
         }

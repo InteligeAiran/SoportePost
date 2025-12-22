@@ -5540,7 +5540,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
-   public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type) {
+   public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = '') {
     try {
         $db_conn = $this->db->getConnection();
 
@@ -5598,6 +5598,51 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             if ($result1 === false) {
                 error_log("Error al aprobar documentos: " . pg_last_error($db_conn));
                 return false;
+            }
+        }
+        
+        // ✅ ACTUALIZAR payment_records SI ES ANTICIPO
+        if ($document_type === 'Anticipo' && !empty($nro_ticket)) {
+            // Construir la consulta UPDATE dinámicamente según los campos que tengan valores
+            $updateFields = [];
+            
+            // Siempre actualizar confirmation_number a true
+            $updateFields[] = "confirmation_number = true";
+            
+            // Actualizar id_status_payment a 6 (Aprobado)
+            $updateFields[] = "payment_status = 6";
+            
+            // Agregar campos verificados si tienen valores
+            if (!empty($nro_payment_reference_verified)) {
+                $escaped_reference = pg_escape_literal($db_conn, $nro_payment_reference_verified);
+                $updateFields[] = "nro_payment_reference_verified = " . $escaped_reference;
+            }
+            
+            if (!empty($payment_date_verified)) {
+                $escaped_date = pg_escape_literal($db_conn, $payment_date_verified);
+                $updateFields[] = "payment_date_verified = " . $escaped_date;
+            }
+            
+            // Construir y ejecutar la consulta UPDATE usando subconsulta para obtener el id más reciente
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $sqlUpdatePayment = "UPDATE payment_records 
+                                SET " . implode(", ", $updateFields) . "
+                                WHERE id_payment_record = (
+                                    SELECT id_payment_record 
+                                    FROM payment_records 
+                                    WHERE nro_ticket = " . $escaped_nro_ticket . "
+                                    ORDER BY id_payment_record DESC
+                                    LIMIT 1
+                                );";
+            
+            $resultUpdatePayment = pg_query($db_conn, $sqlUpdatePayment);
+            
+            if ($resultUpdatePayment === false) {
+                error_log("Error al actualizar payment_records para Anticipo: " . pg_last_error($db_conn));
+                // No retornar false aquí, solo loguear el error para no afectar la aprobación
+            } else {
+                pg_free_result($resultUpdatePayment);
+                error_log("payment_records actualizado correctamente para ticket: $nro_ticket");
             }
         }
 
@@ -6437,6 +6482,54 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
         } catch (Throwable $e) {
             error_log("Error en SaveBudget: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function UpdateVerifiedPaymentData($nro_ticket, $nro_payment_reference_verified, $payment_date_verified){
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // Escapar parámetros
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            
+            // Construir la consulta UPDATE dinámicamente según los campos que tengan valores
+            $updateFields = [];
+            
+            if (!empty($nro_payment_reference_verified)) {
+                $escaped_reference = pg_escape_literal($db_conn, $nro_payment_reference_verified);
+                $updateFields[] = "nro_payment_reference_verified = " . $escaped_reference;
+            }
+            
+            if (!empty($payment_date_verified)) {
+                $escaped_date = pg_escape_literal($db_conn, $payment_date_verified);
+                $updateFields[] = "payment_date_verified = " . $escaped_date;
+            }
+            
+            // Si no hay campos para actualizar, retornar true (no hay nada que hacer)
+            if (empty($updateFields)) {
+                return true;
+            }
+            
+            // Construir y ejecutar la consulta UPDATE
+            $sql = "UPDATE payment_records 
+                    SET " . implode(", ", $updateFields) . "
+                    WHERE nro_ticket = " . $escaped_nro_ticket . "
+                    ORDER BY id_payment_record DESC
+                    LIMIT 1;";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al actualizar datos verificados de pago: " . pg_last_error($db_conn));
+                return false;
+            }
+            
+            pg_free_result($result);
+            return true;
+            
+        } catch (Throwable $e) {
+            error_log("Error en UpdateVerifiedPaymentData: " . $e->getMessage());
             return false;
         }
     }

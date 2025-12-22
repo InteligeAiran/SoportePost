@@ -181,14 +181,14 @@ function mi_navbar() {}
 
         #btn-asignados,
         #btn-por-asignar,
-        #btn-recibidos,
+        /* #btn-recibidos, */
         #btn-devuelto {
             padding: 0.5rem 1rem;
             border-radius: 0.25rem;
             font-size: 13px;
         }
 
-        #btn-recibidos {
+        /* #btn-recibidos {
             background-color: #a0a0a0;
             color: #ffffff;
             border: 1px solid #a0a0a0;
@@ -196,34 +196,31 @@ function mi_navbar() {}
             box-shadow 0.3s ease;
         }
 
-        /* Estilo base para el botón Recibidos cuando es el activo */
+        Estilo base para el botón Recibidos cuando es el activo
         #btn-recibidos.btn-primary {
-            background-color: #28a745; /* Verde éxito */
+            background-color: #28a745;
             border-color: #28a745;
             color: #ffffff;
             transition: background-color 0.3s ease, border-color 0.3s ease,
             box-shadow 0.3s ease;
         }
 
-            /* Estilo hover/focus para el botón Recibidos cuando es el activo */
+        Estilo hover/focus para el botón Recibidos cuando es el activo
         #btn-recibidos.btn-primary:hover,
         #btn-recibidos.btn-primary:focus {
-            background-color: #28a745; /* Verde éxito */
+            background-color: #28a745;
             border-color: #28a745;
             box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
-            /* Sombra de enfoque/hover */
         }
 
-        /* Estilo para el botón Recibidos cuando NO es el activo (es gris) */
+        Estilo para el botón Recibidos cuando NO es el activo (es gris)
         #btn-recibidos.btn-secondary {
             background-color: #a0a0a0;
-            /* Tu gris sutil */
             border-color: #a0a0a0;
             color: #ffffff;
-            /* O un gris oscuro si el fondo es claro */
             transition: background-color 0.3s ease, border-color 0.3s ease,
             box-shadow 0.3s ease;
-        }
+        } */
 
         #closeImagevisualizarModalBtn:hover{
             background-color: red;
@@ -958,7 +955,7 @@ function mi_navbar() {}
 
         <!-- MODAL PARA VIZUALIZAR LOS DOCUMENTOS -->
             <div class="modal fade" id="imageApprovalModal" tabindex="-1" aria-labelledby="imageApprovalModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-dialog modal-xl modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header bg-gradient-primary">
                             <h5 class="modal-title" id="imageApprovalModalLabel">Revisar y Aprobar Imagen</h5>
@@ -973,6 +970,104 @@ function mi_navbar() {}
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Ticket: <span id="currentTicketIdDisplay"></span></p>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Serial POS: <span id="currentSerialDisplay"></span></p>
+                            
+                            <!-- Campos de validación de pago (solo para documento de Anticipo) -->
+                            <div id="paymentValidationContainer" style="display: none; margin-top: 20px; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border: 2px solid #003594; box-shadow: 0 4px 15px rgba(0, 53, 148, 0.1); text-align: left;">
+                                <div style="background: linear-gradient(135deg, #003594 0%, #0056b3 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                                    <h5 class="mb-0" style="color: white; font-weight: bold; margin: 0;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shield-check me-2" viewBox="0 0 16 16" style="vertical-align: middle;">
+                                            <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
+                                            <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        </svg>
+                                        Validación de Datos de Pago
+                                    </h5>
+                                </div>
+                                
+                                <!-- Datos originales del pago -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#003594" class="bi bi-hash me-1" viewBox="0 0 16 16">
+                                                <path d="M8.39 12.648a1.32 1.32 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .492-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-.74l-.1-1.054h.73c.467 0 .684-.235.684-.547 0-.312-.217-.547-.684-.547h-.73l-.188-1.053h.74c.421 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-1.204l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H7.617l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H5.492c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h.74l.1 1.054h-.73c-.467 0-.684.235-.684.547 0 .312.217.547.684.547h.73l.188 1.053h-.74c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h1.204l.555 2.703c.03.16.09.242.21.242.12 0 .18-.083.21-.242l.554-2.703h2.242l.555 2.703c.03.16.09.242.21.242.12 0 .18-.083.21-.242l.554-2.703h1.7c.42 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-1.204l-.1-1.054h1.204c.42 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-1.204l-.188-1.053h1.204c.42 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547H9.817l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H7.243l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H4.492c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h.74l.1 1.054h-.73c-.467 0-.684.235-.684.547 0 .312.217.547.684.547h.73l.188 1.053h-.74c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h1.204l.555 2.703c.03.16.09.242.21.242.12 0 .18-.083.21-.242l.554-2.703h2.242z"/>
+                                            </svg>
+                                            Nro de Referencia:
+                                        </label>
+                                        <input type="text" id="paymentReferenceOriginal" class="form-control" readonly style="background-color: #ffffff; border: 2px solid #dee2e6; border-radius: 8px; padding: 10px; font-weight: 500; color: #495057;">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#003594" class="bi bi-calendar3 me-1" viewBox="0 0 16 16">
+                                                <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z"/>
+                                                <path d="M12 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-1 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-1-5a1 1 0 1 0 0-2 1 1 0 0 0 0 2M5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-1 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-1-5a1 1 0 1 0 0-2 1 1 0 0 0 0 2M3 10h.01v.01H3zm9.075-3H9.5v-.01h2.575c.498 0 .905.418.905.936 0 .523-.407.936-.905.936H9.5v-.01h2.575A.905.905 0 0 0 13 7.936c0-.518-.407-.936-.905-.936M3 4h.01v.01H3z"/>
+                                            </svg>
+                                            Fecha de Pago:
+                                        </label>
+                                        <input type="text" id="paymentDateOriginal" class="form-control" readonly style="background-color: #ffffff; border: 2px solid #dee2e6; border-radius: 8px; padding: 10px; font-weight: 500; color: #495057;">
+                                    </div>
+                                </div>
+                                
+                                <!-- Radio: ¿Nro de referencia correcto? -->
+                                <div class="mb-4" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #003594;">
+                                    <label class="form-label mb-3" style="font-weight: 600; color: #003594; font-size: 15px; display: block;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-question-circle me-2" viewBox="0 0 16 16" style="vertical-align: middle;">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.326 0-2.786.647-2.754 2.533zm1.25 5.762a.25.25 0 1 1-.5 0 .25.25 0 0 1 .5 0"/>
+                                        </svg>
+                                        ¿Nro de referencia correcto?
+                                    </label>
+                                    <div class="form-check mb-2" style="padding-left: 2rem;">
+                                        <input class="form-check-input" type="radio" name="referenceCorrect" id="referenceCorrectYes" value="yes" checked>
+                                        <label class="form-check-label" for="referenceCorrectYes" style="font-weight: 500; color: #495057; cursor: pointer;">Sí</label>
+                                    </div>
+                                    <div class="form-check" style="padding-left: 2rem;">
+                                        <input class="form-check-input" type="radio" name="referenceCorrect" id="referenceCorrectNo" value="no">
+                                        <label class="form-check-label" for="referenceCorrectNo" style="font-weight: 500; color: #495057; cursor: pointer;">No</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Campo para corregir solo el nro de referencia -->
+                                <div id="referenceCorrectionField" style="display: none;" class="mb-4">
+                                    <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#28a745" class="bi bi-pencil-square me-1" viewBox="0 0 16 16">
+                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                        </svg>
+                                        Nro de Referencia Correcto:
+                                    </label>
+                                    <input type="text" id="paymentReferenceCorrectOnly" class="form-control" placeholder="Ingrese el nro de referencia correcto" style="border: 2px solid #28a745; border-radius: 8px; padding: 10px;">
+                                </div>
+                                
+                                <!-- Radio: ¿Fecha de pago correcta? -->
+                                <div class="mb-4" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #003594;">
+                                    <label class="form-label mb-3" style="font-weight: 600; color: #003594; font-size: 15px; display: block;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-question-circle me-2" viewBox="0 0 16 16" style="vertical-align: middle;">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.326 0-2.786.647-2.754 2.533zm1.25 5.762a.25.25 0 1 1-.5 0 .25.25 0 0 1 .5 0"/>
+                                        </svg>
+                                        ¿Fecha de pago correcta?
+                                    </label>
+                                    <div class="form-check mb-2" style="padding-left: 2rem;">
+                                        <input class="form-check-input" type="radio" name="dateCorrect" id="dateCorrectYes" value="yes" checked>
+                                        <label class="form-check-label" for="dateCorrectYes" style="font-weight: 500; color: #495057; cursor: pointer;">Sí</label>
+                                    </div>
+                                    <div class="form-check" style="padding-left: 2rem;">
+                                        <input class="form-check-input" type="radio" name="dateCorrect" id="dateCorrectNo" value="no">
+                                        <label class="form-check-label" for="dateCorrectNo" style="font-weight: 500; color: #495057; cursor: pointer;">No</label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Campo para corregir solo la fecha de pago -->
+                                <div id="dateCorrectionField" style="display: none;" class="mb-3">
+                                    <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#28a745" class="bi bi-calendar-check me-1" viewBox="0 0 16 16">
+                                            <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                                        </svg>
+                                        Fecha de Pago Correcta:
+                                    </label>
+                                    <input type="date" id="paymentDateCorrectOnly" class="form-control" style="border: 2px solid #28a745; border-radius: 8px; padding: 10px;">
+                                </div>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
