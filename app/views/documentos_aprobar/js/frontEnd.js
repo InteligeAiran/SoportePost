@@ -102,7 +102,49 @@ function handleTicketApprovalFromImage() {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            // Realizar la aprobación
+            // Si es documento de Anticipo, validar campos antes de aprobar
+            if (documentType === 'Anticipo') {
+                const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+                const dateCorrectionField = document.getElementById('dateCorrectionField');
+                
+                // Verificar si los campos están visibles
+                const isReferenceFieldVisible = referenceCorrectionField && 
+                                               window.getComputedStyle(referenceCorrectionField).display !== 'none';
+                const isDateFieldVisible = dateCorrectionField && 
+                                          window.getComputedStyle(dateCorrectionField).display !== 'none';
+                
+                // Validar campos visibles
+                const missingFields = [];
+                
+                if (isReferenceFieldVisible) {
+                    const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+                    if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
+                        missingFields.push('Nro de Referencia Correcto');
+                    }
+                }
+                
+                if (isDateFieldVisible) {
+                    const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+                    if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
+                        missingFields.push('Fecha de Pago Correcta');
+                    }
+                }
+                
+                // Si hay campos visibles vacíos, mostrar alerta y detener
+                if (missingFields.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campos Requeridos',
+                        html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black'
+                    });
+                    return; // Detener la ejecución
+                }
+            }
+            
+            // Si llegamos aquí, los campos están completos o no son visibles, realizar la aprobación
             approveTicket(nro_ticket, documentType, id_ticket);
         }
     });
@@ -182,8 +224,94 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
         });
     };
 
+    // Si es documento de Anticipo, validar y obtener los datos verificados
+    let verifiedReference = '';
+    let verifiedDate = '';
+    
+    if (documentType === 'Anticipo') {
+        console.log('Documento es Anticipo, validando campos verificados...');
+        
+        // Verificar si hay datos en los campos de corrección individuales
+        const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+        const dateCorrectNo = document.getElementById('dateCorrectNo');
+        const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+        const dateCorrectionField = document.getElementById('dateCorrectionField');
+        
+        // Verificar si los campos están visibles
+        const isReferenceFieldVisible = referenceCorrectionField && 
+                                       window.getComputedStyle(referenceCorrectionField).display !== 'none';
+        const isDateFieldVisible = dateCorrectionField && 
+                                  window.getComputedStyle(dateCorrectionField).display !== 'none';
+        
+        console.log('Campo de referencia visible:', isReferenceFieldVisible);
+        console.log('Campo de fecha visible:', isDateFieldVisible);
+        
+        // Validar campos visibles
+        const missingFields = [];
+        
+        if (isReferenceFieldVisible) {
+            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+            if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
+                missingFields.push('Nro de Referencia Correcto');
+            }
+        }
+        
+        if (isDateFieldVisible) {
+            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+            if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
+                missingFields.push('Fecha de Pago Correcta');
+            }
+        }
+        
+        // Si hay campos visibles vacíos, mostrar alerta y detener
+        if (missingFields.length > 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos Requeridos',
+                html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003594',
+                color: 'black'
+            });
+            return; // Detener la ejecución
+        }
+        
+        // Si llegamos aquí, los campos están completos o no son visibles
+        // Si el radio de referencia está en "No", usar el valor corregido
+        if (referenceCorrectNo && referenceCorrectNo.checked) {
+            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+            if (referenceCorrectOnly && referenceCorrectOnly.value.trim() !== '') {
+                verifiedReference = referenceCorrectOnly.value.trim();
+                console.log('Nro de referencia verificado capturado:', verifiedReference);
+            }
+        }
+        
+        // Si el radio de fecha está en "No", usar el valor corregido
+        if (dateCorrectNo && dateCorrectNo.checked) {
+            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+            if (dateCorrectOnly && dateCorrectOnly.value.trim() !== '') {
+                verifiedDate = dateCorrectOnly.value.trim();
+                console.log('Fecha de pago verificada capturada:', verifiedDate);
+            }
+        }
+        
+        console.log('Datos verificados finales - Referencia:', verifiedReference, 'Fecha:', verifiedDate);
+    }
+    
     // Enviar los datos
-    const data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    let data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    
+    // Agregar datos verificados si es Anticipo y hay valores
+    if (documentType === 'Anticipo') {
+        if (verifiedReference) {
+            data += `&nro_payment_reference_verified=${encodeURIComponent(verifiedReference)}`;
+        }
+        if (verifiedDate) {
+            data += `&payment_date_verified=${encodeURIComponent(verifiedDate)}`;
+        }
+        console.log('Datos a enviar:', data);
+    }
+    
     xhr.send(data);
 }
 
@@ -414,11 +542,11 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
 
-                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
+                                    <!-- <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
                                             <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
                                         </svg>
-                                    </button>
+                                    </button> -->
 
                                     <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
@@ -431,7 +559,7 @@ function getTicketAprovalDocument() {
                                 function setActiveButton(activeButtonId) {
                                     $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
                                     $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                                    $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
+                                    // $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
@@ -468,12 +596,12 @@ function getTicketAprovalDocument() {
                                             { column: 'id_status_payment', value: '7|5' }
                                         ]
                                     },
-                                    { 
-                                        button: "btn-recibidos", 
-                                        searchTerms: [
-                                            { column: 'id_status_payment', value: '9|10|11' }
-                                        ]
-                                    },
+                                    // { 
+                                    //     button: "btn-recibidos", 
+                                    //     searchTerms: [
+                                    //         { column: 'id_status_payment', value: '9|10|11' }
+                                    //     ]
+                                    // },
                                     { 
                                         button: "btn-asignados", 
                                         searchTerms: [
@@ -493,12 +621,12 @@ function getTicketAprovalDocument() {
                                         if (button === "btn-por-asignar") {
                                             api.column(1).search('7|5', true, false, true).draw();
                                             api.column(11).visible(false);
-                                        } else if (button === "btn-recibidos") {
-                                            api.column(1).search('9|10|11', true, false, true).draw();
-                                            api.column(11).visible(false);
-                                            api.column(12).visible(false);
-                                            api.column(10).visible(false);
-                                            api.column(9).visible(false);
+                                        // } else if (button === "btn-recibidos") {
+                                        //     api.column(1).search('9|10|11', true, false, true).draw();
+                                        //     api.column(11).visible(false);
+                                        //     api.column(12).visible(false);
+                                        //     api.column(10).visible(false);
+                                        //     api.column(9).visible(false);
                                         } else if (button === "btn-asignados") {
                                             api.search('').draw(false);
                                             api.column(11).visible(true);
@@ -559,23 +687,23 @@ function getTicketAprovalDocument() {
                                     }
                                 });
 
-                                $("#btn-recibidos").on("click", function () {
-                                    // ✅ LIMPIAR FILTROS PERSONALIZADOS
-                                    $.fn.dataTable.ext.search.pop();
-                                    
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^9$|^10$|^11$' }];
-                                    if (checkDataExistsById(searchTerms)) {
-                                        api.columns().search('').draw(false);
-                                        api.column(1).search('^9$|^10$|^11$', true, false, true).draw();
-                                        api.column(11).visible(false);
-                                        api.column(12).visible(false);
-                                        api.column(10).visible(false);
-                                        api.column(9).visible(false);
-                                        setActiveButton("btn-recibidos");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
+                                // $("#btn-recibidos").on("click", function () {
+                                //     // ✅ LIMPIAR FILTROS PERSONALIZADOS
+                                //     $.fn.dataTable.ext.search.pop();
+                                //     
+                                //     const searchTerms = [{ column: 'id_status_payment', value: '^9$|^10$|^11$' }];
+                                //     if (checkDataExistsById(searchTerms)) {
+                                //         api.columns().search('').draw(false);
+                                //         api.column(1).search('^9$|^10$|^11$', true, false, true).draw();
+                                //         api.column(11).visible(false);
+                                //         api.column(12).visible(false);
+                                //         api.column(10).visible(false);
+                                //         api.column(9).visible(false);
+                                //         setActiveButton("btn-recibidos");
+                                //     } else {
+                                //         findFirstButtonWithData();
+                                //     }
+                                // });
 
                                 $("#btn-asignados").on("click", function () {
                                     // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
@@ -2490,7 +2618,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 <div class="mt-3 pt-3 border-top border-light">
                                     <div style="text-align: center; margin-bottom: 12px;">
                                         <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
-                                    </div>
+                            </div>
                                     <div class="d-flex flex-wrap gap-3 justify-content-center">
                                         <div class="d-flex align-items-center">
                                             <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
@@ -3745,7 +3873,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     pdfViewViewer.style.display = "block";
             pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;" title="PDF: ${fileName || 'documento'}"></iframe>`;
         }
-  } else {
+    } else {
         // Tipo de archivo no soportado
         if (ticketImagePreview) {
             ticketImagePreview.style.display = "none";
@@ -3763,7 +3891,26 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             `;
         }
     }
-
+    
+    // Si el documento es de tipo "Anticipo" (pago), obtener y mostrar los datos de pago
+    console.log('showApprovalModal - documentType:', documentType, 'ticketId:', ticketId);
+    
+    if (documentType === 'Anticipo') {
+        console.log('Es documento de Anticipo, cargando datos de pago...');
+        // El ticketId que viene aquí es el nro_ticket (se establece en el atributo data-ticket-id)
+        // Asegurarse de que sea el nro_ticket correcto
+        const nroTicketToUse = ticketId || currentTicketIdDisplay.textContent;
+        console.log('nroTicketToUse para consulta:', nroTicketToUse);
+        loadPaymentDataForEnvio(nroTicketToUse);
+    } else {
+        console.log('No es documento de Anticipo, ocultando contenedor de validación');
+        // Ocultar el contenedor de validación de pago si no es Anticipo
+        const paymentValidationContainer = document.getElementById('paymentValidationContainer');
+        if (paymentValidationContainer) {
+            paymentValidationContainer.style.display = 'none';
+        }
+    }
+    
     // Mostrar el modal de aprobación
     const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
     
@@ -3777,6 +3924,9 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             imageApprovalModal.hide();
         });
     }
+    
+    // Agregar event listeners para los radio buttons de validación de pago
+    setupPaymentValidationListeners();
 
     imageApprovalModal.show();
 
@@ -3792,9 +3942,217 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             pdfViewViewer.style.display = "none";
             pdfViewViewer.innerHTML = "";
         }
+        
+        // Limpiar campos de validación de pago
+        const paymentValidationContainer = document.getElementById('paymentValidationContainer');
+        if (paymentValidationContainer) {
+            paymentValidationContainer.style.display = 'none';
+        }
+        
+        // Limpiar todos los campos y radio buttons
+        const paymentReferenceOriginal = document.getElementById('paymentReferenceOriginal');
+        const paymentDateOriginal = document.getElementById('paymentDateOriginal');
+        const paymentReferenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+        const paymentDateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+        
+        if (paymentReferenceOriginal) paymentReferenceOriginal.value = '';
+        if (paymentDateOriginal) paymentDateOriginal.value = '';
+        if (paymentReferenceCorrectOnly) paymentReferenceCorrectOnly.value = '';
+        if (paymentDateCorrectOnly) paymentDateCorrectOnly.value = '';
+        
+        // Desmarcar todos los radio buttons
+        const referenceCorrectYes = document.getElementById('referenceCorrectYes');
+        const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+        const dateCorrectYes = document.getElementById('dateCorrectYes');
+        const dateCorrectNo = document.getElementById('dateCorrectNo');
+        
+        if (referenceCorrectYes) referenceCorrectYes.checked = false;
+        if (referenceCorrectNo) referenceCorrectNo.checked = false;
+        if (dateCorrectYes) dateCorrectYes.checked = false;
+        if (dateCorrectNo) dateCorrectNo.checked = false;
+        
+        // Ocultar campos de corrección
+        const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+        const dateCorrectionField = document.getElementById('dateCorrectionField');
+        
+        if (referenceCorrectionField) referenceCorrectionField.style.display = 'none';
+        if (dateCorrectionField) dateCorrectionField.style.display = 'none';
+        
         imageApprovalModalElement.removeEventListener('hidden.bs.modal', cleanupHandler);
     };
     imageApprovalModalElement.addEventListener('hidden.bs.modal', cleanupHandler);
+}
+
+// Función para cargar los datos de pago cuando el documento es de tipo "Anticipo" (pago)
+function loadPaymentDataForEnvio(nroTicket) {
+    console.log('loadPaymentDataForEnvio llamado con nroTicket:', nroTicket);
+    
+    const paymentValidationContainer = document.getElementById('paymentValidationContainer');
+    const paymentReferenceOriginal = document.getElementById('paymentReferenceOriginal');
+    const paymentDateOriginal = document.getElementById('paymentDateOriginal');
+    
+    if (!paymentValidationContainer) {
+        console.error('paymentValidationContainer no encontrado');
+        return;
+    }
+    
+    if (!paymentReferenceOriginal) {
+        console.error('paymentReferenceOriginal no encontrado');
+        return;
+    }
+    
+    if (!paymentDateOriginal) {
+        console.error('paymentDateOriginal no encontrado');
+        return;
+    }
+    
+    // Mostrar el contenedor primero (aunque esté vacío) para que el usuario vea que se está cargando
+    paymentValidationContainer.style.display = 'block';
+    
+    // Mostrar mensaje de carga
+    paymentReferenceOriginal.value = 'Cargando...';
+    paymentDateOriginal.value = 'Cargando...';
+    
+    // Llamar a la API para obtener los datos de pago
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        console.log('Respuesta de GetPaymentData:', xhr.status, xhr.responseText);
+        
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                console.log('Datos parseados:', data);
+                
+                // El repositorio devuelve un objeto, no un array
+                if (data.success && data.data && typeof data.data === 'object') {
+                    const paymentRecord = data.data;
+                    const paymentReference = paymentRecord.payment_reference || '';
+                    const paymentDate = paymentRecord.payment_date || '';
+                    
+                    console.log('paymentReference:', paymentReference);
+                    console.log('paymentDate:', paymentDate);
+                    
+                    // Formatear la fecha si existe
+                    let formattedDate = '';
+                    if (paymentDate) {
+                        // La fecha puede venir en formato timestamp o date
+                        const date = new Date(paymentDate);
+                        if (!isNaN(date.getTime())) {
+                            formattedDate = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+                        } else {
+                            formattedDate = paymentDate; // Si ya viene formateada
+                        }
+                    }
+                    
+                    // Mostrar los datos en los campos
+                    paymentReferenceOriginal.value = paymentReference || 'No disponible';
+                    paymentDateOriginal.value = formattedDate || 'No disponible';
+                    
+                    // Seleccionar "Sí" por defecto en ambos radio buttons
+                    const referenceCorrectYes = document.getElementById('referenceCorrectYes');
+                    const dateCorrectYes = document.getElementById('dateCorrectYes');
+                    const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+                    const dateCorrectNo = document.getElementById('dateCorrectNo');
+                    
+                    if (referenceCorrectYes) referenceCorrectYes.checked = true;
+                    if (referenceCorrectNo) referenceCorrectNo.checked = false;
+                    if (dateCorrectYes) dateCorrectYes.checked = true;
+                    if (dateCorrectNo) dateCorrectNo.checked = false;
+                    
+                    // Asegurar que los campos de corrección estén ocultos
+                    const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+                    const dateCorrectionField = document.getElementById('dateCorrectionField');
+                    if (referenceCorrectionField) referenceCorrectionField.style.display = 'none';
+                    if (dateCorrectionField) dateCorrectionField.style.display = 'none';
+                    
+                    // Limpiar los campos de corrección
+                    const paymentReferenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+                    const paymentDateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+                    if (paymentReferenceCorrectOnly) paymentReferenceCorrectOnly.value = '';
+                    if (paymentDateCorrectOnly) paymentDateCorrectOnly.value = '';
+                    
+                    // Mostrar el contenedor de validación
+                    paymentValidationContainer.style.display = 'block';
+                    console.log('Datos de pago cargados correctamente');
+                } else {
+                    // No hay datos de pago, pero mostrar el contenedor con mensaje
+                    paymentReferenceOriginal.value = 'No disponible';
+                    paymentDateOriginal.value = 'No disponible';
+                    paymentValidationContainer.style.display = 'block';
+                    console.warn('No se encontraron datos de pago para el ticket:', nroTicket);
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                paymentReferenceOriginal.value = 'Error al cargar';
+                paymentDateOriginal.value = 'Error al cargar';
+                paymentValidationContainer.style.display = 'block';
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            paymentReferenceOriginal.value = 'Error al cargar';
+            paymentDateOriginal.value = 'Error al cargar';
+            paymentValidationContainer.style.display = 'block';
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al intentar cargar los datos de pago.');
+        paymentReferenceOriginal.value = 'Error de conexión';
+        paymentDateOriginal.value = 'Error de conexión';
+        paymentValidationContainer.style.display = 'block';
+    };
+    
+    const data = `nro_ticket=${encodeURIComponent(nroTicket)}`;
+    console.log('Enviando datos a GetPaymentData:', data);
+    xhr.send(data);
+}
+
+// Función para configurar los event listeners de los radio buttons de validación
+function setupPaymentValidationListeners() {
+    // Radio: ¿Nro de referencia correcto?
+    const referenceCorrectYes = document.getElementById('referenceCorrectYes');
+    const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+    const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+    
+    if (referenceCorrectYes && referenceCorrectNo && referenceCorrectionField) {
+        referenceCorrectYes.addEventListener('change', function() {
+            if (this.checked) {
+                referenceCorrectionField.style.display = 'none';
+                const refCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+                if (refCorrectOnly) refCorrectOnly.value = '';
+            }
+        });
+        
+        referenceCorrectNo.addEventListener('change', function() {
+            if (this.checked) {
+                referenceCorrectionField.style.display = 'block';
+            }
+        });
+    }
+    
+    // Radio: ¿Fecha de pago correcta?
+    const dateCorrectYes = document.getElementById('dateCorrectYes');
+    const dateCorrectNo = document.getElementById('dateCorrectNo');
+    const dateCorrectionField = document.getElementById('dateCorrectionField');
+    
+    if (dateCorrectYes && dateCorrectNo && dateCorrectionField) {
+        dateCorrectYes.addEventListener('change', function() {
+            if (this.checked) {
+                dateCorrectionField.style.display = 'none';
+                const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+                if (dateCorrectOnly) dateCorrectOnly.value = '';
+            }
+        });
+        
+        dateCorrectNo.addEventListener('change', function() {
+            if (this.checked) {
+                dateCorrectionField.style.display = 'block';
+            }
+        });
+    }
 }
 
 function getMotivos(documentType) {

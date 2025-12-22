@@ -1305,7 +1305,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 <div class="mt-3 pt-3 border-top border-light">
                                     <div style="text-align: center; margin-bottom: 12px;">
                                         <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
-                                    </div>
+                            </div>
                                     <div class="d-flex flex-wrap gap-3 justify-content-center">
                                         <div class="d-flex align-items-center">
                                             <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
@@ -1856,19 +1856,19 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         
         if (previous && isEnElRosal) {
             // Tiempo 1: Desde la gestión anterior (TG)
-            if (previous && previous.fecha_de_cambio) {
-                const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
-                if (elapsedFromPrevious) {
-                    durationLabFromPreviousText = elapsedFromPrevious.text;
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationLabFromPreviousText = elapsedFromPrevious.text;
+                    }
                 }
-            }
-            
+                
             // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
             // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
             // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
             let totalTallerMinutes = 0;
-            for (let i = index + 1; i < history.length; i++) {
-                const histItem = history[i];
+                for (let i = index + 1; i < history.length; i++) {
+                    const histItem = history[i];
                 const prevHistItem = history[i - 1] || null; // La gestión más reciente que esta
                 
                 if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {

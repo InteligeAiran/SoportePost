@@ -522,7 +522,7 @@ class consulta_rifModel extends Model
 
             $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket);
 
-            $sql = "SELECT stpay.name_status_payment FROM tickets tik INNER JOIN status_payments stpay ON stpay.id_status_payment = tik.id_status_payment WHERE tik.id_ticket =(".$escaped_id_ticket .");";
+            $sql = "SELECT stpay.id_status_payment, stpay.name_status_payment FROM tickets tik INNER JOIN status_payments stpay ON stpay.id_status_payment = tik.id_status_payment WHERE tik.id_ticket =(".$escaped_id_ticket .");";
 
             $result = pg_query($this->db->getConnection(), $sql);
 
@@ -818,7 +818,18 @@ class consulta_rifModel extends Model
 
 
 
-            // 11. Obtener el estado actual del ticket
+            // 11. Transferir pago de la tabla temporal a la principal si existe (usando la misma sesión)
+            $paymentTransferResult = $this->TransferPaymentFromTempToMain($serial, $Nr_ticket);
+            if ($paymentTransferResult !== false && $paymentTransferResult !== true) {
+                // Se transfirió un pago exitosamente
+                error_log("Pago transferido exitosamente dentro de SaveDataFalla2. ID del registro: " . $paymentTransferResult);
+            } elseif ($paymentTransferResult === false) {
+                // Hubo un error al transferir (pero no detenemos la creación del ticket)
+                error_log("Advertencia: No se pudo transferir el pago temporal para el serial: " . $serial);
+            }
+            // Si $paymentTransferResult === true, significa que no había pago temporal para transferir (no es un error)
+
+            // 12. Obtener el estado actual del ticket
 
             $currentTicketStatus = $this->getStatusTicket($idTicketCreado);
 
@@ -5529,7 +5540,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
-   public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type) {
+   public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = '') {
     try {
         $db_conn = $this->db->getConnection();
 
@@ -5587,6 +5598,51 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             if ($result1 === false) {
                 error_log("Error al aprobar documentos: " . pg_last_error($db_conn));
                 return false;
+            }
+        }
+        
+        // ✅ ACTUALIZAR payment_records SI ES ANTICIPO
+        if ($document_type === 'Anticipo' && !empty($nro_ticket)) {
+            // Construir la consulta UPDATE dinámicamente según los campos que tengan valores
+            $updateFields = [];
+            
+            // Siempre actualizar confirmation_number a true
+            $updateFields[] = "confirmation_number = true";
+            
+            // Actualizar id_status_payment a 6 (Aprobado)
+            $updateFields[] = "payment_status = 6";
+            
+            // Agregar campos verificados si tienen valores
+            if (!empty($nro_payment_reference_verified)) {
+                $escaped_reference = pg_escape_literal($db_conn, $nro_payment_reference_verified);
+                $updateFields[] = "nro_payment_reference_verified = " . $escaped_reference;
+            }
+            
+            if (!empty($payment_date_verified)) {
+                $escaped_date = pg_escape_literal($db_conn, $payment_date_verified);
+                $updateFields[] = "payment_date_verified = " . $escaped_date;
+            }
+            
+            // Construir y ejecutar la consulta UPDATE usando subconsulta para obtener el id más reciente
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $sqlUpdatePayment = "UPDATE payment_records 
+                                SET " . implode(", ", $updateFields) . "
+                                WHERE id_payment_record = (
+                                    SELECT id_payment_record 
+                                    FROM payment_records 
+                                    WHERE nro_ticket = " . $escaped_nro_ticket . "
+                                    ORDER BY id_payment_record DESC
+                                    LIMIT 1
+                                );";
+            
+            $resultUpdatePayment = pg_query($db_conn, $sqlUpdatePayment);
+            
+            if ($resultUpdatePayment === false) {
+                error_log("Error al actualizar payment_records para Anticipo: " . pg_last_error($db_conn));
+                // No retornar false aquí, solo loguear el error para no afectar la aprobación
+            } else {
+                pg_free_result($resultUpdatePayment);
+                error_log("payment_records actualizado correctamente para ticket: $nro_ticket");
             }
         }
 
@@ -6268,6 +6324,683 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
         }
 
+    }
+
+    public function GetPaymentMethods(){
+
+        try {
+
+            $sql = "SELECT id_payment_method, payment_method_code, payment_method_name, payment_method_description FROM public.payment_methods WHERE is_active = TRUE ORDER BY payment_method_name ASC";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetPaymentMethods: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    public function GetExchangeRate(){
+
+        try {
+
+            $sql = "SELECT * FROM public.getexchangerate();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetExchangeRate: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    public function GetExchangeRateToday(){
+
+        try {
+
+            $sql = "SELECT * FROM public.get_exchange_rate_today();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetExchangeRateToday: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    public function GetBancos(){
+
+        try {
+
+            $sql = "SELECT * FROM obtener_datos_banco();";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetBancos: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    public function GetPaymentData($nro_ticket){
+
+        try {
+
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_payment_record DESC LIMIT 1;";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetPaymentData: " . $e->getMessage());
+
+            return false;
+
+        }
+    }
+
+    public function SaveBudget($nro_ticket, $monto_taller, $diferencia_usd, $diferencia_bs, $descripcion_reparacion, $fecha_presupuesto, $presupuesto_numero, $user_creator){
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // Escapar parámetros
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $escaped_monto_taller = (float)$monto_taller;
+            $escaped_diferencia_usd = (float)$diferencia_usd;
+            $escaped_diferencia_bs = (float)$diferencia_bs;
+            $escaped_descripcion = $descripcion_reparacion ? pg_escape_literal($db_conn, $descripcion_reparacion) : 'NULL';
+            $escaped_fecha_presupuesto = pg_escape_literal($db_conn, $fecha_presupuesto);
+            $escaped_presupuesto_numero = $presupuesto_numero ? pg_escape_literal($db_conn, $presupuesto_numero) : 'NULL';
+            $escaped_user_creator = $user_creator ? (int)$user_creator : 'NULL';
+            
+            // Insertar en la tabla budgets
+            $sql = "
+                INSERT INTO budgets (
+                    nro_ticket,
+                    monto_taller,
+                    diferencia_usd,
+                    diferencia_bs,
+                    descripcion_reparacion,
+                    fecha_presupuesto,
+                    presupuesto_numero,
+                    user_creator
+                ) VALUES (
+                    " . $escaped_nro_ticket . ",
+                    " . $escaped_monto_taller . ",
+                    " . $escaped_diferencia_usd . ",
+                    " . $escaped_diferencia_bs . ",
+                    " . $escaped_descripcion . ",
+                    " . $escaped_fecha_presupuesto . ",
+                    " . $escaped_presupuesto_numero . ",
+                    " . $escaped_user_creator . "
+                ) RETURNING id_budget, presupuesto_numero;
+            ";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al guardar presupuesto: " . pg_last_error($db_conn));
+                return false;
+            }
+            
+            $row = pg_fetch_assoc($result);
+            $id_budget = (int)$row['id_budget'];
+            $presupuesto_numero = $row['presupuesto_numero'];
+            pg_free_result($result);
+            
+            return [
+                'id_budget' => $id_budget,
+                'presupuesto_numero' => $presupuesto_numero
+            ];
+            
+        } catch (Throwable $e) {
+            error_log("Error en SaveBudget: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function UpdateVerifiedPaymentData($nro_ticket, $nro_payment_reference_verified, $payment_date_verified){
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // Escapar parámetros
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            
+            // Construir la consulta UPDATE dinámicamente según los campos que tengan valores
+            $updateFields = [];
+            
+            if (!empty($nro_payment_reference_verified)) {
+                $escaped_reference = pg_escape_literal($db_conn, $nro_payment_reference_verified);
+                $updateFields[] = "nro_payment_reference_verified = " . $escaped_reference;
+            }
+            
+            if (!empty($payment_date_verified)) {
+                $escaped_date = pg_escape_literal($db_conn, $payment_date_verified);
+                $updateFields[] = "payment_date_verified = " . $escaped_date;
+            }
+            
+            // Si no hay campos para actualizar, retornar true (no hay nada que hacer)
+            if (empty($updateFields)) {
+                return true;
+            }
+            
+            // Construir y ejecutar la consulta UPDATE
+            $sql = "UPDATE payment_records 
+                    SET " . implode(", ", $updateFields) . "
+                    WHERE nro_ticket = " . $escaped_nro_ticket . "
+                    ORDER BY id_payment_record DESC
+                    LIMIT 1;";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al actualizar datos verificados de pago: " . pg_last_error($db_conn));
+                return false;
+            }
+            
+            pg_free_result($result);
+            return true;
+            
+        } catch (Throwable $e) {
+            error_log("Error en UpdateVerifiedPaymentData: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function UpdatePresupuestoPDFPath($id_budget, $pdf_path){
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_id_budget = (int)$id_budget;
+            $escaped_pdf_path = pg_escape_literal($db_conn, $pdf_path);
+            
+            $sql = "
+                UPDATE budgets 
+                SET pdf_path = " . $escaped_pdf_path . "
+                WHERE id_budget = " . $escaped_id_budget . "
+                RETURNING id_budget;
+            ";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al actualizar pdf_path del presupuesto: " . pg_last_error($db_conn));
+                return false;
+            }
+            
+            $row = pg_fetch_assoc($result);
+            pg_free_result($result);
+            
+            return $row ? true : false;
+            
+        } catch (Throwable $e) {
+            error_log("Error en UpdatePresupuestoPDFPath: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function UpdatePresupuestoPDFPathByNroTicket($nro_ticket, $pdf_path){
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $escaped_pdf_path = pg_escape_literal($db_conn, $pdf_path);
+            
+            $sql = "
+                UPDATE budgets 
+                SET pdf_path = " . $escaped_pdf_path . "
+                WHERE nro_ticket = " . $escaped_nro_ticket . "
+                RETURNING id_budget;
+            ";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al actualizar pdf_path del presupuesto por nro_ticket: " . pg_last_error($db_conn));
+                return false;
+            }
+            
+            $row = pg_fetch_assoc($result);
+            pg_free_result($result);
+            
+            return $row ? true : false;
+            
+        } catch (Throwable $e) {
+            error_log("Error en UpdatePresupuestoPDFPathByNroTicket: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function GetTicketDetailsByNroTicket($nro_ticket){
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            
+            $sql = "SELECT serial_pos, nro_ticket FROM tickets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1;";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al obtener detalles del ticket: " . pg_last_error($db_conn));
+                return null;
+            }
+            
+            $row = pg_fetch_assoc($result);
+            pg_free_result($result);
+            
+            return $row ? $row : null;
+            
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketDetailsByNroTicket: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function GetBudgetIdByNroTicket($nro_ticket){
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            
+            $sql = "SELECT id_budget FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY fecha_creacion DESC LIMIT 1;";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al obtener id_budget: " . pg_last_error($db_conn));
+                return null;
+            }
+            
+            $row = pg_fetch_assoc($result);
+            pg_free_result($result);
+            
+            return $row ? (int)$row['id_budget'] : null;
+            
+        } catch (Throwable $e) {
+            error_log("Error en GetBudgetIdByNroTicket: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function GetPresupuestoData($nro_ticket){
+
+        try {
+
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            
+            // Usar función SQL que usa dblink para obtener datos de Intelipunto
+            // Similar a get_tickets_pending_document_approval
+            $sql = "SELECT * FROM get_presupuesto_data(" . $escaped_nro_ticket . ");";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetPresupuestoData: " . $e->getMessage());
+
+            return false;
+
+        }
+    }
+
+    public function GetEstatusPago(){
+        try {
+
+            $sql = "SELECT * FROM get_status_payment_by_id()";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetEstatusPago: " . $e->getMessage());
+
+            return false;
+
+        }
+    }
+
+    public function SavePayment($serial_pos, $user_loader, $payment_date, $origen_bank, $destination_bank, $payment_method, $currency, $reference_amount, $amount_bs, $payment_reference, $depositor, $observations, $record_number, $loadpayment_date, $confirmation_number, $payment_status, $destino_rif_tipo = null, $destino_rif_numero = null, $destino_telefono = null, $destino_banco = null, $origen_rif_tipo = null, $origen_rif_numero = null, $origen_telefono = null, $origen_banco = null){
+
+        try {
+
+            $sql = "-- 1. CREACIÓN DE LA TABLA TEMPORAL (si no existe)
+                    CREATE TEMPORARY TABLE IF NOT EXISTS temp_payment_uploads (
+                        id_payment_record SERIAL PRIMARY KEY,
+                        serial_pos VARCHAR(225) NOT NULL,
+                        user_loader integer,
+                        payment_date timestamp without time zone,
+                        origen_bank text,
+                        destination_bank text,
+                        payment_method VARCHAR(50) NOT NULL,
+                        currency VARCHAR(10) NOT NULL,
+                        reference_amount DECIMAL(15, 2),
+                        amount_bs DECIMAL(15, 2) NOT NULL,
+                        payment_reference VARCHAR(100),
+                        depositor VARCHAR(200),
+                        observations TEXT,
+                        record_number VARCHAR(50),
+                        loadpayment_date timestamp without time zone,
+                        confirmation_number BOOLEAN,
+                        payment_status integer,
+                        destino_rif_tipo VARCHAR(1),
+                        destino_rif_numero VARCHAR(20),
+                        destino_telefono VARCHAR(20),
+                        destino_banco VARCHAR(100),
+                        origen_rif_tipo VARCHAR(1),
+                        origen_rif_numero VARCHAR(20),
+                        origen_telefono VARCHAR(20),
+                        origen_banco VARCHAR(100)
+                    )
+                    ON COMMIT PRESERVE ROWS; -- La tabla persiste durante toda la sesión, pero se elimina al cerrar la conexión.
+
+                    -- 2. INSERCIÓN DE DATOS EN LA MISMA TABLA TEMPORAL
+                    INSERT INTO temp_payment_uploads (
+                        serial_pos,
+                        user_loader,
+                        payment_date,
+                        origen_bank,
+                        destination_bank,
+                        payment_method,
+                        currency,
+                        reference_amount,
+                        amount_bs,
+                        payment_reference,
+                        depositor,
+                        observations,
+                        record_number,
+                        loadpayment_date,
+                        confirmation_number,
+                        payment_status,
+                        destino_rif_tipo,
+                        destino_rif_numero,
+                        destino_telefono,
+                        destino_banco,
+                        origen_rif_tipo,
+                        origen_rif_numero,
+                        origen_telefono,
+                        origen_banco
+                    ) VALUES (
+                        " . pg_escape_literal($this->db->getConnection(), $serial_pos) . ",
+                        " . ($user_loader ? (int)$user_loader : "NULL") . ",
+                        " . ($payment_date ? "'" . pg_escape_string($this->db->getConnection(), $payment_date) . "'" : "NULL") . ",
+                        " . ($origen_bank ? pg_escape_literal($this->db->getConnection(), $origen_bank) : "NULL") . ",
+                        " . ($destination_bank ? pg_escape_literal($this->db->getConnection(), $destination_bank) : "NULL") . ",
+                        " . pg_escape_literal($this->db->getConnection(), $payment_method) . ",
+                        " . pg_escape_literal($this->db->getConnection(), $currency) . ",
+                        " . ($reference_amount ? (float)$reference_amount : "NULL") . ",
+                        " . (float)$amount_bs . ",
+                        " . ($payment_reference ? pg_escape_literal($this->db->getConnection(), $payment_reference) : "NULL") . ",
+                        " . ($depositor ? pg_escape_literal($this->db->getConnection(), $depositor) : "NULL") . ",
+                        " . ($observations ? pg_escape_literal($this->db->getConnection(), $observations) : "NULL") . ",
+                        " . ($record_number ? pg_escape_literal($this->db->getConnection(), $record_number) : "NULL") . ",
+                        " . ($loadpayment_date ? "'" . pg_escape_string($this->db->getConnection(), $loadpayment_date) . "'" : "NOW()") . ",
+                        " . ($confirmation_number ? "TRUE" : "FALSE") . ",
+                        " . ($payment_status ? (int)$payment_status : "1") . ",
+                        " . ($destino_rif_tipo ? pg_escape_literal($this->db->getConnection(), $destino_rif_tipo) : "NULL") . ",
+                        " . ($destino_rif_numero ? pg_escape_literal($this->db->getConnection(), $destino_rif_numero) : "NULL") . ",
+                        " . ($destino_telefono ? pg_escape_literal($this->db->getConnection(), $destino_telefono) : "NULL") . ",
+                        " . ($destino_banco ? pg_escape_literal($this->db->getConnection(), $destino_banco) : "NULL") . ",
+                        " . ($origen_rif_tipo ? pg_escape_literal($this->db->getConnection(), $origen_rif_tipo) : "NULL") . ",
+                        " . ($origen_rif_numero ? pg_escape_literal($this->db->getConnection(), $origen_rif_numero) : "NULL") . ",
+                        " . ($origen_telefono ? pg_escape_literal($this->db->getConnection(), $origen_telefono) : "NULL") . ",
+                        " . ($origen_banco ? pg_escape_literal($this->db->getConnection(), $origen_banco) : "NULL") . "
+                    ) RETURNING id_payment_record;";
+            $result = Model::getResult($sql, $this->db);
+
+            if ($result && $result['numRows'] > 0) {
+                $row = pg_fetch_assoc($result['query'], 0);
+                return $row['id_payment_record'];
+            }
+
+            return false;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en SavePayment: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+    /**
+     * Transfiere el pago de la tabla temporal a la tabla principal cuando se crea el ticket
+     * 
+     * @param string $serial_pos Serial del POS
+     * @param string $nro_ticket Número del ticket creado
+     * @return bool|int ID del registro insertado en payment_records o false en caso de error
+     */
+    public function TransferPaymentFromTempToMain($serial_pos, $nro_ticket) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // Escapar parámetros
+            $escaped_serial = pg_escape_literal($db_conn, $serial_pos);
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            
+            error_log("TransferPaymentFromTempToMain: Iniciando transferencia para serial: " . $serial_pos . ", nro_ticket: " . $nro_ticket);
+            
+            // Primero intentar buscar directamente en la tabla temporal
+            // Si la tabla no existe, simplemente retornaremos true (no es un error)
+            $sql_select = "
+                SELECT 
+                    id_payment_record,
+                    serial_pos,
+                    user_loader,
+                    payment_date,
+                    origen_bank,
+                    destination_bank,
+                    payment_method,
+                    currency,
+                    reference_amount,
+                    amount_bs,
+                    payment_reference,
+                    depositor,
+                    observations,
+                    record_number,
+                    loadpayment_date,
+                    confirmation_number,
+                    payment_status,
+                    destino_rif_tipo,
+                    destino_rif_numero,
+                    destino_telefono,
+                    destino_banco,
+                    origen_rif_tipo,
+                    origen_rif_numero,
+                    origen_telefono,
+                    origen_banco
+                FROM temp_payment_uploads
+                WHERE serial_pos = " . $escaped_serial . "
+                ORDER BY id_payment_record DESC
+                LIMIT 1;
+            ";
+            
+            $result_select = $this->db->pgquery($sql_select);
+            
+            // Si hay error porque la tabla no existe, simplemente retornar true
+            if ($result_select === false) {
+                $error = pg_last_error($db_conn);
+                if (strpos($error, 'does not exist') !== false || strpos($error, 'no existe') !== false) {
+                    // La tabla temporal no existe, no hay pago para transferir
+                    error_log("TransferPaymentFromTempToMain: Tabla temporal no existe para serial: " . $serial_pos);
+                    return true;
+                }
+                error_log("Error al buscar pago temporal: " . $error);
+                return false;
+            }
+            
+            // Si no hay registros, retornar true (no es un error)
+            if (pg_num_rows($result_select) == 0) {
+                error_log("TransferPaymentFromTempToMain: No se encontraron registros en tabla temporal para serial: " . $serial_pos);
+                pg_free_result($result_select);
+                return true;
+            }
+            
+            $payment_data = pg_fetch_assoc($result_select);
+            pg_free_result($result_select);
+            
+            error_log("TransferPaymentFromTempToMain: Registro encontrado en tabla temporal. ID: " . $payment_data['id_payment_record'] . ", Serial: " . $payment_data['serial_pos']);
+            
+            // Insertar en payment_records con el nro_ticket
+            $sql_insert = "
+                INSERT INTO payment_records (
+                    nro_ticket,
+                    serial_pos,
+                    user_loader,
+                    payment_date,
+                    origen_bank,
+                    destination_bank,
+                    payment_method,
+                    currency,
+                    reference_amount,
+                    amount_bs,
+                    payment_reference,
+                    depositor,
+                    observations,
+                    record_number,
+                    loadpayment_date,
+                    confirmation_number,
+                    payment_status,
+                    destino_rif_tipo,
+                    destino_rif_numero,
+                    destino_telefono,
+                    destino_banco,
+                    origen_rif_tipo,
+                    origen_rif_numero,
+                    origen_telefono,
+                    origen_banco
+                ) VALUES (
+                    " . $escaped_nro_ticket . ",
+                    " . pg_escape_literal($db_conn, $payment_data['serial_pos']) . ",
+                    " . ($payment_data['user_loader'] ? (int)$payment_data['user_loader'] : "NULL") . ",
+                    " . ($payment_data['payment_date'] ? "'" . pg_escape_string($db_conn, $payment_data['payment_date']) . "'" : "NULL") . ",
+                    " . ($payment_data['origen_bank'] ? pg_escape_literal($db_conn, $payment_data['origen_bank']) : "NULL") . ",
+                    " . ($payment_data['destination_bank'] ? pg_escape_literal($db_conn, $payment_data['destination_bank']) : "NULL") . ",
+                    " . pg_escape_literal($db_conn, $payment_data['payment_method']) . ",
+                    " . pg_escape_literal($db_conn, $payment_data['currency']) . ",
+                    " . ($payment_data['reference_amount'] ? (float)$payment_data['reference_amount'] : "NULL") . ",
+                    " . (float)$payment_data['amount_bs'] . ",
+                    " . ($payment_data['payment_reference'] ? pg_escape_literal($db_conn, $payment_data['payment_reference']) : "NULL") . ",
+                    " . ($payment_data['depositor'] ? pg_escape_literal($db_conn, $payment_data['depositor']) : "NULL") . ",
+                    " . ($payment_data['observations'] ? pg_escape_literal($db_conn, $payment_data['observations']) : "NULL") . ",
+                    " . ($payment_data['record_number'] ? pg_escape_literal($db_conn, $payment_data['record_number']) : "NULL") . ",
+                    " . ($payment_data['loadpayment_date'] ? "'" . pg_escape_string($db_conn, $payment_data['loadpayment_date']) . "'" : "NOW()") . ",
+                    FALSE, -- confirmation_number siempre se guarda como FALSE, será TRUE cuando se verifique el documento de pago
+                    " . ($payment_data['payment_status'] ? (int)$payment_data['payment_status'] : "1") . ",
+                    " . ($payment_data['destino_rif_tipo'] ? pg_escape_literal($db_conn, $payment_data['destino_rif_tipo']) : "NULL") . ",
+                    " . ($payment_data['destino_rif_numero'] ? pg_escape_literal($db_conn, $payment_data['destino_rif_numero']) : "NULL") . ",
+                    " . ($payment_data['destino_telefono'] ? pg_escape_literal($db_conn, $payment_data['destino_telefono']) : "NULL") . ",
+                    " . ($payment_data['destino_banco'] ? pg_escape_literal($db_conn, $payment_data['destino_banco']) : "NULL") . ",
+                    " . ($payment_data['origen_rif_tipo'] ? pg_escape_literal($db_conn, $payment_data['origen_rif_tipo']) : "NULL") . ",
+                    " . ($payment_data['origen_rif_numero'] ? pg_escape_literal($db_conn, $payment_data['origen_rif_numero']) : "NULL") . ",
+                    " . ($payment_data['origen_telefono'] ? pg_escape_literal($db_conn, $payment_data['origen_telefono']) : "NULL") . ",
+                    " . ($payment_data['origen_banco'] ? pg_escape_literal($db_conn, $payment_data['origen_banco']) : "NULL") . "
+                ) RETURNING id_payment_record;
+            ";
+            
+            $result_insert = $this->db->pgquery($sql_insert);
+            
+            if ($result_insert === false) {
+                $error = pg_last_error($db_conn);
+                error_log("Error al insertar pago en payment_records: " . $error);
+                error_log("SQL: " . $sql_insert);
+                return false;
+            }
+            
+            $new_record = pg_fetch_assoc($result_insert);
+            $new_id = (int)$new_record['id_payment_record'];
+            pg_free_result($result_insert);
+            
+            error_log("TransferPaymentFromTempToMain: Pago insertado exitosamente en payment_records. ID: " . $new_id . ", nro_ticket: " . $nro_ticket);
+            
+            // Eliminar el registro de la tabla temporal
+            $sql_delete = "
+                DELETE FROM temp_payment_uploads
+                WHERE id_payment_record = " . (int)$payment_data['id_payment_record'] . ";
+            ";
+            
+            $result_delete = $this->db->pgquery($sql_delete);
+            
+            if ($result_delete === false) {
+                error_log("Advertencia: No se pudo eliminar el registro temporal, pero el pago se insertó correctamente. ID: " . $new_id);
+            } else {
+                pg_free_result($result_delete);
+            }
+            
+            return $new_id;
+            
+        } catch (Throwable $e) {
+            error_log("Error en TransferPaymentFromTempToMain: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function CheckPaymentExistsToday($serial_pos){
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_serial = pg_escape_literal($db_conn, $serial_pos);
+            
+            // Verificar si existe un pago en la tabla temporal para este serial
+            // La tabla temporal es por sesión, así que necesitamos verificar si existe primero
+            // Buscar por serial_pos sin restricción de fecha para encontrar cualquier registro pendiente
+            $sql = "
+                SELECT COUNT(*) as count
+                FROM temp_payment_uploads
+                WHERE serial_pos = " . $escaped_serial . ";
+            ";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                $error = pg_last_error($db_conn);
+                // Si la tabla no existe, significa que no hay pagos registrados
+                if (strpos($error, 'does not exist') !== false || strpos($error, 'no existe') !== false) {
+                    return false;
+                }
+                error_log("Error en CheckPaymentExistsToday: " . $error);
+                return false;
+            }
+            
+            $row = pg_fetch_assoc($result);
+            pg_free_result($result);
+            
+            return isset($row['count']) && intval($row['count']) > 0;
+            
+        } catch (Throwable $e) {
+            error_log("Error en CheckPaymentExistsToday: " . $e->getMessage());
+            return false;
+        }
     }
 
 }

@@ -301,7 +301,8 @@ function getTicketData() {
               </button>`;
           }
 
-          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller") {
+          // Mostrar botón "Enviar a Taller" solo si el usuario es SuperAdmin (1) o Coordinador (4)
+          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller" && (currentUserRole === 1 || currentUserRole === 4)) {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-wrench-custom"
                   data-bs-toggle="tooltip" data-bs-placement="top"
@@ -3485,7 +3486,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 <div class="mt-3 pt-3 border-top border-light">
                                     <div style="text-align: center; margin-bottom: 12px;">
                                         <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
-                                    </div>
+                            </div>
                                     <div class="d-flex flex-wrap gap-3 justify-content-center">
                                         <div class="d-flex align-items-center">
                                             <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>

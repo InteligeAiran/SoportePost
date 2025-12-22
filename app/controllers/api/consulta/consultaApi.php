@@ -7,6 +7,8 @@ require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../repositories/technicalConsultionRepository.php';
+require_once __DIR__ . '/../../../repositories/EmailRepository.php';
+require_once __DIR__ . '/../../../Services/EmailServices.php';
 require_once __DIR__ . '/../../../../config/paths.php';
 
 ini_set('display_errors', 1);
@@ -14,6 +16,8 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 use App\Repositories\technicalConsultionRepository;
+use App\Repositories\EmailRepository;
+use App\Services\EmailService;
 use Controller;
 use DatabaseCon;
 use DateTime;
@@ -22,6 +26,7 @@ class Consulta extends Controller
 {
     private $db;
     private $app_base_path; // Añadido para evitar el error de propiedad indefinida
+    private $emailService; // Service for handling email operations
     // ... otras propiedades que necesites
 
     function __construct()
@@ -33,6 +38,7 @@ class Consulta extends Controller
         header('Access-Control-Allow-Headers: Content-Type');
 
         $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database);
+        $this->emailService = new EmailService(); // Initialize the email service
     }
 
     public function processApi($urlSegments)
@@ -322,6 +328,54 @@ class Consulta extends Controller
 
                 case 'GetAllPOSInfo':
                     $this->handleGetAllPOSInfo();
+                    break;
+
+                case 'GetPaymentMethods':
+                    $this->handleGetPaymentMethods();
+                    break;
+
+                case 'GetExchangeRate':
+                    $this->handleGetExchangeRate();
+                    break;
+
+                case 'GetExchangeRateToday':
+                    $this->handleGetExchangeRateToday();
+                    break;
+
+                case 'GetBancos':
+                    $this->handleGetBancos();
+                    break;
+
+                case 'SavePayment':
+                    $this->handleSavePayment();
+                    break;
+
+                case 'GetEstatusPago':
+                    $this->handleGetEstatusPago();
+                    break;
+
+                case 'GetPaymentData':
+                    $this->handleGetPaymentData();
+                    break;
+
+                case 'GetPresupuestoData':
+                    $this->handleGetPresupuestoData();
+                    break;
+
+                case 'SaveBudget':
+                    $this->handleSaveBudget();
+                    break;
+
+                case 'CheckPaymentExistsToday':
+                    $this->handleCheckPaymentExistsToday();
+                    break;
+
+                case 'UploadPresupuestoPDF':
+                    $this->handleUploadPresupuestoPDF();
+                    break;
+
+                case 'GetBudgetIdByNroTicket':
+                    $this->handleGetBudgetIdByNroTicket();
                     break;
 
                 default:
@@ -969,7 +1023,106 @@ class Consulta extends Controller
             error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
         }
 
-        // 9. Responder al cliente con éxito, incluyendo el estado del ticket
+        // 9. La transferencia del pago ahora se hace dentro de SaveDataFalla2 para usar la misma sesión de conexión
+        // (Ya no es necesario llamarla aquí, pero mantenemos el comentario para referencia)
+
+        // 9.1. Enviar correos según el id_status_payment del ticket
+        if ($anticipoOk || $exoneracionOk) {
+            // Obtener el id_status_payment del ticket
+            $ticket_status_payment = $repository->getStatusPayment($idTicketReal);
+            $id_status_payment_actual = isset($ticket_status_payment['id_status_payment']) ? (int)$ticket_status_payment['id_status_payment'] : null;
+            
+            $emailRepository = new EmailRepository();
+            
+            // Obtener datos completos del ticket para el correo
+            $ticket_data = $emailRepository->GetTicketDataById($idTicketReal);
+            
+            // Preparar imágenes embebidas
+            $embeddedImages = [];
+            if (defined('FIRMA_CORREO')) {
+                $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+            }
+            
+            // Si es Anticipo (id_status_payment = 7) y se guardó el documento
+            if ($id_status_payment_actual == 7 && $anticipoOk) {
+                $result_email_finanzas = $emailRepository->GetEmailAreaFinanzas();
+                if ($result_email_finanzas && !empty($result_email_finanzas['email_area'])) {
+                    $email_finanzas = $result_email_finanzas['email_area'];
+                    $name_finanzas = $result_email_finanzas['name_area'] ?? 'Finanzas';
+                    
+                    // Obtener datos del ticket
+                    $nombre_tecnico_email = $ticket_data['full_name_tecnico'] ?? 'N/A';
+                    $ticketaccion_email = $ticket_data['name_accion_ticket'] ?? 'N/A';
+                    $ticketdomiciliacion_email = $ticket_data['name_status_domiciliacion'] ?? 'N/A';
+                    
+                    // Obtener RIF y Razón Social desde GetClientInfo (igual que en domiciliación)
+                    $result_client = $emailRepository->GetClientInfo($serial);
+                    $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? $rif ?? 'N/A';
+                    $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? $razonsocial ?? 'N/A';
+                    
+                    $subject_finanzas = '📋 NOTIFICACIÓN FINANCIERA - Revisar Anticipo del Ticket';
+                    $body_finanzas = $this->getFinanzasEmailBodyForAnticipo(
+                        $name_finanzas,
+                        $nombre_tecnico_email,
+                        $Nr_ticket,
+                        $clientRif_email,
+                        $clientName_email,
+                        $serial,
+                        $nivelFalla_text,
+                        $falla_text,
+                        date('Y-m-d H:i'),
+                        $ticketaccion_email,
+                        $status_text ?? 'N/A',
+                        $status_payment_text ?? 'N/A',
+                        $ticketdomiciliacion_email
+                    );
+                    
+                    $this->emailService->sendEmail($email_finanzas, $subject_finanzas, $body_finanzas, [], $embeddedImages);
+                    error_log("Correo de anticipo enviado a finanzas: " . $email_finanzas);
+                }
+            }
+            
+            // Si es Exoneración (id_status_payment = 5) y se guardó el documento
+            if ($id_status_payment_actual == 5 && $exoneracionOk) {
+                $result_email_admin = $emailRepository->GetEmailAreaAdmin();
+                if ($result_email_admin && !empty($result_email_admin['email_area'])) {
+                    $email_admin = $result_email_admin['email_area'];
+                    $name_admin = $result_email_admin['name_area'] ?? 'Administración';
+                    
+                    // Obtener datos del ticket
+                    $nombre_tecnico_email = $ticket_data['full_name_tecnico'] ?? 'N/A';
+                    $ticketaccion_email = $ticket_data['name_accion_ticket'] ?? 'N/A';
+                    $ticketdomiciliacion_email = $ticket_data['name_status_domiciliacion'] ?? 'N/A';
+                    
+                    // Obtener RIF y Razón Social desde GetClientInfo (igual que en domiciliación)
+                    $result_client = $emailRepository->GetClientInfo($serial);
+                    $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? $rif ?? 'N/A';
+                    $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? $razonsocial ?? 'N/A';
+                    
+                    $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Exoneración del Ticket';
+                    $body_admin = $this->getAdminEmailBodyForExoneracion(
+                        $name_admin,
+                        $nombre_tecnico_email,
+                        $Nr_ticket,
+                        $clientRif_email,
+                        $clientName_email,
+                        $serial,
+                        $nivelFalla_text,
+                        $falla_text,
+                        date('Y-m-d H:i'),
+                        $ticketaccion_email,
+                        $status_text ?? 'N/A',
+                        $status_payment_text ?? 'N/A',
+                        $ticketdomiciliacion_email
+                    );
+                    
+                    $this->emailService->sendEmail($email_admin, $subject_admin, $body_admin, [], $embeddedImages);
+                    error_log("Correo de exoneración enviado a administración: " . $email_admin);
+                }
+            }
+        }
+
+        // 10. Responder al cliente con éxito, incluyendo el estado del ticket
         $this->response([
             'success' => true,
             'message' => 'Datos guardados con éxito. El ticket de nivel 2 ha sido creado.',
@@ -2035,9 +2188,12 @@ class Consulta extends Controller
         $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $document_type = isset($_POST['document_type'])? $_POST['document_type'] : '';
+        $nro_payment_reference_verified = isset($_POST['nro_payment_reference_verified'])? trim($_POST['nro_payment_reference_verified']) : '';
+        $payment_date_verified = isset($_POST['payment_date_verified'])? trim($_POST['payment_date_verified']) : '';
         
         // Log para debug
         error_log("Datos recibidos - nro_ticket: $nro_ticket, id_ticket: $id_ticket, id_user: $id_user, document_type: $document_type");
+        error_log("Datos verificados - nro_payment_reference_verified: $nro_payment_reference_verified, payment_date_verified: $payment_date_verified");
         
         if (!$id_ticket || !$nro_ticket || !$id_user || !$document_type) {
             $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
@@ -2045,7 +2201,8 @@ class Consulta extends Controller
         }
 
         $repository = new technicalConsultionRepository();
-        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+        // Pasar los datos verificados directamente a AprobarDocumento
+        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
 
         // Log del resultado
         error_log("Resultado de AprobarDocumento: " . ($result ? 'true' : 'false'));
@@ -2218,6 +2375,1124 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false, 'message' => 'Error al realizar la acción.'], 500);
         }
+    }
+
+    public function handleGetPaymentMethods(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentMethods();
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'payment_methods' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay métodos de pago disponibles.', 'payment_methods' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los métodos de pago.'], 500);
+        }
+    }
+
+    public function handleGetExchangeRate(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetExchangeRate();
+
+        if ($result !== null && isset($result['tasa_dolar'])) {
+            $this->response(['success' => true, 'exchange_rate' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se pudo obtener la tasa de cambio.'], 500);
+        }
+    }
+
+    public function handleGetExchangeRateToday(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetExchangeRateToday();
+
+        // Debug: Log para ver qué se está retornando
+        error_log("handleGetExchangeRateToday - Resultado: " . print_r($result, true));
+
+        if ($result !== null && isset($result['tasa_dolar'])) {
+            $this->response(['success' => true, 'exchange_rate' => $result], 200);
+        } else {
+            // Retornar más información de debug
+            $debugInfo = [
+                'result_is_null' => ($result === null),
+                'has_tasa_dolar' => isset($result['tasa_dolar']),
+                'result_keys' => ($result !== null ? array_keys($result) : [])
+            ];
+            error_log("handleGetExchangeRateToday - Error: " . print_r($debugInfo, true));
+            $this->response(['success' => false, 'message' => 'No se pudo obtener la tasa de cambio del día de hoy.', 'debug' => $debugInfo], 500);
+        }
+    }
+
+    public function handleGetBancos(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetBancos();
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'bancos' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay bancos disponibles.', 'bancos' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los bancos.'], 500);
+        }
+    }
+
+    public function handleGetEstatusPago(){
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetEstatusPago();
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'estatus_pago' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay estatus de pago disponibles.', 'estatus_pago' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los estatus de pago.'], 500);
+        }
+    }
+
+    public function handleGetPaymentData(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket no proporcionado'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentData($nro_ticket);
+
+        if ($result !== null && !empty($result)) {
+            // Asegurarse de que los campos estén presentes
+            $paymentData = [
+                'payment_reference' => isset($result['payment_reference']) ? $result['payment_reference'] : '',
+                'payment_date' => isset($result['payment_date']) ? $result['payment_date'] : '',
+                'nro_ticket' => isset($result['nro_ticket']) ? $result['nro_ticket'] : $nro_ticket,
+                'serial_pos' => isset($result['serial_pos']) ? $result['serial_pos'] : '',
+                'amount_bs' => isset($result['amount_bs']) ? $result['amount_bs'] : '',
+                'currency' => isset($result['currency']) ? $result['currency'] : '',
+                'payment_method' => isset($result['payment_method']) ? $result['payment_method'] : ''
+            ];
+            $this->response(['success' => true, 'data' => $paymentData], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró información de pago para este ticket'], 404);
+        }
+    }
+
+    public function handleCheckPaymentExistsToday(){
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        
+        if (empty($serial_pos)) {
+            $this->response(['success' => false, 'message' => 'Serial no proporcionado', 'exists' => false], 400);
+            return;
+        }
+        
+        $repository = new technicalConsultionRepository();
+        $exists = $repository->CheckPaymentExistsToday($serial_pos);
+        
+        $this->response(['success' => true, 'exists' => $exists], 200);
+    }
+
+    public function handleGetPresupuestoData(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket no proporcionado'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPresupuestoData($nro_ticket);
+
+        if ($result !== null && !empty($result)) {
+            $this->response(['success' => true, 'data' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos del cliente para este ticket'], 404);
+        }
+    }
+
+    /**
+     * Maneja el guardado de pagos en la tabla temporal temp_payment_uploads
+     * 
+     * @return void
+     */
+    public function handleSavePayment(){
+        $repository = new technicalConsultionRepository();
+        
+        // ============================================
+        // 1. OBTENER DATOS DEL POST - Información General
+        // ============================================
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $user_loader = isset($_POST['user_loader']) && $_POST['user_loader'] !== '' ? (int)$_POST['user_loader'] : null;
+        $payment_date = isset($_POST['payment_date']) && $_POST['payment_date'] !== '' ? trim($_POST['payment_date']) : null;
+        $payment_method = isset($_POST['payment_method']) ? trim($_POST['payment_method']) : '';
+        $currency = isset($_POST['currency']) ? trim($_POST['currency']) : '';
+        $amount_bs = isset($_POST['amount_bs']) ? $_POST['amount_bs'] : 0;
+        
+        // ============================================
+        // 2. OBTENER DATOS DEL POST - Información Bancaria
+        // ============================================
+        $origen_bank = isset($_POST['origen_bank']) && $_POST['origen_bank'] !== '' ? trim($_POST['origen_bank']) : null;
+        $destination_bank = isset($_POST['destination_bank']) && $_POST['destination_bank'] !== '' ? trim($_POST['destination_bank']) : null;
+        
+        // ============================================
+        // 3. OBTENER DATOS DEL POST - Montos y Referencias
+        // ============================================
+        $reference_amount = isset($_POST['reference_amount']) && $_POST['reference_amount'] !== '' ? (float)$_POST['reference_amount'] : null;
+        $payment_reference = isset($_POST['payment_reference']) && $_POST['payment_reference'] !== '' ? trim($_POST['payment_reference']) : null;
+        $record_number = isset($_POST['record_number']) && $_POST['record_number'] !== '' ? trim($_POST['record_number']) : null;
+        
+        // ============================================
+        // 4. OBTENER DATOS DEL POST - Información Adicional
+        // ============================================
+        $depositor = isset($_POST['depositor']) && $_POST['depositor'] !== '' ? trim($_POST['depositor']) : null;
+        $observations = isset($_POST['observations']) && $_POST['observations'] !== '' ? trim($_POST['observations']) : null;
+        $loadpayment_date = isset($_POST['loadpayment_date']) && $_POST['loadpayment_date'] !== '' ? trim($_POST['loadpayment_date']) : date('Y-m-d H:i:s');
+        $confirmation_number = isset($_POST['confirmation_number']) ? (bool)$_POST['confirmation_number'] : false;
+        $payment_status = isset($_POST['payment_id']) && $_POST['payment_id'] !== '' ? (int)$_POST['payment_id'] : 1;
+        
+        // ============================================
+        // 5. OBTENER DATOS DEL POST - Pago Móvil (Destino)
+        // ============================================
+        $destino_rif_tipo = isset($_POST['destino_rif_tipo']) && $_POST['destino_rif_tipo'] !== '' ? trim($_POST['destino_rif_tipo']) : null;
+        $destino_rif_numero = isset($_POST['destino_rif_numero']) && $_POST['destino_rif_numero'] !== '' ? trim($_POST['destino_rif_numero']) : null;
+        $destino_telefono = isset($_POST['destino_telefono']) && $_POST['destino_telefono'] !== '' ? trim($_POST['destino_telefono']) : null;
+        $destino_banco = isset($_POST['destino_banco']) && $_POST['destino_banco'] !== '' ? trim($_POST['destino_banco']) : null;
+        
+        // ============================================
+        // 6. OBTENER DATOS DEL POST - Pago Móvil (Origen)
+        // ============================================
+        $origen_rif_tipo = isset($_POST['origen_rif_tipo']) && $_POST['origen_rif_tipo'] !== '' ? trim($_POST['origen_rif_tipo']) : null;
+        $origen_rif_numero = isset($_POST['origen_rif_numero']) && $_POST['origen_rif_numero'] !== '' ? trim($_POST['origen_rif_numero']) : null;
+        $origen_telefono = isset($_POST['origen_telefono']) && $_POST['origen_telefono'] !== '' ? trim($_POST['origen_telefono']) : null;
+        $origen_banco = isset($_POST['origen_banco']) && $_POST['origen_banco'] !== '' ? trim($_POST['origen_banco']) : null;
+
+        // ============================================
+        // 7. VALIDACIONES - Campos Obligatorios
+        // ============================================
+        // Validar Forma de Pago
+        if (empty($payment_method)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'Debe seleccionar una forma de pago.'
+            ], 400);
+            return;
+        }
+        
+        // Validar Moneda
+        if (empty($currency)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'Debe seleccionar una moneda.'
+            ], 400);
+            return;
+        }
+        
+        // Validar Monto en Bolívares
+        if (empty($amount_bs) || !is_numeric($amount_bs) || floatval($amount_bs) <= 0) {
+            $this->response([
+                'success' => false, 
+                'message' => 'El monto en Bolívares es obligatorio y debe ser mayor a 0.'
+            ], 400);
+            return;
+        }
+
+        // ============================================
+        // 8. GUARDAR EN BASE DE DATOS
+        // ============================================
+        $result = $repository->SavePayment(
+            // Información General
+            $serial_pos, 
+            $user_loader, 
+            $payment_date, 
+            // Información Bancaria
+            $origen_bank, 
+            $destination_bank, 
+            // Método y Moneda
+            $payment_method, 
+            $currency, 
+            // Montos y Referencias
+            $reference_amount, 
+            $amount_bs, 
+            $payment_reference, 
+            // Información Adicional
+            $depositor, 
+            $observations, 
+            $record_number, 
+            $loadpayment_date, 
+            $confirmation_number, 
+            $payment_status,
+            // Pago Móvil - Destino
+            $destino_rif_tipo,
+            $destino_rif_numero,
+            $destino_telefono,
+            $destino_banco,
+            // Pago Móvil - Origen
+            $origen_rif_tipo,
+            $origen_rif_numero,
+            $origen_telefono,
+            $origen_banco
+        );
+
+        // ============================================
+        // 9. RESPUESTA AL CLIENTE
+        // ============================================
+        if ($result !== false) {
+            $this->response([
+                'success' => true, 
+                'message' => 'Pago guardado correctamente en la tabla temporal (temp_payment_uploads).', 
+                'id_payment_record' => $result,
+                'serial_pos' => $serial_pos,
+                'payment_method' => $payment_method,
+                'table' => 'temp_payment_uploads'
+            ], 200);
+        } else {
+            $this->response([
+                'success' => false, 
+                'message' => 'Error al guardar el pago en la tabla temporal.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Maneja la solicitud para guardar un presupuesto
+     * 
+     * @return void
+     */
+    public function handleSaveBudget(){
+        $repository = new technicalConsultionRepository();
+        
+        // Obtener datos del POST
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        $monto_taller = isset($_POST['monto_taller']) ? (float)$_POST['monto_taller'] : 0;
+        $diferencia_usd = isset($_POST['diferencia_usd']) ? (float)$_POST['diferencia_usd'] : 0;
+        $diferencia_bs = isset($_POST['diferencia_bs']) ? (float)$_POST['diferencia_bs'] : 0;
+        $descripcion_reparacion = isset($_POST['descripcion_reparacion']) ? trim($_POST['descripcion_reparacion']) : null;
+        $fecha_presupuesto = isset($_POST['fecha_presupuesto']) ? trim($_POST['fecha_presupuesto']) : date('Y-m-d');
+        $presupuesto_numero = isset($_POST['presupuesto_numero']) ? trim($_POST['presupuesto_numero']) : null;
+        $user_creator = isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : null;
+        
+        // Validaciones básicas
+        if (empty($nro_ticket)) {
+            $this->response([
+                'success' => false,
+                'message' => 'El número de ticket es requerido.'
+            ], 400);
+            return;
+        }
+        
+        if ($monto_taller <= 0) {
+            $this->response([
+                'success' => false,
+                'message' => 'El monto del taller debe ser mayor a cero.'
+            ], 400);
+            return;
+        }
+        
+        // Guardar en base de datos
+        $result = $repository->SaveBudget(
+            $nro_ticket,
+            $monto_taller,
+            $diferencia_usd,
+            $diferencia_bs,
+            $descripcion_reparacion,
+            $fecha_presupuesto,
+            $presupuesto_numero,
+            $user_creator
+        );
+        
+        // Respuesta al cliente
+        if ($result !== false) {
+            $this->response([
+                'success' => true,
+                'message' => 'Presupuesto guardado correctamente.',
+                'id_budget' => $result['id_budget'],
+                'presupuesto_numero' => $result['presupuesto_numero'],
+                'nro_ticket' => $nro_ticket
+            ], 200);
+        } else {
+            $this->response([
+                'success' => false,
+                'message' => 'Error al guardar el presupuesto.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Maneja la carga del PDF del presupuesto
+     */
+    public function handleUploadPresupuestoPDF(){
+        $repository = new technicalConsultionRepository();
+        
+        // Obtener datos del POST y FILES
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $file = isset($_FILES['presupuesto_pdf_file']) ? $_FILES['presupuesto_pdf_file'] : null;
+        $id_user = isset($_POST['id_user']) ? (int)$_POST['id_user'] : null;
+        
+        // Validaciones básicas
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket no proporcionado.'], 400);
+            return;
+        }
+        
+        if (empty($serial_pos)) {
+            $this->response(['success' => false, 'message' => 'Serial del ticket no proporcionado.'], 400);
+            return;
+        }
+        
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            $errorMessage = 'Error en la subida: ';
+            if (!$file) {
+                $errorMessage .= 'Archivo no proporcionado. ';
+            } elseif ($file['error'] !== UPLOAD_ERR_OK) {
+                $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
+            }
+            $this->response(['success' => false, 'message' => $errorMessage], 400);
+            return;
+        }
+        
+        // Validar que sea PDF
+        $allowedTypes = ['application/pdf'];
+        $fileType = $file['type'];
+        if (!in_array($fileType, $allowedTypes)) {
+            $this->response(['success' => false, 'message' => 'Solo se permiten archivos PDF.'], 400);
+            return;
+        }
+        
+        // Usar el serial_pos enviado desde el frontend
+        $serial = $serial_pos;
+        
+        // Procesar información del archivo
+        $originalFileName = basename($file['name']);
+        $fileSize = $file['size'];
+        
+        // Configurar y crear la estructura de carpetas (igual que otros documentos)
+        $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
+        $baseUploadDir = UPLOAD_BASE_DIR;
+        $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
+        $ticketUploadDir = $serialUploadDir . $nro_ticket . DIRECTORY_SEPARATOR;
+        
+        if (!is_dir($baseUploadDir)) {
+            if (!mkdir($baseUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio base: " . $baseUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (base).'], 500);
+                return;
+            }
+        }
+        if (!is_dir($serialUploadDir)) {
+            if (!mkdir($serialUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio del serial: " . $serialUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (serial).'], 500);
+                return;
+            }
+        }
+        if (!is_dir($ticketUploadDir)) {
+            if (!mkdir($ticketUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio del ticket: " . $ticketUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (ticket).'], 500);
+                return;
+            }
+        }
+        
+        // Crear el subdirectorio para presupuesto
+        $presupuestoDir = $ticketUploadDir . 'presupuesto' . DIRECTORY_SEPARATOR;
+        if (!is_dir($presupuestoDir)) {
+            if (!mkdir($presupuestoDir, 0755, true)) {
+                $this->response(['success' => false, 'message' => 'No se pudo crear el subdirectorio para presupuesto: ' . $presupuestoDir], 500);
+                return;
+            }
+        }
+        
+        // Generar nombre único para el archivo
+        $info = pathinfo($originalFileName);
+        $nombreSinExtension = $info['filename'];
+        $extension = isset($info['extension']) ? '.' . $info['extension'] : '';
+        $cleanNombreSinExtension = preg_replace("/[^a-zA-Z0-9_\-.]/", "_", $nombreSinExtension);
+        $dateForFilename = date('Ymd_His');
+        $uniqueFileName = 'presupuesto_' . $dateForFilename . '_' . uniqid() . '_' . $cleanNombreSinExtension . $extension;
+        
+        // Ruta completa donde se guardará el archivo
+        $uploadPath = $presupuestoDir . $uniqueFileName;
+        
+        // Ruta relativa para la base de datos (usando UPLOAD_BASE_DIR)
+        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/presupuesto/' . $uniqueFileName;
+        
+        // Mover el archivo temporal al destino final
+        if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            try {
+                // Actualizar el presupuesto con la ruta del PDF usando nro_ticket
+                $success = $repository->UpdatePresupuestoPDFPathByNroTicket($nro_ticket, $filePathForDatabase);
+                
+                if ($success) {
+                    $this->response([
+                        'success' => true,
+                        'message' => 'PDF del presupuesto subido y registrado exitosamente.',
+                        'nro_ticket' => $nro_ticket,
+                        'original_filename' => $originalFileName,
+                        'stored_filename' => $uniqueFileName,
+                        'file_path' => $filePathForDatabase,
+                        'file_size_bytes' => $fileSize
+                    ], 200);
+                } else {
+                    // Si hubo error en la DB, borrar el archivo
+                    unlink($uploadPath);
+                    $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos.'], 500);
+                }
+            } catch (\Exception $e) {
+                unlink($uploadPath);
+                $this->response(['success' => false, 'message' => 'Error interno al guardar el PDF: ' . $e->getMessage()], 500);
+            }
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino.'], 500);
+        }
+    }
+
+    /**
+     * Obtiene el id_budget de un presupuesto por nro_ticket
+     */
+    public function handleGetBudgetIdByNroTicket(){
+        $repository = new technicalConsultionRepository();
+        
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket no proporcionado.'], 400);
+            return;
+        }
+        
+        $id_budget = $repository->GetBudgetIdByNroTicket($nro_ticket);
+        
+        if ($id_budget) {
+            $this->response(['success' => true, 'id_budget' => $id_budget], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró un presupuesto para este ticket.'], 404);
+        }
+    }
+
+    private function getFinanzasEmailBodyForAnticipo($nombre_area_finanzas, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue, // Solo el número
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area' => htmlspecialchars($nombre_area_finanzas),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
+        ];
+        $currentYear = date("Y");
+        
+        // Preparar el logo HTML si está definido
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Financiera - Revisar Anticipo</title>
+            <style>
+        body{
+            margin:0;
+            padding:30px 0;
+            background:#f8f9fa;
+            font-family:'Inter','Segoe UI',sans-serif;
+        }
+        .card{
+            background:#ffffff;
+            max-width:650px;
+            margin:0 auto;
+            border-radius:24px;
+            box-shadow:0 25px 80px rgba(0,0,0,0.12);
+            overflow:hidden;
+        }
+        .header{
+            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
+            color:#ffffff;
+            padding:30px;
+            text-align:center;
+        }
+        .header h1{
+            margin:0;
+            font-size:26px;
+            letter-spacing:0.5px;
+        }
+        .header p{
+            margin:6px 0 0;
+            font-size:15px;
+            opacity:0.85;
+        }
+        .body{
+            padding:30px 34px 24px;
+        }
+        .hello{
+            text-align:center;
+            font-size:17px;
+            color:#0f172a;
+            margin-bottom:22px;
+        }
+        .hello span{
+            color:#6f42c1;
+            font-weight:700;
+        }
+        .hero-badge{
+            background:#f3e5f5;
+            border:1px solid rgba(111,66,193,0.2);
+            border-radius:18px;
+            padding:14px 18px;
+            text-align:center;
+            font-size:14px;
+            color:#6f42c1;
+            margin-bottom:28px;
+        }
+        .detail{
+            display:flex;
+            align-items:center;
+            padding:14px 0;
+            border-bottom:1px solid #edf2f7;
+        }
+        .detail:last-child{
+            border-bottom:none;
+        }
+        .icon{
+            width:45px;
+            height:45px;
+            border-radius:14px;
+            background:#f8f0fc;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-right:14px;
+            font-size:22px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:0.6px;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:3px;
+        }
+        .value{
+            font-size:16px;
+            color:#0f172a;
+            font-weight:600;
+        }
+        .value-serial{
+            font-family:"JetBrains Mono","Courier New",monospace;
+            font-size:15px;
+            background:#f1f5f9;
+            padding:4px 10px;
+            border-radius:8px;
+            color:#0f172a;
+        }
+        .status-row{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:24px 0 6px;
+            width:100%;
+        }
+        .status-pill{
+            flex:1 1 calc(33.333% - 8px);
+            min-width:180px;
+            max-width:100%;
+            background:#f3e5f5;
+            border-radius:18px;
+            padding:13px 18px;
+            display:flex;
+            flex-direction:column;
+            border:1px solid rgba(111,66,193,0.2);
+            box-sizing:border-box;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+        }
+        .status-pill strong{
+            color:#6f42c1;
+            font-size:11px;
+            letter-spacing:0.5px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            margin-right:8%;
+        }
+        .status-pill span{
+            color:#0f172a;
+            font-weight:700;
+            font-size:11px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            line-height:1.4;
+            hyphens:auto;
+        }
+        .attention-box{
+            background:#f0e6fa;
+            border:2px solid #d8bcfc;
+            border-radius:12px;
+            padding:20px;
+            margin-top:25px;
+            text-align:center;
+        }
+        .attention-box p{
+            margin:0;
+            font-size:1.1em;
+            color:#6f42c1;
+            font-weight:600;
+            line-height:1.5;
+        }
+        .logo-container{
+            text-align:center;
+            margin:30px 0 20px;
+        }
+        .logo{
+            max-width:50%;
+            height:auto;
+            display:block;
+            margin:0 auto;
+            margin-top:-5px;
+            margin-top:-25%;
+        }
+        .footer{
+            padding:20px;
+            text-align:center;
+            font-size:12px;
+            color:#94a3b8;
+            background:#f8fafc;
+            margin-top:-17%;
+        }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{
+                flex:1 1 100%;
+                min-width:100%;
+                max-width:100%;
+            }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Revisar Anticipo</h1>
+            <p>Notificación Financiera</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>Área de {$map['area']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{$map['tecnico']}</strong> ha cargado un documento de anticipo. Por favor, revise el documento asociado.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">👤</div>
+                <div>
+                    <div class="label">Técnico Responsable</div>
+                    <div class="value">{$map['tecnico']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{$map['fecha']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{$map['accion']}</div>
+                        </div>
+                        </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{$map['status']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{$map['pago']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{$map['domi']}</span>
+                </div>
+            </div>
+
+            <div class="attention-box">
+                <p><strong>¡Atención!</strong> Por favor, verifique el documento de anticipo de este ticket.</p>
+            </div>
+
+            {$logoHtml}
+                </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+</html>
+HTML;
+    }
+
+    private function getAdminEmailBodyForExoneracion($nombre_area_admin, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue, // Solo el número
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area' => htmlspecialchars($nombre_area_admin),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
+        ];
+        $currentYear = date("Y");
+        
+        // Preparar el logo HTML si está definido
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Administrativa - Revisar Exoneración</title>
+            <style>
+        body{
+            margin:0;
+            padding:30px 0;
+            background:#f8f9fa;
+            font-family:'Inter','Segoe UI',sans-serif;
+        }
+        .card{
+            background:#ffffff;
+            max-width:650px;
+            margin:0 auto;
+            border-radius:24px;
+            box-shadow:0 25px 80px rgba(0,0,0,0.12);
+            overflow:hidden;
+        }
+        .header{
+            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
+            color:#ffffff;
+            padding:30px;
+            text-align:center;
+        }
+        .header h1{
+            margin:0;
+            font-size:26px;
+            letter-spacing:0.5px;
+        }
+        .header p{
+            margin:6px 0 0;
+            font-size:15px;
+            opacity:0.85;
+        }
+        .body{
+            padding:30px 34px 24px;
+        }
+        .hello{
+            text-align:center;
+            font-size:17px;
+            color:#0f172a;
+            margin-bottom:22px;
+        }
+        .hello span{
+            color:#6f42c1;
+            font-weight:700;
+        }
+        .hero-badge{
+            background:#f3e5f5;
+            border:1px solid rgba(111,66,193,0.2);
+            border-radius:18px;
+            padding:14px 18px;
+            text-align:center;
+            font-size:14px;
+            color:#6f42c1;
+            margin-bottom:28px;
+        }
+        .detail{
+            display:flex;
+            align-items:center;
+            padding:14px 0;
+            border-bottom:1px solid #edf2f7;
+        }
+        .detail:last-child{
+            border-bottom:none;
+        }
+        .icon{
+            width:45px;
+            height:45px;
+            border-radius:14px;
+            background:#f8f0fc;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-right:14px;
+            font-size:22px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:0.6px;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:3px;
+        }
+        .value{
+            font-size:16px;
+            color:#0f172a;
+            font-weight:600;
+        }
+        .value-serial{
+            font-family:"JetBrains Mono","Courier New",monospace;
+            font-size:15px;
+            background:#f1f5f9;
+            padding:4px 10px;
+            border-radius:8px;
+            color:#0f172a;
+        }
+        .status-row{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:24px 0 6px;
+            width:100%;
+        }
+        .status-pill{
+            flex:1 1 calc(33.333% - 8px);
+            min-width:180px;
+            max-width:100%;
+            background:#f3e5f5;
+            border-radius:18px;
+            padding:13px 18px;
+            display:flex;
+            flex-direction:column;
+            border:1px solid rgba(111,66,193,0.2);
+            box-sizing:border-box;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+        }
+        .status-pill strong{
+            color:#6f42c1;
+            font-size:11px;
+            letter-spacing:0.5px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            margin-right:8%;
+        }
+        .status-pill span{
+            color:#0f172a;
+            font-weight:700;
+            font-size:11px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            line-height:1.4;
+            hyphens:auto;
+        }
+        .attention-box{
+            background:#f0e6fa;
+            border:2px solid #d8bcfc;
+            border-radius:12px;
+            padding:20px;
+            margin-top:25px;
+            text-align:center;
+        }
+        .attention-box p{
+            margin:0;
+            font-size:1.1em;
+            color:#6f42c1;
+            font-weight:600;
+            line-height:1.5;
+        }
+        .logo-container{
+            text-align:center;
+            margin:30px 0 20px;
+        }
+        .logo{
+            max-width:50%;
+            height:auto;
+            display:block;
+            margin:0 auto;
+            margin-top:-5px;
+            margin-top:-25%;
+        }
+        .footer{
+            padding:20px;
+            text-align:center;
+            font-size:12px;
+            color:#94a3b8;
+            background:#f8fafc;
+            margin-top:-17%;
+        }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{
+                flex:1 1 100%;
+                min-width:100%;
+                max-width:100%;
+            }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Revisar Exoneración</h1>
+            <p>Notificación Administrativa</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>Área de {$map['area']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{$map['tecnico']}</strong> ha cargado un documento de exoneración. Por favor, revise el documento asociado.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">👤</div>
+                <div>
+                    <div class="label">Técnico Responsable</div>
+                    <div class="value">{$map['tecnico']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{$map['fecha']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{$map['accion']}</div>
+                        </div>
+                        </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{$map['status']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{$map['pago']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{$map['domi']}</span>
+                </div>
+            </div>
+
+            <div class="attention-box">
+                <p><strong>¡Atención!</strong> Por favor, verifique el documento de exoneración de este ticket.</p>
+            </div>
+
+            {$logoHtml}
+                </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+</html>
+HTML;
     }
 }
 ?>
