@@ -1084,40 +1084,64 @@ class Consulta extends Controller
             
             // Si es Exoneración (id_status_payment = 5) y se guardó el documento
             if ($id_status_payment_actual == 5 && $exoneracionOk) {
-                $result_email_admin = $emailRepository->GetEmailAreaAdmin();
-                if ($result_email_admin && !empty($result_email_admin['email_area'])) {
-                    $email_admin = $result_email_admin['email_area'];
-                    $name_admin = $result_email_admin['name_area'] ?? 'Administración';
+                // Correos específicos para exoneración
+                $emails_admin = [
+                    'domiciliacion.intelipunto@inteligensa.com',
+                    'olga.rojas@intelipunto.com',
+                    'neishy.tupano@inteligensa.com'
+                ];
+                $name_admin = 'Administración';
+                
+                // Obtener datos del ticket
+                $nombre_tecnico_email = $ticket_data['full_name_tecnico'] ?? 'N/A';
+                $ticketaccion_email = $ticket_data['name_accion_ticket'] ?? 'N/A';
+                $ticketdomiciliacion_email = $ticket_data['name_status_domiciliacion'] ?? 'N/A';
+                
+                // Obtener RIF y Razón Social desde GetClientInfo (igual que en domiciliación)
+                $result_client = $emailRepository->GetClientInfo($serial);
+                $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? $rif ?? 'N/A';
+                $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? $razonsocial ?? 'N/A';
+                
+                $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Exoneración del Ticket';
+                $body_admin = $this->getAdminEmailBodyForExoneracion(
+                    $name_admin,
+                    $nombre_tecnico_email,
+                    $Nr_ticket,
+                    $clientRif_email,
+                    $clientName_email,
+                    $serial,
+                    $nivelFalla_text,
+                    $falla_text,
+                    date('Y-m-d H:i'),
+                    $ticketaccion_email,
+                    $status_text ?? 'N/A',
+                    $status_payment_text ?? 'N/A',
+                    $ticketdomiciliacion_email
+                );
+                
+                // Enviar correo a cada dirección de administración
+                $emails_enviados_admin = 0;
+                $total_emails_admin = count($emails_admin);
+                
+                foreach ($emails_admin as $email_admin) {
+                    error_log("INTENTANDO ENVIAR CORREO DE EXONERACION A ADMINISTRACION: " . $email_admin);
+                    $email_sent = $this->emailService->sendEmail($email_admin, $subject_admin, $body_admin, [], $embeddedImages);
                     
-                    // Obtener datos del ticket
-                    $nombre_tecnico_email = $ticket_data['full_name_tecnico'] ?? 'N/A';
-                    $ticketaccion_email = $ticket_data['name_accion_ticket'] ?? 'N/A';
-                    $ticketdomiciliacion_email = $ticket_data['name_status_domiciliacion'] ?? 'N/A';
-                    
-                    // Obtener RIF y Razón Social desde GetClientInfo (igual que en domiciliación)
-                    $result_client = $emailRepository->GetClientInfo($serial);
-                    $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? $rif ?? 'N/A';
-                    $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? $razonsocial ?? 'N/A';
-                    
-                    $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Exoneración del Ticket';
-                    $body_admin = $this->getAdminEmailBodyForExoneracion(
-                        $name_admin,
-                        $nombre_tecnico_email,
-                        $Nr_ticket,
-                        $clientRif_email,
-                        $clientName_email,
-                        $serial,
-                        $nivelFalla_text,
-                        $falla_text,
-                        date('Y-m-d H:i'),
-                        $ticketaccion_email,
-                        $status_text ?? 'N/A',
-                        $status_payment_text ?? 'N/A',
-                        $ticketdomiciliacion_email
-                    );
-                    
-                    $this->emailService->sendEmail($email_admin, $subject_admin, $body_admin, [], $embeddedImages);
-                    error_log("Correo de exoneración enviado a administración: " . $email_admin);
+                    if ($email_sent) {
+                        $emails_enviados_admin++;
+                        error_log("CORREO DE EXONERACION ENVIADO A: " . $email_admin);
+                    } else {
+                        $error_admin = $this->emailService->getLastError();
+                        error_log("ERROR AL ENVIAR CORREO DE EXONERACION A " . $email_admin . ": " . $error_admin);
+                    }
+                }
+                
+                if ($emails_enviados_admin == $total_emails_admin) {
+                    error_log("TODOS LOS CORREOS DE EXONERACION ENVIADOS: " . $emails_enviados_admin . "/" . $total_emails_admin);
+                } elseif ($emails_enviados_admin > 0) {
+                    error_log("ALGUNOS CORREOS DE EXONERACION ENVIADOS: " . $emails_enviados_admin . "/" . $total_emails_admin);
+                } else {
+                    error_log("NINGUN CORREO DE EXONERACION FUE ENVIADO");
                 }
             }
         }
