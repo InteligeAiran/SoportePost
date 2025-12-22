@@ -277,7 +277,148 @@ function mi_navbar()
 
         .btn-primary:hover {
             background-color: #2563eb;
-            border-color: #2563eb;
+        }
+
+        /* Estilos 3D para inputs del modal de presupuesto */
+        #presupuestoModal .form-control {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            background: #ffffff;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.15);
+            color: #6c757d;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            text-overflow: clip;
+        }
+
+        #presupuestoModal .form-control[readonly] {
+            cursor: default;
+        }
+
+        #presupuestoModal .form-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%) !important;
+            color: #333;
+        }
+        
+        /* Estilos para campos de diferencia con colores (verde/rojo) - sin hover */
+        #presupuestoModal .form-control.bg-success:hover,
+        #presupuestoModal .form-control.bg-danger:hover {
+            transform: none !important;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+            border-color: transparent !important;
+        }
+        
+        #presupuestoModal .form-control.bg-success:hover {
+            background-color: #198754 !important;
+            background: #198754 !important;
+            color: #ffffff !important;
+        }
+        
+        #presupuestoModal .form-control.bg-danger:hover {
+            background-color: #dc3545 !important;
+            background: #dc3545 !important;
+            color: #ffffff !important;
+        }
+
+        #presupuestoModal .form-control:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.25);
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #e8edff 0%, #dde4ff 100%) !important;
+            color: #333;
+            outline: none;
+        }
+
+        #presupuestoModal .form-control:focus:hover {
+            background: linear-gradient(135deg, #e8edff 0%, #dde4ff 100%) !important;
+        }
+
+        /* Estilos 3D para cards de datos de empresa y cliente */
+        #presupuestoModal .presupuesto-card-empresa,
+        #presupuestoModal .presupuesto-card-cliente {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        #presupuestoModal .presupuesto-card-empresa:hover {
+            transform: translateY(-5px) translateZ(20px) rotateX(2deg);
+            box-shadow: 0 15px 35px rgba(230, 81, 0, 0.3),
+                        0 8px 16px rgba(255, 152, 0, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                        0 0 20px rgba(255, 193, 7, 0.2);
+            background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%) !important;
+        }
+
+        #presupuestoModal .presupuesto-card-cliente:hover {
+            transform: translateY(-5px) translateZ(20px) rotateX(2deg);
+            box-shadow: 0 15px 35px rgba(56, 142, 60, 0.3),
+                        0 8px 16px rgba(76, 175, 80, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                        0 0 20px rgba(129, 199, 132, 0.2);
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%) !important;
+        }
+
+        /* Estilos 3D para card de datos del pago */
+        #presupuestoModal .presupuesto-card-pago {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        #presupuestoModal .presupuesto-card-pago:hover {
+            transform: translateY(-5px) translateZ(20px) rotateX(2deg);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3),
+                        0 8px 16px rgba(118, 75, 162, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                        0 0 20px rgba(102, 126, 234, 0.2);
+            background: linear-gradient(135deg, #c5cae9 0%, #9fa8da 100%) !important;
+        }
+
+        /* Estilos 3D para card de cálculo del presupuesto */
+        #presupuestoModal .presupuesto-card-calculo {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        #presupuestoModal .presupuesto-card-calculo:hover {
+            transform: translateY(-5px) translateZ(20px) rotateX(2deg);
+            box-shadow: 0 15px 35px rgba(56, 142, 60, 0.3),
+                        0 8px 16px rgba(76, 175, 80, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                        0 0 20px rgba(129, 199, 132, 0.2);
+            background: linear-gradient(135deg, #e8f5e9 0%, #a5d6a7 100%) !important;
+        }
+
+        /* Estilos 3D para card de información del presupuesto */
+        #presupuestoModal .presupuesto-card-info {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+        }
+
+        #presupuestoModal .presupuesto-card-info:hover {
+            transform: translateY(-5px) translateZ(20px) rotateX(2deg);
+            box-shadow: 0 15px 35px rgba(2, 136, 209, 0.3),
+                        0 8px 16px rgba(3, 169, 244, 0.25),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                        0 0 20px rgba(100, 181, 246, 0.2);
+            background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%) !important;
+        }
+
+        /* Efecto de profundidad adicional en los inputs dentro de los cards */
+        #presupuestoModal .card:hover .form-control {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
         }
 
         .highlighted-change {
@@ -324,6 +465,18 @@ function mi_navbar()
             background-color: #d1fae5;
             /* Green for success */
             color: #065f46;
+        }
+
+        /* Ocultar "Formato permitido: PDF" cuando el input tiene validación */
+        #presupuestoPDFFileContainer:has(#presupuestoPDFFile.is-valid) .presupuesto-pdf-format-info,
+        #presupuestoPDFFileContainer:has(#presupuestoPDFFile.is-invalid) .presupuesto-pdf-format-info {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
         }
 
         .message-box.error {
@@ -678,6 +831,38 @@ function mi_navbar()
                 }
             }
         /* END Estilos para los indicadores de estado del ticket */
+
+        /* Estilos para el botón de presupuesto */
+        .generate-presupuesto-btn {
+            position: relative;
+        }
+
+        .generate-presupuesto-btn .presupuesto-text {
+            opacity: 0;
+            transition: opacity 0.3s ease, margin-left 0.3s ease;
+            max-width: 0;
+            overflow: hidden;
+        }
+
+        .generate-presupuesto-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 188, 212, 0.4) !important;
+        }
+
+        .generate-presupuesto-btn:hover .presupuesto-text {
+            display: inline-block !important;
+            opacity: 1;
+            margin-left: 8px;
+            max-width: 200px;
+        }
+
+        .generate-presupuesto-btn:hover svg {
+            transition: transform 0.3s ease;
+        }
+
+        .generate-presupuesto-btn:hover svg {
+            transform: scale(1.1);
+        }
     </style>
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
@@ -930,22 +1115,481 @@ function mi_navbar()
                         </strong>
                     </div>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label>Nombre de la imagen: <span id="NombreImage"></span></label>
+                        <!-- Radio buttons para seleccionar el tipo de documento -->
+                        <div class="mb-3" id="documentSelectionContainer" style="display: none;">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="documentTypeView" id="radioEnvioDestino" value="Envio_Destino">
+                                <label class="form-check-label" for="radioEnvioDestino">Documento de Envío a Destino</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="documentTypeView" id="radioPresupuesto" value="Presupuesto">
+                                <label class="form-check-label" for="radioPresupuesto">Documento de Presupuesto</label>
+                            </div>
                         </div>
-                        <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
-                            <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
-                            <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                        
+                        <!-- Área de visualización del documento -->
+                        <div id="documentViewArea" style="display: none;">
+                            <div class="mb-3">
+                                <label>Nombre del documento: <span id="NombreDocumento"></span></label>
+                            </div>
+                            <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
+                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
+                                <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
+                            </div>
+                            <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-secondary" id="btnVolverSeleccion">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left me-2" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                                    </svg>
+                                    Volver a Selección
+                                </button>
+                            </div>
                         </div>
-                        <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" id="modalCerrarshow"
                             data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnVisualizarDocumento" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill me-2" viewBox="0 0 16 16">
+                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                            </svg>
+                            Visualizar Documento
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
+    <!--MODAL PARA GENERAR PRESUPUESTO-->
+        <div class="modal fade" id="presupuestoModal" tabindex="-1" aria-labelledby="presupuestoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable" id="ModalPresupuesto">
+                <div class="modal-content shadow-lg border-0" style="border-radius: 15px; overflow: hidden;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 1.5rem;">
+                        <div class="d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-file-earmark-text me-2" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5"/>
+                            </svg>
+                            <h5 class="modal-title mb-0 fw-bold" id="presupuestoModalLabel" style="font-size: 1.3rem;">
+                                Generar Presupuesto - Ticket: <span id="presupuestoNroTicket" class="fw-bold"></span>
+                            </h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="opacity: 0.9;"></button>
+                    </div>
+                    <div class="modal-body p-4" style="background-color: #f8f9fa;">
+                        <div class="row g-4">
+                            <!-- Datos de la Empresa y Cliente en dos columnas -->
+                            <div class="col-12">
+                                <div class="row g-3 mb-3">
+                                    <!-- Datos de la Empresa -->
+                                    <div class="col-md-6">
+                                        <div class="card border-0 shadow-sm presupuesto-card-empresa" style="border-radius: 12px; background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#e65100" class="bi bi-building me-2" viewBox="0 0 16 16">
+                                                        <path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/>
+                                                        <path fill-rule="evenodd" d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h2z"/>
+                                                    </svg>
+                                                    <h6 class="mb-0 fw-bold" style="font-size: 1.1rem; color: #e65100;">Datos de la Empresa</h6>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">Nombre:</label>
+                                                    <input type="text" value="INTELIGENSA" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">Dirección:</label>
+                                                    <input type="text" value="Urbanización El Rosal. Av. Francisco de Miranda, Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">Teléfono:</label>
+                                                    <input type="text" value="0212-9541004, 0212-9541013" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">E-mail:</label>
+                                                    <input type="text" value="carlos.rodriguez@intelipunto.com" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div>
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">RIF:</label>
+                                                    <input type="text" value="J-00291615-0" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Datos del Cliente -->
+                                    <div class="col-md-6">
+                                        <div class="card border-0 shadow-sm presupuesto-card-cliente" style="border-radius: 12px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#388e3c" class="bi bi-person-badge me-2" viewBox="0 0 16 16">
+                                                        <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM5 4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z"/>
+                                                        <path d="M8 6a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M4 7.5a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0"/>
+                                                    </svg>
+                                                    <h6 class="mb-0 fw-bold" style="font-size: 1.1rem; color: #388e3c;">Datos del Cliente</h6>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">Comercio:</label>
+                                                    <input type="text" id="presupuestoClienteRazon" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">Dirección:</label>
+                                                    <input type="text" id="presupuestoClienteDireccion" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">Teléfono:</label>
+                                                    <input type="text" id="presupuestoClienteTelefono" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">E-mail:</label>
+                                                    <input type="text" id="presupuestoClienteEmail" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                                <div>
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">RIF:</label>
+                                                    <input type="text" id="presupuestoClienteRif" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff; font-size: 0.9rem;" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Datos del Pago -->
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm mb-3 presupuesto-card-pago" style="border-radius: 12px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#1976d2" class="bi bi-credit-card-2-front me-2" viewBox="0 0 16 16">
+                                                <path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+                                                <path d="M2 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5"/>
+                                            </svg>
+                                            <h6 class="mb-0 fw-bold text-primary" style="font-size: 1.1rem;">Datos del Anticipo</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-dollar me-1" viewBox="0 0 16 16">
+                                        <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05m1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73z"/>
+                                    </svg>
+                                    Monto en Dólares Anticipo (USD)
+                                </label>
+                                <input type="text" id="presupuestoMontoUSD" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-coin me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M11 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8m5-4a5 5 0 1 1-10 0 5 5 0 0 1 10 0"/>
+                                        <path d="M9.438 11.944c.047.596.518 1.06 1.363 1.116v.44h.375v-.443c.875-.061 1.386-.529 1.386-1.207 0-.616-.39-1.101-1.095-1.16l-.296-.07v-1.2c.376.043.614.248.671.532h.658c-.047-.602-.52-1.246-1.8-1.36V9h-.375v.32c-.866.02-1.482.48-1.482 1.11 0 .628.465 1.105 1.108 1.162l.224.04v1.05c-.703-.01-1.37-.25-1.8-.75h-.682c.025.52.558.9 1.532.977v.44h.375v-.439c.878-.032 1.383-.5 1.383-1.258 0-.563-.39-.95-.962-1.065l-.224-.03v-1.198l.375.021c.612.035.977.332 1.019.777h.658c-.02-.602-.517-1.03-1.67-1.12v-.44h-.375v.439c-.843.071-1.38.34-1.38.936 0 .64.396.9 1.11.96l.224.03v1.21l-.375.021c-.752-.01-1.276.2-1.446.55h-.658zm2.194 1.622c.24.138.487.183.699.183.449 0 .723-.25.723-.65 0-.366-.24-.534-.673-.563l-.224-.03v1.198l.475.021z"/>
+                                    </svg>
+                                    Tipo de Moneda
+                                </label>
+                                <input type="text" id="presupuestoMoneda" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-wallet2 me-1" viewBox="0 0 16 16">
+                                        <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5z"/>
+                                    </svg>
+                                    Método de Pago
+                                </label>
+                                <input type="text" id="presupuestoMetodoPago" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-exchange me-1" viewBox="0 0 16 16">
+                                        <path d="M0 5a5.002 5.002 0 0 0 4.027 4.905 6.46 6.46 0 0 1 .544-.275 1.5 1.5 0 0 1 .31-.293 1.5 1.5 0 0 1 .663-.293.5.5 0 0 0 .374-.832 6.5 6.5 0 0 1 .306-.77 1.5 1.5 0 0 1 .33-.292 1.5 1.5 0 0 1 .663-.293.5.5 0 0 0 .374-.832 6.5 6.5 0 0 1 .306-.77 1.5 1.5 0 0 1 .33-.292 1.5 1.5 0 0 1 .663-.293.5.5 0 0 0 .374-.832 6.5 6.5 0 0 1 .306-.77A5 5 0 0 0 0 5m.955 1.905A4.5 4.5 0 0 1 4.5 9H5a.5.5 0 0 0 0-1h-.5a3.5 3.5 0 0 0-2.545-1.19zm4.354 0a4.5 4.5 0 0 1 2.545 1.19H7a.5.5 0 0 0 0 1h.5a4.5 4.5 0 0 1 2.545 1.19A4.5 4.5 0 0 1 11.5 9H12a.5.5 0 0 0 0-1h-.5a4.5 4.5 0 0 1-2.545-1.19A4.5 4.5 0 0 1 7.5 5H7a.5.5 0 0 0 0 1h.5a4.5 4.5 0 0 1 2.545 1.19M0 11a5 5 0 0 1 4.027-4.905 6.5 6.5 0 0 0 .306.77 1.5 1.5 0 0 0 .33.292 1.5 1.5 0 0 0 .663.293.5.5 0 0 1 .374.832 6.5 6.5 0 0 0 .306.77 1.5 1.5 0 0 0 .33.292 1.5 1.5 0 0 0 .663.293.5.5 0 0 1 .374.832 6.5 6.5 0 0 0 .306.77 1.5 1.5 0 0 0 .33.292 1.5 1.5 0 0 0 .663.293.5.5 0 0 1 .374.832 6.5 6.5 0 0 0 .306.77A5 5 0 0 1 0 11m16-6a5 5 0 0 0-4.027 4.905 6.5 6.5 0 0 1-.306-.77 1.5 1.5 0 0 1-.33-.292 1.5 1.5 0 0 1-.663-.293.5.5 0 0 0-.374-.832 6.5 6.5 0 0 1-.306-.77 1.5 1.5 0 0 1-.33-.292 1.5 1.5 0 0 1-.663-.293.5.5 0 0 0-.374-.832 6.5 6.5 0 0 1-.306-.77 1.5 1.5 0 0 1-.33-.292 1.5 1.5 0 0 1-.663-.293.5.5 0 0 0-.374-.832 6.5 6.5 0 0 1-.306-.77A5 5 0 0 0 16 5"/>
+                                    </svg>
+                                    Monto en Bolívares Anticipo (Bs)
+                                </label>
+                                <input type="text" id="presupuestoMontoBS" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoBancoOrigenContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Banco Origen</label>
+                                <input type="text" id="presupuestoBancoOrigen" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoBancoDestinoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Banco Destino</label>
+                                <input type="text" id="presupuestoBancoDestino" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoReferenciaContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Referencia</label>
+                                <input type="text" id="presupuestoReferencia" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoDepositanteContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Depositante</label>
+                                <input type="text" id="presupuestoDepositante" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoFechaPagoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Fecha de Pago</label>
+                                <input type="text" id="presupuestoFechaPago" class="form-control" readonly>
+                            </div>
+                            
+                            <!-- Campos de Pago Móvil - Destino -->
+                            <div class="col-md-6" id="presupuestoDestinoRifTipoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">RIF Tipo Destino</label>
+                                <input type="text" id="presupuestoDestinoRifTipo" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoDestinoRifNumeroContainer" style="display: none;">
+                                <label class="form-label fw-semibold">RIF Número Destino</label>
+                                <input type="text" id="presupuestoDestinoRifNumero" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoDestinoTelefonoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Teléfono Destino</label>
+                                <input type="text" id="presupuestoDestinoTelefono" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoDestinoBancoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Banco Destino (Pago Móvil)</label>
+                                <input type="text" id="presupuestoDestinoBanco" class="form-control" readonly>
+                            </div>
+                            
+                            <!-- Campos de Pago Móvil - Origen -->
+                            <div class="col-md-6" id="presupuestoOrigenRifTipoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">RIF Tipo Origen</label>
+                                <input type="text" id="presupuestoOrigenRifTipo" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoOrigenRifNumeroContainer" style="display: none;">
+                                <label class="form-label fw-semibold">RIF Número Origen</label>
+                                <input type="text" id="presupuestoOrigenRifNumero" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoOrigenTelefonoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Teléfono Origen</label>
+                                <input type="text" id="presupuestoOrigenTelefono" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-md-6" id="presupuestoOrigenBancoContainer" style="display: none;">
+                                <label class="form-label fw-semibold">Banco Origen (Pago Móvil)</label>
+                                <input type="text" id="presupuestoOrigenBanco" class="form-control" readonly>
+                            </div>
+                            
+                            <div class="col-12 mt-3">
+                                <div class="card border-0 shadow-sm presupuesto-card-calculo" style="border-radius: 12px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#388e3c" class="bi bi-calculator me-2" viewBox="0 0 16 16">
+                                                <path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
+                                                <path d="M4 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/>
+                                            </svg>
+                                            <h6 class="mb-0 fw-bold text-success" style="font-size: 1.1rem;">Cálculo del Presupuesto</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools me-1" viewBox="0 0 16 16">
+                                        <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.356 3.356a1 1 0 0 0 1.414 0l1.586-1.586a1 1 0 0 0 0-1.414l-3.356-3.356a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707V1.5a.5.5 0 0 0-.5-.5zM3 1.5v.258l1.5 1.5H5a.5.5 0 0 1 .5.5v.258l-1.5 1.5zm6.5 2.5v.258l1.5 1.5H11a.5.5 0 0 1 .5.5v.258l-1.5 1.5z"/>
+                                    </svg>
+                                    Monto Total de Taller (USD) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">$</span>
+                                    <input type="text" id="presupuestoMontoTaller" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; transition: all 0.3s ease; border-left: 1px solid #e9ecef; padding-left: 12px;" placeholder="0.00" onfocus="this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'" onblur="this.style.boxShadow='0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)'" onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 46" pattern="[0-9]+(\.[0-9]{1,2})?">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle me-1" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.08 1.035l2.75 2.75a.75.75 0 0 0 1.08-.022l4-5a.75.75 0 0 0-1.06-1.06z"/>
+                                    </svg>
+                                    Monto Anticipo (USD)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; background-color: darkgray; padding-right: 15px; color: #495057; font-weight: 600; height: 100%;">$</span>
+                                    <input type="text" id="presupuestoMontoPagadoUSD" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; background-color: #f5f5f5; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                                    </svg>
+                                    Diferencia (USD)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">$</span>
+                                    <input type="text" id="presupuestoDiferenciaUSD" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; transition: all 0.3s ease; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
+                                    </svg>
+                                    Diferencia en Bolívares (Bs)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">Bs</span>
+                                    <input type="text" id="presupuestoDiferenciaBS" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; transition: all 0.3s ease; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mt-3">
+                                <div class="card border-0 shadow-sm presupuesto-card-info" style="border-radius: 12px; background: linear-gradient(135deg, #e1f5fe 0%, #b3e5fc 100%);">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex align-items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0288d1" class="bi bi-info-circle me-2" viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                                            </svg>
+                                            <h6 class="mb-0 fw-bold text-info" style="font-size: 1.1rem;">Información del Presupuesto</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar3 me-1" viewBox="0 0 16 16">
+                                        <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z"/>
+                                        <path d="M7 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3-1a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m6 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-3-3a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                                    </svg>
+                                    Fecha del Presupuesto <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" id="presupuestoFecha" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #f5f5f5;" readonly>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
+                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                                    </svg>
+                                    Validez <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="presupuestoValidez" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #f5f5f5;" value="5 días hábiles" readonly>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-text me-1" viewBox="0 0 16 16">
+                                        <path d="M5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1z"/>
+                                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"/>
+                                    </svg>
+                                    Descripción de Reparación <span class="text-danger">*</span>
+                                </label>
+                                <textarea id="presupuestoDescripcion" class="form-control shadow-sm border-0" style="border-radius: 8px; transition: all 0.3s ease;" rows="4" placeholder="Ingrese la descripción detallada de la reparación o trabajo realizado..." onfocus="this.style.boxShadow='0 0 0 0.2rem rgba(102, 126, 234, 0.25)'" onblur="this.style.boxShadow='0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)'"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-4" style="background-color: #f8f9fa;">
+                        <button type="button" class="btn btn-secondary px-4 py-2" id="closePresupuestoModalBtn" data-bs-dismiss="modal" style="border-radius: 8px; transition: all 0.3s ease; font-weight: 500;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-x-circle me-2" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                            </svg>
+                            Cerrar
+                        </button>
+                        <button type="button" class="btn px-4 py-2" id="previewPresupuestoPDFBtn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; transition: all 0.3s ease; font-weight: 500;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-eye me-2" viewBox="0 0 16 16">
+                                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                            </svg>
+                            Previsualizar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <!-- MODAL PARA PREVISUALIZAR EL PRESUPUESTO PDF -->
+    <div class="modal fade" id="presupuestoPDFModal" tabindex="-1" aria-labelledby="presupuestoPDFModalLabel" aria-hidden="true" style="background-color: rgba(0,0,0,.4); backdrop-filter: blur(8px);">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient-primary">
+                    <h5 class="modal-title" id="presupuestoPDFModalLabel">Previsualizar Presupuesto PDF</h5>
+                    <button type="button" class="btn-close btn-close-white" id="closePresupuestoPDFBtn" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="presupuestoPDFPreview" style="width: 100%; height: 80vh; border: none;"></iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="closePresupuestoPDFBtn2" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="imprimirPresupuestoPDFBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1h12a1 1 0 0 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1z"/>
+                        </svg>
+                        Imprimir / Guardar PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL PARA PREVISUALIZAR EL PRESUPUESTO PDF -->
+    
+    <!-- MODAL PARA CARGAR PDF DEL PRESUPUESTO -->
+    <div class="modal fade" id="uploadPresupuestoPDFModal" tabindex="-1" aria-labelledby="uploadPresupuestoPDFModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title" id="uploadPresupuestoPDFModalLabel">
+                        Cargar PDF del Presupuesto - Ticket: <span id="modalPresupuestoTicketId" class="fw-bold"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeUploadPresupuestoPDFBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadPresupuestoPDFForm">
+                        <!-- Campos ocultos -->
+                        <input type="hidden" id="uploadPresupuestoNroTicketHidden">
+                        <input type="hidden" id="uploadPresupuestoSerialPosHidden">
+                        
+                        <div class="mb-3">
+                            <label for="presupuestoPDFFile" class="form-label text-gray-700 fw-semibold">
+                                Seleccionar Archivo PDF:
+                            </label>
+                            <div class="position-relative">
+                                <input class="form-control" type="file" id="presupuestoPDFFile" accept="application/pdf" required>
+                                <div class="valid-feedback">
+                                    Formato correcto
+                                </div>
+                                <div class="invalid-feedback">
+                                    Solo se permiten archivos PDF
+                                </div>
+                            </div>
+                            <small id="presupuestoPDFFileFormatInfo" class="text-gray-500 d-block mt-1" style="display: block;">
+                                Formato permitido: PDF
+                            </small>
+                        </div>
+                        <div id="presupuestoPDFUploadMessage" class="alert alert-info hidden" role="alert" style="display: none;"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cerrarUploadPresupuestoPDFBtn" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="uploadPresupuestoPDFBtn" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload me-2" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5h2.767l12-12H14a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V2.717l-12 12H10a.5.5 0 0 1 0 1H7a.5.5 0 0 1-.5-.5V9.9z"/>
+                            <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H14V3.5h-3a.5.5 0 0 1 0-1z"/>
+                        </svg>
+                        Subir PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL PARA CARGAR PDF DEL PRESUPUESTO -->
+    
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
     
     <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
@@ -977,6 +1621,7 @@ function mi_navbar()
         <!--  SweetAlert   -->
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <?php
         if (isset($this->js)) {

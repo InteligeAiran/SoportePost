@@ -24,6 +24,8 @@ function mi_navbar() {}
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <!-- User Role for JavaScript -->
+    <script> var currentUserRole = <?php echo $_SESSION['id_rol'] ?? 'guest'; ?>;</script>
     <style>
       
             #ticket-details-panel table td, table th {

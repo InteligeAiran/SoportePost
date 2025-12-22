@@ -301,7 +301,8 @@ function getTicketData() {
               </button>`;
           }
 
-          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller") {
+          // Mostrar botón "Enviar a Taller" solo si el usuario es SuperAdmin (1) o Coordinador (4)
+          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller" && (currentUserRole === 1 || currentUserRole === 4)) {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-wrench-custom"
                   data-bs-toggle="tooltip" data-bs-placement="top"

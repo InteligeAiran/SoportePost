@@ -526,28 +526,78 @@ class email extends Controller {
                 }
             }
 
+            // 6. Enviar correo a ADMINISTRACIÓN (Jerarquía Administrativa - Estilo de Notificación)
+            $results['admin'] = false; // Inicializar
+            $result_email_areaAdmin = $repository->GetEmailAreaAdmin();
+            $email_area_admin = $result_email_areaAdmin['email_area'] ?? '';
+            $name_area_admin = $result_email_areaAdmin['name_area'] ?? 'Administración';
+            
+            if (!empty($email_area_admin)) {
+                error_log("INTENTANDO ENVIAR CORREO A ADMINISTRACION: " . $email_area_admin);
+                $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Domiciliación del Ticket';
+                $body_admin = $this->getAdminEmailBodyForTicketCreation(
+                    $name_area_admin,
+                    $nombre_tecnico_ticket,
+                    $ticketnro,
+                    $clientRif,
+                    $clientName,
+                    $ticketserial,
+                    $ticketNivelFalla,
+                    $name_failure,
+                    $ticketfinished,
+                    $ticketaccion,
+                    $ticketstatus,
+                    $ticketprocess,
+                    $ticketpaymnet,
+                    $ticketdomiciliacion
+                );
+                $results['admin'] = $this->emailService->sendEmail($email_area_admin, $subject_admin, $body_admin, [], $embeddedImages);
+
+                if (!$results['admin']) {
+                    $error_admin = $this->emailService->getLastError();
+                    error_log("ERROR AL ENVIAR CORREO ADMINISTRACION: " . $error_admin);
+                    $results['messages'][] = "Error al enviar correo a administración: " . $error_admin;
+                } else {
+                    error_log("CORREO ADMINISTRACION ENVIADO: SI");
+                }
+            } else {
+                $results['messages'][] = "El correo del área de administración está vacío.";
+                error_log("ERROR: El correo del área de administración está vacío.");
+            }
+
             // 7. Responder según resultados
             $coordinador = $results['coordinador'];
             $tecnico = $results['tecnico'];
+            $admin_sent = $results['admin'];
             $messages = implode(' ', $results['messages']);
             
             // Obtener errores detallados del EmailService
             $error_coordinador = $this->emailService->getLastError();
             $error_detalle = !empty($error_coordinador) ? " Detalle: " . $error_coordinador : "";
             
-            if ($coordinador && $tecnico) {
-                $this->response(['success' => true, 'message' => 'Correos enviados exitosamente a coordinación y técnico.', 'color' => 'green']);
+            if ($coordinador && $tecnico && $admin_sent) {
+                $this->response(['success' => true, 'message' => 'Correos enviados exitosamente a coordinación, técnico y administración.', 'color' => 'green']);
+            } elseif ($coordinador && $tecnico) {
+                $this->response(['success' => true, 'message' => 'Correos enviados a coordinación y técnico. ' . $messages, 'color' => 'orange']);
+            } elseif ($coordinador && $admin_sent) {
+                $this->response(['success' => true, 'message' => 'Correos enviados a coordinación y administración. ' . $messages, 'color' => 'orange']);
+            } elseif ($tecnico && $admin_sent) {
+                $this->response(['success' => true, 'message' => 'Correos enviados a técnico y administración. ' . $messages, 'color' => 'orange']);
             } elseif ($coordinador) {
                 $this->response(['success' => true, 'message' => 'Correo enviado a coordinación. ' . $messages, 'color' => 'orange']);
             } elseif ($tecnico) {
                 $this->response(['success' => false, 'message' => 'Error al enviar correo a coordinación. Correo del técnico enviado. ' . $messages . $error_detalle, 'color' => 'red']);
+            } elseif ($admin_sent) {
+                $this->response(['success' => false, 'message' => 'Error al enviar correos a coordinación y técnico. Correo a administración enviado. ' . $messages . $error_detalle, 'color' => 'red']);
             } else {
-                error_log("ERROR COMPLETO: Coordinador=" . ($coordinador ? 'SI' : 'NO') . ", Tecnico=" . ($tecnico ? 'SI' : 'NO') . ", Messages=" . $messages);
-                $this->response(['success' => false, 'message' => 'Error al enviar ambos correos. ' . $messages . $error_detalle, 'color' => 'red', 'debug' => [
+                error_log("ERROR COMPLETO: Coordinador=" . ($coordinador ? 'SI' : 'NO') . ", Tecnico=" . ($tecnico ? 'SI' : 'NO') . ", Admin=" . ($admin_sent ? 'SI' : 'NO') . ", Messages=" . $messages);
+                $this->response(['success' => false, 'message' => 'Error al enviar todos los correos. ' . $messages . $error_detalle, 'color' => 'red', 'debug' => [
                     'coordinador_sent' => $coordinador,
                     'tecnico_sent' => $tecnico,
+                    'admin_sent' => $admin_sent,
                     'email_area' => $email_area ?? 'N/A',
                     'email_tecnico' => $email_tecnico ?? 'N/A',
+                    'email_admin' => $email_area_admin ?? 'N/A',
                     'error_detail' => $error_coordinador
                 ]]);
             }
@@ -694,15 +744,15 @@ class email extends Controller {
                             <div class="info-value">' . htmlspecialchars($fecha_entrega) . '</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">💰 Estado de Pago</div>
+                            <div class="info-label">💰 Estatus de Pago</div>
                             <div class="info-value">' . htmlspecialchars($ticketpayment) . '</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">🏠 Estado Domiciliación</div>
+                            <div class="info-label">🏠 Estatus Domiciliación</div>
                             <div class="info-value">' . htmlspecialchars($ticketdomiciliacion) . '</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">🔬 Estado Laboratorio</div>
+                            <div class="info-label">🔬 Estatus Laboratorio</div>
                             <div class="info-value">' . htmlspecialchars($ticketlab) . '</div>
                         </div>
                         <div class="info-item">
@@ -1105,15 +1155,15 @@ class email extends Controller {
                                 <span class="info-value">' . htmlspecialchars($fecha_entrega) . '</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">💰 Estado de Pago</span>
+                                <span class="info-label">💰 Estatus de Pago</span>
                                 <span class="info-value">' . htmlspecialchars($ticketpayment) . '</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">🏠 Estado Domiciliación</span>
+                                <span class="info-label">🏠 Estatus Domiciliación</span>
                                 <span class="info-value">' . htmlspecialchars($ticketdomiciliacion) . '</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">🔬 Estado Laboratorio</span>
+                                <span class="info-label">🔬 Estatus Laboratorio</span>
                                 <span class="info-value">' . htmlspecialchars($ticketlab) . '</span>
                             </div>
                             <div class="info-item">
@@ -1365,7 +1415,7 @@ class email extends Controller {
                                     <span class="details-value">' . htmlspecialchars($ticketaccion) . '</span>
                                 </li>
                                 <li class="details-item">
-                                    <span class="details-label">💰 Estado de Pago:</span>
+                                    <span class="details-label">💰 Estatus de Pago:</span>
                                     <span class="details-value">' . htmlspecialchars($ticketpayment) . '</span>
                                 </li>
                                 <li class="details-item">
@@ -2061,7 +2111,7 @@ class email extends Controller {
                     </div>
                     
                     <div class="info-row">
-                        <span class="info-label">Estado del Ticket:</span>
+                        <span class="info-label">Estatus del Ticket:</span>
                         <span class="info-value"><span class="status-badge status-badge-assigned">Asignado al Técnico</span></span>
                     </div>
                     
@@ -2106,13 +2156,22 @@ class email extends Controller {
     }
 
     private function getCoordinatorEmailBodyForCreation($nombre_area, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketprocess,  $ticketpaymnet, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
         $map = [
             'ticket' => htmlspecialchars($ticketnro),
             'rif' => htmlspecialchars($clientRif),
             'razon' => htmlspecialchars($clientName),
             'serial' => htmlspecialchars($ticketserial),
             'falla' => htmlspecialchars($name_failure),
-            'nivel' => htmlspecialchars($ticketNivelFalla),
+            'nivel' => $nivelValue, // Solo el número
             'fecha' => htmlspecialchars($ticketfinished),
             'accion' => htmlspecialchars($ticketaccion),
             'status' => htmlspecialchars($ticketstatus),
@@ -2376,15 +2435,15 @@ class email extends Controller {
 
             <div class="status-row">
                 <div class="status-pill">
-                    <strong>Estado del Ticket</strong>
+                    <strong>Estatus del Ticket</strong>
                     <span>{$map['status']}</span>
                     </div>
                 <div class="status-pill">
-                    <strong>Estado de Pago</strong>
+                    <strong>Estatus de Pago</strong>
                     <span>{$map['pago']}</span>
                     </div>
                 <div class="status-pill">
-                    <strong>Estado Domiciliación</strong>
+                    <strong>Estatus Domiciliación</strong>
                     <span>{$map['domi']}</span>
                 </div>
             </div>
@@ -2406,13 +2465,22 @@ HTML;
     }
 
     private function getTechnicianEmailBody($nombre_tecnico, $nombre_area, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketpaymnet, $ticketstatus, $ticketprocess, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
         $map = [
             'ticket' => htmlspecialchars($ticketnro),
             'rif' => htmlspecialchars($clientRif),
             'razon' => htmlspecialchars($clientName),
             'serial' => htmlspecialchars($ticketserial),
             'falla' => htmlspecialchars($name_failure),
-            'nivel' => htmlspecialchars($ticketNivelFalla),
+            'nivel' => $nivelValue, // Solo el número
             'fecha' => htmlspecialchars($ticketfinished),
             'accion' => htmlspecialchars($ticketaccion),
             'status' => htmlspecialchars($ticketstatus),
@@ -2676,15 +2744,15 @@ HTML;
                     
             <div class="status-row">
                 <div class="status-pill">
-                    <strong>Estado del Ticket</strong>
+                    <strong>Estatus del Ticket</strong>
                     <span>{$map['status']}</span>
                 </div>
                 <div class="status-pill">
-                    <strong>Estado de Pago</strong>
+                    <strong>Estatus de Pago</strong>
                     <span>{$map['pago']}</span>
                 </div>
                 <div class="status-pill">
-                    <strong>Estado Domiciliación</strong>
+                    <strong>Estatus Domiciliación</strong>
                     <span>{$map['domi']}</span>
                     </div>
                 </div>
@@ -2694,6 +2762,311 @@ HTML;
             </a-->
             {$logoHtml}
         </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+</html>
+HTML;
+    }
+
+    private function getAdminEmailBodyForTicketCreation($nombre_area_admin, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketprocess, $ticketpaymnet, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue, // Solo el número
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area_admin' => htmlspecialchars($nombre_area_admin),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
+        ];
+        $currentYear = date("Y");
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Administrativa - Revisar Domiciliación</title>
+            <style>
+        body{
+            margin:0;
+            padding:30px 0;
+            background:#f8f9fa;
+            font-family:'Inter','Segoe UI',sans-serif;
+        }
+        .card{
+            background:#ffffff;
+            max-width:650px;
+            margin:0 auto;
+            border-radius:24px;
+            box-shadow:0 25px 80px rgba(0,0,0,0.12);
+            overflow:hidden;
+        }
+        .header{
+            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
+            color:#ffffff;
+            padding:30px;
+            text-align:center;
+        }
+        .header h1{
+            margin:0;
+            font-size:26px;
+            letter-spacing:0.5px;
+        }
+        .header p{
+            margin:6px 0 0;
+            font-size:15px;
+            opacity:0.85;
+        }
+        .body{
+            padding:30px 34px 24px;
+        }
+        .hello{
+            text-align:center;
+            font-size:17px;
+            color:#0f172a;
+            margin-bottom:22px;
+        }
+        .hello span{
+            color:#6f42c1;
+            font-weight:700;
+        }
+        .hero-badge{
+            background:#f3e5f5;
+            border:1px solid rgba(111,66,193,0.2);
+            border-radius:18px;
+            padding:14px 18px;
+            text-align:center;
+            font-size:14px;
+            color:#6f42c1;
+            margin-bottom:28px;
+        }
+        .detail{
+            display:flex;
+            align-items:center;
+            padding:14px 0;
+            border-bottom:1px solid #edf2f7;
+        }
+        .detail:last-child{
+            border-bottom:none;
+        }
+        .icon{
+            width:45px;
+            height:45px;
+            border-radius:14px;
+            background:#f8f0fc;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-right:14px;
+            font-size:22px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:0.6px;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:3px;
+        }
+        .value{
+            font-size:16px;
+            color:#0f172a;
+            font-weight:600;
+        }
+        .value-serial{
+            font-family:"JetBrains Mono","Courier New",monospace;
+            font-size:15px;
+            background:#f1f5f9;
+            padding:4px 10px;
+            border-radius:8px;
+            color:#0f172a;
+        }
+        .status-row{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:24px 0 6px;
+            width:100%;
+        }
+        .status-pill{
+            flex:1 1 calc(33.333% - 8px);
+            min-width:180px;
+            max-width:100%;
+            background:#f3e5f5;
+            border-radius:18px;
+            padding:13px 18px;
+            display:flex;
+            flex-direction:column;
+            border:1px solid rgba(111,66,193,0.2);
+            box-sizing:border-box;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+        }
+        .status-pill strong{
+            color:#6f42c1;
+            font-size:11px;
+            letter-spacing:0.5px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            margin-right:8%;
+        }
+        .status-pill span{
+            color:#0f172a;
+            font-weight:700;
+            font-size:11px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            line-height:1.4;
+            hyphens:auto;
+        }
+        .attention-box{
+            background:#f0e6fa;
+            border:2px solid #d8bcfc;
+            border-radius:12px;
+            padding:20px;
+            margin-top:25px;
+            text-align:center;
+        }
+        .attention-box p{
+            margin:0;
+            font-size:1.1em;
+            color:#6f42c1;
+            font-weight:600;
+            line-height:1.5;
+        }
+        .logo-container{
+            text-align:center;
+            margin:30px 0 20px;
+        }
+        .logo{
+            max-width:50%;
+            height:auto;
+            display:block;
+            margin:0 auto;
+            margin-top:-5px;
+            margin-top:-25%;
+        }
+        .footer{
+            padding:20px;
+            text-align:center;
+            font-size:12px;
+            color:#94a3b8;
+            background:#f8fafc;
+            margin-top:-17%;
+        }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{
+                flex:1 1 100%;
+                min-width:100%;
+                max-width:100%;
+            }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Revisar Domiciliación</h1>
+            <p>Notificación Administrativa</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>Área de {$map['area_admin']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{$map['tecnico']}</strong> ha registrado un nuevo ticket. Por favor, revise la domiciliación asociada.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{$map['fecha']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{$map['accion']}</div>
+                        </div>
+                        </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{$map['status']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{$map['pago']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{$map['domi']}</span>
+                </div>
+            </div>
+
+            <div class="attention-box">
+                <p><strong>¡Atención!</strong> Por favor, verifique el estatus de domiciliación de este ticket.</p>
+            </div>
+
+            {$logoHtml}
+                </div>
                 <div class="footer">
                     <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
                     <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>

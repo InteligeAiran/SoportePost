@@ -45,7 +45,7 @@ class emailModel extends Model{
 
     public function GetEmailArea(){
         try{
-            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 6";
+            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 5";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -232,6 +232,16 @@ class emailModel extends Model{
     public function GetEmailAreaAdmin(){
        try{
             $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 2";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetEmailAreaFinanzas(){
+       try{
+            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 1";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

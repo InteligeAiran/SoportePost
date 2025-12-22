@@ -2,7 +2,10 @@ let currentTicketIdForConfirmTaller = null;
 let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
 let confirmInTallerModalInstance = null;
 let currentSerialPosForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
-let currentTicketNroForImage = null; 
+let currentTicketNroForImage = null;
+let bsPresupuestoPDFModal = null; // Instancia global del modal de presupuesto PDF
+let bsPresupuestoModal = null; // Instancia global del modal de presupuesto
+let bsViewModal = null; // Instancia global del modal de visualización 
 
 const urlParamsPendienteEntrega = new URLSearchParams(window.location.search);
 const targetTicketIdPendienteEntrega = urlParamsPendienteEntrega.get('id_ticket');
@@ -26,15 +29,42 @@ document.addEventListener("DOMContentLoaded", function () {
     const iconoCerrarView = document.getElementById("btn-close"); // Icono 'x' del modal de visualización
     const modalTicketIdSpanView = modalElementView ? modalElementView.querySelector("#viewModalTicketId") : null; // Encuentra el span dentro de su modal
 
+    // Modal para Previsualizar Presupuesto PDF
+    const modalElementPresupuestoPDF = document.getElementById("presupuestoPDFModal");
+    const cerrarBotonPresupuestoPDF = document.getElementById("closePresupuestoPDFBtn2"); // Botón 'Cerrar' del modal de presupuesto PDF
+    const iconoCerrarPresupuestoPDF = document.getElementById("closePresupuestoPDFBtn"); // Icono 'x' del modal de presupuesto PDF
+
+    // Modal para Generar Presupuesto
+    const modalElementPresupuesto = document.getElementById("presupuestoModal");
+    const cerrarBotonPresupuesto = document.getElementById("closePresupuestoModalBtn"); // Botón 'Cerrar' del modal de presupuesto
+    const iconoCerrarPresupuesto = modalElementPresupuesto ? modalElementPresupuesto.querySelector('.btn-close') : null; // Icono 'x' del modal de presupuesto
+
+    // Modal para Cargar PDF del Presupuesto
+    const modalElementUploadPresupuestoPDF = document.getElementById("uploadPresupuestoPDFModal");
+    const cerrarBotonUploadPresupuestoPDF = document.getElementById("cerrarUploadPresupuestoPDFBtn");
+    const iconoCerrarUploadPresupuestoPDF = document.getElementById("closeUploadPresupuestoPDFBtn");
+    const inputPresupuestoPDFFile = document.getElementById("presupuestoPDFFile");
+    const uploadPresupuestoPDFBtn = document.getElementById("uploadPresupuestoPDFBtn");
+    const modalPresupuestoTicketIdSpan = modalElementUploadPresupuestoPDF ? modalElementUploadPresupuestoPDF.querySelector("#modalPresupuestoTicketId") : null;
+    let bsUploadPresupuestoPDFModal = null;
+
     // Instancias de Modales de Bootstrap (si usas Bootstrap JS para controlarlos)
     let bsUploadModal = null;
-    let bsViewModal = null;
 
     if (modalElementUpload) {
         bsUploadModal = new bootstrap.Modal(modalElementUpload, { keyboard: false }); // Habilita cierre con ESC
     }
     if (modalElementView) {
         bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false }); // Habilita cierre con ESC
+    }
+    if (modalElementUploadPresupuestoPDF) {
+        bsUploadPresupuestoPDFModal = new bootstrap.Modal(modalElementUploadPresupuestoPDF, { keyboard: false });
+    }
+    if (modalElementPresupuestoPDF) {
+        bsPresupuestoPDFModal = new bootstrap.Modal(modalElementPresupuestoPDF, { keyboard: false }); // Habilita cierre con ESC
+    }
+    if (modalElementPresupuesto) {
+        bsPresupuestoModal = new bootstrap.Modal(modalElementPresupuesto, { keyboard: false }); // Habilita cierre con ESC
     }
 
     // 2. Instanciar el modal de Bootstrap una sola vez
@@ -99,14 +129,118 @@ function showUploadModal(ticketId, nroTicket) {
         }
 }
 
+// Función para abrir el modal de carga de PDF del presupuesto
+function openUploadPresupuestoPDFModal(nroTicket, serialPos) {
+    const modalPresupuestoTicketIdSpanLocal = document.getElementById("modalPresupuestoTicketId");
+    if (modalPresupuestoTicketIdSpanLocal) {
+        modalPresupuestoTicketIdSpanLocal.textContent = nroTicket;
+    }
+    
+    // Establecer valores en los campos ocultos
+    const uploadPresupuestoNroTicket = document.getElementById("uploadPresupuestoNroTicket");
+    const uploadPresupuestoNroTicketHidden = document.getElementById("uploadPresupuestoNroTicketHidden");
+    const uploadPresupuestoSerialPosHidden = document.getElementById("uploadPresupuestoSerialPosHidden");
+    
+    if (uploadPresupuestoNroTicket) {
+        uploadPresupuestoNroTicket.textContent = nroTicket;
+    }
+    if (uploadPresupuestoNroTicketHidden) {
+        uploadPresupuestoNroTicketHidden.value = nroTicket;
+    }
+    if (uploadPresupuestoSerialPosHidden) {
+        uploadPresupuestoSerialPosHidden.value = serialPos || '';
+    }
+    
+    // Limpiar el input de archivo y clases de validación
+    const inputPresupuestoPDFFileLocal = document.getElementById("presupuestoPDFFile");
+    if (inputPresupuestoPDFFileLocal) {
+        inputPresupuestoPDFFileLocal.value = "";
+        inputPresupuestoPDFFileLocal.classList.remove('is-invalid', 'is-valid');
+    }
+    
+    // Ocultar mensajes de validación y mostrar el texto informativo
+    setTimeout(function() {
+        const formatInfo = document.getElementById('presupuestoPDFFileFormatInfo');
+        const input = document.getElementById("presupuestoPDFFile");
+        
+        // Ocultar mensajes de feedback
+        const validFeedback = input && input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+        const invalidFeedback = input && input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+        
+        if (validFeedback) {
+            validFeedback.style.setProperty("display", "none", "important");
+            validFeedback.style.setProperty("visibility", "hidden", "important");
+            validFeedback.style.setProperty("opacity", "0", "important");
+            validFeedback.style.setProperty("height", "0", "important");
+            validFeedback.style.setProperty("margin", "0", "important");
+            validFeedback.style.setProperty("padding", "0", "important");
+        }
+        if (invalidFeedback) {
+            invalidFeedback.style.setProperty("display", "none", "important");
+            invalidFeedback.style.setProperty("visibility", "hidden", "important");
+            invalidFeedback.style.setProperty("opacity", "0", "important");
+            invalidFeedback.style.setProperty("height", "0", "important");
+            invalidFeedback.style.setProperty("margin", "0", "important");
+            invalidFeedback.style.setProperty("padding", "0", "important");
+        }
+        
+        // MOSTRAR el mensaje informativo "Formato permitido: PDF" cuando no hay validación
+        if (formatInfo) {
+            formatInfo.style.removeProperty("display");
+            formatInfo.style.removeProperty("visibility");
+            formatInfo.style.removeProperty("opacity");
+            formatInfo.style.removeProperty("height");
+            formatInfo.style.removeProperty("margin");
+            formatInfo.style.removeProperty("padding");
+        }
+        if (typeof $ !== 'undefined') {
+            if (validFeedback) $(validFeedback).hide();
+            if (invalidFeedback) $(invalidFeedback).hide();
+            $('#presupuestoPDFFileFormatInfo').show();
+        }
+    }, 100);
+    
+    // Deshabilitar el botón de subir
+    const uploadPresupuestoPDFBtnLocal = document.getElementById("uploadPresupuestoPDFBtn");
+    if (uploadPresupuestoPDFBtnLocal) {
+        uploadPresupuestoPDFBtnLocal.disabled = true;
+    }
+    
+    // Mostrar el modal
+    if (bsUploadPresupuestoPDFModal) {
+        bsUploadPresupuestoPDFModal.show();
+    } else {
+        console.error("Error: Instancia de Bootstrap Modal para 'uploadPresupuestoPDFModal' no creada.");
+    }
+}
+
 // Función para mostrar el modal de visualización
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, hasPresupuesto, presupuestoPath) {
     const modalElementView = document.getElementById("viewDocumentModal");
+    
+    // Inicializar bsViewModal si no está inicializado
+    if (!bsViewModal && modalElementView) {
+        bsViewModal = new bootstrap.Modal(modalElementView, { keyboard: false });
+    }
+    
+    if (!modalElementView) {
+        console.error("Error: Modal 'viewDocumentModal' no encontrado.");
+        return;
+    }
+    
     const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
+    const documentSelectionContainer = document.getElementById("documentSelectionContainer");
+    const documentViewArea = document.getElementById("documentViewArea");
+    const radioEnvioDestino = document.getElementById("radioEnvioDestino");
+    const radioPresupuesto = document.getElementById("radioPresupuesto");
+    const labelEnvioDestino = radioEnvioDestino ? radioEnvioDestino.nextElementSibling : null;
+    const labelPresupuesto = radioPresupuesto ? radioPresupuesto.nextElementSibling : null;
+    const btnVisualizarDocumento = document.getElementById("btnVisualizarDocumento");
+    const btnVolverSeleccion = document.getElementById("btnVolverSeleccion");
     const imageViewPreview = document.getElementById("imageViewPreview");
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const messageContainer = document.getElementById("viewDocumentMessage");
-    const nameDocumento = document.getElementById("NombreImage");
+    const nombreDocumento = document.getElementById("NombreDocumento");
     const BotonCerrarModal = document.getElementById("modalCerrarshow");
 
     // Verificar si ya hay un modal abierto y cerrarlo primero
@@ -119,62 +253,221 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         return;
     }
 
-    function openViewModal() {
-        currentTicketId = ticketId;
-        currentNroTicket = nroTicket;
-        modalTicketIdSpanView.textContent = currentNroTicket;
+    // Función para limpiar la ruta del archivo
+    function cleanFilePath(filePath) {
+        if (!filePath) return null;
 
-        // Limpiar vistas y mensajes
+        // Reemplazar barras invertidas con barras normales
+        let cleanPath = filePath.replace(/\\/g, '/');
+
+        // Extraer la parte después de 'Documentos_SoportePost/' o 'uploads/'
+        const pathSegments = cleanPath.split('Documentos_SoportePost/');
+        if (pathSegments.length > 1) {
+            cleanPath = pathSegments[1];
+        } else {
+            // Si no tiene Documentos_SoportePost/, intentar con uploads/
+            const uploadsSegments = cleanPath.split('uploads/');
+            if (uploadsSegments.length > 1) {
+                cleanPath = 'uploads/' + uploadsSegments[1];
+            }
+        }
+
+        // Construir la URL completa
+        return `http://${HOST}/Documentos/${cleanPath}`;
+    }
+
+    // Función para mostrar un documento
+    function displayDocument(filePath, fileName, isImage) {
+        // Ocultar selección y mostrar área de visualización
+        documentSelectionContainer.style.display = "none";
+        documentViewArea.style.display = "block";
+        // Ocultar botón de visualizar cuando se muestra el documento
+        if (btnVisualizarDocumento) btnVisualizarDocumento.style.display = "none";
+
+        // Limpiar vistas anteriores
         imageViewPreview.style.display = "none";
         pdfViewViewer.style.display = "none";
         messageContainer.textContent = "";
         messageContainer.classList.add("hidden");
 
-        // Función para limpiar la ruta del archivo
-        function cleanFilePath(filePath) {
-            if (!filePath) return null;
-
-            // Reemplazar barras invertidas con barras normales
-            let cleanPath = filePath.replace(/\\/g, '/');
-
-            // Extraer la parte después de 'Documentos_SoportePost/'
-            const pathSegments = cleanPath.split('Documentos_SoportePost/');
-            if (pathSegments.length > 1) {
-                cleanPath = pathSegments[1];
-            }
-
-          // Construir la URL completa
-          return `http://${HOST}/Documentos/${cleanPath}`;
+        if (!filePath) {
+            messageContainer.textContent = "No hay documento disponible.";
+            messageContainer.classList.remove("hidden");
+            nombreDocumento.textContent = "";
+            return;
         }
 
-        if (imageUrl) {
-            // Es una imagen
-            const fullUrl = cleanFilePath(imageUrl);
+        const fullUrl = cleanFilePath(filePath);
+        nombreDocumento.textContent = fileName || "Documento";
 
+        if (isImage) {
             imageViewPreview.src = fullUrl;
             imageViewPreview.style.display = "block";
-            nameDocumento.textContent = documentName;
-
-        } else if (pdfUrl) {
-            // Es un PDF
-            const fullUrl = cleanFilePath(pdfUrl);
-
+        } else {
             pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
             pdfViewViewer.style.display = "block";
-            nameDocumento.textContent = documentName;
+        }
+    }
 
+    function openViewModal() {
+        currentTicketId = ticketId;
+        currentNroTicket = nroTicket;
+        modalTicketIdSpanView.textContent = currentNroTicket;
+
+        // Determinar qué documentos están disponibles
+        const hasEnvio = (imageUrl || pdfUrl);
+        const hasPresupuestoDoc = hasPresupuesto && presupuestoPath;
+
+        // Guardar las rutas y nombres de los documentos para uso posterior
+        window.currentEnvioImageUrl = imageUrl;
+        window.currentEnvioPdfUrl = pdfUrl;
+        window.currentEnvioDocumentName = documentName;
+        window.currentPresupuestoPath = presupuestoPath;
+        window.currentHasEnvio = hasEnvio;
+        window.currentHasPresupuesto = hasPresupuestoDoc;
+
+        // Mostrar/ocultar radio buttons según los documentos disponibles
+        if (hasEnvio && labelEnvioDestino && radioEnvioDestino) {
+            radioEnvioDestino.parentElement.style.display = "block";
+        } else if (radioEnvioDestino) {
+            radioEnvioDestino.parentElement.style.display = "none";
+        }
+
+        if (hasPresupuestoDoc && labelPresupuesto && radioPresupuesto) {
+            radioPresupuesto.parentElement.style.display = "block";
+        } else if (radioPresupuesto) {
+            radioPresupuesto.parentElement.style.display = "none";
+        }
+
+        // Siempre mostrar la selección primero si hay al menos un documento
+        if (hasEnvio || hasPresupuestoDoc) {
+            // Hay al menos un documento, mostrar selección
+            documentSelectionContainer.style.display = "block";
+            documentViewArea.style.display = "none";
+            // Mostrar botón de visualizar en el footer
+            if (btnVisualizarDocumento) {
+                btnVisualizarDocumento.style.display = "block";
+            }
+            // Desmarcar todos los radios
+            if (radioEnvioDestino) radioEnvioDestino.checked = false;
+            if (radioPresupuesto) radioPresupuesto.checked = false;
+            
+            // Si solo hay un documento, marcarlo automáticamente
+            if (hasEnvio && !hasPresupuestoDoc && radioEnvioDestino) {
+                radioEnvioDestino.checked = true;
+            } else if (!hasEnvio && hasPresupuestoDoc && radioPresupuesto) {
+                radioPresupuesto.checked = true;
+            }
         } else {
-            // No hay documento
-            messageContainer.textContent = "No hay documento disponible para este ticket.";
+            // No hay documentos
+            documentSelectionContainer.style.display = "none";
+            documentViewArea.style.display = "block";
+            // Ocultar botón de visualizar
+            if (btnVisualizarDocumento) btnVisualizarDocumento.style.display = "none";
+            messageContainer.textContent = "No hay documentos disponibles para este ticket.";
             messageContainer.classList.remove("hidden");
-            nameDocumento.textContent = "";
+            nombreDocumento.textContent = "";
+        }
+
+        // Event listener para el botón "Visualizar Documento"
+        if (btnVisualizarDocumento) {
+            btnVisualizarDocumento.onclick = function() {
+                const selectedRadio = document.querySelector('input[name="documentTypeView"]:checked');
+                if (!selectedRadio) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Selección requerida',
+                        text: 'Por favor seleccione un tipo de documento para visualizar.',
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black',
+                    });
+                    return;
+                }
+
+                const documentType = selectedRadio.value;
+                if (documentType === 'Envio_Destino' && window.currentHasEnvio) {
+                    const isImage = !!window.currentEnvioImageUrl;
+                    displayDocument(
+                        window.currentEnvioImageUrl || window.currentEnvioPdfUrl,
+                        window.currentEnvioDocumentName || "Documento de Envío",
+                        isImage
+                    );
+                } else if (documentType === 'Presupuesto' && window.currentHasPresupuesto) {
+                    displayDocument(window.currentPresupuestoPath, "Presupuesto.pdf", false);
+                }
+            };
+        }
+
+        // Event listener para el botón "Volver a Selección"
+        if (btnVolverSeleccion) {
+            btnVolverSeleccion.onclick = function() {
+                documentSelectionContainer.style.display = "block";
+                documentViewArea.style.display = "none";
+                // Mostrar botón de visualizar cuando se vuelve a la selección
+                if (btnVisualizarDocumento) {
+                    btnVisualizarDocumento.style.display = "block";
+                }
+            };
         }
 
         // Event listener para el botón de cerrar - Limpiar listeners anteriores
         if (BotonCerrarModal) {
             // Remover listeners anteriores para evitar duplicados
             BotonCerrarModal.removeEventListener('click', closeViewModalHandler);
-            BotonCerrarModal.addEventListener('click', closeViewModalHandler);
+            // Agregar el nuevo listener
+            BotonCerrarModal.addEventListener('click', function() {
+                const documentSelectionContainer = document.getElementById("documentSelectionContainer");
+                const documentViewArea = document.getElementById("documentViewArea");
+                
+                // Si estamos viendo un documento, ocultar el modal y mostrar la selección
+                if (documentViewArea && documentViewArea.style.display !== "none" && 
+                    documentSelectionContainer && documentSelectionContainer.style.display === "none") {
+                    // Ocultar el modal de visualización
+                    if (bsViewModal) {
+                        bsViewModal.hide();
+                    }
+                    
+                    // Limpiar el contenido del documento
+                    const imageViewPreview = document.getElementById("imageViewPreview");
+                    const pdfViewViewer = document.getElementById("pdfViewViewer");
+                    const messageContainer = document.getElementById("viewDocumentMessage");
+                    
+                    if (imageViewPreview) {
+                        imageViewPreview.src = "#";
+                        imageViewPreview.style.display = "none";
+                    }
+                    if (pdfViewViewer) {
+                        pdfViewViewer.innerHTML = "";
+                        pdfViewViewer.style.display = "none";
+                    }
+                    if (messageContainer) {
+                        messageContainer.classList.add("hidden");
+                        messageContainer.textContent = "";
+                    }
+                    
+                    // Mostrar nuevamente el modal de selección
+                    setTimeout(() => {
+                        if (bsViewModal) {
+                            bsViewModal.show();
+                        }
+                        // Asegurar que la selección esté visible
+                        if (documentSelectionContainer) {
+                            documentSelectionContainer.style.display = "block";
+                        }
+                        if (documentViewArea) {
+                            documentViewArea.style.display = "none";
+                        }
+                        // Mostrar botón de visualizar
+                        if (btnVisualizarDocumento) {
+                            btnVisualizarDocumento.style.display = "block";
+                        }
+                    }, 300);
+                } else {
+                    // Si estamos en la selección, cerrar el modal completamente
+                    closeViewModalAndClean();
+                }
+            });
         }
 
         // Mostrar el modal
@@ -254,6 +547,30 @@ function closeUploadModalAndClean() {
         closeViewModalAndClean();
     }
 
+    // Función para cerrar el modal de presupuesto PDF
+    function closePresupuestoPDFModalAndClean() {
+        if (bsPresupuestoPDFModal) {
+            bsPresupuestoPDFModal.hide(); // Usa el método de Bootstrap para ocultar el modal
+        }
+    }
+
+    // Función para cerrar el modal de presupuesto
+    function closePresupuestoModalAndClean() {
+        if (bsPresupuestoModal) {
+            bsPresupuestoModal.hide(); // Usa el método de Bootstrap para ocultar el modal
+        }
+        
+        // Limpiar colores de las columnas de diferencia
+        const diferenciaUSD = document.getElementById('presupuestoDiferenciaUSD');
+        const diferenciaBS = document.getElementById('presupuestoDiferenciaBS');
+        
+        if (diferenciaUSD) {
+            diferenciaUSD.classList.remove('bg-danger', 'bg-success', 'text-white');
+        }
+        if (diferenciaBS) {
+            diferenciaBS.classList.remove('bg-danger', 'bg-success', 'text-white');
+        }
+    }
 
     // --- Event Listeners para elementos estáticos del DOM (cierres de modales, etc.) ---
     if (cerrarBotonUpload) {
@@ -280,6 +597,46 @@ function closeUploadModalAndClean() {
         console.warn("Advertencia: Elemento con ID 'btn-close' no encontrado para el modal de visualización.");
     }
 
+    if (cerrarBotonPresupuestoPDF) {
+        cerrarBotonPresupuestoPDF.addEventListener("click", closePresupuestoPDFModalAndClean);
+    } else {
+        console.warn("Advertencia: Elemento con ID 'closePresupuestoPDFBtn2' no encontrado para el modal de presupuesto PDF.");
+    }
+
+    if (iconoCerrarPresupuestoPDF) {
+        iconoCerrarPresupuestoPDF.addEventListener("click", closePresupuestoPDFModalAndClean);
+    } else {
+        console.warn("Advertencia: Elemento con ID 'closePresupuestoPDFBtn' no encontrado para el modal de presupuesto PDF.");
+    }
+
+    if (cerrarBotonPresupuesto) {
+        cerrarBotonPresupuesto.addEventListener("click", closePresupuestoModalAndClean);
+    } else {
+        console.warn("Advertencia: Botón de cerrar no encontrado para el modal de presupuesto.");
+    }
+
+    if (iconoCerrarPresupuesto) {
+        iconoCerrarPresupuesto.addEventListener("click", closePresupuestoModalAndClean);
+    } else {
+        console.warn("Advertencia: Icono de cerrar no encontrado para el modal de presupuesto.");
+    }
+
+    // Event listener para limpiar colores cuando el modal se cierre completamente
+    if (modalElementPresupuesto) {
+        modalElementPresupuesto.addEventListener('hidden.bs.modal', function() {
+            // Limpiar colores de las columnas de diferencia
+            const diferenciaUSD = document.getElementById('presupuestoDiferenciaUSD');
+            const diferenciaBS = document.getElementById('presupuestoDiferenciaBS');
+            
+            if (diferenciaUSD) {
+                diferenciaUSD.classList.remove('bg-danger', 'bg-success', 'text-white');
+            }
+            if (diferenciaBS) {
+                diferenciaBS.classList.remove('bg-danger', 'bg-success', 'text-white');
+            }
+        });
+    }
+
     // --- Delegación de eventos para botones generados dinámicamente ---
     // Este listener escuchará clics en todo el documento
     document.addEventListener("click", function (event) {
@@ -293,6 +650,19 @@ function closeUploadModalAndClean() {
             return; // Detiene la ejecución para no procesar otros botones
         }
 
+        // Delegación para el botón "Cargar PDF Presupuesto"
+        const uploadPresupuestoPDFBtn = event.target.closest(".upload-presupuesto-pdf-btn");
+        if (uploadPresupuestoPDFBtn) {
+            event.preventDefault();
+            const nroTicket = uploadPresupuestoPDFBtn.dataset.nroTicket;
+            const serialPos = uploadPresupuestoPDFBtn.dataset.serialPos;
+            
+            // Abrir el modal directamente con el nro_ticket y serial_pos (no necesitamos id_budget)
+            openUploadPresupuestoPDFModal(nroTicket, serialPos);
+            return;
+        }
+
+
         // Delegación para el botón "Ver Imagen" (o similar, con ID 'viewimage')
         // Asume que el botón de ver imagen tiene un ID 'viewimage' y un data-url-document
         const openViewBtn = event.target.closest("#viewimage"); // O la clase CSS que uses
@@ -305,12 +675,42 @@ function closeUploadModalAndClean() {
             const fileName = openViewBtn.dataset.filename; // AGREGAR ESTA LÍNEA
 
             if (documentType === 'image') {
-                showViewModal(idTicket, nroTicket, documentUrl, null, fileName); // PASAR fileName AQUÍ
+                if (typeof window.showViewModal === 'function') {
+                    window.showViewModal(idTicket, nroTicket, documentUrl, null, fileName, false, ''); // PASAR fileName AQUÍ
+                } else {
+                    console.error('showViewModal no está definida');
+                }
             } else if (documentType === 'pdf') {
-                showViewModal(idTicket, nroTicket, null, documentUrl, fileName); // PASAR fileName AQUÍ
+                if (typeof window.showViewModal === 'function') {
+                    window.showViewModal(idTicket, nroTicket, null, documentUrl, fileName, false, ''); // PASAR fileName AQUÍ
+                } else {
+                    console.error('showViewModal no está definida');
+                }
             } else {
                 console.warn("Tipo de documento no especificado para la visualización.");
-                showViewModal(idTicket, nroTicket, null, null, fileName); // Abre el modal sin contenido
+                if (typeof window.showViewModal === 'function') {
+                    window.showViewModal(idTicket, nroTicket, null, null, fileName, false, ''); // Abre el modal sin contenido
+                } else {
+                    console.error('showViewModal no está definida');
+                }
+            }
+            return;
+        }
+
+        // Delegación para el botón "Generar Presupuesto"
+        const generatePresupuestoBtn = event.target.closest(".generate-presupuesto-btn");
+        if (generatePresupuestoBtn) {
+            event.preventDefault();
+            const nroTicket = generatePresupuestoBtn.dataset.nroTicket;
+            if (nroTicket) {
+                // Abrir el modal de presupuesto
+                openPresupuestoModal(nroTicket);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo obtener el número de ticket.'
+                });
             }
             return;
         }
@@ -330,6 +730,48 @@ function closeUploadModalAndClean() {
     });
 
     // --- Manejo del input de archivo para previsualización ---
+    // Event listener para el input de archivo del presupuesto PDF
+    if (inputPresupuestoPDFFile) {
+        inputPresupuestoPDFFile.addEventListener('change', function() {
+            const file = this.files[0];
+            const uploadBtn = document.getElementById('uploadPresupuestoPDFBtn');
+            
+            if (file) {
+                // Validar que sea PDF
+                if (file.type !== 'application/pdf') {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                    if (uploadBtn) uploadBtn.disabled = true;
+                    return;
+                }
+                
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+                if (uploadBtn) uploadBtn.disabled = false;
+            } else {
+                this.classList.remove('is-valid', 'is-invalid');
+                if (uploadBtn) uploadBtn.disabled = true;
+            }
+        });
+    }
+    
+    // Event listeners para cerrar el modal de carga de PDF del presupuesto
+    if (cerrarBotonUploadPresupuestoPDF) {
+        cerrarBotonUploadPresupuestoPDF.addEventListener('click', function() {
+            if (bsUploadPresupuestoPDFModal) {
+                bsUploadPresupuestoPDFModal.hide();
+            }
+        });
+    }
+    
+    if (iconoCerrarUploadPresupuestoPDF) {
+        iconoCerrarUploadPresupuestoPDF.addEventListener('click', function() {
+            if (bsUploadPresupuestoPDFModal) {
+                bsUploadPresupuestoPDFModal.hide();
+            }
+        });
+    }
+
     if (inputFile) {
         inputFile.addEventListener('change', function() {
             const imagePreview = document.getElementById("imagePreview");
@@ -562,6 +1004,13 @@ function getTicketDataFinaljs() {
                       const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
                       const isDocumentMissing = !hasEnvioDestinoDocument || hasEnvioDestinoDocument === null || hasEnvioDestinoDocument === '';
 
+                      // Información de budgets y status del ticket para validar el botón de presupuesto
+                      const hasBudget = row.has_budget === true || row.has_budget === 't' || row.has_budget === 1 || 
+                                       (row.id_budget && row.id_budget !== null && row.id_budget !== '') ||
+                                       (row.pdf_path_presupuesto && row.pdf_path_presupuesto.trim() !== '');
+                      const idStatusTicket = row.id_status_ticket ? parseInt(row.id_status_ticket) : null;
+                      const isEnProceso = idStatusTicket === 2;
+
                       let actionButton = '';
 
                       // Prioridad 1: Validar si el ticket está en espera de ser recibido en el Rosal
@@ -612,18 +1061,69 @@ function getTicketDataFinaljs() {
                           }
                           // Si cumple las condiciones base y YA se subió el documento
                           else if (commonConditions && hasEnvioDestinoDocument) {
+                              // Obtener el PDF del presupuesto para agregarlo como atributo data
+                              const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
+                              const pdfPathEscaped = pdfPathPresupuesto ? pdfPathPresupuesto.replace(/"/g, '&quot;') : '';
+                              
                               actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
                                                   data-id-ticket="${idTicket}"
                                                   data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"  
                                                   data-serial-pos="${serialPos}"
-                                                  data-nro-ticket="${nroTicket}">
+                                                  data-nro-ticket="${nroTicket}"
+                                                  data-pdf-presupuesto="${pdfPathEscaped}">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
                                                     <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
                                                   </svg>
                                               </button>`;
                           }
                       }
-                      return actionButton;
+                      
+                      // Validar si debe mostrarse el botón de presupuesto
+                      // El botón se muestra si:
+                      // 1. NO hay datos en budgets para este nro_ticket
+                      // 2. O si HAY datos en budgets Y el id_status_ticket NO es 2 ("En proceso")
+                      // NO mostrar botón si: hay presupuesto Y está en proceso
+                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso);
+                      
+                      // Agregar botón de presupuesto solo si cumple las condiciones
+                      let presupuestoButton = '';
+                      if (shouldShowPresupuestoButton) {
+                          presupuestoButton = `<button type="button" class="btn generate-presupuesto-btn" 
+                              data-id-ticket="${idTicket}"
+                              data-serial-pos="${serialPos}"
+                              data-nro-ticket="${nroTicket}"
+                              title="Presupuesto"
+                              style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block;">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5"/>
+                              </svg>
+                              <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Presupuesto</span>
+                          </button>`;
+                      }
+                      
+                      // Verificar si existe un PDF del presupuesto cargado
+                      // Puede venir como pdf_path_presupuesto, pdf_path, o presupuesto_pdf_path
+                      const pdfPath = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
+                      const hasPresupuestoPDF = pdfPath && pdfPath.trim() !== '';
+                      
+                      // Agregar botón para cargar PDF del presupuesto (solo si no existe)
+                      let uploadPresupuestoPDFButton = '';
+                      if (!hasPresupuestoPDF) {
+                          // Botón para cargar PDF
+                          uploadPresupuestoPDFButton = `<button type="button" class="btn btn-info btn-sm upload-presupuesto-pdf-btn" title="Cargar PDF Presupuesto"
+                              data-id-ticket="${idTicket}"
+                              data-serial-pos="${serialPos}"
+                              data-nro-ticket="${nroTicket}">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-arrow-down-fill" viewBox="0 0 16 16">
+                                <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M8 5a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 9.293V5.5A.5.5 0 0 1 8 5"/>
+                             </svg>
+                          </button>`;
+                      }
+                      
+                      // Combinar todos los botones en una fila horizontal
+                      const allButtons = `${actionButton || ''}${presupuestoButton}${uploadPresupuestoPDFButton}`;
+                      return `<div style="display: flex; align-items: center; gap: 5px; flex-direction: row; flex-wrap: nowrap;">${allButtons}</div>`;
                   },
           });
 
@@ -742,36 +1242,27 @@ function getTicketDataFinaljs() {
                 const url_documento = row.document_url;
                 const documentType = row.document_type;
                 const filename = row.original_filename;
-
-                if (hasEnvioDestinoDocument && url_documento) {
-                  if (row.name_accion_ticket === "En espera de confirmar recibido en el Rosal" || row.name_accion_ticket === "En espera de Confirmar Devolución	") {
-                    // Si está en espera de confirmar, mostrar botón para ver imagen (modal)
-                    const fileExtension = url_documento.split('.').pop().toLowerCase();
-                    const isPdf = fileExtension === 'pdf';
+                
+                // Verificar si existe PDF del presupuesto
+                const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
+                const hasPresupuestoPDF = pdfPathPresupuesto && pdfPathPresupuesto.trim() !== '';
+                
+                // Si hay al menos un documento (Envio_Destino o Presupuesto), mostrar botón
+                if ((hasEnvioDestinoDocument && url_documento) || hasPresupuestoPDF) {
+                  const fileExtension = url_documento ? url_documento.split('.').pop().toLowerCase() : '';
+                  const isPdf = fileExtension === 'pdf';
                         
-                    return `<button type="button" class="btn btn-info btn-sm view-document-btn" 
+                  return `<button type="button" class="btn btn-info btn-sm view-document-btn" 
                       data-id-ticket="${idTicket}"
                       data-nro-ticket="${nroTicket}"
-                      data-url-document="${url_documento}"
+                      data-url-document="${url_documento || ''}"
                       data-document-type="${isPdf ? 'pdf' : 'image'}"
-                      data-filename="${filename || 'Documento'}">
-                      Ver Documento
+                      data-filename="${filename || 'Documento'}"
+                      data-has-envio="${hasEnvioDestinoDocument && url_documento ? 'true' : 'false'}"
+                      data-has-presupuesto="${hasPresupuestoPDF ? 'true' : 'false'}"
+                      data-presupuesto-path="${pdfPathPresupuesto || ''}">
+                      Ver Documento${hasEnvioDestinoDocument && hasPresupuestoPDF ? 's' : ''}
                     </button>`;
-                  } else {
-                    // Si ya existe el documento y NO está en espera, mostrar botón para verlo
-                    const fileExtension = url_documento.split('.').pop().toLowerCase();
-                    const isPdf = fileExtension === 'pdf';
-                        
-                    return `<button type="button" id="viewimage" 
-                      class="btn btn-info btn-sm" 
-                      data-id-ticket="${idTicket}"
-                      data-nro-ticket="${nroTicket}"
-                      data-url-document="${url_documento}"
-                      data-document-type="${isPdf ? 'pdf' : 'image'}"
-                      data-filename="${filename || 'Documento'}">
-                      Ver Documento
-                    </button>`;
-                  }
                 } else {
                     return `<button type="button" class="btn btn-secondary btn-sm" title="No hay documento disponible" disabled>No hay documento disponible</button>`;
                 }
@@ -1534,6 +2025,39 @@ function getTicketDataFinaljs() {
                     const serialPos = $(this).data("serial-pos") || "";
                     const nroTicket = $(this).data("nro-ticket");
                     const regionName = $(this).data("region-name");
+                    
+                    // Obtener el PDF del presupuesto directamente del atributo data del botón
+                    const pdfPathPresupuesto = $(this).data("pdf-presupuesto") || '';
+                    const hasPresupuestoPDF = pdfPathPresupuesto && pdfPathPresupuesto.trim() !== '';
+                    
+                    // Validación: Si no hay PDF del presupuesto, mostrar alerta y detener
+                    if (!hasPresupuestoPDF) {
+                        Swal.fire({
+                            title: 'Documento de Presupuesto Requerido',
+                            html: `
+                                <div style="text-align: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="bi bi-exclamation-triangle-fill mb-3" viewBox="0 0 16 16">
+                                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                    </svg>
+                                    <p class="h5 mb-3" style="color: black;">
+                                        No se puede enviar el ticket a la región sin el documento de presupuesto.
+                                    </p>
+                                    <p class="mb-3" style="color: #6c757d;">
+                                        Por favor, cargue el documento de presupuesto antes de enviar el ticket a la región.
+                                    </p>
+                                    <p class="text-muted" style="font-size: 0.9rem;">
+                                        Ticket: <strong>${nroTicket}</strong>
+                                    </p>
+                                </div>
+                            `,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                            allowOutsideClick: false,
+                            allowEscapeKey: true
+                        });
+                        return; // Detener la ejecución
+                    }
 
                     const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
                     
@@ -2439,12 +2963,19 @@ $(document).ready(function () {
     const filename = $(this).data("filename");
     const idTicket = $(this).data("id-ticket");
     const nroTicket = $(this).data("nro-ticket");
+    const hasEnvio = $(this).data("has-envio") === true || $(this).data("has-envio") === 'true';
+    const hasPresupuesto = $(this).data("has-presupuesto") === true || $(this).data("has-presupuesto") === 'true';
+    const presupuestoPath = $(this).data("presupuesto-path") || '';
     
     // Llamar a la función showViewModal con los parámetros correctos
-    if (documentType === 'pdf') {
-      showViewModal(idTicket, nroTicket, null, urlDocument, filename);
+    if (typeof window.showViewModal === 'function') {
+      if (documentType === 'pdf') {
+        window.showViewModal(idTicket, nroTicket, null, urlDocument, filename, hasPresupuesto, presupuestoPath);
+      } else {
+        window.showViewModal(idTicket, nroTicket, urlDocument, null, filename, hasPresupuesto, presupuestoPath);
+      }
     } else {
-      showViewModal(idTicket, nroTicket, urlDocument, null, filename);
+      console.error('showViewModal no está definida');
     }
   });
 
@@ -5995,6 +6526,2008 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
 // FUNCIONES PARA PENDIENTE_ENTREGA
 // ========================================
 
+// Función para abrir el modal de presupuesto
+function openPresupuestoModal(nroTicket) {
+    const nroTicketSpan = document.getElementById('presupuestoNroTicket');
+    
+    if (nroTicketSpan) {
+        nroTicketSpan.textContent = nroTicket;
+    }
+    
+    // Limpiar campos y ocultar contenedores
+    document.getElementById('presupuestoMontoUSD').value = '';
+    document.getElementById('presupuestoMoneda').value = '';
+    document.getElementById('presupuestoMetodoPago').value = '';
+    document.getElementById('presupuestoMontoBS').value = '';
+    document.getElementById('presupuestoBancoOrigen').value = '';
+    document.getElementById('presupuestoBancoDestino').value = '';
+    document.getElementById('presupuestoReferencia').value = '';
+    document.getElementById('presupuestoDepositante').value = '';
+    document.getElementById('presupuestoFechaPago').value = '';
+    document.getElementById('presupuestoMontoTaller').value = '';
+    document.getElementById('presupuestoMontoPagadoUSD').value = '';
+    document.getElementById('presupuestoDiferenciaUSD').value = '';
+    document.getElementById('presupuestoDiferenciaBS').value = '';
+    
+    // Ocultar todos los contenedores condicionales
+    const containersToHide = [
+        'presupuestoBancoOrigenContainer',
+        'presupuestoBancoDestinoContainer',
+        'presupuestoReferenciaContainer',
+        'presupuestoDepositanteContainer',
+        'presupuestoFechaPagoContainer',
+        'presupuestoDestinoRifTipoContainer',
+        'presupuestoDestinoRifNumeroContainer',
+        'presupuestoDestinoTelefonoContainer',
+        'presupuestoDestinoBancoContainer',
+        'presupuestoOrigenRifTipoContainer',
+        'presupuestoOrigenRifNumeroContainer',
+        'presupuestoOrigenTelefonoContainer',
+        'presupuestoOrigenBancoContainer'
+    ];
+    
+    containersToHide.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.style.display = 'none';
+        }
+    });
+    
+    // Obtener datos de payment_records
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success && response.data) {
+                    const paymentData = response.data;
+                    
+                    // Función helper para verificar si un valor está vacío o es null
+                    const isEmpty = (value) => {
+                        return value === null || value === undefined || value === '' || value === 'null' || String(value).trim() === '';
+                    };
+                    
+                    // Función helper para mostrar/ocultar campos
+                    const toggleField = (containerId, inputId, value) => {
+                        const container = document.getElementById(containerId);
+                        const input = document.getElementById(inputId);
+                        if (container && input) {
+                            if (!isEmpty(value)) {
+                                input.value = value;
+                                container.style.display = '';
+                            } else {
+                                container.style.display = 'none';
+                            }
+                        }
+                    };
+                    
+                    // Llenar campos del modal
+                    const montoUSD = paymentData.reference_amount ? parseFloat(paymentData.reference_amount) : 0;
+                    const montoBS = paymentData.amount_bs ? parseFloat(paymentData.amount_bs) : 0;
+                    
+                    document.getElementById('presupuestoMontoUSD').value = montoUSD.toFixed(2);
+                    document.getElementById('presupuestoMoneda').value = paymentData.currency === 'bs' ? 'Bolívares (Bs)' : (paymentData.currency === 'usd' ? 'Dólares (USD)' : paymentData.currency || 'N/A');
+                    document.getElementById('presupuestoMetodoPago').value = paymentData.payment_method || 'N/A';
+                    document.getElementById('presupuestoMontoBS').value = montoBS.toFixed(2);
+                    
+                    // Campos condicionales - Transferencia (Bancos)
+                    toggleField('presupuestoBancoOrigenContainer', 'presupuestoBancoOrigen', paymentData.origen_bank);
+                    toggleField('presupuestoBancoDestinoContainer', 'presupuestoBancoDestino', paymentData.destination_bank);
+                    
+                    // Campos condicionales - Referencia, Depositante, Fecha
+                    toggleField('presupuestoReferenciaContainer', 'presupuestoReferencia', paymentData.payment_reference);
+                    toggleField('presupuestoDepositanteContainer', 'presupuestoDepositante', paymentData.depositor);
+                    
+                    if (paymentData.payment_date) {
+                        const fecha = new Date(paymentData.payment_date);
+                        const fechaFormateada = fecha.toLocaleDateString('es-VE') + ' ' + fecha.toLocaleTimeString('es-VE');
+                        toggleField('presupuestoFechaPagoContainer', 'presupuestoFechaPago', fechaFormateada);
+                    } else {
+                        toggleField('presupuestoFechaPagoContainer', 'presupuestoFechaPago', null);
+                    }
+                    
+                    // Campos condicionales - Pago Móvil - Destino
+                    toggleField('presupuestoDestinoRifTipoContainer', 'presupuestoDestinoRifTipo', paymentData.destino_rif_tipo);
+                    toggleField('presupuestoDestinoRifNumeroContainer', 'presupuestoDestinoRifNumero', paymentData.destino_rif_numero);
+                    toggleField('presupuestoDestinoTelefonoContainer', 'presupuestoDestinoTelefono', paymentData.destino_telefono);
+                    toggleField('presupuestoDestinoBancoContainer', 'presupuestoDestinoBanco', paymentData.destino_banco);
+                    
+                    // Campos condicionales - Pago Móvil - Origen
+                    toggleField('presupuestoOrigenRifTipoContainer', 'presupuestoOrigenRifTipo', paymentData.origen_rif_tipo);
+                    toggleField('presupuestoOrigenRifNumeroContainer', 'presupuestoOrigenRifNumero', paymentData.origen_rif_numero);
+                    toggleField('presupuestoOrigenTelefonoContainer', 'presupuestoOrigenTelefono', paymentData.origen_telefono);
+                    toggleField('presupuestoOrigenBancoContainer', 'presupuestoOrigenBanco', paymentData.origen_banco);
+                    
+                    // Guardar datos para cálculos
+                    document.getElementById('presupuestoMontoPagadoUSD').value = montoUSD.toFixed(2);
+                    window.presupuestoMontoPagadoUSD = montoUSD;
+                    window.presupuestoTasaCambio = montoUSD > 0 ? (montoBS / montoUSD) : 0;
+                    
+                    // Establecer fecha de hoy (no editable)
+                    const today = new Date();
+                    const fechaFormateada = today.toISOString().split('T')[0];
+                    document.getElementById('presupuestoFecha').value = fechaFormateada;
+                    
+                    // Limpiar descripción
+                    document.getElementById('presupuestoDescripcion').value = '';
+                    
+                    // Cargar datos del cliente
+                    loadClienteDataForPresupuesto(nroTicket);
+                    
+                    // Agregar event listener para calcular diferencia (remover primero para evitar duplicados)
+                    const montoTallerInput = document.getElementById('presupuestoMontoTaller');
+                    if (montoTallerInput) {
+                        // Validar que solo se ingresen números y un punto decimal
+                        montoTallerInput.addEventListener('input', function(e) {
+                            let value = e.target.value;
+                            // Remover cualquier carácter que no sea número o punto decimal
+                            value = value.replace(/[^0-9.]/g, '');
+                            // Asegurar que solo haya un punto decimal
+                            const parts = value.split('.');
+                            if (parts.length > 2) {
+                                value = parts[0] + '.' + parts.slice(1).join('');
+                            }
+                            // Si el valor cambió, actualizarlo
+                            if (e.target.value !== value) {
+                                e.target.value = value;
+                            }
+                            calcularDiferenciaPresupuesto();
+                        });
+                        
+                        // Prevenir pegar texto no numérico
+                        montoTallerInput.addEventListener('paste', function(e) {
+                            e.preventDefault();
+                            const paste = (e.clipboardData || window.clipboardData).getData('text');
+                            const numericValue = paste.replace(/[^0-9.]/g, '');
+                            const parts = numericValue.split('.');
+                            const cleanValue = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : numericValue;
+                            if (cleanValue) {
+                                this.value = cleanValue;
+                                calcularDiferenciaPresupuesto();
+                            }
+                        });
+                        
+                        // Crear una nueva función wrapper para evitar problemas con removeEventListener
+                        const newHandler = function() {
+                            calcularDiferenciaPresupuesto();
+                        };
+                        montoTallerInput.removeEventListener('input', window.presupuestoCalculoHandler);
+                        window.presupuestoCalculoHandler = newHandler;
+                    }
+                    
+                    // Limpiar al cerrar el modal
+                    const presupuestoModalElement = document.getElementById('presupuestoModal');
+                    if (presupuestoModalElement) {
+                        presupuestoModalElement.addEventListener('hidden.bs.modal', function() {
+                            // Limpiar valores
+                            const montoTaller = document.getElementById('presupuestoMontoTaller');
+                            const diferenciaUSD = document.getElementById('presupuestoDiferenciaUSD');
+                            const diferenciaBS = document.getElementById('presupuestoDiferenciaBS');
+                            if (montoTaller) montoTaller.value = '';
+                            if (diferenciaUSD) {
+                                diferenciaUSD.value = '';
+                                diferenciaUSD.classList.remove('bg-danger', 'bg-success', 'text-white');
+                            }
+                            if (diferenciaBS) {
+                                diferenciaBS.value = '';
+                                diferenciaBS.classList.remove('bg-danger', 'bg-success', 'text-white');
+                            }
+                        }, { once: true });
+                    }
+                    
+                    // Aplicar scroll automático a inputs con texto largo
+                    setTimeout(() => {
+                        setupAutoScrollInputs();
+                    }, 300);
+                    
+                    // Mostrar modal
+                    if (bsPresupuestoModal) {
+                        bsPresupuestoModal.show();
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Sin datos de pago',
+                        text: response.message || 'No se encontró información de pago para este ticket.',
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Respuesta',
+                    text: 'Error al procesar la respuesta del servidor',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al intentar obtener los datos de pago');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de conexión con el servidor',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+    
+    // Enviar los datos
+    const data = `action=GetPaymentData&nro_ticket=${encodeURIComponent(nroTicket)}`;
+    xhr.send(data);
+}
+
+// Función para calcular la diferencia del presupuesto
+function calcularDiferenciaPresupuesto() {
+    const montoTaller = parseFloat(document.getElementById('presupuestoMontoTaller').value) || 0;
+    const montoPagadoUSD = window.presupuestoMontoPagadoUSD || 0;
+    const tasaCambio = window.presupuestoTasaCambio || 0;
+    
+    const diferenciaUSD = montoTaller - montoPagadoUSD;
+    const diferenciaBS = diferenciaUSD * tasaCambio;
+    
+    document.getElementById('presupuestoDiferenciaUSD').value = diferenciaUSD.toFixed(2);
+    document.getElementById('presupuestoDiferenciaBS').value = diferenciaBS.toFixed(2);
+    
+    // Cambiar color según si es positivo o negativo
+    const diferenciaUSDInput = document.getElementById('presupuestoDiferenciaUSD');
+    const diferenciaBSInput = document.getElementById('presupuestoDiferenciaBS');
+    
+    if (diferenciaUSDInput && diferenciaBSInput) {
+        // Limpiar clases anteriores
+        diferenciaUSDInput.classList.remove('bg-danger', 'bg-success', 'text-white');
+        diferenciaBSInput.classList.remove('bg-danger', 'bg-success', 'text-white');
+        
+        if (diferenciaUSD >= 0) {
+            diferenciaUSDInput.classList.add('bg-success', 'text-white');
+            diferenciaBSInput.classList.add('bg-success', 'text-white');
+        } else {
+            diferenciaUSDInput.classList.add('bg-danger', 'text-white');
+            diferenciaBSInput.classList.add('bg-danger', 'text-white');
+        }
+    }
+}
+
+// Evento para previsualizar y generar el PDF del presupuesto
+document.addEventListener('click', function(event) {
+    if (event.target.closest('#previewPresupuestoPDFBtn')) {
+        event.preventDefault();
+        previewPresupuestoPDF();
+    }
+    
+    if (event.target.closest('#imprimirPresupuestoPDFBtn')) {
+        event.preventDefault();
+        
+        // Obtener los datos del presupuesto para guardarlos
+        const presupuestoData = getPresupuestoData();
+        const nroTicket = presupuestoData.nroTicket;
+        
+        // Mostrar modal de carga
+        Swal.fire({
+            title: 'Guardando datos...',
+            html: 'Por favor, espere mientras se guarda el presupuesto.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // Obtener datos del cliente y guardar
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    
+                    if (response.success && response.data) {
+                        const clienteData = response.data;
+                        
+                        // Preparar datos completos del presupuesto
+                        const presupuestoDataComplete = {
+                            nroTicket: nroTicket,
+                            fechaPresupuesto: presupuestoData.fechaPresupuesto,
+                            validez: '5 días hábiles',
+                            descripcion: presupuestoData.descripcion,
+                            montoTaller: presupuestoData.montoTaller,
+                            montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
+                            diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
+                            diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
+                            montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value) || 0,
+                            montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value) || 0,
+                            cliente: clienteData
+                        };
+                        
+                        // Cerrar modal de carga
+                        Swal.close();
+                        
+                        // Generar un número temporal para el preview (sin guardar en BD aún)
+                        const tempPresupuestoNumero = generatePresupuestoNumero(nroTicket || '0000000000');
+                        presupuestoDataComplete.presupuestoNumero = tempPresupuestoNumero;
+                        
+                        // Generar HTML del presupuesto con número temporal
+                        const html = buildPresupuestoHTML(presupuestoDataComplete);
+                        
+                        // Mostrar en el iframe del modal de PDF
+                        const previewIframe = document.getElementById('presupuestoPDFPreview');
+                        const previewDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                        const baseHref = `${window.location.origin}/SoportePost/`;
+                        let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
+                        
+                        previewDoc.open();
+                        previewDoc.write(htmlWithBase);
+                        previewDoc.close();
+                        
+                        // Cerrar modal de presupuesto y abrir modal de PDF
+                        if (bsPresupuestoModal) {
+                            bsPresupuestoModal.hide();
+                        }
+                        
+                        setTimeout(() => {
+                            if (bsPresupuestoPDFModal) {
+                                bsPresupuestoPDFModal.show();
+                            }
+                            
+                            // Esperar a que el iframe cargue completamente
+                            setTimeout(() => {
+                                // PRIMERO: Mostrar alerta para verificar información antes de guardar
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Verificar Información',
+                                    text: 'Por favor, verifique la información antes de guardar el documento.',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Continuar',
+                                    cancelButtonText: 'Cancelar',
+                                    confirmButtonColor: '#003594',
+                                    cancelButtonColor: '#808080',
+                                    color: 'black'
+                                }).then((verifyResult) => {
+                                    // Si el usuario confirma la verificación, mostrar el modal de guardado
+                                    if (verifyResult.isConfirmed) {
+                                        // Mostrar SweetAlert con opciones (SIN guardar aún en BD)
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Presupuesto',
+                                            text: 'El archivo se generó correctamente. ¿Deseas guardarlo como PDF?',
+                                            showCancelButton: false,
+                                            confirmButtonText: 'Guardar',
+                                            confirmButtonColor: '#003594',
+                                            color: 'black'
+                                        }).then((result) => {
+                                            // Si el usuario presiona "Guardar", ENTONCES guardar en BD
+                                            if (result.isConfirmed) {
+                                                // Mostrar modal de carga mientras se guarda
+                                                Swal.fire({
+                                                    title: 'Guardando presupuesto...',
+                                                    html: 'Por favor, espere mientras se guarda el presupuesto.',
+                                                    allowOutsideClick: false,
+                                                    allowEscapeKey: false,
+                                                    showConfirmButton: false,
+                                                    didOpen: () => {
+                                                        Swal.showLoading();
+                                                    }
+                                                });
+                                                
+                                                // AHORA SÍ guardar presupuesto en la base de datos
+                                                saveBudgetToDatabaseWithCallback(presupuestoDataComplete, function(success, message, idBudget, presupuestoNumero) {
+                                            Swal.close();
+                                            
+                                            if (success && presupuestoNumero) {
+                                                // Guardar el id_budget para usarlo en el modal de carga de PDF
+                                                window.lastSavedBudgetId = idBudget;
+                                                window.lastSavedBudgetNroTicket = nroTicket;
+                                                
+                                                // Actualizar el HTML con el número real de presupuesto
+                                                presupuestoDataComplete.presupuestoNumero = presupuestoNumero;
+                                                const htmlReal = buildPresupuestoHTML(presupuestoDataComplete);
+                                                let htmlWithBaseReal = htmlReal.replace('<head>', `<head><base href="${baseHref}">`);
+                                                
+                                                // Actualizar el iframe con el número real
+                                                previewDoc.open();
+                                                previewDoc.write(htmlWithBaseReal);
+                                                previewDoc.close();
+                                                
+                                                // Esperar un momento para que se actualice el iframe
+                                                setTimeout(() => {
+                                                    // Generar nombre del archivo usando el número de registro real
+                                                    const fileName = `${presupuestoNumero}.pdf`;
+                                                    
+                                                    // Guardar títulos originales
+                                                    const originalIframeTitle = previewDoc.title || '';
+                                                    const originalWindowTitle = window.document.title || '';
+                                                    
+                                                    // Asignar el nombre del archivo al título
+                                                    previewDoc.title = fileName;
+                                                    window.document.title = fileName;
+                                                    
+                                                    // Llamar a la función de impresión del navegador
+                                                    previewIframe.contentWindow.focus();
+                                                    previewIframe.contentWindow.print();
+                                            
+                                                    // Restaurar títulos después de un momento
+                                                    setTimeout(() => {
+                                                        previewDoc.title = originalIframeTitle;
+                                                        window.document.title = originalWindowTitle;
+                                                        
+                                                        // Recargar la página solo después de guardar
+                                                        window.location.reload();
+                                                    }, 500);
+                                                }, 300);
+                                            } else {
+                                                // Error al guardar - mostrar modal de error
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Error al guardar',
+                                                    text: message || 'Hubo un error al guardar el presupuesto. Por favor, intente nuevamente.',
+                                                    confirmButtonText: 'Aceptar',
+                                                    confirmButtonColor: '#dc3545',
+                                                    color: 'black'
+                                                });
+                                            }
+                                                });
+                                            } else {
+                                                // Si el usuario presiona "Cerrar", NO guardar en BD y NO recargar
+                                                // El modal permanece abierto para que pueda intentar guardar de nuevo
+                                                console.log('Usuario canceló el guardado. El presupuesto NO se guardó en la base de datos.');
+                                            }
+                                        });
+                                    } else {
+                                        // Si el usuario cancela la verificación, no hacer nada
+                                        console.log('Usuario canceló la verificación.');
+                                    }
+                                });
+                            }, 500);
+                        }, 300);
+                    } else {
+                        // Error al obtener datos del cliente
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudieron obtener los datos del cliente para guardar el presupuesto.',
+                            confirmButtonText: 'Aceptar',
+                            confirmButtonColor: '#dc3545',
+                            color: 'black'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error al parsear respuesta:', error);
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Error al procesar la respuesta del servidor.',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#dc3545',
+                        color: 'black'
+                    });
+                }
+            } else {
+                console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#dc3545',
+                    color: 'black'
+                });
+            }
+        };
+        
+        xhr.onerror = function() {
+            console.error('Error de red al obtener datos del cliente');
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de red',
+                text: 'Error de conexión con el servidor.',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#dc3545',
+                color: 'black'
+            });
+        };
+        
+        // Enviar petición
+        const params = `action=GetPresupuestoData&nro_ticket=${encodeURIComponent(nroTicket)}`;
+        xhr.send(params);
+    }
+});
+
+// Función para cargar datos del cliente en el modal de presupuesto
+function loadClienteDataForPresupuesto(nroTicket) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success && response.data) {
+                    const clienteData = response.data;
+                    
+                    // Llenar campos del cliente
+                    document.getElementById('presupuestoClienteRazon').value = clienteData.razonsocial || 'N/A';
+                    document.getElementById('presupuestoClienteDireccion').value = clienteData.direccion || 'N/A';
+                    document.getElementById('presupuestoClienteTelefono').value = clienteData.telf1 || 'N/A';
+                    document.getElementById('presupuestoClienteEmail').value = clienteData.email || 'N/A';
+                    document.getElementById('presupuestoClienteRif').value = clienteData.coddocumento || clienteData.rif || 'N/A';
+                } else {
+                    // Si no hay datos, dejar campos vacíos o con valores por defecto
+                    document.getElementById('presupuestoClienteRazon').value = 'N/A';
+                    document.getElementById('presupuestoClienteDireccion').value = 'N/A';
+                    document.getElementById('presupuestoClienteTelefono').value = 'N/A';
+                    document.getElementById('presupuestoClienteEmail').value = 'N/A';
+                    document.getElementById('presupuestoClienteRif').value = 'N/A';
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                // En caso de error, dejar valores por defecto
+                document.getElementById('presupuestoClienteRazon').value = 'N/A';
+                document.getElementById('presupuestoClienteDireccion').value = 'N/A';
+                document.getElementById('presupuestoClienteTelefono').value = 'N/A';
+                document.getElementById('presupuestoClienteEmail').value = 'N/A';
+                document.getElementById('presupuestoClienteRif').value = 'N/A';
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            // En caso de error, dejar valores por defecto
+            document.getElementById('presupuestoClienteRazon').value = 'N/A';
+            document.getElementById('presupuestoClienteDireccion').value = 'N/A';
+            document.getElementById('presupuestoClienteTelefono').value = 'N/A';
+            document.getElementById('presupuestoClienteEmail').value = 'N/A';
+            document.getElementById('presupuestoClienteRif').value = 'N/A';
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al intentar obtener los datos del cliente');
+        // En caso de error, dejar valores por defecto
+        document.getElementById('presupuestoClienteRazon').value = 'N/A';
+        document.getElementById('presupuestoClienteDireccion').value = 'N/A';
+        document.getElementById('presupuestoClienteTelefono').value = 'N/A';
+        document.getElementById('presupuestoClienteEmail').value = 'N/A';
+        document.getElementById('presupuestoClienteRif').value = 'N/A';
+    };
+    
+    // Enviar los datos
+    const params = `action=GetPresupuestoData&nro_ticket=${encodeURIComponent(nroTicket)}`;
+    xhr.send(params);
+}
+
+// Función para obtener los datos del presupuesto (reutilizable)
+function getPresupuestoData() {
+    const nroTicket = document.getElementById('presupuestoNroTicket').textContent;
+    const montoTaller = parseFloat(document.getElementById('presupuestoMontoTaller').value) || 0;
+    const descripcion = document.getElementById('presupuestoDescripcion').value.trim();
+    const fechaPresupuesto = document.getElementById('presupuestoFecha').value;
+    
+    return {
+        nroTicket: nroTicket,
+        montoTaller: montoTaller,
+        descripcion: descripcion,
+        fechaPresupuesto: fechaPresupuesto
+    };
+}
+
+// Función para validar los campos del presupuesto
+function validatePresupuestoFields() {
+    const data = getPresupuestoData();
+    
+    if (!data.montoTaller || data.montoTaller <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Requerido',
+            text: 'Por favor ingrese el Monto Total de Taller (USD)',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+        return false;
+    }
+    
+    if (!data.descripcion) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Requerido',
+            text: 'Por favor ingrese la descripción de la reparación',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+        return false;
+    }
+    
+    if (!data.fechaPresupuesto) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Requerido',
+            text: 'La fecha del presupuesto es requerida',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+        return false;
+    }
+    
+    return true;
+}
+
+// Función para previsualizar el PDF del presupuesto
+function previewPresupuestoPDF() {
+    // Validar campos
+    if (!validatePresupuestoFields()) {
+        return;
+    }
+    
+    const data = getPresupuestoData();
+    const nroTicket = data.nroTicket;
+    
+    // Obtener datos del cliente
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success && response.data) {
+                    const clienteData = response.data;
+                    
+                    // Obtener datos del modal
+                    const presupuestoData = {
+                        nroTicket: nroTicket,
+                        fechaPresupuesto: data.fechaPresupuesto,
+                        validez: '5 días hábiles',
+                        descripcion: data.descripcion,
+                        montoTaller: data.montoTaller,
+                        montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
+                        diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
+                        diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
+                        montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value) || 0,
+                        montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value) || 0,
+                        cliente: clienteData
+                    };
+                    
+                    // Generar HTML del presupuesto
+                    const html = buildPresupuestoHTML(presupuestoData);
+                    
+                    // Mostrar en el iframe del modal de PDF
+                    const iframe = document.getElementById('presupuestoPDFPreview');
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const baseHref = `${window.location.origin}/SoportePost/`;
+                    let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
+                    
+                    doc.open();
+                    doc.write(htmlWithBase);
+                    doc.close();
+                    
+                    // NO guardar aquí - solo previsualización
+                    // El guardado se hará solo cuando se imprima
+                    
+                    // Abrir modal de previsualización
+                    if (bsPresupuestoPDFModal) {
+                        bsPresupuestoPDFModal.show();
+                    }
+                    
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'No se pudieron obtener los datos del cliente',
+                        confirmButtonText: 'Ok',
+                        color: 'black',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Respuesta',
+                    text: 'Error al procesar la respuesta del servidor',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al intentar obtener los datos del cliente');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de conexión con el servidor',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+    
+    // Enviar los datos
+    const params = `action=GetPresupuestoData&nro_ticket=${encodeURIComponent(nroTicket)}`;
+    xhr.send(params);
+}
+
+// Función para generar el PDF del presupuesto (con SweetAlert)
+function generarPresupuestoPDF() {
+    // Validar campos
+    if (!validatePresupuestoFields()) {
+        return;
+    }
+    
+    const data = getPresupuestoData();
+    const nroTicket = data.nroTicket;
+    
+    // Obtener datos del cliente
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success && response.data) {
+                    const clienteData = response.data;
+                    
+                    // Obtener datos del modal
+                    const presupuestoData = {
+                        nroTicket: nroTicket,
+                        fechaPresupuesto: data.fechaPresupuesto,
+                        validez: '5 días hábiles',
+                        descripcion: data.descripcion,
+                        montoTaller: data.montoTaller,
+                        montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
+                        diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
+                        diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
+                        montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value) || 0,
+                        montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value) || 0,
+                        cliente: clienteData
+                    };
+                    
+                    // Guardar presupuesto primero para obtener el número de registro
+                    saveBudgetToDatabaseWithCallback(presupuestoData, function(success, message, idBudget, presupuestoNumero) {
+                        if (success && presupuestoNumero) {
+                            // Guardar el número de registro en el objeto presupuestoData
+                            presupuestoData.presupuestoNumero = presupuestoNumero;
+                            
+                            // Generar HTML del presupuesto CON el número de registro real
+                            const html = buildPresupuestoHTML(presupuestoData);
+                            
+                            // Crear iframe temporal para renderizar el HTML con estilos
+                            const iframe = document.createElement('iframe');
+                            iframe.id = 'presupuestoPDFPreviewTemp';
+                            iframe.style.position = 'fixed';
+                            iframe.style.top = '0';
+                            iframe.style.left = '0';
+                            iframe.style.width = '800px';
+                            iframe.style.height = '1200px';
+                            iframe.style.border = 'none';
+                            iframe.style.zIndex = '999999';
+                            iframe.style.opacity = '0';
+                            iframe.style.pointerEvents = 'none';
+                            iframe.style.transform = 'translateX(-10000px)';
+                            document.body.appendChild(iframe);
+
+                            const doc = iframe.contentDocument || iframe.contentWindow.document;
+                            const baseHref = `${window.location.origin}/SoportePost/`;
+                            
+                            // Inyectar base href para resolver rutas relativas
+                            let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
+                            
+                            // Escribir el HTML completo con estilos
+                            doc.open();
+                            doc.write(htmlWithBase);
+                            doc.close();
+
+                            // Esperar a que el contenido se cargue completamente
+                            const waitForLoad = () => {
+                                return new Promise((resolve) => {
+                                    const checkLoad = () => {
+                                        if (doc.readyState === 'complete' && doc.body && doc.body.children.length > 0) {
+                                            // Esperar un poco más para que los estilos se apliquen
+                                            setTimeout(() => {
+                                                resolve();
+                                            }, 500);
+                                        } else {
+                                            setTimeout(checkLoad, 100);
+                                        }
+                                    };
+                                    
+                                    if (doc.readyState === 'complete') {
+                                        checkLoad();
+                                    } else {
+                                        const onReady = () => {
+                                            doc.removeEventListener('DOMContentLoaded', onReady);
+                                            checkLoad();
+                                        };
+                                        doc.addEventListener('DOMContentLoaded', onReady);
+                                        setTimeout(() => {
+                                            doc.removeEventListener('DOMContentLoaded', onReady);
+                                            checkLoad();
+                                        }, 3000);
+                                    }
+                                });
+                            };
+
+                            waitForLoad().then(() => {
+                                // Mostrar en el iframe del modal
+                                const previewIframe = document.getElementById('presupuestoPDFPreview');
+                                const previewDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                                previewDoc.open();
+                                previewDoc.write(htmlWithBase);
+                                previewDoc.close();
+                                
+                                // Cerrar modal de presupuesto y abrir modal de PDF
+                                if (bsPresupuestoModal) {
+                                    bsPresupuestoModal.hide();
+                                }
+                                
+                                setTimeout(() => {
+                                    if (bsPresupuestoPDFModal) {
+                                        bsPresupuestoPDFModal.show();
+                                    }
+                                    
+                                    // Esperar a que el iframe del modal cargue completamente
+                                    setTimeout(() => {
+                                        // Mostrar SweetAlert con opciones
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Presupuesto',
+                                            text: 'El archivo se generó correctamente. Puedes guardarlo como PDF.',
+                                            showCancelButton: false,
+                                            confirmButtonText: 'Guardar PDF',
+                                            confirmButtonColor: '#003594',
+                                            color: 'black'
+                                        }).then((result) => {
+                                            // Si el usuario presiona "Guardar PDF"
+                                            if (result.isConfirmed) {
+                                                // Generar nombre del archivo usando el número de registro
+                                                const fileName = `${presupuestoNumero}.pdf`;
+                                                
+                                                // Obtener el iframe del modal que tiene el documento
+                                                const previewIframe = document.getElementById('presupuestoPDFPreview');
+                                                
+                                                if (previewIframe && previewIframe.contentWindow) {
+                                                    // Guardar títulos originales
+                                                    const originalIframeTitle = previewIframe.contentDocument.title || '';
+                                                    const originalWindowTitle = window.document.title || '';
+                                                    
+                                                    // Asignar el nombre del archivo al título del iframe y ventana
+                                                    previewIframe.contentDocument.title = fileName;
+                                                    window.document.title = fileName;
+                                                    
+                                                    // Llamar a la función de impresión del navegador
+                                                    previewIframe.contentWindow.focus();
+                                                    previewIframe.contentWindow.print();
+                                                    
+                                                    // Restaurar títulos después de un momento
+                                                    setTimeout(() => {
+                                                        previewIframe.contentDocument.title = originalIframeTitle;
+                                                        window.document.title = originalWindowTitle;
+                                                        
+                                                        // Limpiar iframe temporal
+                                                        if (iframe && iframe.parentNode) {
+                                                            document.body.removeChild(iframe);
+                                                        }
+                                                        
+                                                        // Recargar la página solo después de guardar
+                                                        window.location.reload();
+                                                    }, 500);
+                                                }
+                                            }
+                                        });
+                                    }, 800); // Esperar 800ms para que el iframe del modal cargue
+                                }, 300);
+                            });
+                        } else {
+                                // Si hubo error al guardar, mostrar error
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: message || 'No se pudo guardar el presupuesto en la base de datos.',
+                                    confirmButtonText: 'Aceptar',
+                                    confirmButtonColor: '#dc3545',
+                                    color: 'black'
+                                });
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'No se pudieron obtener los datos del cliente',
+                            confirmButtonText: 'Ok',
+                            color: 'black',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Respuesta',
+                    text: 'Error al procesar la respuesta del servidor',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#dc3545'
+                });
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
+                confirmButtonText: 'Ok',
+                color: 'black',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al intentar obtener los datos del cliente');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de conexión con el servidor',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#dc3545'
+        });
+    };
+    
+    // Enviar los datos
+    const params = `action=GetPresupuestoData&nro_ticket=${encodeURIComponent(nroTicket)}`;
+    xhr.send(params);
+}
+
+// Función para hacer scroll automático en inputs con texto largo
+function setupAutoScrollInputs() {
+    const inputs = document.querySelectorAll('#presupuestoModal .form-control[readonly]');
+    
+    inputs.forEach(input => {
+        let scrollAnimationId = null;
+        let isPaused = false;
+        
+        const startAutoScroll = () => {
+            // Limpiar animación anterior si existe
+            if (scrollAnimationId) {
+                cancelAnimationFrame(scrollAnimationId);
+            }
+            
+            // Verificar si el texto es más largo que el ancho visible
+            if (input.scrollWidth <= input.clientWidth || !input.value.trim()) {
+                input.scrollLeft = 0;
+                return;
+            }
+            
+            let scrollPosition = 0;
+            let scrollDirection = 1; // 1 = derecha, -1 = izquierda
+            const scrollSpeed = 0.5; // píxeles por frame (más lento)
+            const pauseTime = 2000; // pausa de 2 segundos al inicio y final
+            let pauseStart = Date.now();
+            let isInitialPause = true;
+            
+            const scroll = () => {
+                // Pausa inicial
+                if (isInitialPause) {
+                    if (Date.now() - pauseStart >= pauseTime) {
+                        isInitialPause = false;
+                    } else {
+                        scrollAnimationId = requestAnimationFrame(scroll);
+                        return;
+                    }
+                }
+                
+                // Si está pausado por hover, no hacer nada
+                if (isPaused) {
+                    scrollAnimationId = requestAnimationFrame(scroll);
+                    return;
+                }
+                
+                // Calcular nueva posición
+                scrollPosition += scrollSpeed * scrollDirection;
+                
+                // Cambiar dirección si llega al final
+                const maxScroll = input.scrollWidth - input.clientWidth;
+                if (scrollPosition >= maxScroll) {
+                    scrollDirection = -1;
+                    pauseStart = Date.now();
+                    isInitialPause = true;
+                } else if (scrollPosition <= 0) {
+                    scrollDirection = 1;
+                    pauseStart = Date.now();
+                    isInitialPause = true;
+                }
+                
+                input.scrollLeft = scrollPosition;
+                scrollAnimationId = requestAnimationFrame(scroll);
+            };
+            
+            // Iniciar scroll
+            scrollAnimationId = requestAnimationFrame(scroll);
+        };
+        
+        // Pausar scroll al hacer hover
+        input.addEventListener('mouseenter', () => {
+            isPaused = true;
+        });
+        
+        input.addEventListener('mouseleave', () => {
+            isPaused = false;
+        });
+        
+        // Verificar cuando se carga el valor
+        setTimeout(() => {
+            startAutoScroll();
+        }, 500);
+        
+        // Verificar cuando cambia el valor
+        const observer = new MutationObserver(() => {
+            setTimeout(() => {
+                startAutoScroll();
+            }, 100);
+        });
+        
+        observer.observe(input, {
+            attributes: true,
+            attributeFilter: ['value']
+        });
+        
+        // También verificar al cambiar el tamaño de la ventana
+        const resizeHandler = () => {
+            setTimeout(() => {
+                startAutoScroll();
+            }, 100);
+        };
+        
+        window.addEventListener('resize', resizeHandler);
+        
+        // Limpiar al cerrar el modal
+        const modal = document.getElementById('presupuestoModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', () => {
+                if (scrollAnimationId) {
+                    cancelAnimationFrame(scrollAnimationId);
+                }
+                window.removeEventListener('resize', resizeHandler);
+                observer.disconnect();
+            }, { once: true });
+        }
+    });
+}
+
+// Función para generar número de presupuesto en formato PRES-TICKET-SEQ
+function generatePresupuestoNumero(nroTicket) {
+    const storageKey = `presupuesto_count_${nroTicket}`;
+    let sequence = 1;
+    
+    // Intentar obtener el contador desde localStorage
+    const storedCount = localStorage.getItem(storageKey);
+    if (storedCount) {
+        sequence = parseInt(storedCount, 10) + 1;
+    }
+    
+    // Guardar el nuevo contador
+    localStorage.setItem(storageKey, sequence.toString());
+    
+    // Formato: PRES-TICKET-SEQ (ejemplo: PRES-1812250001-001)
+    const seqFormatted = String(sequence).padStart(3, '0');
+    return `PRES-${nroTicket}-${seqFormatted}`;
+}
+
+// Función para guardar el presupuesto en la base de datos
+function saveBudgetToDatabase(presupuestoData) {
+    // Obtener el número de presupuesto generado
+    const presupuestoNumero = generatePresupuestoNumero(presupuestoData.nroTicket);
+    
+    // Preparar datos para enviar
+    const data = new URLSearchParams();
+    data.append('action', 'SaveBudget');
+    data.append('nro_ticket', presupuestoData.nroTicket);
+    data.append('monto_taller', presupuestoData.montoTaller || 0);
+    data.append('diferencia_usd', presupuestoData.diferenciaUSD || 0);
+    data.append('diferencia_bs', presupuestoData.diferenciaBS || 0);
+    data.append('descripcion_reparacion', presupuestoData.descripcion || '');
+    data.append('fecha_presupuesto', presupuestoData.fechaPresupuesto || new Date().toISOString().split('T')[0]);
+    data.append('presupuesto_numero', presupuestoNumero);
+    
+    // Enviar petición AJAX
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveBudget`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    console.log('Presupuesto guardado correctamente:', response);
+                    // Opcional: mostrar notificación de éxito
+                    // Swal.fire({
+                    //     icon: 'success',
+                    //     title: 'Presupuesto guardado',
+                    //     text: 'El presupuesto se ha guardado correctamente en la base de datos.',
+                    //     timer: 2000,
+                    //     showConfirmButton: false
+                    // });
+                } else {
+                    console.error('Error al guardar presupuesto:', response.message);
+                }
+            } catch (error) {
+                console.error('Error al parsear respuesta:', error);
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al guardar el presupuesto');
+    };
+    
+    xhr.send(data.toString());
+}
+
+// Función para guardar el presupuesto en la base de datos (versión con callback)
+function saveBudgetToDatabaseWithCallback(presupuestoData, callback) {
+    // Obtener el número de presupuesto generado
+    const presupuestoNumero = generatePresupuestoNumero(presupuestoData.nroTicket);
+    
+    // Preparar datos para enviar
+    const data = new URLSearchParams();
+    data.append('action', 'SaveBudget');
+    data.append('nro_ticket', presupuestoData.nroTicket);
+    data.append('monto_taller', presupuestoData.montoTaller || 0);
+    data.append('diferencia_usd', presupuestoData.diferenciaUSD || 0);
+    data.append('diferencia_bs', presupuestoData.diferenciaBS || 0);
+    data.append('descripcion_reparacion', presupuestoData.descripcion || '');
+    data.append('fecha_presupuesto', presupuestoData.fechaPresupuesto || new Date().toISOString().split('T')[0]);
+    data.append('presupuesto_numero', presupuestoNumero);
+    
+    // Enviar petición AJAX
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveBudget`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    console.log('Presupuesto guardado correctamente:', response);
+                    if (callback) {
+                        callback(true, 'Presupuesto guardado correctamente.', response.id_budget, response.presupuesto_numero);
+                    }
+                } else {
+                    console.error('Error al guardar presupuesto:', response.message);
+                    if (callback) {
+                        callback(false, response.message || 'Error al guardar el presupuesto.');
+                    }
+                }
+            } catch (error) {
+                console.error('Error al parsear respuesta:', error);
+                if (callback) {
+                    callback(false, 'Error al procesar la respuesta del servidor.');
+                }
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            if (callback) {
+                callback(false, `Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            }
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al guardar el presupuesto');
+        if (callback) {
+            callback(false, 'Error de conexión con el servidor.');
+        }
+    };
+    
+    xhr.send(data.toString());
+}
+
+// Función para construir el HTML del presupuesto (basada en buildDeliveryNoteHtml)
+function buildPresupuestoHTML(d) {
+  const safe = (s) => (s || '').toString();
+  const formatCurrency = (amount) => {
+    return parseFloat(amount || 0).toFixed(2);
+  };
+  const formatDate = (dateString) => {
+    if (!dateString) return new Date().toLocaleDateString('es-ES');
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return new Date().toLocaleDateString('es-ES');
+      }
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch (e) {
+      return new Date().toLocaleDateString('es-ES');
+    }
+  };
+  
+  // Usar el número de presupuesto del servidor si está disponible, sino generar uno local
+  const presupuestoNumero = d.presupuestoNumero || generatePresupuestoNumero(d.nroTicket || '0000000000');
+  
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto</title>
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            line-height: 1.2;
+            color: #333;
+            background: #fff;
+            padding: 20px 10px 10px 10px;
+            max-width: 100%;
+            margin: 0 auto;
+            overflow-x: hidden;
+        }
+        
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 5px 0;
+        }
+        
+        .top-header-left {
+            flex: 1;
+        }
+        
+        .top-header-right {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .top-logo {
+            max-width: 80px;
+            max-height: 40px;
+        }
+        
+        .top-rif {
+            font-size: 11px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 2px solid #2c5aa0;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2c5aa0 !important;
+        }
+        
+        .company-logo-img {
+            max-width: 120px;
+            max-height: 60px;
+            margin-bottom: 8px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .company-address {
+            font-size: 10px;
+            color: #555;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .document-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin: 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .document-subtitle {
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .document-info {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #2c5aa0;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .info-label {
+            font-size: 9px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section {
+            margin: 6px 0;
+            background: #fff;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        
+        .section-header {
+            background: #2c5aa0 !important;
+            color: white !important;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .section-content {
+            padding: 8px 10px;
+        }
+        
+        .field-row {
+            display: flex;
+            margin-bottom: 4px;
+            align-items: flex-start;
+        }
+        
+        .field-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .field-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 110px;
+            margin-right: 8px;
+            font-size: 10px;
+            padding-top: 2px;
+        }
+        
+        .field-value {
+            flex: 1;
+            color: #333;
+            font-weight: 500;
+            padding: 3px 8px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            border-left: 2px solid #2c5aa0;
+            font-size: 10px;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .field-value.large {
+            min-height: 40px;
+            align-items: flex-start;
+            padding-top: 4px;
+        }
+        
+        .two-columns {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .column {
+            flex: 1;
+        }
+        
+        .column-title {
+            font-size: 10px;
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 4px;
+            text-align: center;
+            padding: 3px;
+            background: #f0f4f8;
+            border-radius: 3px;
+            border-left: 3px solid #2c5aa0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+        }
+        
+        table th {
+            background: #2c5aa0;
+            color: white;
+            padding: 6px;
+            text-align: left;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        table td {
+            padding: 6px;
+            border-bottom: 1px solid #ddd;
+            font-size: 10px;
+        }
+        
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .description-box {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            border-left: 3px solid #2c5aa0;
+        }
+        
+        .description-box strong {
+            color: #2c5aa0;
+            font-size: 10px;
+        }
+        
+        .summary-box {
+            background: #f8f9fa;
+            border: 2px solid #2c5aa0;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .summary-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 13px;
+            background: #fff3cd !important;
+            padding: 8px;
+            margin-top: 8px;
+            border-radius: 3px;
+        }
+        
+        .summary-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 11px;
+        }
+        
+        .summary-value {
+            font-weight: bold;
+            color: #2c5aa0;
+            font-size: 11px;
+        }
+        
+        
+        /* ✅ ESTILOS DEL FOOTER */
+        .footer {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 8px;
+            line-height: 1.2;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .footer-left {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .footer-right {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .footer-logo {
+            max-height: 25px;
+            max-width: 100px;
+        }
+        
+        .footer-rif {
+            font-size: 10px;
+            font-weight: bold;
+            color: #2c5aa0;
+        }
+        
+        .footer-text {
+            text-align: center;
+            margin-top: 6px;
+        }
+        
+        /* Optimizaciones críticas para impresión */
+        @media print {
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          /* Mostrar header y footer personalizados solo en impresión */
+          .print-header,
+          .print-footer {
+            display: block !important;
+          }
+          
+          /* Ajustar el contenido para dar espacio al header/footer fijos */
+          body {
+            margin-top: 50px !important;
+            margin-bottom: 40px !important;
+          }
+          
+          html, body {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+          
+          body {
+            font-size: 10px !important;
+            padding: 8px !important;
+          }
+          
+          .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            min-height: auto !important;
+            height: auto !important;
+            page-break-inside: avoid;
+          }
+          
+          .section {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+            margin: 4px 0 !important;
+            page-break-inside: avoid;
+          }
+          
+          .header {
+            margin-bottom: 6px !important;
+            padding: 6px 0 !important;
+            page-break-after: avoid;
+          }
+          
+          .company-address {
+            font-size: 9px !important;
+            margin-bottom: 6px !important;
+          }
+          
+          .document-title {
+            font-size: 14px !important;
+          }
+          
+          .section-content {
+            padding: 6px 8px !important;
+          }
+          
+          .two-columns {
+            gap: 10px !important;
+          }
+          
+          .column-title {
+            font-size: 10px !important;
+            margin-bottom: 6px !important;
+          }
+          
+          .footer {
+            margin-top: 6px !important;
+            padding-top: 4px !important;
+            page-break-before: avoid;
+          }
+          
+          .footer-content {
+            margin-bottom: 6px !important;
+            padding: 6px 0 !important;
+          }
+          
+          .footer-logo {
+            max-height: 20px !important;
+            max-width: 80px !important;
+          }
+          
+          .footer-rif {
+            font-size: 9px !important;
+          }
+          
+          .footer-text {
+            margin-top: 4px !important;
+          }
+          
+          .field-row {
+            margin-bottom: 3px !important;
+            page-break-inside: avoid;
+          }
+          
+          .document-info {
+            margin: 6px 0 !important;
+            padding: 6px !important;
+            page-break-after: avoid;
+          }
+          
+          .section-header {
+            padding: 4px 8px !important;
+            font-size: 10px !important;
+          }
+        }
+        
+        /* Configuración de página para impresión */
+        @page {
+          size: letter;
+          margin: 0.2in 0.5in;
+          padding: 0;
+          /* Ocultar header y footer del navegador */
+          @top-left { content: ""; }
+          @top-center { content: ""; }
+          @top-right { content: ""; }
+          @bottom-left { content: ""; }
+          @bottom-center { content: ""; }
+          @bottom-right { content: ""; }
+        }
+        
+        /* Header personalizado para impresión */
+        .print-header {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 40px;
+          background: white;
+          border-bottom: 1px solid #ddd;
+          z-index: 1000;
+          padding: 8px 20px;
+          box-sizing: border-box;
+        }
+        
+        .print-header-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          height: 100%;
+        }
+        
+        .print-header-logo {
+          max-height: 30px;
+          max-width: 80px;
+        }
+        
+        .print-header-rif {
+          font-size: 12px;
+          font-weight: bold;
+          color: #2c5aa0;
+        }
+        
+        /* Footer personalizado para impresión */
+        .print-footer {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 30px;
+          background: white;
+          border-top: 1px solid #ddd;
+          z-index: 1000;
+          padding: 5px 20px;
+          box-sizing: border-box;
+        }
+        
+        .print-footer-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          height: 100%;
+          font-size: 10px;
+          color: #666;
+        }
+        
+        /* Evitar cortes de página en elementos críticos */
+        .header,
+        .document-info,
+        .section,
+        .summary-box,
+        .footer {
+          page-break-inside: avoid;
+        }
+    </style>
+    </head>
+    <body>
+    <!-- Header superior con logo y RIF -->
+    <div class="top-header">
+      <div class="top-header-left">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="top-logo" onerror="this.style.display='none'">
+      </div>
+      <div class="top-header-right">
+        <div class="top-rif">RIF: J-00291615-0</div>
+      </div>
+    </div>
+    
+    <!-- Header personalizado para impresión -->
+    <div class="print-header">
+      <div class="print-header-content">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+        <div class="print-header-rif">RIF: J-00291615-0</div>
+      </div>
+    </div>
+    
+    <!-- Footer personalizado para impresión -->
+    <div class="print-footer">
+      <div class="print-footer-content">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="header">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+        <div class="company-address">
+          Urbanización El Rosal. Av. Francisco de Miranda<br>
+          Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+        </div>
+        <div class="document-title">PRESUPUESTO</div>
+        <div class="document-subtitle">${presupuestoNumero}</div>
+      </div>
+      
+      <div class="document-info">
+        <div class="info-item">
+          <div class="info-label">FECHA PRESUPUESTO</div>
+          <div class="info-value">${formatDate(d.fechaPresupuesto)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">VALIDEZ</div>
+          <div class="info-value">${safe(d.validez)}</div>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="section">
+          <div class="section-header">DATOS DE LA EMPRESA</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">NOMBRE:</div>
+              <div class="field-value">INTELIGENSA</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">DIRECCIÓN:</div>
+              <div class="field-value">EL ROSAL</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">TELÉFONO:</div>
+              <div class="field-value">0212-9541004, 0212-9541013</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">E-MAIL:</div>
+              <div class="field-value">carlos.rodriguez@intelipunto.com</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">DATOS DEL CLIENTE</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">COMERCIO:</div>
+              <div class="field-value">${safe(d.cliente.razonsocial || 'N/A')}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">DIRECCIÓN:</div>
+              <div class="field-value">${safe(d.cliente.direccion || 'N/A')}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">RIF:</div>
+              <div class="field-value">${safe(d.cliente.coddocumento || 'N/A')}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">TELÉFONOS:</div>
+              <div class="field-value">${safe(d.cliente.telf1 || 'N/A')}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">E-MAIL:</div>
+              <div class="field-value">${safe(d.cliente.email || 'N/A')}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">SERIAL POS:</div>
+              <div class="field-value">${safe(d.cliente.serial_pos || 'N/A')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">DESCRIPCIÓN DE REPARACIÓN</div>
+          <div class="section-content">
+            <table>
+              <thead>
+                <tr>
+                  <th>UNIDADES</th>
+                  <th>VALOR / UNID</th>
+                  <th>VALOR TOTAL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>$${formatCurrency(d.montoTaller)}</td>
+                  <td>$${formatCurrency(d.montoTaller)}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="description-box">
+              <strong>Descripción:</strong><br>
+              ${safe(d.descripcion).replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-box">
+          <div class="summary-row">
+            <span class="summary-label">SUB-TOTAL:</span>
+            <span class="summary-value">$${formatCurrency(d.montoTaller)}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">ABONO:</span>
+            <span class="summary-value">$${formatCurrency(d.montoPagadoUSD)}</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">TOTAL A PAGAR:</span>
+            <span class="summary-value">$${formatCurrency(d.diferenciaUSD)}</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">OBSERVACIÓN</div>
+          <div class="section-content">
+            <ul style="margin-left: 20px; color: #2c5aa0;">
+              <li>Una vez realizado el pago correspondiente, enviar el soporte del mismo para su validación</li>
+              <li>Tomar en cuenta la tasa del BCV del día al momento de realizar el pago</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+        <div class="footer">
+          <div class="footer-content">
+            <div class="footer-left">
+              <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="footer-right">
+              <div class="footer-rif">RIF: J-00291615-0</div>
+            </div>
+          </div>
+          <div class="footer-text">
+            <p>Documento válido como constancia oficial del presupuesto especificado.</p>
+            <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>`;
+}
+
 function processEmailQueuePendiente() {
     if (isProcessingPendiente || emailQueuePendiente.length === 0) {
         return;
@@ -6155,3 +8688,364 @@ function mostrarEstadoColaPendiente() {
 window.mostrarEstadoColaPendiente = mostrarEstadoColaPendiente;
 window.enviarCorreoTicketCerrado = enviarCorreoTicketCerrado;
 window.enviarCorreoTicketDevuelto = enviarCorreoTicketDevuelto;
+
+// Event listeners para el modal de carga de PDF del presupuesto
+const inputPresupuestoPDFFileGlobal = document.getElementById("presupuestoPDFFile");
+if (inputPresupuestoPDFFileGlobal) {
+    inputPresupuestoPDFFileGlobal.addEventListener('change', function() {
+        const formatInfo = document.getElementById('presupuestoPDFFileFormatInfo');
+        const input = this;
+        
+        // Obtener referencias a los mensajes de feedback
+        const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+        const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+        
+        if (this.files.length > 0 && this.files[0].type === 'application/pdf') {
+            const uploadPresupuestoPDFBtnGlobal = document.getElementById("uploadPresupuestoPDFBtn");
+            if (uploadPresupuestoPDFBtnGlobal) {
+                uploadPresupuestoPDFBtnGlobal.disabled = false;
+            }
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+            
+            // OCULTAR el mensaje inválido
+            if (invalidFeedback) {
+                invalidFeedback.style.setProperty("display", "none", "important");
+                invalidFeedback.style.setProperty("visibility", "hidden", "important");
+                invalidFeedback.style.setProperty("opacity", "0", "important");
+                invalidFeedback.style.setProperty("height", "0", "important");
+                invalidFeedback.style.setProperty("margin", "0", "important");
+                invalidFeedback.style.setProperty("padding", "0", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $(invalidFeedback).hide();
+            }
+            
+            // MOSTRAR el mensaje válido
+            if (validFeedback) {
+                validFeedback.style.setProperty("display", "block", "important");
+                validFeedback.style.setProperty("visibility", "visible", "important");
+                validFeedback.style.setProperty("opacity", "1", "important");
+                validFeedback.style.removeProperty("height");
+                validFeedback.style.removeProperty("margin");
+                validFeedback.style.removeProperty("padding");
+            }
+            if (typeof $ !== 'undefined') {
+                $(validFeedback).show();
+            }
+            
+            // OCULTAR el mensaje informativo "Formato permitido: PDF" cuando hay validación activa
+            if (formatInfo) {
+                formatInfo.style.setProperty("display", "none", "important");
+                formatInfo.style.setProperty("visibility", "hidden", "important");
+                formatInfo.style.setProperty("opacity", "0", "important");
+                formatInfo.style.setProperty("height", "0", "important");
+                formatInfo.style.setProperty("margin", "0", "important");
+                formatInfo.style.setProperty("padding", "0", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $('#presupuestoPDFFileFormatInfo').hide();
+            }
+        } else {
+            const uploadPresupuestoPDFBtnGlobal = document.getElementById("uploadPresupuestoPDFBtn");
+            if (uploadPresupuestoPDFBtnGlobal) {
+                uploadPresupuestoPDFBtnGlobal.disabled = true;
+            }
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+            
+            // OCULTAR el mensaje válido
+            if (validFeedback) {
+                validFeedback.style.setProperty("display", "none", "important");
+                validFeedback.style.setProperty("visibility", "hidden", "important");
+                validFeedback.style.setProperty("opacity", "0", "important");
+                validFeedback.style.setProperty("height", "0", "important");
+                validFeedback.style.setProperty("margin", "0", "important");
+                validFeedback.style.setProperty("padding", "0", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $(validFeedback).hide();
+            }
+            
+            // MOSTRAR el mensaje inválido
+            if (invalidFeedback) {
+                invalidFeedback.style.setProperty("display", "block", "important");
+                invalidFeedback.style.setProperty("visibility", "visible", "important");
+                invalidFeedback.style.setProperty("opacity", "1", "important");
+                invalidFeedback.style.removeProperty("height");
+                invalidFeedback.style.removeProperty("margin");
+                invalidFeedback.style.removeProperty("padding");
+            }
+            if (typeof $ !== 'undefined') {
+                $(invalidFeedback).show();
+            }
+            
+            // OCULTAR el mensaje informativo "Formato permitido: PDF" cuando hay validación activa
+            if (formatInfo) {
+                formatInfo.style.setProperty("display", "none", "important");
+                formatInfo.style.setProperty("visibility", "hidden", "important");
+                formatInfo.style.setProperty("opacity", "0", "important");
+                formatInfo.style.setProperty("height", "0", "important");
+                formatInfo.style.setProperty("margin", "0", "important");
+                formatInfo.style.setProperty("padding", "0", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $('#presupuestoPDFFileFormatInfo').hide();
+            }
+        }
+    });
+}
+
+const uploadPresupuestoPDFBtnGlobal = document.getElementById("uploadPresupuestoPDFBtn");
+if (uploadPresupuestoPDFBtnGlobal) {
+    uploadPresupuestoPDFBtnGlobal.addEventListener('click', async function() {
+        const nroTicket = document.getElementById("uploadPresupuestoNroTicketHidden")?.value;
+        const serialPos = document.getElementById("uploadPresupuestoSerialPosHidden")?.value;
+        const inputPresupuestoPDFFileGlobal = document.getElementById("presupuestoPDFFile");
+        const file = inputPresupuestoPDFFileGlobal?.files[0];
+        const id_user = document.getElementById("userId")?.value;
+
+        if (!nroTicket) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo obtener el número de ticket.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+            return;
+        }
+
+        if (!serialPos) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo obtener el serial del ticket.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+            return;
+        }
+
+        if (!file) {
+            Swal.fire({
+                icon: 'warning',
+                title: '¡Advertencia!',
+                text: 'Por favor, selecciona un archivo PDF antes de subir.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003594',
+                color: 'black',
+            });
+            return;
+        }
+
+        if (file.type !== 'application/pdf') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Formato Inválido',
+                text: 'Solo se permiten archivos PDF.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Subiendo PDF...',
+            html: 'Por favor, espere mientras se carga el documento.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const formData = new FormData();
+        formData.append("action", "UploadPresupuestoPDF");
+        formData.append("nro_ticket", nroTicket);
+        formData.append("serial_pos", serialPos);
+        formData.append("presupuesto_pdf_file", file);
+        formData.append("id_user", id_user);
+
+        try {
+            console.log('Iniciando subida de PDF del presupuesto...');
+            const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UploadPresupuestoPDF`;
+            console.log('URL:', url);
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('Respuesta recibida. Status:', response.status, 'OK:', response.ok);
+
+            // Verificar si la respuesta es exitosa
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error HTTP:', response.status, errorText);
+                throw new Error(`Error del servidor (${response.status}): ${errorText}`);
+            }
+
+            // Intentar parsear la respuesta como JSON
+            let result;
+            const contentType = response.headers.get("content-type");
+            console.log('Content-Type:', contentType);
+            
+            if (contentType && contentType.includes("application/json")) {
+                result = await response.json();
+                console.log('Resultado parseado:', result);
+            } else {
+                // Si no es JSON, leer como texto
+                const text = await response.text();
+                console.error('Respuesta del servidor no es JSON:', text);
+                throw new Error('El servidor no devolvió una respuesta JSON válida. Respuesta: ' + text.substring(0, 200));
+            }
+
+            Swal.close();
+
+            if (result && result.success) {
+                // Cerrar el modal primero
+                const modalElement = document.getElementById("uploadPresupuestoPDFModal");
+                if (modalElement) {
+                    const bsModal = new bootstrap.Modal(modalElement);
+                    bsModal.hide();
+                }
+                
+                // Limpiar el input y sus clases después de cerrar el modal
+                setTimeout(() => {
+                    const inputPresupuestoPDFFileLocal = document.getElementById("presupuestoPDFFile");
+                    if (inputPresupuestoPDFFileLocal) {
+                        inputPresupuestoPDFFileLocal.value = '';
+                        inputPresupuestoPDFFileLocal.classList.remove('is-invalid', 'is-valid');
+                    }
+                    
+                    // Ocultar mensajes de validación
+                    const formatInfo = document.getElementById('presupuestoPDFFileFormatInfo');
+                    const validFeedback = inputPresupuestoPDFFileLocal && inputPresupuestoPDFFileLocal.parentElement ? inputPresupuestoPDFFileLocal.parentElement.querySelector('.valid-feedback') : null;
+                    const invalidFeedback = inputPresupuestoPDFFileLocal && inputPresupuestoPDFFileLocal.parentElement ? inputPresupuestoPDFFileLocal.parentElement.querySelector('.invalid-feedback') : null;
+                    
+                    if (validFeedback) {
+                        validFeedback.style.setProperty("display", "none", "important");
+                    }
+                    if (invalidFeedback) {
+                        invalidFeedback.style.setProperty("display", "none", "important");
+                    }
+                    if (formatInfo) {
+                        formatInfo.style.removeProperty("display");
+                    }
+                    
+                    // Deshabilitar el botón de subir
+                    const uploadPresupuestoPDFBtnLocal = document.getElementById("uploadPresupuestoPDFBtn");
+                    if (uploadPresupuestoPDFBtnLocal) {
+                        uploadPresupuestoPDFBtnLocal.disabled = true;
+                    }
+                }, 300);
+                
+                // Mostrar mensaje de éxito con temporizador
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: result.message || 'El PDF del presupuesto se ha cargado y guardado correctamente.',
+                    color: 'black',
+                    timer: 3500, // 3.5 segundos
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    // Recargar la página después de cerrar el SweetAlert automáticamente
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al subir',
+                    text: (result && result.message) || 'Hubo un error al cargar el PDF del presupuesto. Por favor, intente nuevamente.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#dc3545',
+                    color: 'black',
+                });
+            }
+        } catch (error) {
+            console.error('Error completo al subir PDF:', error);
+            console.error('Stack trace:', error.stack);
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo conectar con el servidor para subir el PDF. Verifique su conexión.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+        }
+    });
+}
+
+const modalElementUploadPresupuestoPDFGlobal = document.getElementById("uploadPresupuestoPDFModal");
+if (modalElementUploadPresupuestoPDFGlobal) {
+    modalElementUploadPresupuestoPDFGlobal.addEventListener('hidden.bs.modal', function () {
+        const inputPresupuestoPDFFileLocal = document.getElementById("presupuestoPDFFile");
+        if (inputPresupuestoPDFFileLocal) {
+            inputPresupuestoPDFFileLocal.value = '';
+            inputPresupuestoPDFFileLocal.classList.remove('is-invalid', 'is-valid');
+        }
+        const uploadPresupuestoPDFBtnLocal = document.getElementById("uploadPresupuestoPDFBtn");
+        if (uploadPresupuestoPDFBtnLocal) {
+            uploadPresupuestoPDFBtnLocal.disabled = true;
+        }
+        // Ocultar mensajes de validación y mostrar el texto informativo al cerrar
+        setTimeout(function() {
+            const formatInfo = document.getElementById('presupuestoPDFFileFormatInfo');
+            const input = document.getElementById("presupuestoPDFFile");
+            
+            // Ocultar mensajes de feedback
+            const validFeedback = input && input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+            const invalidFeedback = input && input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+            
+            if (validFeedback) {
+                validFeedback.style.setProperty("display", "none", "important");
+                validFeedback.style.setProperty("visibility", "hidden", "important");
+                validFeedback.style.setProperty("opacity", "0", "important");
+                validFeedback.style.setProperty("height", "0", "important");
+                validFeedback.style.setProperty("margin", "0", "important");
+                validFeedback.style.setProperty("padding", "0", "important");
+            }
+            if (invalidFeedback) {
+                invalidFeedback.style.setProperty("display", "none", "important");
+                invalidFeedback.style.setProperty("visibility", "hidden", "important");
+                invalidFeedback.style.setProperty("opacity", "0", "important");
+                invalidFeedback.style.setProperty("height", "0", "important");
+                invalidFeedback.style.setProperty("margin", "0", "important");
+                invalidFeedback.style.setProperty("padding", "0", "important");
+            }
+            
+            // MOSTRAR el mensaje informativo "Formato permitido: PDF" cuando no hay validación
+            if (formatInfo) {
+                formatInfo.style.removeProperty("display");
+                formatInfo.style.removeProperty("visibility");
+                formatInfo.style.removeProperty("opacity");
+                formatInfo.style.removeProperty("height");
+                formatInfo.style.removeProperty("margin");
+                formatInfo.style.removeProperty("padding");
+            }
+            if (typeof $ !== 'undefined') {
+                if (validFeedback) $(validFeedback).hide();
+                if (invalidFeedback) $(invalidFeedback).hide();
+                $('#presupuestoPDFFileFormatInfo').show();
+            }
+        }, 100);
+    });
+    
+    // También mostrar el texto cuando se abre el modal
+    modalElementUploadPresupuestoPDFGlobal.addEventListener('shown.bs.modal', function () {
+        const formatInfo = document.getElementById('presupuestoPDFFileFormatInfo');
+        if (formatInfo) {
+            formatInfo.style.display = 'block';
+        }
+    });
+}

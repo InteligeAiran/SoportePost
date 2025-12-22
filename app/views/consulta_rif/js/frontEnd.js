@@ -9,6 +9,29 @@ let garantiaAlertShown = false;
 let emailQueue = []; // Cola para almacenar las solicitudes de correo
 let isProcessing = false; // Indicador de si se está procesando una solicitud
 
+// Función para acortar el nombre del archivo, preservando la extensión
+function shortenFileName(fileName, maxLength = 15) {
+  // Puedes ajustar maxLength
+  const lastDotIndex = fileName.lastIndexOf(".");
+  let nameWithoutExtension;
+  let extension = "";
+
+  if (lastDotIndex > -1) {
+    nameWithoutExtension = fileName.substring(0, lastDotIndex);
+    extension = fileName.substring(lastDotIndex);
+  } else {
+    nameWithoutExtension = fileName;
+  }
+
+  if (nameWithoutExtension.length > maxLength) {
+    return (
+      nameWithoutExtension.substring(0, maxLength - 3) + "..." + extension
+    );
+  }
+
+  return fileName;
+}
+
 // FUNCIÓN PARA RESTAURAR EL ESTADO DE LA COORDINACIÓN
 function restoreCoordinacionState() {
   const select = document.getElementById("AsiganrCoordinador");
@@ -131,29 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const noFileChosenStyle =
     "color: gray; font-style: italic; margin-left: 5px;";
 
-  // Función para acortar el nombre del archivo, preservando la extensión
-  function shortenFileName(fileName, maxLength = 15) {
-    // Puedes ajustar maxLength
-    const lastDotIndex = fileName.lastIndexOf(".");
-    let nameWithoutExtension;
-    let extension = "";
-
-    if (lastDotIndex > -1) {
-      nameWithoutExtension = fileName.substring(0, lastDotIndex);
-      extension = fileName.substring(lastDotIndex);
-    } else {
-      nameWithoutExtension = fileName;
-    }
-
-    if (nameWithoutExtension.length > maxLength) {
-      return (
-        nameWithoutExtension.substring(0, maxLength - 3) + "..." + extension
-      );
-    }
-
-    return fileName;
-  }
-
 
   // Para el botón de Envío
   const cargarBtnEnvio = document.getElementById("DownloadEnvi");
@@ -169,11 +169,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (envioInputFile) {
     envioInputFile.addEventListener("change", function () {
-      if (this.files.length > 0) {
-        fileChosenSpanEnvio.textContent = shortenFileName(this.files[0].name);
+      const file = this.files[0];
+      if (file) {
+        // IMPORTANTE: Guardar el archivo en una variable global para preservarlo
+        window.archivoEnvioPreservado = file;
+        console.log("Archivo de envío guardado globalmente:", file.name);
+        
+        fileChosenSpanEnvio.textContent = shortenFileName(file.name);
         fileChosenSpanEnvio.style.cssText =
-          "margin-left: 16%; margin-top: -1%; font-size: 12px; display: block; position: absolute;";
+          "margin-left: 15%; margin-top: -1%; font-size: 9px; display: block; position: absolute; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
       } else {
+        window.archivoEnvioPreservado = null;
         fileChosenSpanEnvio.textContent = "";
         fileChosenSpanEnvio.style.cssText = noFileChosenStyle;
       }
@@ -208,11 +214,19 @@ document.addEventListener("DOMContentLoaded", function () {
         this.value = "";
         fileChosenSpanExo.textContent = "";
         fileChosenSpanExo.style.cssText = noFileChosenStyle;
+        // Limpiar también la variable global
+        window.archivoExoneracionPreservado = null;
       } else if (file) {
+        // IMPORTANTE: Guardar el archivo en una variable global para preservarlo
+        window.archivoExoneracionPreservado = file;
+        console.log("Archivo de exoneración guardado globalmente:", file.name);
+        
         fileChosenSpanExo.textContent = shortenFileName(file.name);
         fileChosenSpanExo.style.cssText =
-          "margin-left: 16%; margin-top: -1%; font-size: 12px; display: block; position: absolute;";
+          "margin-left: 15%; margin-top: -1%; font-size: 9px; display: block; position: absolute; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
       } else {
+        // Limpiar también la variable global
+        window.archivoExoneracionPreservado = null;
         fileChosenSpanExo.textContent = "";
         fileChosenSpanExo.style.cssText = noFileChosenStyle;
       }
@@ -231,6 +245,14 @@ document.addEventListener("DOMContentLoaded", function () {
     anticiButtonContainer.appendChild(fileChosenSpanAntici);
   }
 
+  // Inicializar variables globales para preservar archivos
+  window.archivoEnvioPreservado = null;
+  window.archivoExoneracionPreservado = null;
+  window.archivoAnticipoPreservado = null;
+  
+  // NOTA: Los event listeners para EnvioInput y ExoneracionInput ya están configurados arriba
+  // (líneas ~170 y ~201) y ahora incluyen la preservación de archivos en variables globales.
+  
   if (anticiInputFile) {
     anticiInputFile.addEventListener("change", function () {
       var file = this.files[0];
@@ -247,19 +269,27 @@ document.addEventListener("DOMContentLoaded", function () {
         this.value = "";
         fileChosenSpanAntici.textContent = "";
         fileChosenSpanAntici.style.cssText = noFileChosenStyle;
+        // Limpiar también la variable global
+        window.archivoAnticipoPreservado = null;
         // Deshabilitar el botón si el archivo no es válido
         if (typeof updateAnticipoButtonState === "function") {
           updateAnticipoButtonState();
         }
       } else if (file) {
+        // IMPORTANTE: Guardar el archivo en una variable global para preservarlo
+        window.archivoAnticipoPreservado = file;
+        console.log("Archivo de anticipo guardado globalmente:", file.name);
+        
         fileChosenSpanAntici.textContent = shortenFileName(file.name);
         fileChosenSpanAntici.style.cssText =
-          "margin-left: 16%; margin-top: -1%; font-size: 12px; display: block; position: absolute;";
+          "margin-left: 45%; font-size: 9px; color: gray; position: absolute; display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;";
         // Habilitar el botón cuando se carga un archivo válido
         if (typeof updateAnticipoButtonState === "function") {
           updateAnticipoButtonState();
         }
       } else {
+        // Limpiar también la variable global
+        window.archivoAnticipoPreservado = null;
         fileChosenSpanAntici.textContent = "";
         fileChosenSpanAntici.style.cssText = noFileChosenStyle;
         // Deshabilitar el botón si no hay archivo
@@ -364,6 +394,18 @@ function inicializeModal() {
 
     garantiaAlertShown = false;
     isInitialLoad = true;
+    
+    // Ocultar el icono de detalles de pago cuando se cierra el modal
+    const iconoAgregarInfoContainer = document.getElementById("iconoAgregarInfoContainer");
+    const iconoAgregarInfo = document.getElementById("iconoAgregarInfo");
+    if (iconoAgregarInfoContainer) {
+      iconoAgregarInfoContainer.style.display = "none";
+    }
+    if (iconoAgregarInfo) {
+      iconoAgregarInfo.style.visibility = "hidden";
+      iconoAgregarInfo.style.opacity = "0";
+      iconoAgregarInfo.style.display = "none";
+    }
   });
 
   spanFalla2.off("click").on("click", function () {
@@ -750,6 +792,77 @@ function getFailure2() {
 }
 
 document.addEventListener("DOMContentLoaded", getFailure2);
+
+
+/**
+ * Realiza una solicitud AJAX para obtener el estatus de un pago
+ * y lo muestra en el campo de texto con id="estatus".
+ *
+ * NOTA: Asume que el backend (GetEstatusPago) devolverá un JSON
+ * con una propiedad 'estatus_pago' (o similar) en caso de éxito.
+ */
+
+/**
+ * Realiza una solicitud AJAX para obtener el estatus de un pago
+ * y lo muestra en el campo de texto con id="estatus".
+ */
+
+function getPagoEstatus() {
+    const estatusInput = document.getElementById("estatus");
+    const paymentIdInput = document.getElementById("payment_id_to_save"); // <-- Nuevo elemento
+
+    if (!estatusInput || !paymentIdInput) { // Verificar ambos
+        console.error("Error: Elementos necesarios para el estatus no encontrados.");
+        return;
+    }
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetEstatusPago`); 
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    if (
+                        Array.isArray(response.estatus_pago) &&
+                        response.estatus_pago.length > 0
+                    ) {
+                        const pagoData = response.estatus_pago[0];
+                        
+                        // 1. Guardar el ID del pago en el campo oculto
+                        paymentIdInput.value = pagoData.id_status_payment; // <-- Guardando el ID
+                        
+                        // 2. Mostrar el nombre del estatus en el campo visible
+                        estatusInput.value = pagoData.name_status_payment;
+                        
+                        console.log("ID del Pago cargado en campo oculto:", pagoData.id_status_payment);
+                    } else {
+                        estatusInput.value = 'Estatus no encontrado en la respuesta.';
+                    }
+                } else {
+                    estatusInput.value = 'Error al obtener estatus (API: false)';
+                }
+            } catch (error) {
+                console.error("Error al procesar la respuesta JSON:", error);
+                estatusInput.value = 'Error de procesamiento de datos.';
+            }
+        } else {
+            estatusInput.value = `Error de conexión (HTTP ${xhr.status})`;
+        }
+    };
+    const datos = `action=GetEstatusPago`; 
+    // Nota: Si GetEstatusPago requiere un parámetro (como el ID del usuario o referencia), debes agregarlo a 'datos'
+    xhr.send(datos);
+}
+
+// Ejemplo de cómo se llamaría:
+// document.addEventListener("DOMContentLoaded", getPagoEstatus);
+
+// 6. Llama a la función para cargar el estatus cuando la página se cargue
+document.addEventListener("DOMContentLoaded", getPagoEstatus);
 
 function getCoordinador() {
   const xhr = new XMLHttpRequest();
@@ -1493,8 +1606,11 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
 });
 
 document.getElementById("DownloadAntici").addEventListener("click", function (event) {
-    document.getElementById("DownloadExo").style.display = "none";
-    document.getElementById("ExoneracionInput").style.display = "none";
+    // Ocultar el contenedor del botón de exoneración, no el botón directamente
+    const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+    if (botonCargaExoneracion) {
+      botonCargaExoneracion.style.display = "none";
+    }
     event.stopPropagation(); // Detener la propagación del evento
     cargaSeleccionada = "anticipo";
     // Aquí puedes agregar la lógica para mostrar el input de anticipo
@@ -1518,6 +1634,42 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
 
     // Si la validación pasa, puedes continuar con alguna otra lógica aquí si es necesario
 });
+
+function verificarPagoExisteHoy(serial_pos) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/CheckPaymentExistsToday`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    const data = `action=CheckPaymentExistsToday&serial_pos=${encodeURIComponent(serial_pos)}`;
+    
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success) {
+            resolve(response.exists);
+          } else {
+            resolve(false);
+          }
+        } catch (e) {
+          console.error("Error al parsear respuesta:", e);
+          resolve(false);
+        }
+      } else {
+        console.error("Error en la petición:", xhr.status);
+        resolve(false);
+      }
+    };
+
+    xhr.onerror = function () {
+      console.error("Error de red al verificar pago");
+      resolve(false);
+    };
+
+    xhr.send(data);
+  });
+}
 
 function verificarTicketEnProceso(serial) {
   return new Promise((resolve, reject) => {
@@ -1583,13 +1735,71 @@ function SendDataFailure2(idStatusPayment) {
   const inputExoneracion = document.getElementById("ExoneracionInput");
   const inputAnticipo = document.getElementById("AnticipoInput");
 
-  const archivoEnvio = inputEnvio.files[0];
-  const archivoExoneracion = inputExoneracion.files[0];
-  const archivoAnticipo = inputAnticipo.files[0];
+  // Guardar los archivos ANTES de cualquier validación que pueda afectar el estado
+  // IMPORTANTE: Leer los archivos INMEDIATAMENTE al inicio de la función, antes de cualquier otra operación
+  // PRIORIDAD: Usar archivos preservados globalmente primero, luego intentar leer del input
+  
+  // Para Envío
+  let archivoEnvio = window.archivoEnvioPreservado || null;
+  if (!archivoEnvio && inputEnvio && inputEnvio.files && inputEnvio.files.length > 0) {
+    archivoEnvio = inputEnvio.files[0];
+    window.archivoEnvioPreservado = archivoEnvio;
+  }
+  
+  // Para Exoneración
+  let archivoExoneracion = window.archivoExoneracionPreservado || null;
+  if (!archivoExoneracion && inputExoneracion && inputExoneracion.files && inputExoneracion.files.length > 0) {
+    archivoExoneracion = inputExoneracion.files[0];
+    window.archivoExoneracionPreservado = archivoExoneracion;
+  }
+  
+  // Para Anticipo, verificar de múltiples formas porque puede perderse
+  let archivoAnticipo = null;
+  
+  // PRIORIDAD 1: Intentar usar el archivo preservado globalmente (más confiable)
+  if (window.archivoAnticipoPreservado) {
+    archivoAnticipo = window.archivoAnticipoPreservado;
+    console.log("Usando archivo de anticipo preservado globalmente:", archivoAnticipo.name);
+  }
+  
+  // PRIORIDAD 2: Si no hay archivo preservado, intentar leer del input
+  if (!archivoAnticipo && inputAnticipo) {
+    // Primero intentar leer del files array
+    if (inputAnticipo.files && inputAnticipo.files.length > 0) {
+      archivoAnticipo = inputAnticipo.files[0];
+      // Guardar en la variable global para futuras referencias
+      window.archivoAnticipoPreservado = archivoAnticipo;
+    }
+    // Si no hay archivo pero el input tiene valor, el archivo podría estar ahí
+    if (!archivoAnticipo && inputAnticipo.value) {
+      // Intentar leer de nuevo
+      if (inputAnticipo.files && inputAnticipo.files.length > 0) {
+        archivoAnticipo = inputAnticipo.files[0];
+        window.archivoAnticipoPreservado = archivoAnticipo;
+      }
+    }
+  }
+  
+  // Debug: Verificar que los archivos se guardaron correctamente
+  console.log("DEBUG SendDataFailure2 - Archivos guardados:", {
+    archivoEnvio: archivoEnvio ? archivoEnvio.name : null,
+    archivoExoneracion: archivoExoneracion ? archivoExoneracion.name : null,
+    archivoAnticipo: archivoAnticipo ? archivoAnticipo.name : "NO HAY ARCHIVO",
+    inputAnticipoValue: inputAnticipo ? inputAnticipo.value : "NO HAY VALOR",
+    inputAnticipoFilesLength: inputAnticipo && inputAnticipo.files ? inputAnticipo.files.length : 0,
+    checkAnticipo: document.getElementById("checkAnticipo") ? document.getElementById("checkAnticipo").checked : false,
+    inputAnticipoExists: !!inputAnticipo
+  });
+  
+  // ADVERTENCIA: Si el checkbox está marcado pero no hay archivo, alertar
+  const checkAnticipo = document.getElementById("checkAnticipo");
+  if (checkAnticipo && checkAnticipo.checked && !archivoAnticipo) {
+    console.error("ADVERTENCIA CRÍTICA: El checkbox de Anticipo está marcado pero NO se detectó el archivo. Esto puede causar problemas en la validación.");
+  }
   
   // EJECUTAR VALIDACIONES ANTES DE CONTINUAR
   if (!validateTicketCreation()) {
-    return; // Detener la ejecución si hay errores
+    return; // Detener la ejecución si hay errores - los archivos ya están guardados en las variables
   }
   
   const botonCargaPDFEnv = document.getElementById("botonCargaPDFEnv");
@@ -1721,7 +1931,11 @@ function SendDataFailure2(idStatusPayment) {
         return; // Detener la ejecución
       }
       hideExportLoading();
-      continuarCreacionTicket();
+      // continuarCreacionTicket() ahora es async
+      // Pasar los archivos guardados como parámetros para preservarlos
+      continuarCreacionTicket(archivoEnvio, archivoExoneracion, archivoAnticipo).catch((error) => {
+        console.error("Error en continuarCreacionTicket:", error);
+      });
     })
     .catch((error) => {
       hideExportLoading(); // Ensure loading is hidden on error
@@ -1734,8 +1948,150 @@ function SendDataFailure2(idStatusPayment) {
     });
 
   // Función que continúa con la creación del ticket
-  function continuarCreacionTicket() {
+  async function continuarCreacionTicket(archivoEnvioGuardado, archivoExoneracionGuardado, archivoAnticipoGuardado) {
+    // NUEVO: Agregar información de documentos cargados
+    const checkEnvio = document.getElementById("checkEnvio");
+    const checkExoneracion = document.getElementById("checkExoneracion");
+    const checkAnticipo = document.getElementById("checkAnticipo");
+    
+    // Usar los archivos guardados que se pasaron como parámetros, o intentar leerlos del DOM como respaldo
+    const inputAnticipo = document.getElementById("AnticipoInput");
+    
+    // PRIORIDAD: Usar el archivo guardado primero (viene de SendDataFailure2 antes de cualquier validación)
+    let archivoAnticipoActual = archivoAnticipoGuardado;
+    
+    // Si no hay archivo guardado, intentar leerlo del DOM como respaldo
+    if (!archivoAnticipoActual && inputAnticipo) {
+      if (inputAnticipo.files && inputAnticipo.files.length > 0) {
+        archivoAnticipoActual = inputAnticipo.files[0];
+      }
+      // También verificar el valor del input como último recurso
+      if (!archivoAnticipoActual && inputAnticipo.value) {
+        console.warn("ADVERTENCIA: Input tiene valor pero no se detecta el archivo. Valor:", inputAnticipo.value);
+      }
+    }
+    
+    const tieneAnticipoCargado = checkAnticipo && checkAnticipo.checked && archivoAnticipoActual;
+    
+    // Debug mejorado: Log para verificar el estado
+    console.log("DEBUG continuarCreacionTicket:", {
+      checkAnticipoChecked: checkAnticipo ? checkAnticipo.checked : false,
+      archivoAnticipoGuardado: archivoAnticipoGuardado ? archivoAnticipoGuardado.name : null,
+      inputAnticipoValue: inputAnticipo ? inputAnticipo.value : null,
+      inputAnticipoFilesLength: inputAnticipo && inputAnticipo.files ? inputAnticipo.files.length : 0,
+      archivoAnticipoActual: archivoAnticipoActual ? archivoAnticipoActual.name : null,
+      tieneAnticipoCargado: tieneAnticipoCargado
+    });
+    
+    // Debug mejorado: Log para verificar el estado
+    console.log("DEBUG continuarCreacionTicket:", {
+      checkAnticipoChecked: checkAnticipo ? checkAnticipo.checked : false,
+      archivoAnticipoGuardado: archivoAnticipoGuardado ? archivoAnticipoGuardado.name : "NO HAY ARCHIVO GUARDADO",
+      inputAnticipoValue: inputAnticipo ? inputAnticipo.value : null,
+      inputAnticipoFilesLength: inputAnticipo && inputAnticipo.files ? inputAnticipo.files.length : 0,
+      archivoAnticipoActual: archivoAnticipoActual ? archivoAnticipoActual.name : "NO HAY ARCHIVO ACTUAL",
+      tieneAnticipoCargado: tieneAnticipoCargado
+    });
+    
+    // Obtener uploadNowRadio dentro de la función para asegurar que esté disponible
+    const uploadNowRadioLocal = document.getElementById("uploadNow");
+    
+    // VALIDACIÓN: Verificar relación entre anticipo y detalles de pago
+    // Solo validar si se seleccionó "Sí" para cargar documentos ahora
+    if (uploadNowRadioLocal && uploadNowRadioLocal.checked) {
+      // Verificar si hay pago registrado hoy para este serial en la tabla temporal
+      const existePago = await verificarPagoExisteHoy(serial);
+      
+      // CASO 1: Anticipo cargado PERO NO hay detalles de pago registrados
+      if (tieneAnticipoCargado && !existePago) {
+        Swal.fire({
+          icon: "warning",
+          title: "<strong style='font-size: 24px; color: #d9534f;'>Detalles de Pago Requeridos</strong>",
+          html: `
+            <div style="text-align: center; padding: 10px 0;">
+              <p style="font-size: 16px; color: #333; margin-bottom: 15px; line-height: 1.6;">
+                Ha cargado el documento de <strong>Anticipo</strong>, pero aún no ha registrado los detalles del pago.
+              </p>
+              <p style="font-size: 15px; color: #666; margin-bottom: 20px;">
+                Por favor, haga clic en el icono <span style="color: #003594;">📋</span> <strong>"Detalles de Pago"</strong> 
+                para registrar la información del anticipo antes de guardar el ticket.
+              </p>
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 15px 0; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                  <strong>⚠️ Importante:</strong> El ticket no se puede crear sin los detalles del pago cuando el documento de anticipo está cargado.
+                </p>
+              </div>
+            </div>
+          `,
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#003594",
+          confirmButtonClass: "swal2-confirm-custom",
+          width: "600px",
+          padding: "2rem",
+          customClass: {
+            popup: "swal2-popup-custom",
+            title: "swal2-title-custom",
+            htmlContainer: "swal2-html-custom"
+          },
+          color: "#333",
+          background: "#ffffff",
+          backdrop: "rgba(0, 0, 0, 0.4)"
+        });
+        return; // Detener la ejecución
+      }
+      
+      // CASO 2: NO hay anticipo cargado PERO SÍ hay detalles de pago registrados
+      if (!tieneAnticipoCargado && existePago) {
+        // Debug adicional antes de mostrar el error
+        console.error("ERROR: Se detectó pago pero NO anticipo. Estado completo:", {
+          checkAnticipoChecked: checkAnticipo ? checkAnticipo.checked : false,
+          archivoAnticipoGuardado: archivoAnticipoGuardado ? archivoAnticipoGuardado.name : "NO HAY ARCHIVO GUARDADO",
+          inputAnticipoValue: inputAnticipo ? inputAnticipo.value : "NO HAY VALOR",
+          inputAnticipoFiles: inputAnticipo && inputAnticipo.files ? inputAnticipo.files.length : 0,
+          archivoAnticipoActual: archivoAnticipoActual ? archivoAnticipoActual.name : "NO HAY ARCHIVO ACTUAL",
+          tieneAnticipoCargado: tieneAnticipoCargado,
+          existePago: existePago
+        });
+        
+        Swal.fire({
+          icon: "warning",
+          title: "<strong style='font-size: 24px; color: #d9534f;'>Documento de Anticipo Requerido</strong>",
+          html: `
+            <div style="text-align: center; padding: 10px 0;">
+              <p style="font-size: 16px; color: #333; margin-bottom: 15px; line-height: 1.6;">
+                Ha registrado los <strong>detalles del pago</strong>, pero aún no ha cargado el documento de <strong>Anticipo</strong>.
+              </p>
+              <p style="font-size: 15px; color: #666; margin-bottom: 20px;">
+                Por favor, haga clic en el botón <span style="color: #003594;">📄</span> <strong>"Adjunte Documento Anticipo"</strong> 
+                para cargar el documento correspondiente antes de guardar el ticket.
+              </p>
+              <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin: 15px 0; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-size: 14px;">
+                  <strong>⚠️ Importante:</strong> El ticket no se puede crear sin el documento de anticipo cuando los detalles del pago están registrados.
+                </p>
+              </div>
+            </div>
+          `,
+          confirmButtonText: "Entendido",
+          confirmButtonColor: "#003594",
+          confirmButtonClass: "swal2-confirm-custom",
+          width: "600px",
+          padding: "2rem",
+          customClass: {
+            popup: "swal2-popup-custom",
+            title: "swal2-title-custom",
+            htmlContainer: "swal2-html-custom"
+          },
+          color: "#333",
+          background: "#ffffff",
+          backdrop: "rgba(0, 0, 0, 0.4)"
+        });
+        return; // Detener la ejecución
+      }
+    }
+
     // Crear FormData
+    // El id_status_payment ya fue calculado en UpdateGuarantees() y pasado como parámetro
     const formData = new FormData();
     formData.append("falla_id", descrpFailure_id);
     formData.append("falla_text", descrpFailure_text);
@@ -1748,23 +2104,26 @@ function SendDataFailure2(idStatusPayment) {
     formData.append("rif", rif);
     formData.append("coordinadorNombre", coordinadorNombre);
 
-    // NUEVO: Agregar información de documentos cargados
-    const checkEnvio = document.getElementById("checkEnvio");
-    const checkExoneracion = document.getElementById("checkExoneracion");
-    const checkAnticipo = document.getElementById("checkAnticipo");
-
-    if (uploadNowRadio.checked) {
+    // Usar uploadNowRadioLocal que se obtuvo al inicio de la función
+    if (uploadNowRadioLocal && uploadNowRadioLocal.checked) {
       // Documentos que se están cargando ahora
-      if (checkEnvio.checked && archivoEnvio) {
-        formData.append("archivoEnvio", archivoEnvio);
+      // Usar los archivos guardados que se pasaron como parámetros, o los preservados globalmente
+      const archivoEnvioFinal = archivoEnvioGuardado || window.archivoEnvioPreservado || null;
+      if (checkEnvio && checkEnvio.checked && archivoEnvioFinal) {
+        formData.append("archivoEnvio", archivoEnvioFinal);
         formData.append("documento_envio", "Sí"); // NUEVO: Marcar que se cargó envío
       }
-      if (checkExoneracion.checked && archivoExoneracion) {
-        formData.append("archivoExoneracion", archivoExoneracion);
+      
+      const archivoExoneracionFinal = archivoExoneracionGuardado || window.archivoExoneracionPreservado || null;
+      if (checkExoneracion && checkExoneracion.checked && archivoExoneracionFinal) {
+        formData.append("archivoExoneracion", archivoExoneracionFinal);
         formData.append("documento_exoneracion", "Sí"); // NUEVO: Marcar que se cargó exoneración
       }
-      if (checkAnticipo.checked && archivoAnticipo) {
-        formData.append("archivoAnticipo", archivoAnticipo);
+      
+      // Usar archivoAnticipoActual que puede venir del parámetro, del preservado globalmente, o del DOM
+      const archivoAnticipoFinal = archivoAnticipoActual || archivoAnticipoGuardado || window.archivoAnticipoPreservado || null;
+      if (checkAnticipo && checkAnticipo.checked && archivoAnticipoFinal) {
+        formData.append("archivoAnticipo", archivoAnticipoFinal);
         formData.append("documento_anticipo", "Sí"); // NUEVO: Marcar que se cargó anticipo
       }
     }
@@ -1782,45 +2141,8 @@ function SendDataFailure2(idStatusPayment) {
         try {
           const response = JSON.parse(xhr.responseText);
           if (response.success) {
-            // **ENVIAR CORREO AL CREAR TICKET NIVEL 2**
-            const xhrEmail = new XMLHttpRequest();
-            xhrEmail.open(
-              "POST",
-              `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
-            );
-            xhrEmail.setRequestHeader(
-              "Content-Type",
-              "application/x-www-form-urlencoded"
-            );
-
-            xhrEmail.onload = function () {
-              if (xhrEmail.status === 200) {
-                try {
-                  const responseEmail = JSON.parse(xhrEmail.responseText);
-                  
-                  // Verificar si al menos un correo se envió exitosamente
-                  const message = responseEmail.message || '';
-                  const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
-                  
-                  if (responseEmail.success || correoTecnicoEnviado) {
-                  } else {
-                    console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
-                  }
-                } catch (error) {
-                  console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
-                }
-              } else {
-                console.error("❌ Error al solicitar el envío de correo (Nivel 2):", xhrEmail.status);
-              }
-            };
-
-            xhrEmail.onerror = function () {
-              console.error("Error de red al solicitar el envío de correo.");
-            };
-            
-            const paramsEmail = `id_user=${encodeURIComponent(id_user)}`;
-            xhrEmail.send(paramsEmail);
-            // **FIN DE LA LÓGICA DEL CORREO**
+            // NOTA: El correo se enviará después de guardar componentes (si se asocian) o al cerrar el modal (si no se asocian)
+            // Esto evita que se envíe dos veces
 
             // Mostrar el primer modal (Guardado exitoso)
             Swal.fire({
@@ -1901,8 +2223,39 @@ function SendDataFailure2(idStatusPayment) {
         }).then((result) => {
           if (result.isConfirmed) {
             $("#miModal").css("display", "none");
+            // Enviar correo cuando el usuario cierra el modal sin asociar componentes
             setTimeout(() => {
-            }, 1000);
+              const xhrEmail = new XMLHttpRequest();
+              xhrEmail.open(
+                "POST",
+                `${ENDPOINT_BASE}${APP_PATH}api/email/send_ticket2`
+              );
+              xhrEmail.setRequestHeader(
+                "Content-Type",
+                "application/x-www-form-urlencoded"
+              );
+              xhrEmail.onload = function () {
+                if (xhrEmail.status === 200) {
+                  try {
+                    const responseEmail = JSON.parse(xhrEmail.responseText);
+                    const message = responseEmail.message || '';
+                    const correoTecnicoEnviado = message.includes('Correo del técnico enviado');
+                    if (responseEmail.success || correoTecnicoEnviado) {
+                      console.log("✅ Correo enviado exitosamente");
+                    } else {
+                      console.error("❌ Error al enviar correo (Nivel 2):", responseEmail.message);
+                    }
+                  } catch (error) {
+                    console.error("❌ Error al parsear respuesta del correo (Nivel 2):", error);
+                  }
+                }
+              };
+              xhrEmail.onerror = function () {
+                console.error("Error de red al solicitar el envío de correo.");
+              };
+              const paramsEmail = `id_user=${encodeURIComponent(id_user)}`;
+              xhrEmail.send(paramsEmail);
+            }, 500);
           } else if (result.dismiss === Swal.DismissReason.cancel) {
               $("#miModal").css("display", "none");
               
@@ -1915,6 +2268,7 @@ function SendDataFailure2(idStatusPayment) {
                 serialPos: serialPos
               }
             });
+            // El correo se enviará después del toast de componentes (en guardarComponentesSeleccionados)
           }
           });
                 },
@@ -2022,10 +2376,15 @@ function validateTicketCreation() {
     const checkExoneracion = document.getElementById('checkExoneracion');
     const checkAnticipo = document.getElementById('checkAnticipo');
     
+    // Obtener los botones de carga para verificar su visibilidad
+    const botonCargaPDFEnv = document.getElementById('botonCargaPDFEnv');
+    const botonCargaExoneracion = document.getElementById('botonCargaExoneracion');
+    const botonCargaAnticipo = document.getElementById('botonCargaAnticipo');
+    
     const uploadNowRadio = document.getElementById('uploadNow');
     
     // Si no se eligió "Cargar ahora", no hay validaciones de archivos
-    if (!uploadNowRadio.checked) {
+    if (!uploadNowRadio || !uploadNowRadio.checked) {
         return true;
     }
     
@@ -2042,44 +2401,74 @@ function validateTicketCreation() {
         return false;
     }
     
-    // Validaciones individuales de archivos
-    const validacionEnvio = validateFileInput(inputEnvio, checkEnvio, 'Envío');
-    if (!validacionEnvio.isValid) {
-        Swal.fire({
-            icon: "warning",
-            title: "Campo requerido",
-            text: validacionEnvio.message,
-            color: "black",
-            confirmButtonText: "OK",
-            confirmButtonColor: "#003594",
-        });
-        return false;
+    // NUEVA VALIDACIÓN: Verificar visibilidad de botones y requerir archivos correspondientes
+    // Si el botón está visible, el archivo debe estar cargado
+    
+    // Función auxiliar para verificar si un elemento está visible
+    function isElementVisible(element) {
+        if (!element) return false;
+        const style = window.getComputedStyle(element);
+        return style.display !== 'none' && 
+               style.visibility !== 'hidden' && 
+               style.opacity !== '0' &&
+               element.offsetWidth > 0 && 
+               element.offsetHeight > 0;
     }
     
-    const validacionExoneracion = validateFileInput(inputExoneracion, checkExoneracion, 'Exoneración');
-    if (!validacionExoneracion.isValid) {
-        Swal.fire({
-            icon: "warning",
-            title: "Campo requerido",
-            text: validacionExoneracion.message,
-            color: "black",
-            confirmButtonText: "OK",
-            confirmButtonColor: "#003594",
-        });
-        return false;
+    // Validar Envío: Si el botón está visible, debe haber archivo
+    if (isElementVisible(botonCargaPDFEnv)) {
+        const tieneArchivoEnvio = inputEnvio && inputEnvio.files && inputEnvio.files.length > 0;
+        // También verificar el archivo preservado globalmente
+        const archivoEnvioPreservado = window.archivoEnvioPreservado || null;
+        if (!tieneArchivoEnvio && !archivoEnvioPreservado) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campo requerido",
+                text: "Por favor, seleccione el Documento de Envío después de marcar \"Cargar De Envío\".",
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
     }
     
-    const validacionAnticipo = validateFileInput(inputAnticipo, checkAnticipo, 'Anticipo');
-    if (!validacionAnticipo.isValid) {
-        Swal.fire({
-            icon: "warning",
-            title: "Campo requerido",
-            text: validacionAnticipo.message,
-            color: "black",
-            confirmButtonText: "OK",
-            confirmButtonColor: "#003594",
-        });
-        return false;
+    // Validar Exoneración: Si el botón está visible, debe haber archivo
+    if (isElementVisible(botonCargaExoneracion)) {
+        const tieneArchivoExoneracion = inputExoneracion && inputExoneracion.files && inputExoneracion.files.length > 0;
+        // También verificar el archivo preservado globalmente
+        const archivoExoneracionPreservado = window.archivoExoneracionPreservado || null;
+        if (!tieneArchivoExoneracion && !archivoExoneracionPreservado) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campo requerido",
+                text: "Por favor, seleccione el Documento de Exoneración después de marcar \"Cargar De Exoneración\".",
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
+    }
+    
+    // Validar Anticipo: Si el botón está visible, debe haber archivo
+    // NOTA: La validación completa de Anticipo (con pago) se hace en continuarCreacionTicket()
+    // Pero aquí validamos que si el botón está visible, el archivo debe estar cargado
+    if (isElementVisible(botonCargaAnticipo)) {
+        const tieneArchivoAnticipo = inputAnticipo && inputAnticipo.files && inputAnticipo.files.length > 0;
+        // También verificar el archivo preservado globalmente
+        const archivoAnticipoPreservado = window.archivoAnticipoPreservado || null;
+        if (!tieneArchivoAnticipo && !archivoAnticipoPreservado) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campo requerido",
+                text: "Por favor, seleccione el Documento de Anticipo después de marcar \"Cargar De Anticipo\".",
+                color: "black",
+                confirmButtonText: "OK",
+                confirmButtonColor: "#003594",
+            });
+            return false;
+        }
     }
     
     // Validaciones adicionales de tipo y tamaño (opcional)
@@ -2126,20 +2515,8 @@ function validateTicketCreation() {
         }
     }
     
-    if (checkAnticipo.checked && inputAnticipo.files[0]) {
-        const validacionTipoAnt = validateFileType(inputAnticipo.files[0]);
-        if (!validacionTipoAnt.isValid) {
-            Swal.fire({
-                icon: "error",
-                title: "Tipo de archivo no válido",
-                text: validacionTipoAnt.message,
-                color: "black",
-                confirmButtonText: "OK",
-                confirmButtonColor: "#003594",
-            });
-            return false;
-        }
-    }
+    // NO validar tipo de archivo de Anticipo aquí - se valida en continuarCreacionTicket()
+    // La validación de Anticipo se hace después de verificar si existe el pago en la tabla temporal
     
     // Si todas las validaciones pasan
     return true;
@@ -2218,11 +2595,22 @@ document.addEventListener("DOMContentLoaded", function () {
   // Función para actualizar la visibilidad del icono de agregar información
   // El icono aparece cuando "Anticipo" está seleccionado Y "Sí" está marcado en "¿Deseas cargar los documentos ahora?"
   function updateIconoAgregarInfoVisibility() {
-    if (iconoAgregarInfoContainer && checkAnticipo && uploadNowRadio) {
+    // Verificar que todos los elementos existan
+    if (!iconoAgregarInfoContainer || !checkAnticipo || !uploadNowRadio || !checkEnvio || !checkExoneracion) {
+      return;
+    }
+    
       // El icono aparece cuando:
       // 1. El radio "Sí" está marcado (uploadNowRadio.checked)
-      // 2. Y el radio "Anticipo" está seleccionado (checkAnticipo.checked)
-      if (uploadNowRadio.checked && checkAnticipo.checked) {
+    // 2. El checkbox "Anticipo" está seleccionado (checkAnticipo.checked)
+    // 3. El checkbox "Exoneración" NO está seleccionado (checkExoneracion.checked === false)
+    // NOTA: "Envío" puede estar seleccionado junto con "Anticipo", no afecta la visibilidad del icono
+    // El icono solo se oculta si se selecciona "Exoneración"
+    const debeMostrarIcono = uploadNowRadio.checked && 
+                              checkAnticipo.checked && 
+                              !checkExoneracion.checked;
+    
+    if (debeMostrarIcono) {
         iconoAgregarInfoContainer.style.display = "block";
         if (iconoAgregarInfo) {
           iconoAgregarInfo.style.visibility = "visible";
@@ -2236,7 +2624,6 @@ document.addEventListener("DOMContentLoaded", function () {
           iconoAgregarInfo.style.visibility = "hidden";
           iconoAgregarInfo.style.opacity = "0";
           iconoAgregarInfo.style.display = "none";
-        }
       }
     }
   }
@@ -2244,24 +2631,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Función para actualizar el estado del botón de anticipo
   function updateAnticipoButtonState() {
     if (downloadAnticiBtn && anticipoInput) {
-      const hasFile = anticipoInput.files && anticipoInput.files.length > 0;
-      
-      if (hasFile) {
-        // Habilitar el botón
+      // Mantener el botón siempre habilitado
         downloadAnticiBtn.disabled = false;
         downloadAnticiBtn.style.opacity = "1";
         downloadAnticiBtn.style.cursor = "pointer";
         if (disabledTooltipAnticipo) {
           disabledTooltipAnticipo.style.display = "none";
-        }
-      } else {
-        // Deshabilitar el botón
-        downloadAnticiBtn.disabled = true;
-        downloadAnticiBtn.style.opacity = "0.6";
-        downloadAnticiBtn.style.cursor = "not-allowed";
-        if (disabledTooltipAnticipo) {
-          disabledTooltipAnticipo.style.display = "block";
-        }
       }
     }
   }
@@ -2291,12 +2666,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("envioStatus").textContent = "";
       document.getElementById("exoneracionStatus").textContent = "";
       document.getElementById("anticipoStatus").textContent = "";
-      // Deshabilitar el botón de anticipo cuando se oculta
-      if (downloadAnticiBtn) {
-        downloadAnticiBtn.disabled = true;
-        downloadAnticiBtn.style.opacity = "0.6";
-        downloadAnticiBtn.style.cursor = "not-allowed";
-      }
+      // El botón de anticipo siempre permanece habilitado
     }
     // Nota: Si necesitas que esta sección de carga de documentos se oculte si hay garantía activa,
     // tendrías que integrar esa lógica aquí o hacer que UpdateGuarantees() dispare un evento
@@ -2309,35 +2679,31 @@ document.addEventListener("DOMContentLoaded", function () {
   // Función para actualizar la visibilidad de los botones individuales de carga de archivos
   function updateFileUploadButtonVisibility() {
     // Solo mostrar el botón si 'uploadNow' está marcado Y el checkbox/radio está marcado
-    botonCargaPDFEnv.style.display =
-      uploadNowRadio.checked && checkEnvio.checked ? "flex" : "none";
-    botonCargaExoneracion.style.display =
-      uploadNowRadio.checked && checkExoneracion.checked ? "flex" : "none";
-    botonCargaAnticipo.style.display =
-      uploadNowRadio.checked && checkAnticipo.checked ? "flex" : "none";
+    const uploadNowChecked = uploadNowRadio ? uploadNowRadio.checked : false;
     
-    // Actualizar el estado del botón de anticipo cuando se muestra (siempre deshabilitado al inicio)
+    if (botonCargaPDFEnv) {
+    botonCargaPDFEnv.style.display =
+        uploadNowChecked && checkEnvio && checkEnvio.checked ? "flex" : "none";
+    }
+    if (botonCargaExoneracion) {
+      const exoneracionChecked = checkExoneracion ? checkExoneracion.checked : false;
+    botonCargaExoneracion.style.display =
+        uploadNowChecked && exoneracionChecked ? "flex" : "none";
+    }
+    if (botonCargaAnticipo) {
+    botonCargaAnticipo.style.display =
+        uploadNowChecked && checkAnticipo && checkAnticipo.checked ? "flex" : "none";
+    }
+    
+    // Actualizar el estado del botón de anticipo cuando se muestra (siempre habilitado)
     if (uploadNowRadio.checked && checkAnticipo.checked) {
-      // Asegurar que el botón esté deshabilitado inicialmente si no hay archivo
-      if (downloadAnticiBtn && anticipoInput) {
-        const hasFile = anticipoInput.files && anticipoInput.files.length > 0;
-        if (!hasFile) {
-          downloadAnticiBtn.disabled = true;
-          downloadAnticiBtn.style.opacity = "0.6";
-          downloadAnticiBtn.style.cursor = "not-allowed";
-          if (disabledTooltipAnticipo) {
-            disabledTooltipAnticipo.style.display = "block";
-          }
-        } else {
+      // El botón siempre permanece habilitado
           updateAnticipoButtonState();
-        }
       } else {
-        updateAnticipoButtonState();
-      }
-    } else {
-      // Si no se muestra, también deshabilitar
+      // Si no se muestra, el botón sigue habilitado pero oculto
       if (downloadAnticiBtn) {
-        downloadAnticiBtn.disabled = true;
+        // Mantener habilitado siempre
+        downloadAnticiBtn.disabled = false;
         downloadAnticiBtn.style.opacity = "0.6";
         downloadAnticiBtn.style.cursor = "not-allowed";
         if (disabledTooltipAnticipo) {
@@ -2368,6 +2734,16 @@ function clearFileInput(inputId) {
     const fileInput = document.getElementById(inputId);
     if (fileInput) {
         fileInput.value = "";
+        // Limpiar también las variables globales correspondientes
+        if (typeof window !== 'undefined') {
+            if (inputId === "EnvioInput") {
+                window.archivoEnvioPreservado = null;
+            } else if (inputId === "ExoneracionInput") {
+                window.archivoExoneracionPreservado = null;
+            } else if (inputId === "AnticipoInput") {
+                window.archivoAnticipoPreservado = null;
+            }
+        }
     }
 }
 
@@ -2382,28 +2758,37 @@ function clearFileSpan(fileSpan) {
 // Event listeners actualizados
 checkEnvio.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
+    // Actualizar visibilidad del icono cuando cambia Envío (se oculta si se selecciona Envío)
+    updateIconoAgregarInfoVisibility();
     
     // Si se deselecciona, limpiar inmediatamente el archivo
     if (!this.checked) {
         clearFileInput("EnvioInput");
         clearFileSpan(fileChosenSpanEnvio);
+        // Verificar nuevamente si el icono debe mostrarse después de deseleccionar
+        updateIconoAgregarInfoVisibility();
     }
 });
 
+if (checkExoneracion) {
 checkExoneracion.addEventListener("change", function() {
+        console.warn("checkExoneracion cambiado. checked:", this.checked, "uploadNowRadio.checked:", uploadNowRadio ? uploadNowRadio.checked : "undefined");
     updateFileUploadButtonVisibility();
+        // Actualizar visibilidad del icono cuando cambia Exoneración (se oculta si se selecciona Exoneración, se muestra si se deselecciona y solo Anticipo está seleccionado)
+        updateIconoAgregarInfoVisibility();
     
     // Si se deselecciona, limpiar inmediatamente el archivo
     if (!this.checked) {
         clearFileInput("ExoneracionInput");
         clearFileSpan(fileChosenSpanExo);
+            // Verificar nuevamente si el icono debe mostrarse después de deseleccionar
+            updateIconoAgregarInfoVisibility();
     }
 });
+}
 
   checkAnticipo.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
-    // Actualizar la visibilidad del icono cuando se selecciona/deselecciona Anticipo
-    updateIconoAgregarInfoVisibility();
     
     // Si se deselecciona, limpiar inmediatamente el archivo
     if (!this.checked) {
@@ -2418,6 +2803,12 @@ checkExoneracion.addEventListener("change", function() {
         updateAnticipoButtonState();
       }
     }
+    
+    // Actualizar la visibilidad del icono cuando se selecciona/deselecciona Anticipo
+    // Usar setTimeout para asegurar que el estado se actualice después de que el DOM se actualice
+    setTimeout(function() {
+        updateIconoAgregarInfoVisibility();
+    }, 10);
   });
 
   // --- Event Listeners ---
@@ -2433,23 +2824,8 @@ checkExoneracion.addEventListener("change", function() {
     updateIconoAgregarInfoVisibility();
   });
 
-  // Event listener para el cambio de archivo en AnticipoInput
-  if (anticipoInput) {
-    anticipoInput.addEventListener("change", function() {
-      updateAnticipoButtonState();
-      // Actualizar el span del archivo si existe
-      if (fileChosenSpanAntici) {
-        const file = this.files[0];
-        if (file) {
-          fileChosenSpanAntici.textContent = shortenFileName(file.name);
-          fileChosenSpanAntici.style.cssText = "margin-left: 16%; margin-top: -1%; font-size: 12px; display: block; position: absolute;";
-        } else {
-          fileChosenSpanAntici.textContent = "";
-          fileChosenSpanAntici.style.cssText = "color: gray; font-style: italic; margin-left: 5px;";
-        }
-      }
-    });
-  }
+  // NOTA: Las variables globales y event listeners para preservar archivos ya están inicializados
+  // en el DOMContentLoaded más arriba (líneas ~235-310). No duplicar aquí.
 
   // Función para limpiar todos los campos del formulario de datos de pago
   function limpiarFormularioDatosPago() {
@@ -2473,6 +2849,8 @@ checkExoneracion.addEventListener("change", function() {
       const montoEquipo = document.getElementById("montoEquipo");
       const montoBsSuffix = document.getElementById("montoBsSuffix");
       const montoRefSuffix = document.getElementById("montoRefSuffix");
+      const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
+      const pagoMovilFieldsContainer = document.getElementById("pagoMovilFieldsContainer");
       
       // Limpiar campos de texto e inputs
       if (fechaPago) fechaPago.value = "";
@@ -2483,7 +2861,8 @@ checkExoneracion.addEventListener("change", function() {
       if (obsAdministracion) obsAdministracion.value = "";
       if (obsComercial) obsComercial.value = "";
       if (registro) registro.value = "";
-      if (fechaCarga) fechaCarga.value = "";
+      // NO limpiar fechaCarga - debe mantener la fecha de hoy automáticamente
+      // La fecha se establece automáticamente cuando se abre el modal
       if (estatus) estatus.value = "";
       if (serialPosPago) serialPosPago.value = "";
       
@@ -2497,6 +2876,9 @@ checkExoneracion.addEventListener("change", function() {
       }
       
       // Ocultar campos de banco y limpiarlos
+      const bancoOrigen = document.getElementById("bancoOrigen");
+      const bancoDestino = document.getElementById("bancoDestino");
+      
       if (bancoFieldsContainer) {
         bancoFieldsContainer.style.display = "none";
       }
@@ -2507,6 +2889,14 @@ checkExoneracion.addEventListener("change", function() {
       if (bancoDestino) {
         bancoDestino.value = "";
         bancoDestino.required = false;
+      }
+      
+      // Ocultar y limpiar campos de Pago Móvil
+      if (pagoMovilFieldsContainer) {
+        pagoMovilFieldsContainer.style.display = "none";
+      }
+      if (typeof limpiarCamposPagoMovil === 'function') {
+        limpiarCamposPagoMovil();
       }
       
       // Resetear campos de Monto Bs y Monto REF a "0.00" y deshabilitarlos
@@ -2924,14 +3314,11 @@ checkExoneracion.addEventListener("change", function() {
       }, 300); // Duración de la animación de fade out
     }
     
-    // Deshabilitar el botón de anticipo al cancelar
+    // El botón de anticipo siempre permanece habilitado, incluso al cancelar
     if (downloadAnticiBtn) {
-      downloadAnticiBtn.disabled = true;
-      downloadAnticiBtn.style.opacity = "0.6";
-      downloadAnticiBtn.style.cursor = "not-allowed";
-      if (disabledTooltipAnticipo) {
-        disabledTooltipAnticipo.style.display = "block";
-      }
+      downloadAnticiBtn.disabled = false;
+      downloadAnticiBtn.style.opacity = "1";
+      downloadAnticiBtn.style.cursor = "pointer";
     }
     
     // Limpiar el input de archivo
@@ -2960,6 +3347,572 @@ checkExoneracion.addEventListener("change", function() {
       e.preventDefault();
       e.stopPropagation();
       cerrarModalYLimpiar();
+    });
+  }
+
+  // Función para guardar el pago
+  /**
+ * Guarda un pago mediante una solicitud AJAX, utilizando SweetAlert
+ * para las validaciones y las notificaciones de resultado.
+ */
+
+function savePayment() {
+    // Obtener todos los valores del formulario
+    const serialPosPago = document.getElementById("serialPosPago");
+    const idUser = document.getElementById("id_user_pago");
+    const fechaPago = document.getElementById("fechaPago");
+    const fechaCarga = document.getElementById("fechaCarga");
+    const formaPago = document.getElementById("formaPago");
+    const moneda = document.getElementById("moneda");
+    const montoBs = document.getElementById("montoBs");
+    const montoRef = document.getElementById("montoRef");
+    const referencia = document.getElementById("referencia");
+    const obsAdministracion = document.getElementById("obsAdministracion");
+    const registro = document.getElementById("registro");
+    const bancoOrigen = document.getElementById("bancoOrigen");
+    const bancoDestino = document.getElementById("bancoDestino");
+    const depositante = document.getElementById("depositante");
+    // Obtener el ID del pago guardado en el campo oculto
+    const paymentIdInput = document.getElementById("payment_id_to_save");
+    const paymentId = paymentIdInput ? paymentIdInput.value : null;
+
+    // --- 1. VALIDACIONES DEL FORMULARIO (Solo los campos requeridos) ---
+    
+    // Validar Fecha Pago
+    if (!fechaPago || !fechaPago.value || fechaPago.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar la fecha de pago.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (fechaPago) fechaPago.focus();
+        return;
+    }
+
+    // Validar Forma de Pago
+    if (!formaPago || !formaPago.value || formaPago.value === "" || formaPago.value === "0") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar una forma de pago.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (formaPago) formaPago.focus();
+        return;
+    }
+
+    // Obtener el ID y texto del método de pago seleccionado para validaciones condicionales
+    const selectedPaymentMethodId = parseInt(formaPago.value);
+    const paymentMethodText = formaPago.options[formaPago.selectedIndex].textContent;
+    const selectedPaymentMethodName = paymentMethodText.toLowerCase();
+
+    // Validaciones condicionales según el método de pago
+    // Si es Transferencia (ID = 2), validar bancos
+    if (selectedPaymentMethodId === 2) {
+        if (!bancoOrigen || !bancoOrigen.value || bancoOrigen.value === "" || bancoOrigen.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar un banco de origen para Transferencia.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (bancoOrigen) bancoOrigen.focus();
+            return;
+        }
+
+        if (!bancoDestino || !bancoDestino.value || bancoDestino.value === "" || bancoDestino.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar un banco de destino para Transferencia.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (bancoDestino) bancoDestino.focus();
+            return;
+        }
+    }
+
+    // Si es Pago Móvil (ID = 5), validar campos del origen
+    if (selectedPaymentMethodId === 5) {
+        const origenRifTipo = document.getElementById("origenRifTipo");
+        const origenRifNumero = document.getElementById("origenRifNumero");
+        const origenTelefono = document.getElementById("origenTelefono");
+        const origenBanco = document.getElementById("origenBanco");
+
+        if (!origenRifTipo || !origenRifTipo.value || origenRifTipo.value === "" || origenRifTipo.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar el tipo de RIF del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenRifTipo) origenRifTipo.focus();
+            return;
+        }
+
+        if (!origenRifNumero || !origenRifNumero.value || origenRifNumero.value.trim() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe ingresar el número de RIF del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenRifNumero) origenRifNumero.focus();
+            return;
+        }
+
+        if (!origenTelefono || !origenTelefono.value || origenTelefono.value.trim() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe ingresar el número telefónico del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenTelefono) origenTelefono.focus();
+            return;
+        }
+
+        if (!origenBanco || !origenBanco.value || origenBanco.value === "" || origenBanco.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar el banco del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenBanco) origenBanco.focus();
+            return;
+        }
+    }
+
+    // Validar Moneda
+    if (!moneda || !moneda.value || moneda.value === "" || moneda.value === "0") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar una moneda.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (moneda) moneda.focus();
+        return;
+    }
+
+    // Validar Monto en Bolívares (debe ser mayor a 0)
+    if (!montoBs || !montoBs.value || montoBs.value.trim() === "" || montoBs.value === "0" || montoBs.value === "0.00") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'El monto en Bolívares es obligatorio y debe ser mayor a 0.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (montoBs) montoBs.focus();
+        return;
+    }
+    
+    // Validar que el monto sea un número válido y mayor a 0
+    const montoBsValue = parseFloat(montoBs.value.replace(/,/g, ''));
+    if (isNaN(montoBsValue) || montoBsValue <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Valor Inválido',
+            text: 'El monto en Bolívares debe ser un número mayor a 0.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (montoBs) montoBs.focus();
+        return;
+    }
+
+    // Validar Referencia
+    if (!referencia || !referencia.value || referencia.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe ingresar el número de referencia.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (referencia) referencia.focus();
+        return;
+    }
+
+    // Validar Depositante
+    if (!depositante || !depositante.value || depositante.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe ingresar el nombre del depositante.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (depositante) depositante.focus();
+        return;
+    }
+
+    // Validar Fecha Carga
+    if (!fechaCarga || !fechaCarga.value || fechaCarga.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar la fecha de carga.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (fechaCarga) fechaCarga.focus();
+        return;
+    }
+
+    // Las variables paymentMethodText, selectedPaymentMethodName y selectedPaymentMethodId ya están definidas arriba
+
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Configuración',
+            text: 'Variables de entorno (ENDPOINT_BASE o APP_PATH) no definidas.',
+            confirmButtonColor: '#d33'
+        });
+        return;
+    }
+    
+    // --- 2. PREPARACIÓN DE DATOS ---
+
+    // Obtener campos de Pago Móvil si están visibles
+    const destinoRifTipo = document.getElementById("destinoRifTipo");
+    const destinoRifNumero = document.getElementById("destinoRifNumero");
+    const destinoTelefono = document.getElementById("destinoTelefono");
+    const destinoBanco = document.getElementById("destinoBanco");
+    
+    // Determinar si es Pago Móvil (ID = 5 o por nombre)
+    const isPagoMovil = selectedPaymentMethodId === 5 || selectedPaymentMethodName.includes("móvil") || selectedPaymentMethodName.includes("movil");
+    
+    // Reutilizar variables ya declaradas en validaciones
+    let origenRifTipo, origenRifNumero, origenTelefono, origenBanco;
+    if (isPagoMovil) {
+        origenRifTipo = document.getElementById("origenRifTipo");
+        origenRifNumero = document.getElementById("origenRifNumero");
+        origenTelefono = document.getElementById("origenTelefono");
+        origenBanco = document.getElementById("origenBanco");
+    }
+    
+    // Determinar origen_bank y destination_bank según el tipo de pago
+    let origenBankValue = null;
+    let destinationBankValue = null;
+    
+    if (isPagoMovil) {
+      // Para Pago Móvil, usar los bancos de los campos específicos
+      origenBankValue = origenBanco && origenBanco.value ? origenBanco.options[origenBanco.selectedIndex].textContent : null;
+      destinationBankValue = destinoBanco && destinoBanco.value ? destinoBanco.options[destinoBanco.selectedIndex].textContent : null;
+    } else {
+      // Para Transferencia, usar los campos de banco existentes
+      origenBankValue = bancoOrigen && bancoOrigen.value ? bancoOrigen.options[bancoOrigen.selectedIndex].textContent : null;
+      destinationBankValue = bancoDestino && bancoDestino.value ? bancoDestino.options[bancoDestino.selectedIndex].textContent : null;
+    }
+
+    // Preparar datos para enviar
+    // Función auxiliar para agregar hora a una fecha si solo tiene la fecha
+    function addTimeToDate(dateString) {
+        if (!dateString) return null;
+        // Si ya tiene hora (contiene espacio y dos puntos), retornar tal cual
+        if (dateString.includes(' ') && dateString.includes(':')) {
+            return dateString;
+        }
+        // Si solo tiene la fecha (formato YYYY-MM-DD), agregar la hora actual
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${dateString} ${hours}:${minutes}:${seconds}`;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append("serial_pos", serialPosPago.value);
+    formData.append("user_loader", idUser ? idUser.value : null);
+    // Agregar hora a payment_date si solo tiene la fecha
+    const paymentDateWithTime = fechaPago && fechaPago.value ? addTimeToDate(fechaPago.value) : null;
+    formData.append("payment_date", paymentDateWithTime);
+    formData.append("origen_bank", origenBankValue);
+    formData.append("destination_bank", destinationBankValue);
+    formData.append("payment_method", paymentMethodText);
+    formData.append("currency", moneda.value === "bs" ? "BS" : "USD");
+    formData.append("reference_amount", montoRef && montoRef.value ? parseFloat(montoRef.value) : null);
+    formData.append("amount_bs", montoBsValue);
+    formData.append("payment_reference", referencia ? referencia.value : null);
+    formData.append("depositor", depositante.value ? depositante.value : null);
+    formData.append("observations", obsAdministracion ? obsAdministracion.value : null);
+    formData.append("record_number", registro ? registro.value : null);
+    // Agregar hora a loadpayment_date si solo tiene la fecha, o usar hora actual si no hay valor
+    const loadPaymentDateWithTime = fechaCarga && fechaCarga.value ? addTimeToDate(fechaCarga.value) : new Date().toISOString().slice(0, 19).replace('T', ' ');
+    formData.append("loadpayment_date", loadPaymentDateWithTime);
+    formData.append("confirmation_number", false);
+    formData.append("payment_id", paymentId);
+    
+    // Agregar campos de Pago Móvil si es ese método de pago
+    if (isPagoMovil) {
+      formData.append("destino_rif_tipo", destinoRifTipo ? destinoRifTipo.value : null);
+      formData.append("destino_rif_numero", destinoRifNumero ? destinoRifNumero.value : null);
+      formData.append("destino_telefono", destinoTelefono ? destinoTelefono.value : null);
+      formData.append("destino_banco", destinoBanco && destinoBanco.value ? destinoBanco.options[destinoBanco.selectedIndex].textContent : null);
+      formData.append("origen_rif_tipo", origenRifTipo ? origenRifTipo.value : null);
+      formData.append("origen_rif_numero", origenRifNumero ? origenRifNumero.value : null);
+      formData.append("origen_telefono", origenTelefono ? origenTelefono.value : null);
+      formData.append("origen_banco", origenBanco && origenBanco.value ? origenBanco.options[origenBanco.selectedIndex].textContent : null);
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/SavePayment";
+
+    // --- 3. SOLICITUD AJAX CON MANEJO DE RESPUESTA (Sustitución de alert() por SweetAlert) ---
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                
+                if (data.success) {
+                    // Obtener valores formateados para el informe
+                    const fechaPagoFormatted = fechaPago && fechaPago.value ? new Date(fechaPago.value).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';
+                    const fechaCargaFormatted = fechaCarga && fechaCarga.value ? new Date(fechaCarga.value).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';
+                    const montoBsFormatted = montoBsValue ? montoBsValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
+                    const montoRefFormatted = montoRef && montoRef.value ? parseFloat(montoRef.value).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+                    const monedaText = moneda && moneda.value === 'bs' ? 'Bolívares (Bs)' : moneda && moneda.value === 'usd' ? 'Dólares (USD)' : 'N/A';
+                    
+                    // Construir HTML del informe empresarial
+                    const paymentReportHtml = `
+                        <div style="text-align: left; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 8px;">
+                            <!-- Encabezado -->
+                            <div style="text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 3px solid #28a745;">
+                                <h3 style="color: #28a745; margin: 0; font-size: 1.5em; font-weight: 700;">
+                                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>Pago Registrado Exitosamente
+                                </h3>
+                                <p style="color: #6c757d; margin: 8px 0 0 0; font-size: 0.9em;">
+                                    Registro temporal guardado correctamente
+                                </p>
+                            </div>
+                            
+                            <!-- Información Principal -->
+                            <div style="background: #ffffff; border-left: 4px solid #28a745; padding: 15px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                    <i class="fas fa-fingerprint" style="color: #28a745; font-size: 1.2em; margin-right: 10px; width: 25px;"></i>
+                                    <div>
+                                        <strong style="color: #495057; font-size: 0.85em;">ID de Registro Temporal:</strong>
+                                        <span style="color: #212529; font-weight: 700; font-size: 1.1em; margin-left: 8px;">#${data.id_payment_record || 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <i class="fas fa-barcode" style="color: #007bff; font-size: 1.2em; margin-right: 10px; width: 25px;"></i>
+                                    <div>
+                                        <strong style="color: #495057; font-size: 0.85em;">Serial POS:</strong>
+                                        <span style="color: #212529; font-weight: 600; margin-left: 8px;">${serialPosPago ? serialPosPago.value : 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Detalles del Pago -->
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                                <h4 style="color: #495057; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; border-bottom: 2px solid #dee2e6; padding-bottom: 8px;">
+                                    <i class="fas fa-money-bill-wave" style="margin-right: 8px; color: #28a745;"></i>Detalles del Pago
+                                </h4>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Método de Pago</strong>
+                                        <span style="color: #212529; font-weight: 600; font-size: 0.95em;">${paymentMethodText || 'N/A'}</span>
+                                    </div>
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Moneda</strong>
+                                        <span style="color: #212529; font-weight: 600; font-size: 0.95em;">${monedaText}</span>
+                                    </div>
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Monto en Bolívares</strong>
+                                        <span style="color: #28a745; font-weight: 700; font-size: 1.1em;">Bs. ${montoBsFormatted}</span>
+                                    </div>
+                                    ${montoRef && montoRef.value ? `
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Monto de Referencia</strong>
+                                        <span style="color: #007bff; font-weight: 700; font-size: 1.1em;">USD ${montoRefFormatted}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Información Adicional -->
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                                <h4 style="color: #495057; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; border-bottom: 2px solid #dee2e6; padding-bottom: 8px;">
+                                    <i class="fas fa-info-circle" style="margin-right: 8px; color: #007bff;"></i>Información Adicional
+                                </h4>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>Fecha de Pago
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${fechaPagoFormatted}</span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-calendar-check" style="margin-right: 5px;"></i>Fecha de Carga
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${fechaCargaFormatted}</span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-hashtag" style="margin-right: 5px;"></i>Referencia
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${referencia ? referencia.value : 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-user" style="margin-right: 5px;"></i>Depositante
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${depositante ? depositante.value : 'N/A'}</span>
+                                    </div>
+                                    ${registro && registro.value ? `
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-book" style="margin-right: 5px;"></i>Número de Registro
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${registro.value}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Nota Informativa -->
+                            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 4px; margin-top: 15px;">
+                                <p style="margin: 0; color: #856404; font-size: 0.9em; line-height: 1.5;">
+                                    <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
+                                    <strong>Nota:</strong> Este registro se guardará automáticamente en la tabla principal cuando se cree el ticket correspondiente. 
+                                    <strong style="color: #dc3545;">Si no se carga el ticket correspondiente, este registro será eliminado.</strong>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '',
+                        html: paymentReportHtml,
+                        width: '650px',
+                        showConfirmButton: true,
+                        confirmButtonText: '<i class="fas fa-check"></i> Aceptar',
+                        confirmButtonColor: '#28a745',
+                        customClass: {
+                            popup: 'swal2-popup-custom',
+                            htmlContainer: 'swal2-html-container-custom'
+                        },
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        }
+                    }).then(() => {
+                        // Cerrar el modal de pago pero NO limpiar el formulario principal
+                        // Solo cerrar el modal de datos de pago, no afectar los documentos cargados
+                        const modalElement = document.getElementById("modalAgregarDatosPago");
+                        if (modalElement) {
+                            // Verificar si Bootstrap 5 está disponible
+                            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                                try {
+                                    const modal = bootstrap.Modal.getInstance(modalElement);
+                                    if (modal) {
+                                        modal.hide();
+                                    } else {
+                                        const newModal = new bootstrap.Modal(modalElement);
+                                        newModal.hide();
+                                    }
+                                } catch (e) {
+                                    // Si falla, usar método manual
+                                    console.warn("Error al cerrar modal con Bootstrap, usando método manual:", e);
+                                    modalElement.style.display = 'none';
+                                    modalElement.classList.remove('show');
+                                    document.body.classList.remove('modal-open');
+                                    const backdrop = document.querySelector('.modal-backdrop');
+                                    if (backdrop) {
+                                        backdrop.remove();
+                                    }
+                                }
+                            } else {
+                                // Fallback manual si Bootstrap no está disponible
+                                modalElement.style.display = 'none';
+                                modalElement.classList.remove('show');
+                                document.body.classList.remove('modal-open');
+                                const backdrop = document.querySelector('.modal-backdrop');
+                                if (backdrop) {
+                                    backdrop.remove();
+                                }
+                            }
+                        }
+                        // Solo limpiar el formulario de pago, NO los documentos del formulario principal
+                        if (typeof limpiarFormularioDatosPago === 'function') {
+                            limpiarFormularioDatosPago();
+                        }
+                        // NO llamar a cerrarModalYLimpiar() porque podría limpiar documentos del formulario principal
+                        
+                        // IMPORTANTE: Verificar que los documentos del formulario principal NO se hayan perdido
+                        const inputAnticipoVerificacion = document.getElementById("AnticipoInput");
+                        if (inputAnticipoVerificacion) {
+                            console.log("VERIFICACIÓN después de cerrar modal de pago:", {
+                                inputAnticipoValue: inputAnticipoVerificacion.value,
+                                inputAnticipoFilesLength: inputAnticipoVerificacion.files ? inputAnticipoVerificacion.files.length : 0,
+                                checkAnticipoChecked: document.getElementById("checkAnticipo") ? document.getElementById("checkAnticipo").checked : false
+                            });
+                        }
+                    });
+                    
+                    // Log para depuración (visible en consola del navegador)
+                    console.warn('Pago guardado exitosamente:', {
+                        id_payment_record: data.id_payment_record,
+                        serial_pos: serialPosPago ? serialPosPago.value : 'N/A',
+                        payment_method: paymentMethodText,
+                        amount_bs: montoBs ? montoBs.value : 'N/A',
+                        message: 'Registro guardado en temp_payment_uploads'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al Guardar',
+                        text: 'Error al guardar el pago: ' + (data.message || "Error desconocido del servidor."),
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear respuesta del servidor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Procesamiento',
+                    text: 'Error al procesar la respuesta del servidor (JSON inválido).',
+                    confirmButtonColor: '#d33'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error al comunicarse con el servidor (HTTP Status: ${xhr.status}).`,
+                confirmButtonColor: '#d33'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de red al intentar guardar el pago.',
+            confirmButtonColor: '#d33'
+        });
+    };
+    
+    xhr.send(formData.toString());
+}
+
+  // Event listener para el botón de guardar
+  const btnGuardarDatosPago = document.getElementById("btnGuardarDatosPago");
+  if (btnGuardarDatosPago) {
+    btnGuardarDatosPago.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      savePayment();
     });
   }
 
@@ -3133,6 +4086,168 @@ checkExoneracion.addEventListener("change", function() {
     
     xhr.send();
   }
+
+  // Función para cargar la tasa de cambio del día de hoy y mostrarla en el display
+  function loadExchangeRateToday() {
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateToday";
+    const tasaDisplayValue = document.getElementById("tasaDisplayValue");
+    const fechaTasaDisplay = document.getElementById("fechaTasaDisplay");
+
+    // Mostrar estado de carga
+    if (tasaDisplayValue) {
+      tasaDisplayValue.textContent = "Cargando Tasa...";
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          
+          // Debug: mostrar respuesta en consola
+          console.log("Respuesta API GetExchangeRateToday:", data);
+          console.log("data.success:", data.success);
+          console.log("data.exchange_rate:", data.exchange_rate);
+          
+          if (data.success && data.exchange_rate) {
+            // Verificar si tasa_dolar existe
+            const tasaValue = data.exchange_rate.tasa_dolar || null;
+            
+            if (tasaValue !== null && tasaValue !== undefined) {
+              const tasa = parseFloat(tasaValue);
+              
+              if (!isNaN(tasa)) {
+                exchangeRate = tasa; // Actualizar la variable global también
+                
+                // Mostrar la tasa formateada
+                if (tasaDisplayValue) {
+                  tasaDisplayValue.textContent = "Bs. " + tasa.toFixed(2);
+                }
+              } else {
+                console.error("Error: tasa_dolar no es un número válido:", tasaValue);
+                if (tasaDisplayValue) {
+                  tasaDisplayValue.textContent = "Error en formato";
+                }
+              }
+            } else {
+              console.error("Error: tasa_dolar no encontrado en exchange_rate. Claves disponibles:", Object.keys(data.exchange_rate));
+              if (tasaDisplayValue) {
+                tasaDisplayValue.textContent = "No disponible";
+              }
+            }
+            
+            // Actualizar la fecha si está disponible
+            const fechaTasa = data.exchange_rate.fecha_tasa || null;
+            if (fechaTasaDisplay) {
+              if (fechaTasa) {
+                // Formatear la fecha correctamente
+                let fechaFormateada = fechaTasa;
+                if (typeof fechaTasa === 'string') {
+                  // Si viene como string "YYYY-MM-DD", convertirla
+                  const partes = fechaTasa.split('-');
+                  if (partes.length === 3) {
+                    fechaFormateada = partes[2] + '/' + partes[1] + '/' + partes[0];
+                  } else {
+                    // Intentar parsear como fecha
+                    const fecha = new Date(fechaTasa);
+                    if (!isNaN(fecha.getTime())) {
+                      fechaFormateada = fecha.toLocaleDateString('es-VE', { 
+                        year: 'numeric', 
+                        month: '2-digit', 
+                        day: '2-digit' 
+                      });
+                    }
+                  }
+                } else {
+                  const fecha = new Date(fechaTasa);
+                  if (!isNaN(fecha.getTime())) {
+                    fechaFormateada = fecha.toLocaleDateString('es-VE', { 
+                      year: 'numeric', 
+                      month: '2-digit', 
+                      day: '2-digit' 
+                    });
+                  }
+                }
+                fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaFormateada;
+              } else {
+                // Si no hay fecha en la respuesta, usar la fecha de hoy
+                const hoy = new Date();
+                const fechaHoy = hoy.toLocaleDateString('es-VE', { 
+                  year: 'numeric', 
+                  month: '2-digit', 
+                  day: '2-digit' 
+                });
+                fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
+              }
+            }
+          } else {
+            if (tasaDisplayValue) {
+              tasaDisplayValue.textContent = "No disponible";
+            }
+            if (fechaTasaDisplay) {
+              const hoy = new Date();
+              const fechaHoy = hoy.toLocaleDateString('es-VE', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit' 
+              });
+              fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
+            }
+            exchangeRate = null;
+            console.error("Error: No se pudo obtener la tasa. Respuesta completa:", JSON.stringify(data, null, 2));
+          }
+        } catch (error) {
+          console.error("Error al parsear respuesta:", error);
+          if (tasaDisplayValue) {
+            tasaDisplayValue.textContent = "Error al cargar";
+          }
+          if (fechaTasaDisplay) {
+            const hoy = new Date();
+            const fechaHoy = hoy.toLocaleDateString('es-VE', { 
+              year: 'numeric', 
+              month: '2-digit', 
+              day: '2-digit' 
+            });
+            fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
+          }
+          exchangeRate = null;
+        }
+      } else {
+        console.error("Error HTTP:", xhr.status, xhr.responseText);
+        if (tasaDisplayValue) {
+          tasaDisplayValue.textContent = "Error de conexión (" + xhr.status + ")";
+        }
+        if (fechaTasaDisplay) {
+          const hoy = new Date();
+          const fechaHoy = hoy.toLocaleDateString('es-VE', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit' 
+          });
+          fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
+        }
+        exchangeRate = null;
+      }
+    };
+    
+    xhr.onerror = function() {
+      if (tasaDisplayValue) {
+        tasaDisplayValue.textContent = "Error de red";
+      }
+      exchangeRate = null;
+    };
+    
+    xhr.send();
+  }
+
+  loadExchangeRateToday();
 
   // Función para manejar el cambio de moneda
   function handleCurrencyChange() {
@@ -3494,6 +4609,15 @@ checkExoneracion.addEventListener("change", function() {
         bancoDestino.required = false;
       }
       
+      // Ocultar campos de Pago Móvil al abrir el modal
+      const pagoMovilFieldsContainer = document.getElementById("pagoMovilFieldsContainer");
+      if (pagoMovilFieldsContainer) {
+        pagoMovilFieldsContainer.style.display = "none";
+      }
+      if (typeof limpiarCamposPagoMovil === 'function') {
+        limpiarCamposPagoMovil();
+      }
+      
       // Asegurar que el campo de moneda esté desbloqueado al abrir
       if (moneda) {
         moneda.disabled = false;
@@ -3554,14 +4678,11 @@ checkExoneracion.addEventListener("change", function() {
         }
       }, 100);
       
-      // Deshabilitar el botón al cerrar
+      // El botón siempre permanece habilitado, incluso al cerrar
       if (downloadAnticiBtn) {
-        downloadAnticiBtn.disabled = true;
-        downloadAnticiBtn.style.opacity = "0.6";
-        downloadAnticiBtn.style.cursor = "not-allowed";
-        if (disabledTooltipAnticipo) {
-          disabledTooltipAnticipo.style.display = "block";
-        }
+        downloadAnticiBtn.disabled = false;
+        downloadAnticiBtn.style.opacity = "1";
+        downloadAnticiBtn.style.cursor = "pointer";
       }
       
       // Limpiar el input de archivo
@@ -3629,13 +4750,15 @@ checkExoneracion.addEventListener("change", function() {
     const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
     const bancoOrigen = document.getElementById("bancoOrigen");
     const bancoDestino = document.getElementById("bancoDestino");
-    
+    const pagoMovilFieldsContainer = document.getElementById("pagoMovilFieldsContainer");
     
     if (!formaPagoSelect || !monedaSelect) {
       return;
     }
 
     const selectedPaymentMethodId = parseInt(formaPagoSelect.value);
+    const selectedOption = formaPagoSelect.options[formaPagoSelect.selectedIndex];
+    const selectedPaymentMethodName = selectedOption ? selectedOption.textContent.trim() : "";
     
     // Si se selecciona "Transferencia" (id_payment_method = 2)
     if (selectedPaymentMethodId === 2) {
@@ -3662,7 +4785,13 @@ checkExoneracion.addEventListener("change", function() {
         
         // Cargar los bancos desde la base de datos
         loadBancos();
-      } else {
+      }
+      
+      // Ocultar campos de Pago Móvil
+      if (pagoMovilFieldsContainer) {
+        pagoMovilFieldsContainer.style.display = "none";
+        // Limpiar campos de Pago Móvil
+        limpiarCamposPagoMovil();
       }
       
       // Hacer los campos de banco requeridos
@@ -3671,6 +4800,79 @@ checkExoneracion.addEventListener("change", function() {
       }
       if (bancoDestino) {
         bancoDestino.required = true;
+      }
+      
+      // Activar la lógica de conversión para Bolívares
+      if (typeof handleCurrencyChange === 'function') {
+        handleCurrencyChange();
+      }
+      
+    } 
+    // Si se selecciona "Pago Móvil" (detectar por nombre o ID)
+    else if (selectedPaymentMethodName.toLowerCase().includes("móvil") || selectedPaymentMethodName.toLowerCase().includes("movil") || selectedPaymentMethodId === 3) {
+      
+      // Establecer moneda en "Bolívares (Bs)"
+      monedaSelect.value = "bs";
+      
+      // Bloquear el campo de moneda
+      monedaSelect.disabled = true;
+      monedaSelect.setAttribute("disabled", "disabled");
+      monedaSelect.style.backgroundColor = "#e9ecef";
+      monedaSelect.style.cursor = "not-allowed";
+      
+      // Ocultar campos de Transferencia
+      if (bancoFieldsContainer) {
+        bancoFieldsContainer.style.display = "none";
+      }
+      if (bancoOrigen) {
+        bancoOrigen.value = "";
+        bancoOrigen.required = false;
+      }
+      if (bancoDestino) {
+        bancoDestino.value = "";
+        bancoDestino.required = false;
+      }
+      
+      // Mostrar campos de Pago Móvil
+      if (pagoMovilFieldsContainer) {
+        pagoMovilFieldsContainer.style.display = "block";
+        
+        // Establecer valores por defecto del Destino y bloquearlos
+        const destinoRifTipo = document.getElementById("destinoRifTipo");
+        const destinoRifNumero = document.getElementById("destinoRifNumero");
+        const destinoTelefono = document.getElementById("destinoTelefono");
+        const destinoBanco = document.getElementById("destinoBanco");
+        
+        if (destinoRifTipo) {
+          destinoRifTipo.value = "J";
+          destinoRifTipo.disabled = true;
+          destinoRifTipo.setAttribute("disabled", "disabled");
+          destinoRifTipo.style.backgroundColor = "#e9ecef";
+          destinoRifTipo.style.cursor = "not-allowed";
+        }
+        if (destinoRifNumero) {
+          destinoRifNumero.value = "002916150";
+          destinoRifNumero.readOnly = true;
+          destinoRifNumero.setAttribute("readonly", "readonly");
+          destinoRifNumero.style.backgroundColor = "#e9ecef";
+          destinoRifNumero.style.cursor = "not-allowed";
+        }
+        if (destinoTelefono) {
+          destinoTelefono.value = "04122632231";
+          destinoTelefono.readOnly = true;
+          destinoTelefono.setAttribute("readonly", "readonly");
+          destinoTelefono.style.backgroundColor = "#e9ecef";
+          destinoTelefono.style.cursor = "not-allowed";
+        }
+        if (destinoBanco) {
+          destinoBanco.disabled = true;
+          destinoBanco.setAttribute("disabled", "disabled");
+          destinoBanco.style.backgroundColor = "#e9ecef";
+          destinoBanco.style.cursor = "not-allowed";
+        }
+        
+        // Cargar bancos en los selects de Pago Móvil (seleccionará Banesco automáticamente)
+        loadBancosPagoMovil();
       }
       
       // Activar la lógica de conversión para Bolívares
@@ -3687,9 +4889,15 @@ checkExoneracion.addEventListener("change", function() {
       monedaSelect.style.backgroundColor = "";
       monedaSelect.style.cursor = "";
       
-      // Ocultar campos de Banco Origen y Banco Destino
+      // Ocultar campos de Banco Origen y Banco Destino (Transferencia)
       if (bancoFieldsContainer) {
         bancoFieldsContainer.style.display = "none";
+      }
+      
+      // Ocultar campos de Pago Móvil
+      if (pagoMovilFieldsContainer) {
+        pagoMovilFieldsContainer.style.display = "none";
+        limpiarCamposPagoMovil();
       }
       
       // Limpiar y hacer opcionales los campos de banco
@@ -3705,7 +4913,148 @@ checkExoneracion.addEventListener("change", function() {
     }
   }
 
-  // Función para configurar el listener del select de moneda
+  // Función para limpiar campos de Pago Móvil
+  function limpiarCamposPagoMovil() {
+    const destinoRifTipo = document.getElementById("destinoRifTipo");
+    const destinoRifNumero = document.getElementById("destinoRifNumero");
+    const destinoTelefono = document.getElementById("destinoTelefono");
+    const destinoBanco = document.getElementById("destinoBanco");
+    const origenRifTipo = document.getElementById("origenRifTipo");
+    const origenRifNumero = document.getElementById("origenRifNumero");
+    const origenTelefono = document.getElementById("origenTelefono");
+    const origenBanco = document.getElementById("origenBanco");
+    
+    // Restaurar valores por defecto del Destino y bloquearlos
+    if (destinoRifTipo) {
+      destinoRifTipo.value = "J";
+      destinoRifTipo.disabled = true;
+      destinoRifTipo.setAttribute("disabled", "disabled");
+      destinoRifTipo.style.backgroundColor = "#e9ecef";
+      destinoRifTipo.style.cursor = "not-allowed";
+    }
+    if (destinoRifNumero) {
+      destinoRifNumero.value = "002916150";
+      destinoRifNumero.readOnly = true;
+      destinoRifNumero.setAttribute("readonly", "readonly");
+      destinoRifNumero.style.backgroundColor = "#e9ecef";
+      destinoRifNumero.style.cursor = "not-allowed";
+    }
+    if (destinoTelefono) {
+      destinoTelefono.value = "04122632231";
+      destinoTelefono.readOnly = true;
+      destinoTelefono.setAttribute("readonly", "readonly");
+      destinoTelefono.style.backgroundColor = "#e9ecef";
+      destinoTelefono.style.cursor = "not-allowed";
+    }
+    if (destinoBanco) {
+      destinoBanco.disabled = true;
+      destinoBanco.setAttribute("disabled", "disabled");
+      destinoBanco.style.backgroundColor = "#e9ecef";
+      destinoBanco.style.cursor = "not-allowed";
+    }
+    // El banco se seleccionará automáticamente cuando se carguen los bancos
+    
+    // Limpiar campos del Origen
+    if (origenRifTipo) {
+      origenRifTipo.value = "";
+      origenRifTipo.disabled = false;
+      origenRifTipo.removeAttribute("disabled");
+      origenRifTipo.style.backgroundColor = "";
+      origenRifTipo.style.cursor = "";
+    }
+    if (origenRifNumero) {
+      origenRifNumero.value = "";
+      origenRifNumero.readOnly = false;
+      origenRifNumero.removeAttribute("readonly");
+      origenRifNumero.style.backgroundColor = "";
+      origenRifNumero.style.cursor = "";
+    }
+    if (origenTelefono) {
+      origenTelefono.value = "";
+      origenTelefono.readOnly = false;
+      origenTelefono.removeAttribute("readonly");
+      origenTelefono.style.backgroundColor = "";
+      origenTelefono.style.cursor = "";
+    }
+    if (origenBanco) {
+      origenBanco.value = "";
+      origenBanco.disabled = false;
+      origenBanco.removeAttribute("disabled");
+      origenBanco.style.backgroundColor = "";
+      origenBanco.style.cursor = "";
+    }
+  }
+
+  // Función para cargar bancos en los selects de Pago Móvil
+  function loadBancosPagoMovil() {
+    const destinoBanco = document.getElementById("destinoBanco");
+    const origenBanco = document.getElementById("origenBanco");
+    
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetBancos";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          
+          if (data.success && data.bancos && data.bancos.length > 0) {
+            // Limpiar y poblar destinoBanco
+            if (destinoBanco) {
+              destinoBanco.innerHTML = '<option value="">Seleccione</option>';
+              let banescoFound = false;
+              data.bancos.forEach(function(banco) {
+                const option = document.createElement("option");
+                option.value = banco.codigobanco || banco.id;
+                const bancoName = banco.ibp || banco.nombre || banco.name;
+                option.textContent = bancoName;
+                // Seleccionar Banesco por defecto
+                if (bancoName && bancoName.toLowerCase().includes("banesco")) {
+                  option.selected = true;
+                  banescoFound = true;
+                }
+                destinoBanco.appendChild(option);
+              });
+              
+              // Bloquear el banco del destino después de cargar
+              if (banescoFound) {
+                destinoBanco.disabled = true;
+                destinoBanco.setAttribute("disabled", "disabled");
+                destinoBanco.style.backgroundColor = "#e9ecef";
+                destinoBanco.style.cursor = "not-allowed";
+              }
+            }
+            
+            // Limpiar y poblar origenBanco
+            if (origenBanco) {
+              origenBanco.innerHTML = '<option value="">Seleccione</option>';
+              data.bancos.forEach(function(banco) {
+                const option = document.createElement("option");
+                option.value = banco.codigobanco || banco.id;
+                option.textContent = banco.ibp || banco.nombre || banco.name;
+                origenBanco.appendChild(option);
+              });
+            }
+          }
+        } catch (error) {
+        }
+      }
+    };
+    
+    xhr.onerror = function() {
+    };
+    
+    xhr.send();
+  }
+
+   // Función para configurar el listener del select de moneda
   function setupCurrencyListener() {
     const monedaSelect = document.getElementById("moneda");
     if (monedaSelect) {
@@ -3725,25 +5074,20 @@ checkExoneracion.addEventListener("change", function() {
     }
   }
 
-  checkEnvio.addEventListener("change", function() {
+checkEnvio.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
+    // Actualizar visibilidad del icono (se oculta si se selecciona Envío, se muestra si se deselecciona y solo Anticipo está seleccionado)
+    updateIconoAgregarInfoVisibility();
       
     // Si se deselecciona, limpiar inmediatamente el archivo
     if (!this.checked) {
-      clearFileInput("EnvioInput");
-      clearFileSpan(fileChosenSpanEnvio);
+        clearFileInput("EnvioInput");
+        clearFileSpan(fileChosenSpanEnvio);
+        // Verificar nuevamente si el icono debe mostrarse después de deseleccionar
+        updateIconoAgregarInfoVisibility();
     }
-  });
+});
 
-  checkExoneracion.addEventListener("change", function() {
-    updateFileUploadButtonVisibility();
-      
-    // Si se deselecciona, limpiar inmediatamente el archivo
-    if (!this.checked) {
-      clearFileInput("ExoneracionInput");
-      clearFileSpan(fileChosenSpanExo);
-    }
-  });
 
   checkAnticipo.addEventListener("change", function() {
     updateFileUploadButtonVisibility();
@@ -3831,6 +5175,21 @@ checkExoneracion.addEventListener("change", function() {
       // Asegurar que el botón de anticipo esté deshabilitado al mostrar el modal
       updateAnticipoButtonState();
     });
+    
+    // Event listener para cuando el modal "miModal" se oculta (se cierra)
+    miModalElement.addEventListener("hidden.bs.modal", function() {
+      // Ocultar el icono de detalles de pago cuando se cierra el modal
+      const iconoAgregarInfoContainer = document.getElementById("iconoAgregarInfoContainer");
+      const iconoAgregarInfo = document.getElementById("iconoAgregarInfo");
+      if (iconoAgregarInfoContainer) {
+        iconoAgregarInfoContainer.style.display = "none";
+      }
+      if (iconoAgregarInfo) {
+        iconoAgregarInfo.style.visibility = "hidden";
+        iconoAgregarInfo.style.opacity = "0";
+        iconoAgregarInfo.style.display = "none";
+      }
+    });
   }
   
   // Event listener para abrir el modal cuando se hace clic en el icono
@@ -3851,6 +5210,16 @@ checkExoneracion.addEventListener("change", function() {
         if (serialPosPago) {
           serialPosPago.value = "";
         }
+      }
+      
+      // Establecer la fecha de hoy automáticamente en el campo fechaCarga
+      const fechaCarga = document.getElementById("fechaCarga");
+      if (fechaCarga) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        fechaCarga.value = `${year}-${month}-${day}`;
       }
       
       const modalElement = document.getElementById("modalAgregarDatosPago");
@@ -3919,15 +5288,26 @@ checkExoneracion.addEventListener("change", function() {
     }
   }
   
-  // Asegurar que el botón de anticipo esté deshabilitado al inicio
-  // Primero deshabilitar explícitamente
+  // Asegurar que el botón de anticipo esté siempre habilitado al inicio
   if (downloadAnticiBtn) {
-    downloadAnticiBtn.disabled = true;
-    downloadAnticiBtn.style.opacity = "0.6";
-    downloadAnticiBtn.style.cursor = "not-allowed";
-    if (disabledTooltipAnticipo) {
-      disabledTooltipAnticipo.style.display = "block";
-    }
+    downloadAnticiBtn.disabled = false;
+    downloadAnticiBtn.style.opacity = "1";
+    downloadAnticiBtn.style.cursor = "pointer";
+  }
+  
+  // Establecer la fecha de hoy automáticamente cuando se abre el modal de datos de pago
+  const modalAgregarDatosPagoElement = document.getElementById("modalAgregarDatosPago");
+  if (modalAgregarDatosPagoElement) {
+    modalAgregarDatosPagoElement.addEventListener("shown.bs.modal", function() {
+      const fechaCarga = document.getElementById("fechaCarga");
+      if (fechaCarga) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        fechaCarga.value = `${year}-${month}-${day}`;
+      }
+    });
   }
   
   // Asegurar que el icono se actualice al cargar la página
@@ -3935,8 +5315,8 @@ checkExoneracion.addEventListener("change", function() {
     updateIconoAgregarInfoVisibility();
   }, 500);
   
-  // Luego llamar a la función que verifica el estado
-  updateAnticipoButtonState(); // Establecer el estado inicial del botón de anticipo (deshabilitado).
+  // Luego llamar a la función que verifica el estado (siempre habilitado)
+  updateAnticipoButtonState();
 
   // Puedes agregar aquí la lógica para cargar las opciones de tus selects
   // por ejemplo, si vienen de una API.
@@ -4195,6 +5575,8 @@ function SendDataFailure1() {
                       color: 'black',
                       timer: 3500, // Se cierra automáticamente en 4 segundos
                       timerProgressBar: true,
+                      backdrop: false,
+                      allowOutsideClick: true,
                       customClass: {
                           container: 'super-toast-z-index'
                       },
@@ -7000,17 +8382,21 @@ modalComponentesEl.addEventListener('hidden.bs.modal', function () {
 
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
-  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+  // Incluir todos los checkboxes marcados, incluso los deshabilitados (como "Equipo")
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked');
   const selectAllCheckbox = document.getElementById('selectAllComponents');
 
   contadorComponentes.textContent = checkboxes.length;
 
+  // Para el checkbox "Seleccionar todos", solo considerar los habilitados
   const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
   const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
   const someChecked = Array.from(allCheckboxes).some(cb => cb.checked);
 
+  if (selectAllCheckbox) {
   selectAllCheckbox.checked = allChecked;
   selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  }
 }
 
 // Función para limpiar la selección de componentes
@@ -7087,6 +8473,8 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                             color: 'black',
                                             timer: emailToastDuration, // Se cierra automáticamente en 5 segundos
                                             timerProgressBar: true,
+                                            backdrop: false,
+                                            allowOutsideClick: true,
                                             customClass: {
                                               container: 'super-toast-z-index'
                                             },
@@ -7156,6 +8544,8 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                                 color: 'black',
                                 timer: 3000, // Se cierra automáticamente en 4 segundos
                                 timerProgressBar: true,
+                                backdrop: false,
+                                allowOutsideClick: true,
                                 customClass: {
                                   container: 'super-toast-z-index'
                                 },
@@ -7265,6 +8655,26 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                         <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
+                    // Verificar si hay componentes seleccionados
+                    const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+                    const hasSelectedComponents = Array.from(checkboxes).some(cb => cb.checked);
+                    
+                    // Si no hay componentes seleccionados, marcar automáticamente "Equipo" y deshabilitarlo
+                    if (!hasSelectedComponents && checkboxes.length > 0) {
+                        // Buscar el componente "Equipo" en las filas de la tabla
+                        const rows = tbodyComponentes.querySelectorAll('tr');
+                        rows.forEach(row => {
+                            const componentName = row.querySelector('td:last-child')?.textContent?.trim() || '';
+                            const checkbox = row.querySelector('input[type="checkbox"]');
+                            
+                            // Si el nombre contiene "Equipo" (case insensitive) y el checkbox no está deshabilitado
+                            if (componentName.toLowerCase().includes('equipo') && checkbox && !checkbox.disabled) {
+                                checkbox.checked = true;
+                                checkbox.disabled = true; // Deshabilitar para que no se pueda desmarcar
+                            }
+                        });
+                    }
+
                     // Finalmente, muestra el modal de Bootstrap
                     modalComponentes.show();
                     const navbar = document.getElementById("sidenav-main");
@@ -7273,7 +8683,9 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     }
 
                     // Llama a actualizar contador después de cargar los componentes
+                    setTimeout(() => {
                     actualizarContador();
+                    }, 100);
 
                 } else {
                     Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
@@ -7319,24 +8731,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const ticketId = e.target.dataset.ticketId;
             const serialPos = e.target.dataset.serialPos;
 
-            // --- INICIO DE LA LÓGICA AGREGADA ---
-            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
-            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
-
-            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
-                Swal.fire({
-                    title: '¡Información!',
-                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
-                    icon: 'info',
-                    confirmButtonText: 'Aceptar',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-                return; // Detiene la ejecución para no intentar guardar
-            }
-            // --- FIN DE LA LÓGICA AGREGADA ---
-
-            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
+            // Incluir todos los checkboxes marcados, incluso los deshabilitados (como "Equipo")
+            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked');
             const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
 
             if (selectedComponents.length === 0) {
@@ -7350,6 +8746,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 return;
             }
+
+            // --- INICIO DE LA LÓGICA AGREGADA ---
+            // Verificar si todos los componentes ya están registrados (marcados y deshabilitados)
+            // Esto solo aplica cuando TODOS los componentes están marcados Y deshabilitados (ya guardados previamente)
+            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
+            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
+
+            // Solo bloquear si TODOS los componentes están marcados y deshabilitados
+            // Esto significa que ya fueron guardados previamente y no hay nada nuevo que guardar
+            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
+                Swal.fire({
+                    title: '¡Información!',
+                    html: `Todos los componentes del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                return; // Detiene la ejecución para no intentar guardar
+            }
+            // --- FIN DE LA LÓGICA AGREGADA ---
+
+            // Si llegamos aquí, hay componentes seleccionados y no todos están ya registrados
+            // Permitir guardar (incluye el caso donde "Equipo" está marcado automáticamente y deshabilitado)
             guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
         }
 
@@ -7452,6 +8872,8 @@ function processEmailQueue() {
                             toast: true,
                             position: 'top-end',
                             color: 'black',
+                            backdrop: false,
+                            allowOutsideClick: true,
                             customClass: {
                               container: 'super-toast-z-index'
                             },
