@@ -793,41 +793,46 @@ class consulta_rifModel extends Model
 
 
             // 10. NUEVO: Guardar archivos adjuntos DESPUÉS de crear el historial
+            // Obtener id_failure del ticket para verificar si es "Actualización de Software"
+            $sqlGetFailure = "SELECT tf.id_failure FROM tickets_failures tf WHERE tf.id_ticket = " . (int)$idTicketCreado . " LIMIT 1";
+            $resultGetFailure = pg_query($db_conn, $sqlGetFailure);
+            $id_failure = null;
+            if ($resultGetFailure && pg_num_rows($resultGetFailure) > 0) {
+                $id_failure = (int)pg_fetch_result($resultGetFailure, 0, 'id_failure');
+            }
+            if ($resultGetFailure) {
+                pg_free_result($resultGetFailure);
+            }
+            
+            $isActualizacionSoftware = ($id_failure === 9);
 
             if (!empty($envio)) {
-
                 $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $envio, 'envio_stored', '/path/to/envio', 'application/pdf', 1024, 'Envio');
-
             }
 
-            
-            
-            if (!empty($exoneracion)) {
+            // Si NO es "Actualización de Software", guardar exoneración y anticipo
+            if (!$isActualizacionSoftware) {
+                if (!empty($exoneracion)) {
+                    $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $exoneracion, 'exoneracion_stored', '/path/to/exoneracion', 'application/pdf', 1024, 'Exoneracion');
+                }
+                
+                if (!empty($anticipo)) {
+                    $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $anticipo, 'anticipo_stored', '/path/to/anticipo', 'application/pdf', 1024, 'Anticipo');
+                }
 
-                $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $exoneracion, 'exoneracion_stored', '/path/to/exoneracion', 'application/pdf', 1024, 'Exoneracion');
-
+                // 11. Transferir pago de la tabla temporal a la principal si existe (solo si NO es Actualización de Software)
+                $paymentTransferResult = $this->TransferPaymentFromTempToMain($serial, $Nr_ticket);
+                if ($paymentTransferResult !== false && $paymentTransferResult !== true) {
+                    // Se transfirió un pago exitosamente
+                    error_log("Pago transferido exitosamente dentro de SaveDataFalla2. ID del registro: " . $paymentTransferResult);
+                } elseif ($paymentTransferResult === false) {
+                    // Hubo un error al transferir (pero no detenemos la creación del ticket)
+                    error_log("Advertencia: No se pudo transferir el pago temporal para el serial: " . $serial);
+                }
+                // Si $paymentTransferResult === true, significa que no había pago temporal para transferir (no es un error)
+            } else {
+                error_log("Ticket de Actualización de Software (id_failure = 9): Se omiten anticipo, exoneración y transferencia de pago.");
             }
-
-            
-            
-            if (!empty($anticipo)) {
-
-                $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $anticipo, 'anticipo_stored', '/path/to/anticipo', 'application/pdf', 1024, 'Anticipo');
-
-            }
-
-
-
-            // 11. Transferir pago de la tabla temporal a la principal si existe (usando la misma sesión)
-            $paymentTransferResult = $this->TransferPaymentFromTempToMain($serial, $Nr_ticket);
-            if ($paymentTransferResult !== false && $paymentTransferResult !== true) {
-                // Se transfirió un pago exitosamente
-                error_log("Pago transferido exitosamente dentro de SaveDataFalla2. ID del registro: " . $paymentTransferResult);
-            } elseif ($paymentTransferResult === false) {
-                // Hubo un error al transferir (pero no detenemos la creación del ticket)
-                error_log("Advertencia: No se pudo transferir el pago temporal para el serial: " . $serial);
-            }
-            // Si $paymentTransferResult === true, significa que no había pago temporal para transferir (no es un error)
 
             // 12. Obtener el estado actual del ticket
 

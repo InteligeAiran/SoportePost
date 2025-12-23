@@ -11,6 +11,7 @@ let currentSerial;
 let currentDocument;
 let currentDomiciliacion
 let currentEstado;
+let currentIdFailure;
 
 let url_envio;
 let url_exoneracion;
@@ -286,7 +287,8 @@ function getTicketData() {
                   data-pago-file="${ticket.pdf_pago_filename || ""}"
                   data-convenio-file="${ticket.pdf_convenio_filename || ""}"
                   data-zoom-file="${ticket.pdf_zoom_filename || ""}"
-                  data-estado-cliente="${ticket.nombre_estado_cliente}">
+                  data-estado-cliente="${ticket.nombre_estado_cliente}"
+                  data-id-failure="${ticket.id_failure || ""}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
               </button>`;
           }
@@ -317,7 +319,8 @@ function getTicketData() {
                   data-url_exo="${ticket.img_exoneracion_url || ''}"
                   data-url_pago="${ticket.pdf_pago_url || ''}"
                   data-url_convenio="${ticket.pdf_convenio_url || ''}"
-                  data-estado="${ticket.nombre_estado_cliente}">
+                  data-estado="${ticket.nombre_estado_cliente}"
+                  data-id-failure="${ticket.id_failure || ''}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
               </button>`;
           }
@@ -675,6 +678,7 @@ function getTicketData() {
                 const serialPos = $(this).data("serial_pos") || "No disponible";
                 const estado = $(this).data("estado");
                 const rechazado = $(this).data("rechazado");
+                const idFailure = $(this).data("id-failure") ? parseInt($(this).data("id-failure")) : null;
 
                 if (rechazado === true || rechazado === "t") {
                   Swal.fire({
@@ -714,6 +718,7 @@ function getTicketData() {
                 currentDocument = id_document;
                 currentDomiciliacion = id_domiciliacion;
                 currentEstado = estado;
+                currentIdFailure = idFailure;
 
                 url_envio = pdfZoomUrl;
                 url_exoneracion = imgExoneracionUrl;
@@ -730,6 +735,8 @@ function getTicketData() {
             $("#ButtonSendToTaller").off("click").on("click", function () {
               const id_document = currentDocument;
               const id_domiciliacion = currentDomiciliacion;
+              const idFailure = currentIdFailure;
+              const isActualizacionSoftware = idFailure === 9;
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
 
@@ -746,35 +753,56 @@ function getTicketData() {
                 return;
               }
 
-              if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
-                showButton = true;
-              } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
-                showButton = true;
-              } else if (id_document === 10 && isEstadoSinEnvio && (url_pago === "" || url_exoneracion === "")) {
-                showButton = true;
-              } else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
-                showButton = true;
-              } else if (id_document === 6 && !isEstadoSinEnvio && url_envio == "" && url_pago != "") {
-                showButton = true;
-              } else if (id_document === 4 && !isEstadoSinEnvio && url_envio == "" && url_exoneracion != "") {
-                showButton = true;
-              } else if (id_document === 6 && url_pago == "") {
-                showButton = true;
-              } else if (id_document === 4 && url_exoneracion == "") {
-                showButton = true;
+              // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software)
+              // Solo requiere documento de Envío, no anticipo ni exoneración
+              if (isActualizacionSoftware) {
+                if (url_envio === "" || url_envio === null || url_envio === undefined) {
+                  Swal.fire({
+                    icon: 'warning',
+                    title: '¡Advertencia!',
+                    text: 'Antes de enviar el equipo al taller, debe cargar el documento de envío.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                  });
+                  return;
+                }
+                // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
+              } else {
+                // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9)
+                if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
+                  showButton = true;
+                } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
+                  showButton = true;
+                } else if (id_document === 10 && isEstadoSinEnvio && (url_pago === "" || url_exoneracion === "")) {
+                  showButton = true;
+                } else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
+                  showButton = true;
+                } else if (id_document === 6 && !isEstadoSinEnvio && url_envio == "" && url_pago != "") {
+                  showButton = true;
+                } else if (id_document === 4 && !isEstadoSinEnvio && url_envio == "" && url_exoneracion != "") {
+                  showButton = true;
+                } else if (id_document === 6 && url_pago == "") {
+                  showButton = true;
+                } else if (id_document === 4 && url_exoneracion == "") {
+                  showButton = true;
+                }
+
+                if (showButton) {
+                  Swal.fire({
+                    icon: 'warning',
+                    title: '¡Advertencia!',
+                    text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                  });
+                  return;
+                }
               }
 
-              if (showButton) {
-                Swal.fire({
-                  icon: 'warning',
-                  title: '¡Advertencia!',
-                  text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
-                  confirmButtonText: 'Ok',
-                  confirmButtonColor: '#003594',
-                  color: 'black',
-                });
-                return;
-              } else if (id_document == 5 || id_document == 7) {
+              // Validaciones adicionales que aplican a todos los casos
+              if (id_document == 5 || id_document == 7) {
                 Swal.fire({
                   icon: 'warning',
                   title: '¡Advertencia!',
@@ -1078,6 +1106,8 @@ function getTicketData() {
     const ZoomFile_name = $(this).data('zoom-file');
     const ConvenioFile_name = $(this).data('convenio-file');
     const estado_cliente = $(this).data('estado-cliente');
+    const idFailure = $(this).data('id-failure') ? parseInt($(this).data('id-failure')) : null;
+    const isActualizacionSoftware = idFailure === 9;
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');
@@ -1118,27 +1148,33 @@ function getTicketData() {
         // Solo envío disponible
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Pago
-                </button>
-            `;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
+            if (!isActualizacionSoftware) {
+                modalButtonsHTML = `
+                    <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Exoneración
+                    </button>
+                    <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Pago
+                    </button>
+                `;
+            }
         } else {
             // Estados con envío - mostrar botón de envío
             modalButtonsHTML = `
                 <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                     Ver Documento de Envio
-                </button>
+                </button>`;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
+            if (!isActualizacionSoftware) {
+                modalButtonsHTML += `
                 <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
                 </button>
                 <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                     Cargar Documento de Pago
-                </button>
-            `;
+                </button>`;
+            }
         }
     } else if (imgExoneracionUrl) {
         // Solo exoneración disponible (sin envío)
@@ -1184,27 +1220,33 @@ function getTicketData() {
         // Ningún documento disponible
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Pago
-                </button>
-            `;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
+            if (!isActualizacionSoftware) {
+                modalButtonsHTML = `
+                    <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Exoneración
+                    </button>
+                    <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Pago
+                    </button>
+                `;
+            }
         } else {
             // Estados con envío - mostrar botón de envío
             modalButtonsHTML = `
                 <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                     Cargar Documento de Envio
-                </button>
+                </button>`;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
+            if (!isActualizacionSoftware) {
+                modalButtonsHTML += `
                 <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
                 </button>
                 <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                     Cargar Documento de Pago
-                </button>
-            `;
+                </button>`;
+            }
         }
     }
 

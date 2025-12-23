@@ -767,6 +767,13 @@ function getFailure2() {
               option.textContent = failure.name_failure;
               select.appendChild(option);
             });
+            
+            // Agregar event listener al select después de cargar las opciones
+            select.addEventListener("change", function() {
+              if (typeof updateDocumentTypeVisibility === 'function') {
+                updateDocumentTypeVisibility();
+              }
+            });
           } else {
             const option = document.createElement("option");
             option.value = "";
@@ -792,6 +799,82 @@ function getFailure2() {
 }
 
 document.addEventListener("DOMContentLoaded", getFailure2);
+
+// Función para manejar la visibilidad de Exoneración y Anticipo según la falla seleccionada
+function updateDocumentTypeVisibility() {
+  const fallaSelect2 = document.getElementById("FallaSelect2");
+  const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+  const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
+  
+  if (!fallaSelect2 || !checkExoneracionContainer || !checkAnticipoContainer) {
+    return;
+  }
+  
+  const idFailure = fallaSelect2.value ? parseInt(fallaSelect2.value) : null;
+  const isActualizacionSoftware = idFailure === 9;
+  
+  if (isActualizacionSoftware) {
+    // Ocultar los radio buttons de Exoneración y Anticipo
+    checkExoneracionContainer.style.display = 'none';
+    checkAnticipoContainer.style.display = 'none';
+    
+    // Desmarcar los radio buttons si estaban seleccionados
+    const checkExoneracion = document.getElementById("checkExoneracion");
+    const checkAnticipo = document.getElementById("checkAnticipo");
+    if (checkExoneracion) {
+      checkExoneracion.checked = false;
+    }
+    if (checkAnticipo) {
+      checkAnticipo.checked = false;
+    }
+    
+    // Limpiar los archivos si estaban cargados
+    const exoneracionInput = document.getElementById("ExoneracionInput");
+    const anticipoInput = document.getElementById("AnticipoInput");
+    if (exoneracionInput) {
+      exoneracionInput.value = '';
+    }
+    if (anticipoInput) {
+      anticipoInput.value = '';
+    }
+    
+    // Limpiar archivos preservados globalmente
+    window.archivoExoneracionPreservado = null;
+    window.archivoAnticipoPreservado = null;
+    
+    // Ocultar botones de carga si estaban visibles
+    const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+    const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
+    if (botonCargaExoneracion) {
+      botonCargaExoneracion.style.display = 'none';
+    }
+    if (botonCargaAnticipo) {
+      botonCargaAnticipo.style.display = 'none';
+    }
+    
+    // Actualizar visibilidad del icono de detalles de pago
+    if (typeof updateIconoAgregarInfoVisibility === 'function') {
+      updateIconoAgregarInfoVisibility();
+    }
+  } else {
+    // Mostrar los radio buttons si no es Actualización de Software
+    checkExoneracionContainer.style.display = '';
+    checkAnticipoContainer.style.display = '';
+  }
+  
+  // Actualizar UpdateGuarantees para recalcular el id_status_payment
+  if (typeof UpdateGuarantees === 'function') {
+    UpdateGuarantees();
+  }
+}
+
+// Agregar event listener al FallaSelect2 cuando se carga la página
+document.addEventListener("DOMContentLoaded", function() {
+  const fallaSelect2 = document.getElementById("FallaSelect2");
+  if (fallaSelect2) {
+    fallaSelect2.addEventListener("change", updateDocumentTypeVisibility);
+  }
+});
 
 
 /**
@@ -1304,6 +1387,11 @@ function UpdateGuarantees() {
   const idStatusPaymentReingreso = validarGarantiaReingreso(fechaUltimoTicketGlobal);
   const idStatusPaymentInstalacion = validarGarantiaInstalacion(fechaInstalacionGlobal);
 
+  // Verificar si es "Actualización de Software" (id_failure = 9)
+  const fallaSelect2 = document.getElementById("FallaSelect2");
+  const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
+  const isActualizacionSoftware = idFailure === 9;
+
   // Obtener elementos con validación de existencia
   const inputExoneracion = document.getElementById("ExoneracionInput");
   const inputAnticipo = document.getElementById("AnticipoInput");
@@ -1336,6 +1424,26 @@ function UpdateGuarantees() {
   const isCaracasMiranda = checkEnvioContainer && checkEnvioContainer.style.display === "none";
 
   let idStatusPayment;
+  
+  // Si es "Actualización de Software", manejar lógica especial
+  if (isActualizacionSoftware) {
+    if (uploadNowRadio && uploadNowRadio.checked) {
+      const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
+      
+      if (tieneEnvio) {
+        // Si se carga SOLO el documento de envío
+        idStatusPayment = 16; // No necesita anticipo o exoneración por el tipo de falla
+      } else {
+        // Si NO se carga el documento de envío (sin importar si hay otros documentos o no)
+        idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+      }
+    } else {
+      // Si no se carga ningún documento ahora (uploadPendingRadio) o no se selecciona opción
+      // Para Actualización de Software, siempre se necesita el envío, así que es 11
+      idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+    }
+    return idStatusPayment;
+  }
 
   // Primero, verifica las garantías principales
   if (idStatusPaymentReingreso === 3) {
@@ -1998,7 +2106,12 @@ function SendDataFailure2(idStatusPayment) {
     
     // VALIDACIÓN: Verificar relación entre anticipo y detalles de pago
     // Solo validar si se seleccionó "Sí" para cargar documentos ahora
-    if (uploadNowRadioLocal && uploadNowRadioLocal.checked) {
+    // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9), NO se requiere anticipo ni detalles de pago
+    const fallaSelect2 = document.getElementById("FallaSelect2");
+    const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
+    const isActualizacionSoftware = idFailure === 9;
+    
+    if (uploadNowRadioLocal && uploadNowRadioLocal.checked && !isActualizacionSoftware) {
       // Verificar si hay pago registrado hoy para este serial en la tabla temporal
       const existePago = await verificarPagoExisteHoy(serial);
       
@@ -2454,7 +2567,12 @@ function validateTicketCreation() {
     // Validar Anticipo: Si el botón está visible, debe haber archivo
     // NOTA: La validación completa de Anticipo (con pago) se hace en continuarCreacionTicket()
     // Pero aquí validamos que si el botón está visible, el archivo debe estar cargado
-    if (isElementVisible(botonCargaAnticipo)) {
+    // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9), NO se requiere anticipo
+    const fallaSelect2 = document.getElementById("FallaSelect2");
+    const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
+    const isActualizacionSoftware = idFailure === 9;
+    
+    if (!isActualizacionSoftware && isElementVisible(botonCargaAnticipo)) {
         const tieneArchivoAnticipo = inputAnticipo && inputAnticipo.files && inputAnticipo.files.length > 0;
         // También verificar el archivo preservado globalmente
         const archivoAnticipoPreservado = window.archivoAnticipoPreservado || null;
