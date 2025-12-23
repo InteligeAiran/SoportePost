@@ -241,7 +241,7 @@ class emailModel extends Model{
 
     public function GetEmailAreaFinanzas(){
        try{
-            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 1";
+            $sql = "SELECT ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 2";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

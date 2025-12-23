@@ -2491,8 +2491,20 @@ class Consulta extends Controller
                 'nro_ticket' => isset($result['nro_ticket']) ? $result['nro_ticket'] : $nro_ticket,
                 'serial_pos' => isset($result['serial_pos']) ? $result['serial_pos'] : '',
                 'amount_bs' => isset($result['amount_bs']) ? $result['amount_bs'] : '',
+                'reference_amount' => isset($result['reference_amount']) ? $result['reference_amount'] : (isset($result['amount_usd']) ? $result['amount_usd'] : ''),
                 'currency' => isset($result['currency']) ? $result['currency'] : '',
-                'payment_method' => isset($result['payment_method']) ? $result['payment_method'] : ''
+                'payment_method' => isset($result['payment_method']) ? $result['payment_method'] : '',
+                'origen_bank' => isset($result['origen_bank']) ? $result['origen_bank'] : '',
+                'destination_bank' => isset($result['destination_bank']) ? $result['destination_bank'] : '',
+                'depositor' => isset($result['depositor']) ? $result['depositor'] : '',
+                'destino_rif_tipo' => isset($result['destino_rif_tipo']) ? $result['destino_rif_tipo'] : '',
+                'destino_rif_numero' => isset($result['destino_rif_numero']) ? $result['destino_rif_numero'] : '',
+                'destino_telefono' => isset($result['destino_telefono']) ? $result['destino_telefono'] : '',
+                'destino_banco' => isset($result['destino_banco']) ? $result['destino_banco'] : '',
+                'origen_rif_tipo' => isset($result['origen_rif_tipo']) ? $result['origen_rif_tipo'] : '',
+                'origen_rif_numero' => isset($result['origen_rif_numero']) ? $result['origen_rif_numero'] : '',
+                'origen_telefono' => isset($result['origen_telefono']) ? $result['origen_telefono'] : '',
+                'origen_banco' => isset($result['origen_banco']) ? $result['origen_banco'] : ''
             ];
             $this->response(['success' => true, 'data' => $paymentData], 200);
         } else {
