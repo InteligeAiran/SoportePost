@@ -957,7 +957,7 @@ class TechnicalConsultionRepository
                 $agente = pg_fetch_assoc($result['query'], $i);
                 $paymentMethods[] = $agente;
             }
-            return $paymentMethods;        
+            return $paymentMethods;
         } else {
             return null;
         }

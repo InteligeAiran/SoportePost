@@ -1014,12 +1014,16 @@ class Consulta extends Controller
 
         $fecha_para_nombre_archivo = date('Ymd_His');
 
-        // 8. Procesar cada tipo de archivo adjunto
-        $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
-        $exoneracionOk = $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
-        $anticipoOk = $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
+        // Verificar si es "Actualización de Software" (id_failure = 9)
+        $isActualizacionSoftware = ($falla_id == 9);
 
-        if (!$envioOk || !$exoneracionOk || !$anticipoOk) {
+        // 8. Procesar cada tipo de archivo adjunto
+        // Si es "Actualización de Software", NO procesar anticipo ni exoneración
+        $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
+        $exoneracionOk = $isActualizacionSoftware ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
+        $anticipoOk = $isActualizacionSoftware ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
+
+        if (!$envioOk || (!$isActualizacionSoftware && (!$exoneracionOk || !$anticipoOk))) {
             error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
         }
 
@@ -1027,7 +1031,8 @@ class Consulta extends Controller
         // (Ya no es necesario llamarla aquí, pero mantenemos el comentario para referencia)
 
         // 9.1. Enviar correos según el id_status_payment del ticket
-        if ($anticipoOk || $exoneracionOk) {
+        // NO enviar correos si es "Actualización de Software"
+        if (!$isActualizacionSoftware && ($anticipoOk || $exoneracionOk)) {
             // Obtener el id_status_payment del ticket
             $ticket_status_payment = $repository->getStatusPayment($idTicketReal);
             $id_status_payment_actual = isset($ticket_status_payment['id_status_payment']) ? (int)$ticket_status_payment['id_status_payment'] : null;
