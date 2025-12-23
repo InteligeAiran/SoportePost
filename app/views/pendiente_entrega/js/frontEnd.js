@@ -2080,13 +2080,13 @@ function getTicketDataFinaljs() {
                     
                     Swal.fire({
                         title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
-                                    <div class="custom-modal-header-content">Confirmación de Envío a Región</div>
+                                    <div class="custom-modal-header-content">Confirmación de Envío al Estado</div>
                                 </div>`,
                         html: `<div class="custom-modal-body-content">
                                     <div class="mb-4">
                                         ${customWarningSvg}
                                     </div> 
-                                    <p class="h4 mb-3" style="color: black;">¿Seguro que desea enviar el Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> a la región: ${regionName}?</p> 
+                                    <p class="h4 mb-3" style="color: black;">¿Seguro que desea enviar el Ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> al Estado: ${regionName}?</p> 
                                     <p class="h5" style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; font-size: 70%; color: #007bff;">Esta acción cambiará el estado del ticket a "Enviado a Región"</p>
                                 </div>`,
                         confirmButtonText: "Continuar",
