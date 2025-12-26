@@ -2596,6 +2596,7 @@ class Consulta extends Controller
         // 1. OBTENER DATOS DEL POST - Información General
         // ============================================
         $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $nro_ticket = isset($_POST['nro_ticket']) && $_POST['nro_ticket'] !== '' ? trim($_POST['nro_ticket']) : null;
         $user_loader = isset($_POST['user_loader']) && $_POST['user_loader'] !== '' ? (int)$_POST['user_loader'] : null;
         $payment_date = isset($_POST['payment_date']) && $_POST['payment_date'] !== '' ? trim($_POST['payment_date']) : null;
         $payment_method = isset($_POST['payment_method']) ? trim($_POST['payment_method']) : '';
@@ -2675,7 +2676,8 @@ class Consulta extends Controller
         // ============================================
         $result = $repository->SavePayment(
             // Información General
-            $serial_pos, 
+            $serial_pos,
+            $nro_ticket,
             $user_loader, 
             $payment_date, 
             // Información Bancaria

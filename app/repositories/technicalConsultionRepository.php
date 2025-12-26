@@ -1138,7 +1138,8 @@ class TechnicalConsultionRepository
      * @return int|false ID del registro guardado o false en caso de error
      */
     public function SavePayment(
-        $serial_pos, 
+        $serial_pos,
+        $nro_ticket = null,
         $user_loader, 
         $payment_date, 
         $origen_bank, 
@@ -1164,7 +1165,8 @@ class TechnicalConsultionRepository
         $origen_banco = null
     ){
         $result = $this->model->SavePayment(
-            $serial_pos, 
+            $serial_pos,
+            $nro_ticket,
             $user_loader, 
             $payment_date, 
             $origen_bank, 
