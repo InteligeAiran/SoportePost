@@ -6733,10 +6733,79 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
-    public function SavePayment($serial_pos, $user_loader, $payment_date, $origen_bank, $destination_bank, $payment_method, $currency, $reference_amount, $amount_bs, $payment_reference, $depositor, $observations, $record_number, $loadpayment_date, $confirmation_number, $payment_status, $destino_rif_tipo = null, $destino_rif_numero = null, $destino_telefono = null, $destino_banco = null, $origen_rif_tipo = null, $origen_rif_numero = null, $origen_telefono = null, $origen_banco = null){
+    public function SavePayment($serial_pos, $nro_ticket = null, $user_loader, $payment_date, $origen_bank, $destination_bank, $payment_method, $currency, $reference_amount, $amount_bs, $payment_reference, $depositor, $observations, $record_number, $loadpayment_date, $confirmation_number, $payment_status, $destino_rif_tipo = null, $destino_rif_numero = null, $destino_telefono = null, $destino_banco = null, $origen_rif_tipo = null, $origen_rif_numero = null, $origen_telefono = null, $origen_banco = null){
 
         try {
-
+            // Si hay nro_ticket, insertar directamente en payment_records
+            if (!empty($nro_ticket)) {
+                $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+                $escaped_serial_pos = pg_escape_literal($this->db->getConnection(), $serial_pos);
+                
+                $sql = "INSERT INTO payment_records (
+                    nro_ticket,
+                    serial_pos,
+                    user_loader,
+                    payment_date,
+                    origen_bank,
+                    destination_bank,
+                    payment_method,
+                    currency,
+                    reference_amount,
+                    amount_bs,
+                    payment_reference,
+                    depositor,
+                    observations,
+                    record_number,
+                    loadpayment_date,
+                    confirmation_number,
+                    payment_status,
+                    destino_rif_tipo,
+                    destino_rif_numero,
+                    destino_telefono,
+                    destino_banco,
+                    origen_rif_tipo,
+                    origen_rif_numero,
+                    origen_telefono,
+                    origen_banco
+                ) VALUES (
+                    " . $escaped_nro_ticket . ",
+                    " . $escaped_serial_pos . ",
+                    " . ($user_loader ? (int)$user_loader : "NULL") . ",
+                    " . ($payment_date ? "'" . pg_escape_string($this->db->getConnection(), $payment_date) . "'" : "NULL") . ",
+                    " . ($origen_bank ? pg_escape_literal($this->db->getConnection(), $origen_bank) : "NULL") . ",
+                    " . ($destination_bank ? pg_escape_literal($this->db->getConnection(), $destination_bank) : "NULL") . ",
+                    " . pg_escape_literal($this->db->getConnection(), $payment_method) . ",
+                    " . pg_escape_literal($this->db->getConnection(), $currency) . ",
+                    " . ($reference_amount ? (float)$reference_amount : "NULL") . ",
+                    " . (float)$amount_bs . ",
+                    " . ($payment_reference ? pg_escape_literal($this->db->getConnection(), $payment_reference) : "NULL") . ",
+                    " . ($depositor ? pg_escape_literal($this->db->getConnection(), $depositor) : "NULL") . ",
+                    " . ($observations ? pg_escape_literal($this->db->getConnection(), $observations) : "NULL") . ",
+                    " . ($record_number ? pg_escape_literal($this->db->getConnection(), $record_number) : "NULL") . ",
+                    " . ($loadpayment_date ? "'" . pg_escape_string($this->db->getConnection(), $loadpayment_date) . "'" : "NOW()") . ",
+                    " . ($confirmation_number ? "TRUE" : "FALSE") . ",
+                    " . ($payment_status ? (int)$payment_status : "1") . ",
+                    " . ($destino_rif_tipo ? pg_escape_literal($this->db->getConnection(), $destino_rif_tipo) : "NULL") . ",
+                    " . ($destino_rif_numero ? pg_escape_literal($this->db->getConnection(), $destino_rif_numero) : "NULL") . ",
+                    " . ($destino_telefono ? pg_escape_literal($this->db->getConnection(), $destino_telefono) : "NULL") . ",
+                    " . ($destino_banco ? pg_escape_literal($this->db->getConnection(), $destino_banco) : "NULL") . ",
+                    " . ($origen_rif_tipo ? pg_escape_literal($this->db->getConnection(), $origen_rif_tipo) : "NULL") . ",
+                    " . ($origen_rif_numero ? pg_escape_literal($this->db->getConnection(), $origen_rif_numero) : "NULL") . ",
+                    " . ($origen_telefono ? pg_escape_literal($this->db->getConnection(), $origen_telefono) : "NULL") . ",
+                    " . ($origen_banco ? pg_escape_literal($this->db->getConnection(), $origen_banco) : "NULL") . "
+                ) RETURNING id_payment_record;";
+                
+                $result = Model::getResult($sql, $this->db);
+                
+                if ($result && $result['numRows'] > 0) {
+                    $row = pg_fetch_assoc($result['query'], 0);
+                    return $row['id_payment_record'];
+                }
+                
+                return false;
+            }
+            
+            // Si no hay nro_ticket, usar la tabla temporal (comportamiento original)
             $sql = "-- 1. CREACIÓN DE LA TABLA TEMPORAL (si no existe)
                     CREATE TEMPORARY TABLE IF NOT EXISTS temp_payment_uploads (
                         id_payment_record SERIAL PRIMARY KEY,

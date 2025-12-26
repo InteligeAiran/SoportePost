@@ -702,8 +702,11 @@ function closeUploadModalAndClean() {
         if (generatePresupuestoBtn) {
             event.preventDefault();
             const nroTicket = generatePresupuestoBtn.dataset.nroTicket;
+            const serialPos = generatePresupuestoBtn.dataset.serialPos || '';
             const idFailure = generatePresupuestoBtn.dataset.idFailure ? parseInt(generatePresupuestoBtn.dataset.idFailure) : null;
             if (nroTicket) {
+                // Guardar el serial en una variable global para usarlo después
+                window.currentSerialPosForAnticipo = serialPos;
                 // Abrir el modal de presupuesto
                 openPresupuestoModal(nroTicket, idFailure);
             } else {
@@ -6822,6 +6825,122 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                     confirmButtonColor: '#dc3545'
                 });
             }
+        } else if (xhr.status === 404) {
+            // Cuando no hay datos de anticipo, mostrar un modal bonito con botón para agregar anticipo
+            Swal.fire({
+                icon: false,
+                title: 'Sin Datos de Anticipo',
+                html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                        <div id="anticipo-icon-animated" style="width: 100px; height: 100px; margin: 0 auto 28px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2); position: relative; cursor: pointer;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#1976d2" viewBox="0 0 16 16" style="display: block; transition: transform 0.3s ease;">
+                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"/>
+                                <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                            </svg>
+                        </div>
+                        <div id="anticipo-message-box" style="background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 16px; border-radius: 4px; margin-bottom: 24px; text-align: left; transition: all 0.3s ease; cursor: pointer; overflow: hidden;">
+                            <p style="font-size: 0.9375rem; color: #495057; margin: 0; line-height: 1.6; overflow: hidden; text-overflow: ellipsis;">
+                                <strong style="color: #212529;">No se encontraron datos de anticipo</strong> para este ticket.
+                            </p>
+                        </div>
+                        <p style="font-size: 0.9375rem; color: #6c757d; margin-bottom: 0; line-height: 1.6;">
+                            ¿Desea agregar los datos de anticipo ahora?
+                        </p>
+                    </div>
+                    <style>
+                        @keyframes iconPulse {
+                            0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2); }
+                            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4); }
+                        }
+                        @keyframes iconFloat {
+                            0%, 100% { transform: translateY(0px); }
+                            50% { transform: translateY(-8px); }
+                        }
+                        #anticipo-icon-animated {
+                            animation: iconPulse 2s ease-in-out infinite;
+                        }
+                        #anticipo-icon-animated svg {
+                            animation: iconFloat 3s ease-in-out infinite;
+                        }
+                        #anticipo-icon-animated:hover {
+                            animation: none;
+                            transform: scale(1.1);
+                            box-shadow: 0 8px 24px rgba(33, 150, 243, 0.5);
+                        }
+                        #anticipo-icon-animated:hover svg {
+                            animation: none;
+                            transform: rotate(5deg) scale(1.1);
+                        }
+                        #anticipo-message-box:hover {
+                            background: #e9ecef !important;
+                            border-left-color: #0a58ca !important;
+                            transform: translateX(5px);
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        }
+                        #anticipo-message-box, #anticipo-message-box * {
+                            overflow: hidden !important;
+                        }
+                    </style>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Agregar Anticipo',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'swal2-popup-custom-anticipo',
+                    confirmButton: 'swal2-confirm-custom-anticipo',
+                    cancelButton: 'swal2-cancel-custom-anticipo',
+                    title: 'swal2-title-custom-anticipo',
+                    htmlContainer: 'swal2-html-container-custom-anticipo',
+                    actions: 'swal2-actions-custom-anticipo'
+                },
+                width: '460px',
+                padding: '2.5rem 2rem 2rem',
+                backdrop: true,
+                allowOutsideClick: true,
+                allowEscapeKey: true
+            }).then((result) => {
+                // Función para cerrar el SweetAlert de forma robusta
+                const closeSweetAlert = () => {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.close();
+                        
+                        setTimeout(() => {
+                            const swalContainer = document.querySelector('.swal2-container');
+                            const swalBackdrop = document.querySelector('.swal2-backdrop-show');
+                            
+                            if (swalContainer) {
+                                swalContainer.style.display = 'none';
+                                swalContainer.classList.remove('swal2-backdrop-show');
+                            }
+                            
+                            if (swalBackdrop) {
+                                swalBackdrop.remove();
+                            }
+                            
+                            document.body.classList.remove('swal2-height-auto', 'swal2-shown');
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }, 100);
+                    }
+                };
+                
+                if (result.isConfirmed) {
+                    // Cerrar el SweetAlert primero
+                    closeSweetAlert();
+                    
+                    // Abrir el modal de agregar datos de pago después de cerrar
+                    setTimeout(() => {
+                        const serialPos = window.currentSerialPosForAnticipo || '';
+                        openAgregarAnticipoModal(nroTicket, serialPos);
+                    }, 200);
+                } else if (result.isDismissed) {
+                    // Si se cancela, solo cerrar el modal
+                    closeSweetAlert();
+                }
+            });
         } else {
             console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
             Swal.fire({
@@ -9121,4 +9240,1345 @@ if (modalElementUploadPresupuestoPDFGlobal) {
             formatInfo.style.display = 'block';
         }
     });
+
+// ========== FUNCIONES PARA MODAL DE AGREGAR ANTICIPO ==========
+
+// Función para abrir el modal de agregar anticipo
+function openAgregarAnticipoModal(nroTicket, serialPos = '') {
+    // Si no se pasó el serial, intentar obtenerlo desde la tabla
+    if (!serialPos) {
+        const table = $('#ticketsTable').DataTable();
+        if (table) {
+            table.rows().every(function() {
+                const rowData = this.data();
+                if (rowData && rowData.nro_ticket === nroTicket) {
+                    serialPos = rowData.serial_pos || '';
+                    return false; // Salir del bucle
+                }
+            });
+        }
+    }
+    
+    // Establecer el serial en el campo
+    const serialPosPagoInput = document.getElementById('serialPosPago');
+    if (serialPosPagoInput) {
+        serialPosPagoInput.value = serialPos || '';
+    }
+    
+    // Establecer el nro_ticket en el campo oculto
+    const nroTicketPagoInput = document.getElementById('nro_ticket_pago');
+    if (nroTicketPagoInput) {
+        nroTicketPagoInput.value = nroTicket;
+    }
+    
+    // Establecer fecha de hoy en fechaCarga
+    const fechaCargaInput = document.getElementById('fechaCarga');
+    if (fechaCargaInput) {
+        const today = new Date();
+        const fechaFormateada = today.toISOString().split('T')[0];
+        fechaCargaInput.value = fechaFormateada;
+    }
+    
+    // Cargar métodos de pago y bancos
+    if (typeof loadPaymentMethods === 'function') {
+        loadPaymentMethods();
+    }
+    if (typeof loadBancos === 'function') {
+        loadBancos();
+    }
+    
+    // Cargar tasa de cambio
+    if (typeof loadExchangeRateToday === 'function') {
+        loadExchangeRateToday();
+    }
+    
+    // Configurar generación automática del número de registro
+    setupAutoRegistrationNumber();
+    
+    // Configurar validaciones numéricas
+    setupNumericValidation();
+    
+    // Abrir el modal
+    const modalElement = document.getElementById('modalAgregarDatosPago');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+
+// Función para guardar los datos de pago (adaptada de consulta_rif)
+function savePaymentPendienteEntrega() {
+    // Obtener todos los valores del formulario
+    const serialPosPago = document.getElementById("serialPosPago");
+    const idUser = document.getElementById("id_user_pago");
+    const nroTicketPago = document.getElementById("nro_ticket_pago");
+    const fechaPago = document.getElementById("fechaPago");
+    const fechaCarga = document.getElementById("fechaCarga");
+    const formaPago = document.getElementById("formaPago");
+    const moneda = document.getElementById("moneda");
+    const montoBs = document.getElementById("montoBs");
+    const montoRef = document.getElementById("montoRef");
+    const referencia = document.getElementById("referencia");
+    const obsAdministracion = document.getElementById("obsAdministracion");
+    const registro = document.getElementById("registro");
+    const bancoOrigen = document.getElementById("bancoOrigen");
+    const bancoDestino = document.getElementById("bancoDestino");
+    const depositante = document.getElementById("depositante");
+    
+    // Validaciones básicas
+    if (!fechaPago || !fechaPago.value || fechaPago.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar la fecha de pago.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (fechaPago) fechaPago.focus();
+        return;
+    }
+    
+    if (!formaPago || !formaPago.value || formaPago.value === "" || formaPago.value === "0") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar una forma de pago.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (formaPago) formaPago.focus();
+        return;
+    }
+
+    // Obtener el ID y texto del método de pago seleccionado para validaciones condicionales
+    const selectedPaymentMethodId = parseInt(formaPago.value);
+    const paymentMethodText = formaPago.options[formaPago.selectedIndex].textContent;
+    const selectedPaymentMethodName = paymentMethodText.toLowerCase();
+
+    // Validaciones condicionales según el método de pago
+    // Si es Transferencia (ID = 2), validar bancos
+    if (selectedPaymentMethodId === 2) {
+        if (!bancoOrigen || !bancoOrigen.value || bancoOrigen.value === "" || bancoOrigen.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar un banco de origen para Transferencia.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (bancoOrigen) bancoOrigen.focus();
+            return;
+        }
+
+        if (!bancoDestino || !bancoDestino.value || bancoDestino.value === "" || bancoDestino.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar un banco de destino para Transferencia.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (bancoDestino) bancoDestino.focus();
+            return;
+        }
+    }
+
+    // Si es Pago Móvil (ID = 5), validar campos del origen
+    if (selectedPaymentMethodId === 5) {
+        const origenRifTipo = document.getElementById("origenRifTipo");
+        const origenRifNumero = document.getElementById("origenRifNumero");
+        const origenTelefono = document.getElementById("origenTelefono");
+        const origenBanco = document.getElementById("origenBanco");
+
+        if (!origenRifTipo || !origenRifTipo.value || origenRifTipo.value === "" || origenRifTipo.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar el tipo de RIF del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenRifTipo) origenRifTipo.focus();
+            return;
+        }
+
+        if (!origenRifNumero || !origenRifNumero.value || origenRifNumero.value.trim() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe ingresar el número de RIF del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenRifNumero) origenRifNumero.focus();
+            return;
+        }
+
+        if (!origenTelefono || !origenTelefono.value || origenTelefono.value.trim() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe ingresar el número telefónico del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenTelefono) origenTelefono.focus();
+            return;
+        }
+
+        if (!origenBanco || !origenBanco.value || origenBanco.value === "" || origenBanco.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar el banco del origen para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (origenBanco) origenBanco.focus();
+            return;
+        }
+    }
+    
+    if (!moneda || !moneda.value || moneda.value === "" || moneda.value === "0") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe seleccionar una moneda.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (moneda) moneda.focus();
+        return;
+    }
+    
+    if (!montoBs || !montoBs.value || montoBs.value.trim() === "" || montoBs.value === "0" || montoBs.value === "0.00") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'El monto en Bolívares es obligatorio y debe ser mayor a 0.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (montoBs) montoBs.focus();
+        return;
+    }
+    
+    const montoBsValue = parseFloat(montoBs.value.replace(/,/g, ''));
+    if (isNaN(montoBsValue) || montoBsValue <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Valor Inválido',
+            text: 'El monto en Bolívares debe ser un número mayor a 0.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (montoBs) montoBs.focus();
+        return;
+    }
+    
+    if (!referencia || !referencia.value || referencia.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe ingresar el número de referencia.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (referencia) referencia.focus();
+        return;
+    }
+    
+    if (!depositante || !depositante.value || depositante.value.trim() === "") {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campo Obligatorio',
+            text: 'Debe ingresar el nombre del depositante.',
+            confirmButtonColor: '#3085d6'
+        });
+        if (depositante) depositante.focus();
+        return;
+    }
+    
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Configuración',
+            text: 'Variables de entorno (ENDPOINT_BASE o APP_PATH) no definidas.',
+            confirmButtonColor: '#d33'
+        });
+        return;
+    }
+    
+    // Preparar datos para enviar
+    // El campo fechaPago es type="date", así que ya viene en formato YYYY-MM-DD
+    let fechaPagoValue = fechaPago.value;
+    
+    // Agregar hora a la fecha
+    function addTimeToDate(dateString) {
+        if (!dateString) return null;
+        if (dateString.includes(' ') && dateString.includes(':')) {
+            return dateString;
+        }
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${dateString} ${hours}:${minutes}:${seconds}`;
+    }
+    
+    // Obtener campos de Pago Móvil si están visibles
+    const destinoRifTipo = document.getElementById("destinoRifTipo");
+    const destinoRifNumero = document.getElementById("destinoRifNumero");
+    const destinoTelefono = document.getElementById("destinoTelefono");
+    const destinoBanco = document.getElementById("destinoBanco");
+    
+    // Determinar si es Pago Móvil (ID = 5 o por nombre)
+    const isPagoMovil = selectedPaymentMethodId === 5 || selectedPaymentMethodName.includes("móvil") || selectedPaymentMethodName.includes("movil");
+    
+    // Reutilizar variables ya declaradas en validaciones
+    let origenRifTipo, origenRifNumero, origenTelefono, origenBanco;
+    if (isPagoMovil) {
+        origenRifTipo = document.getElementById("origenRifTipo");
+        origenRifNumero = document.getElementById("origenRifNumero");
+        origenTelefono = document.getElementById("origenTelefono");
+        origenBanco = document.getElementById("origenBanco");
+    }
+    
+    // Determinar origen_bank y destination_bank según el tipo de pago
+    let origenBankValue = null;
+    let destinationBankValue = null;
+    
+    if (isPagoMovil) {
+        // Para Pago Móvil, usar los bancos de los campos específicos
+        origenBankValue = origenBanco && origenBanco.value ? origenBanco.options[origenBanco.selectedIndex].textContent : null;
+        destinationBankValue = destinoBanco && destinoBanco.value ? destinoBanco.options[destinoBanco.selectedIndex].textContent : null;
+    } else {
+        // Para Transferencia, usar los campos de banco existentes
+        origenBankValue = bancoOrigen && bancoOrigen.value ? bancoOrigen.options[bancoOrigen.selectedIndex].textContent : null;
+        destinationBankValue = bancoDestino && bancoDestino.value ? bancoDestino.options[bancoDestino.selectedIndex].textContent : null;
+    }
+    
+    const formData = new URLSearchParams();
+    formData.append("serial_pos", serialPosPago ? serialPosPago.value : '');
+    formData.append("nro_ticket", nroTicketPago ? nroTicketPago.value : '');
+    formData.append("user_loader", idUser ? idUser.value : null);
+    formData.append("payment_date", addTimeToDate(fechaPagoValue));
+    formData.append("origen_bank", origenBankValue);
+    formData.append("destination_bank", destinationBankValue);
+    formData.append("payment_method", paymentMethodText);
+    formData.append("currency", moneda.value === "bs" ? "BS" : "USD");
+    formData.append("reference_amount", montoRef && montoRef.value ? parseFloat(montoRef.value) : null);
+    formData.append("amount_bs", montoBsValue);
+    formData.append("payment_reference", referencia ? referencia.value : null);
+    formData.append("depositor", depositante.value ? depositante.value : null);
+    formData.append("observations", obsAdministracion ? obsAdministracion.value : null);
+    formData.append("record_number", registro ? registro.value : null);
+    formData.append("loadpayment_date", fechaCarga && fechaCarga.value ? addTimeToDate(fechaCarga.value) : new Date().toISOString().slice(0, 19).replace('T', ' '));
+    formData.append("confirmation_number", false);
+    
+    // Agregar campos de Pago Móvil si es ese método de pago
+    if (isPagoMovil) {
+        formData.append("destino_rif_tipo", destinoRifTipo ? destinoRifTipo.value : null);
+        formData.append("destino_rif_numero", destinoRifNumero ? destinoRifNumero.value : null);
+        formData.append("destino_telefono", destinoTelefono ? destinoTelefono.value : null);
+        formData.append("destino_banco", destinoBanco && destinoBanco.value ? destinoBanco.options[destinoBanco.selectedIndex].textContent : null);
+        formData.append("origen_rif_tipo", origenRifTipo ? origenRifTipo.value : null);
+        formData.append("origen_rif_numero", origenRifNumero ? origenRifNumero.value : null);
+        formData.append("origen_telefono", origenTelefono ? origenTelefono.value : null);
+        formData.append("origen_banco", origenBanco && origenBanco.value ? origenBanco.options[origenBanco.selectedIndex].textContent : null);
+    }
+    
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/SavePayment";
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                
+                if (data.success) {
+                    // Obtener valores formateados para el informe
+                    const fechaPagoFormatted = fechaPago && fechaPago.value ? new Date(fechaPago.value).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';
+                    const fechaCargaFormatted = fechaCarga && fechaCarga.value ? new Date(fechaCarga.value).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';
+                    const montoBsFormatted = montoBsValue ? montoBsValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
+                    const montoRefFormatted = montoRef && montoRef.value ? parseFloat(montoRef.value).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A';
+                    const monedaText = moneda && moneda.value === 'bs' ? 'Bolívares (Bs)' : moneda && moneda.value === 'usd' ? 'Dólares (USD)' : 'N/A';
+                    
+                    // Construir HTML del informe empresarial
+                    const paymentReportHtml = `
+                        <div style="text-align: left; padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-radius: 8px;">
+                            <!-- Encabezado -->
+                            <div style="text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 3px solid #28a745;">
+                                <h3 style="color: #28a745; margin: 0; font-size: 1.5em; font-weight: 700;">
+                                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i>Pago Registrado Exitosamente
+                                </h3>
+                                <p style="color: #6c757d; margin: 8px 0 0 0; font-size: 0.9em;">
+                                    Registro temporal guardado correctamente
+                                </p>
+                            </div>
+                            
+                            <!-- Información Principal -->
+                            <div style="background: #ffffff; border-left: 4px solid #28a745; padding: 15px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                    <i class="fas fa-fingerprint" style="color: #28a745; font-size: 1.2em; margin-right: 10px; width: 25px;"></i>
+                                    <div>
+                                        <strong style="color: #495057; font-size: 0.85em;">ID de Registro Temporal:</strong>
+                                        <span style="color: #212529; font-weight: 700; font-size: 1.1em; margin-left: 8px;">#${data.id_payment_record || 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center;">
+                                    <i class="fas fa-barcode" style="color: #007bff; font-size: 1.2em; margin-right: 10px; width: 25px;"></i>
+                                    <div>
+                                        <strong style="color: #495057; font-size: 0.85em;">Serial POS:</strong>
+                                        <span style="color: #212529; font-weight: 600; margin-left: 8px;">${serialPosPago ? serialPosPago.value : 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Detalles del Pago -->
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                                <h4 style="color: #495057; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; border-bottom: 2px solid #dee2e6; padding-bottom: 8px;">
+                                    <i class="fas fa-money-bill-wave" style="margin-right: 8px; color: #28a745;"></i>Detalles del Pago
+                                </h4>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Método de Pago</strong>
+                                        <span style="color: #212529; font-weight: 600; font-size: 0.95em;">${paymentMethodText || 'N/A'}</span>
+                                    </div>
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Moneda</strong>
+                                        <span style="color: #212529; font-weight: 600; font-size: 0.95em;">${monedaText}</span>
+                                    </div>
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Monto en Bolívares</strong>
+                                        <span style="color: #28a745; font-weight: 700; font-size: 1.1em;">Bs. ${montoBsFormatted}</span>
+                                    </div>
+                                    ${montoRef && montoRef.value ? `
+                                    <div style="background: #ffffff; padding: 10px; border-radius: 4px;">
+                                        <strong style="color: #6c757d; font-size: 0.8em; display: block; margin-bottom: 4px;">Monto de Referencia</strong>
+                                        <span style="color: #007bff; font-weight: 700; font-size: 1.1em;">USD ${montoRefFormatted}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Información Adicional -->
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+                                <h4 style="color: #495057; margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; border-bottom: 2px solid #dee2e6; padding-bottom: 8px;">
+                                    <i class="fas fa-info-circle" style="margin-right: 8px; color: #007bff;"></i>Información Adicional
+                                </h4>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-calendar-alt" style="margin-right: 5px;"></i>Fecha de Pago
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${fechaPagoFormatted}</span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-calendar-check" style="margin-right: 5px;"></i>Fecha de Carga
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${fechaCargaFormatted}</span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-hashtag" style="margin-right: 5px;"></i>Referencia
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${referencia ? referencia.value : 'N/A'}</span>
+                                    </div>
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-user" style="margin-right: 5px;"></i>Depositante
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${depositante ? depositante.value : 'N/A'}</span>
+                                    </div>
+                                    ${registro && registro.value ? `
+                                    <div>
+                                        <strong style="color: #6c757d; font-size: 0.85em; display: block; margin-bottom: 4px;">
+                                            <i class="fas fa-book" style="margin-right: 5px;"></i>Número de Registro
+                                        </strong>
+                                        <span style="color: #212529; font-weight: 500;">${registro.value}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- Nota Informativa -->
+                            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 4px; margin-top: 15px;">
+                                <p style="margin: 0; color: #856404; font-size: 0.9em; line-height: 1.5;">
+                                    <i class="fas fa-info-circle" style="margin-right: 6px;"></i>
+                                    <strong>Nota:</strong> Este registro se guardará automáticamente en la tabla principal cuando se cree el ticket correspondiente. 
+                                    <strong style="color: #dc3545;">Si no se carga el ticket correspondiente, este registro será eliminado.</strong>
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '',
+                        html: paymentReportHtml,
+                        width: '650px',
+                        showConfirmButton: true,
+                        confirmButtonText: '<i class="fas fa-check"></i> Aceptar',
+                        confirmButtonColor: '#28a745',
+                        customClass: {
+                            popup: 'swal2-popup-custom',
+                            htmlContainer: 'swal2-html-container-custom'
+                        },
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        }
+                    }).then(() => {
+                        // Cerrar el modal de agregar datos de pago
+                        const modalElement = document.getElementById("modalAgregarDatosPago");
+                        if (modalElement) {
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) {
+                                modal.hide();
+                            }
+                        }
+                        
+                        // Recargar los datos de pago y abrir el modal de presupuesto
+                        if (nroTicketPago && nroTicketPago.value) {
+                            // Obtener id_failure desde la tabla si es necesario
+                            const table = $('#ticketsTable').DataTable();
+                            let idFailure = null;
+                            
+                            if (table) {
+                                table.rows().every(function() {
+                                    const rowData = this.data();
+                                    if (rowData && rowData.nro_ticket === nroTicketPago.value) {
+                                        idFailure = rowData.id_failure || null;
+                                        return false;
+                                    }
+                                });
+                            }
+                            
+                            // Abrir el modal de presupuesto con los datos actualizados
+                            openPresupuestoModal(nroTicketPago.value, idFailure);
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error al Guardar',
+                        text: 'Error al guardar el pago: ' + (data.message || "Error desconocido del servidor."),
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear respuesta del servidor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Procesamiento',
+                    text: 'Error al procesar la respuesta del servidor (JSON inválido).',
+                    confirmButtonColor: '#d33'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Conexión',
+                text: `Error al comunicarse con el servidor (HTTP Status: ${xhr.status}).`,
+                confirmButtonColor: '#d33'
+            });
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de Red',
+            text: 'Error de red al intentar guardar el pago.',
+            confirmButtonColor: '#d33'
+        });
+    };
+    
+    xhr.send(formData.toString());
+}
+
+// Event listener para el botón de guardar
+$(document).on('click', '#btnGuardarDatosPago', function() {
+    savePaymentPendienteEntrega();
+});
+
+// Función para validar que solo se ingresen números (BLOQUEA completamente caracteres no numéricos)
+function validateNumericInput(event) {
+    // Permitir teclas de control (backspace, delete, tab, escape, enter, etc.)
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    
+    if (allowedKeys.includes(event.key)) {
+        return true;
+    }
+    
+    // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
+    if (event.ctrlKey || event.metaKey) {
+        if (['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())) {
+            return true;
+        }
+    }
+    
+    // BLOQUEAR todo lo que no sea número (0-9)
+    if (!/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    }
+    
+    return true;
+}
+
+// Función para validar campos numéricos con decimales (monto Bs y Monto REF)
+function validateNumericField(event) {
+    const input = event.target;
+    // Permitir teclas de control
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+    
+    if (allowedKeys.includes(event.key)) {
+        return true;
+    }
+    
+    // Permitir Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X, Ctrl+Z
+    if (event.ctrlKey || event.metaKey) {
+        if (['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase())) {
+            return true;
+        }
+    }
+    
+    // BLOQUEAR todo lo que no sea número (0-9) o punto decimal (.)
+    if (!/^[0-9.]$/.test(event.key)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    }
+    
+    // Evitar múltiples puntos decimales
+    if (event.key === '.' && input.value.includes('.')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+    }
+    
+    return true;
+}
+
+// Función para limpiar el input en tiempo real (elimina cualquier carácter no permitido)
+function cleanNumericInput(event) {
+    const input = event.target;
+    const originalValue = input.value;
+    // Eliminar todo lo que no sea número
+    const cleaned = originalValue.replace(/\D/g, '');
+    if (originalValue !== cleaned) {
+        input.value = cleaned;
+    }
+}
+
+// Función para limpiar el input de decimales en tiempo real
+function cleanDecimalInput(event) {
+    const input = event.target;
+    const originalValue = input.value;
+    // Eliminar todo lo que no sea número o punto
+    let cleaned = originalValue.replace(/[^0-9.]/g, '');
+    // Asegurar solo un punto decimal
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+        cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    if (originalValue !== cleaned) {
+        input.value = cleaned;
+    }
+}
+
+// Configurar validación de campos numéricos
+function setupNumericValidation() {
+    // Campo de referencia: solo números (BLOQUEA completamente)
+    const referenciaInput = document.getElementById("referencia");
+    if (referenciaInput) {
+        referenciaInput.addEventListener("keydown", validateNumericInput);
+        referenciaInput.addEventListener("input", cleanNumericInput);
+        referenciaInput.addEventListener("paste", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const numericOnly = paste.replace(/\D/g, '');
+            referenciaInput.value = numericOnly;
+            referenciaInput.dispatchEvent(new Event('input'));
+        });
+    }
+
+    // Campos de Monto Bs y Monto REF: solo números y punto decimal (BLOQUEA completamente)
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    
+    if (montoBsInput) {
+        montoBsInput.addEventListener("keydown", validateNumericField);
+        montoBsInput.addEventListener("input", cleanDecimalInput);
+        montoBsInput.addEventListener("paste", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            // Permitir solo números y un punto decimal
+            let numericOnly = paste.replace(/[^0-9.]/g, '');
+            // Asegurar solo un punto decimal
+            const parts = numericOnly.split('.');
+            if (parts.length > 2) {
+                numericOnly = parts[0] + '.' + parts.slice(1).join('');
+            }
+            montoBsInput.value = numericOnly;
+            montoBsInput.dispatchEvent(new Event('input'));
+        });
+    }
+
+    if (montoRefInput) {
+        montoRefInput.addEventListener("keydown", validateNumericField);
+        montoRefInput.addEventListener("input", cleanDecimalInput);
+        montoRefInput.addEventListener("paste", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            // Permitir solo números y un punto decimal
+            let numericOnly = paste.replace(/[^0-9.]/g, '');
+            // Asegurar solo un punto decimal
+            const parts = numericOnly.split('.');
+            if (parts.length > 2) {
+                numericOnly = parts[0] + '.' + parts.slice(1).join('');
+            }
+            montoRefInput.value = numericOnly;
+            montoRefInput.dispatchEvent(new Event('input'));
+        });
+    }
+}
+
+// Función para limpiar todos los campos del formulario de datos de pago
+function limpiarFormularioDatosPago() {
+    const formAgregarDatosPago = document.getElementById("formAgregarDatosPago");
+    if (formAgregarDatosPago) {
+        // Limpiar todos los campos del formulario
+        const fechaPago = document.getElementById("fechaPago");
+        const formaPago = document.getElementById("formaPago");
+        const moneda = document.getElementById("moneda");
+        const montoRef = document.getElementById("montoRef");
+        const montoBs = document.getElementById("montoBs");
+        const referencia = document.getElementById("referencia");
+        const depositante = document.getElementById("depositante");
+        const obsAdministracion = document.getElementById("obsAdministracion");
+        const registro = document.getElementById("registro");
+        const fechaCarga = document.getElementById("fechaCarga");
+        const estatus = document.getElementById("estatus");
+        const serialPosPago = document.getElementById("serialPosPago");
+        const montoEquipo = document.getElementById("montoEquipo");
+        const montoBsSuffix = document.getElementById("montoBsSuffix");
+        const montoRefSuffix = document.getElementById("montoRefSuffix");
+        const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
+        const pagoMovilFieldsContainer = document.getElementById("pagoMovilFieldsContainer");
+        
+        // Limpiar campos de texto e inputs
+        if (fechaPago) fechaPago.value = "";
+        if (formaPago) formaPago.value = "";
+        if (referencia) referencia.value = "";
+        if (depositante) depositante.value = "";
+        if (obsAdministracion) obsAdministracion.value = "";
+        if (registro) registro.value = "";
+        // NO limpiar fechaCarga - debe mantener la fecha de hoy automáticamente
+        if (estatus) estatus.value = "";
+        if (serialPosPago) serialPosPago.value = "";
+        
+        // Resetear el select de moneda
+        if (moneda) {
+            moneda.value = "";
+            moneda.disabled = false;
+            moneda.removeAttribute("disabled");
+            moneda.style.backgroundColor = "";
+            moneda.style.cursor = "";
+        }
+        
+        // Ocultar campos de banco y limpiarlos
+        const bancoOrigen = document.getElementById("bancoOrigen");
+        const bancoDestino = document.getElementById("bancoDestino");
+        
+        if (bancoFieldsContainer) {
+            bancoFieldsContainer.style.display = "none";
+        }
+        if (bancoOrigen) {
+            bancoOrigen.value = "";
+            bancoOrigen.required = false;
+        }
+        if (bancoDestino) {
+            bancoDestino.value = "";
+            bancoDestino.required = false;
+        }
+        
+        // Ocultar y limpiar campos de Pago Móvil
+        if (pagoMovilFieldsContainer) {
+            pagoMovilFieldsContainer.style.display = "none";
+        }
+        
+        // Resetear campos de Monto Bs y Monto REF
+        if (montoBs) {
+            montoBs.value = "0.00";
+            montoBs.disabled = true;
+            montoBs.setAttribute("disabled", "disabled");
+        }
+        
+        if (montoRef) {
+            montoRef.value = "0.00";
+            montoRef.disabled = true;
+            montoRef.setAttribute("disabled", "disabled");
+        }
+        
+        // Ocultar sufijos de moneda
+        if (montoBsSuffix) {
+            montoBsSuffix.style.display = "none";
+        }
+        if (montoRefSuffix) {
+            montoRefSuffix.style.display = "none";
+        }
+        
+        // Resetear el monto del equipo
+        if (montoEquipo) {
+            montoEquipo.textContent = "$0.00";
+        }
+        
+        // Resetear el formulario
+        formAgregarDatosPago.reset();
+        
+        // Asegurar que los valores se mantengan después del reset
+        setTimeout(function() {
+            if (montoBs) {
+                montoBs.value = "0.00";
+                montoBs.disabled = true;
+                montoBs.setAttribute("disabled", "disabled");
+            }
+            if (montoRef) {
+                montoRef.value = "0.00";
+                montoRef.disabled = true;
+                montoRef.setAttribute("disabled", "disabled");
+            }
+            if (moneda) {
+                moneda.value = "";
+            }
+            if (montoBsSuffix) {
+                montoBsSuffix.style.display = "none";
+            }
+            if (montoRefSuffix) {
+                montoRefSuffix.style.display = "none";
+            }
+            if (montoEquipo) {
+                montoEquipo.textContent = "$0.00";
+            }
+        }, 10);
+    }
+}
+
+// Función para generar número de registro único
+// Opciones de formato disponibles:
+// 1. Pago{4 últimos de referencia}_{4 últimos de serial} (formato actual: Pago0945_4354)
+// 2. REG-{4 últimos de referencia}-{4 últimos de serial}
+// 3. {Año}-{4 últimos de referencia}-{4 últimos de serial}
+// 4. {Fecha YYYYMMDD}-{4 últimos de referencia}-{4 últimos de serial}
+// 5. PA-{Timestamp corto}-{4 últimos de serial}
+function generateRegistrationNumber(formatType = 1) {
+    const referenciaInput = document.getElementById("referencia");
+    const serialPosPagoInput = document.getElementById("serialPosPago");
+    const registroInput = document.getElementById("registro");
+    
+    if (!referenciaInput || !serialPosPagoInput || !registroInput) {
+        return;
+    }
+
+    const referencia = referenciaInput.value.trim();
+    const serial = serialPosPagoInput.value.trim();
+
+    // Validar que ambos campos tengan al menos 4 caracteres
+    if (!referencia || referencia.length < 4) {
+        return;
+    }
+
+    if (!serial || serial.length < 4) {
+        return;
+    }
+
+    // Obtener los últimos 4 dígitos/caracteres de referencia y serial
+    // Para referencia: solo números, rellenar con ceros a la izquierda si es necesario
+    const ultimos4Referencia = referencia.slice(-4).replace(/\D/g, ''); // Solo números
+    const refFinal = ultimos4Referencia.length >= 4 
+        ? ultimos4Referencia 
+        : ultimos4Referencia.padStart(4, '0'); // Rellenar con ceros si tiene menos de 4 dígitos
+    
+    // Para serial: últimos 4 caracteres (pueden ser números o letras)
+    const ultimos4Serial = serial.slice(-4);
+
+    let numeroRegistro = "";
+
+    switch(formatType) {
+        case 1: // Pago{4 últimos de referencia}_{4 últimos de serial}
+            numeroRegistro = `Pago${refFinal}_${ultimos4Serial}`;
+            break;
+        case 2: // REG-{4 últimos de referencia}-{4 últimos de serial}
+            numeroRegistro = `REG-${refFinal}-${ultimos4Serial}`;
+            break;
+        case 3: // {Año}-{4 últimos de referencia}-{4 últimos de serial}
+            const año = new Date().getFullYear();
+            numeroRegistro = `${año}-${refFinal}-${ultimos4Serial}`;
+            break;
+        case 4: // {Fecha YYYYMMDD}-{4 últimos de referencia}-{4 últimos de serial}
+            const fecha = new Date();
+            const fechaStr = fecha.getFullYear() + 
+                            String(fecha.getMonth() + 1).padStart(2, '0') + 
+                            String(fecha.getDate()).padStart(2, '0');
+            numeroRegistro = `${fechaStr}-${refFinal}-${ultimos4Serial}`;
+            break;
+        case 5: // PA-{Timestamp corto}-{4 últimos de serial}
+            const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos del timestamp
+            numeroRegistro = `PA-${timestamp}-${ultimos4Serial}`;
+            break;
+        default:
+            numeroRegistro = `Pago${refFinal}_${ultimos4Serial}`;
+    }
+
+    registroInput.value = numeroRegistro;
+}
+
+// Configurar generación automática del número de registro
+function setupAutoRegistrationNumber() {
+    const referenciaInput = document.getElementById("referencia");
+    const serialPosPagoInput = document.getElementById("serialPosPago");
+    
+    if (!referenciaInput || !serialPosPagoInput) {
+        return;
+    }
+
+    // Función que se ejecuta cuando cambian los campos
+    const updateRegistrationNumber = () => {
+        // Usar formato 1 por defecto (Pago{ref}_{serial})
+        // Cambiar este número (1-5) para usar otro formato
+        generateRegistrationNumber(1);
+    };
+
+    // Agregar listeners a los campos
+    referenciaInput.addEventListener("input", updateRegistrationNumber);
+    referenciaInput.addEventListener("blur", updateRegistrationNumber);
+    serialPosPagoInput.addEventListener("input", updateRegistrationNumber);
+    serialPosPagoInput.addEventListener("blur", updateRegistrationNumber);
+}
+
+// Función para cerrar el modal y limpiar campos
+function cerrarModalYLimpiar() {
+    // Limpiar el formulario ANTES de cerrar el modal
+    if (typeof limpiarFormularioDatosPago === 'function') {
+        limpiarFormularioDatosPago();
+    }
+    
+    // Asegurar que los sufijos estén ocultos y los campos estén en estado inicial
+    setTimeout(function() {
+        const montoBsSuffix = document.getElementById("montoBsSuffix");
+        const montoRefSuffix = document.getElementById("montoRefSuffix");
+        const montoBs = document.getElementById("montoBs");
+        const montoRef = document.getElementById("montoRef");
+        const moneda = document.getElementById("moneda");
+        
+        if (montoBsSuffix) {
+            montoBsSuffix.style.display = "none";
+            montoBsSuffix.style.visibility = "hidden";
+        }
+        if (montoRefSuffix) {
+            montoRefSuffix.style.display = "none";
+            montoRefSuffix.style.visibility = "hidden";
+        }
+        if (montoBs) {
+            montoBs.value = "0.00";
+            montoBs.disabled = true;
+            montoBs.setAttribute("disabled", "disabled");
+        }
+        if (montoRef) {
+            montoRef.value = "0.00";
+            montoRef.disabled = true;
+            montoRef.setAttribute("disabled", "disabled");
+        }
+        if (moneda) {
+            moneda.value = "";
+        }
+    }, 50);
+    
+    // Cerrar el modal con transición suave
+    const modalElement = document.getElementById("modalAgregarDatosPago");
+    if (modalElement) {
+        // Agregar estilos de transición directamente
+        modalElement.style.transition = "opacity 0.5s ease-out, transform 0.5s ease-out";
+        modalElement.style.opacity = "0";
+        modalElement.style.transform = "scale(0.95)";
+        
+        const backdrop = document.querySelector(".modal-backdrop");
+        if (backdrop) {
+            backdrop.style.transition = "opacity 0.5s ease-out";
+            backdrop.style.opacity = "0";
+        }
+        
+        // Esperar a que termine la animación (500ms) antes de cerrar completamente
+        setTimeout(function() {
+            // Usar método directo que siempre funciona
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                try {
+                    // Crear nueva instancia y cerrar
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.hide();
+                    // También forzar el cierre manualmente después de la transición
+                    setTimeout(function() {
+                        modalElement.style.display = "none";
+                        modalElement.style.opacity = "";
+                        modalElement.style.transform = "";
+                        modalElement.style.transition = "";
+                        modalElement.classList.remove("show");
+                        document.body.classList.remove("modal-open");
+                        const backdrop = document.querySelector(".modal-backdrop");
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                    }, 150);
+                } catch (error) {
+                    // Fallback manual directo
+                    modalElement.style.display = "none";
+                    modalElement.style.opacity = "";
+                    modalElement.style.transform = "";
+                    modalElement.style.transition = "";
+                    modalElement.classList.remove("show");
+                    document.body.classList.remove("modal-open");
+                    const backdrop = document.querySelector(".modal-backdrop");
+                    if (backdrop) {
+                        backdrop.remove();
+                    }
+                }
+            } else if (typeof $ !== 'undefined' && $.fn.modal) {
+                $(modalElement).modal('hide');
+                setTimeout(function() {
+                    modalElement.style.opacity = "";
+                    modalElement.style.transform = "";
+                    modalElement.style.transition = "";
+                }, 150);
+            } else {
+                // Fallback manual - método más directo
+                modalElement.style.display = "none";
+                modalElement.style.opacity = "";
+                modalElement.style.transform = "";
+                modalElement.style.transition = "";
+                modalElement.classList.remove("show");
+                document.body.classList.remove("modal-open");
+                const backdrop = document.querySelector(".modal-backdrop");
+                if (backdrop) {
+                    backdrop.remove();
+                }
+            }
+        }, 500); // Duración de la animación de fade out (500ms para transición más suave)
+    }
+}
+
+// Event listener para el botón de cancelar
+const btnCancelarModalPagoFooter = document.getElementById("btnCancelarModalPagoFooter");
+if (btnCancelarModalPagoFooter) {
+    btnCancelarModalPagoFooter.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        cerrarModalYLimpiar();
+    });
+}
+
+// Función para cargar métodos de pago
+function loadPaymentMethods() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    if (!formaPagoSelect) {
+        return;
+    }
+
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+        return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetPaymentMethods";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                
+                if (data.success && data.payment_methods && data.payment_methods.length > 0) {
+                    formaPagoSelect.innerHTML = '<option value="">Seleccione</option>';
+                    
+                    data.payment_methods.forEach(function(method) {
+                        const option = document.createElement("option");
+                        option.value = method.id_payment_method;
+                        option.textContent = method.payment_method_name;
+                        formaPagoSelect.appendChild(option);
+                    });
+                    
+                    // Configurar listener para detectar cuando se selecciona "Transferencia" (id = 2) o "Pago Móvil" (id = 5)
+                    setTimeout(function() {
+                        setupFormaPagoListener();
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('Error al parsear métodos de pago:', error);
+            }
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al cargar métodos de pago');
+    };
+    
+    xhr.send();
+}
+
+// Función para cargar bancos
+function loadBancos() {
+    const bancoOrigenSelect = document.getElementById("bancoOrigen");
+    const bancoDestinoSelect = document.getElementById("bancoDestino");
+    const origenBancoSelect = document.getElementById("origenBanco");
+    const destinoBancoSelect = document.getElementById("destinoBanco");
+    
+    if (!bancoOrigenSelect || !bancoDestinoSelect) {
+        return;
+    }
+
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+        return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetBancos";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                
+                if (data.success && data.bancos && data.bancos.length > 0) {
+                    bancoOrigenSelect.innerHTML = '<option value="">Seleccione</option>';
+                    bancoDestinoSelect.innerHTML = '<option value="">Seleccione</option>';
+                    if (origenBancoSelect) origenBancoSelect.innerHTML = '<option value="">Seleccione</option>';
+                    if (destinoBancoSelect) destinoBancoSelect.innerHTML = '<option value="">Seleccione</option>';
+                    
+                    data.bancos.forEach(function(banco) {
+                        const optionOrigen = document.createElement("option");
+                        optionOrigen.value = banco.codigobanco;
+                        optionOrigen.textContent = banco.ibp;
+                        bancoOrigenSelect.appendChild(optionOrigen);
+                        
+                        const optionDestino = document.createElement("option");
+                        optionDestino.value = banco.codigobanco;
+                        optionDestino.textContent = banco.ibp;
+                        bancoDestinoSelect.appendChild(optionDestino);
+                        
+                        if (origenBancoSelect) {
+                            const optionOrigenPM = document.createElement("option");
+                            optionOrigenPM.value = banco.codigobanco;
+                            optionOrigenPM.textContent = banco.ibp;
+                            origenBancoSelect.appendChild(optionOrigenPM);
+                        }
+                        
+                        if (destinoBancoSelect) {
+                            const optionDestinoPM = document.createElement("option");
+                            optionDestinoPM.value = banco.codigobanco;
+                            optionDestinoPM.textContent = banco.ibp;
+                            destinoBancoSelect.appendChild(optionDestinoPM);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error al parsear bancos:', error);
+            }
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al cargar bancos');
+    };
+    
+    xhr.send();
+}
+
+// Función para configurar el listener de forma de pago
+function setupFormaPagoListener() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
+    const pagoMovilFieldsContainer = document.getElementById("pagoMovilFieldsContainer");
+    
+    if (!formaPagoSelect) return;
+    
+    // Remover listener anterior si existe
+    formaPagoSelect.removeEventListener('change', handleFormaPagoChange);
+    
+    // Agregar nuevo listener
+    formaPagoSelect.addEventListener('change', handleFormaPagoChange);
+    
+    function handleFormaPagoChange() {
+        const selectedId = parseInt(formaPagoSelect.value);
+        
+        // Ocultar todos los campos condicionales primero
+        if (bancoFieldsContainer) bancoFieldsContainer.style.display = 'none';
+        if (pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = 'none';
+        
+        // Mostrar campos según el método de pago seleccionado
+        if (selectedId === 2) {
+            // Transferencia - mostrar campos de bancos
+            if (bancoFieldsContainer) bancoFieldsContainer.style.display = 'block';
+        } else if (selectedId === 5) {
+            // Pago Móvil - mostrar campos de pago móvil
+            if (pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = 'block';
+        }
+    }
+}
+
+// Función para cargar tasa de cambio (simplificada)
+function loadExchangeRateToday(fecha = null) {
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+        return;
+    }
+
+    let apiUrl;
+    let dataToSend;
+    
+    if (fecha) {
+        apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateByDate";
+        dataToSend = "action=GetExchangeRateByDate&fecha=" + encodeURIComponent(fecha);
+    } else {
+        apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateToday";
+        dataToSend = "action=GetExchangeRateToday";
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                const tasaDisplayValue = document.getElementById("tasaDisplayValue");
+                const fechaTasaDisplay = document.getElementById("fechaTasaDisplay");
+                
+                if (data.success && data.exchange_rate && data.exchange_rate.tasa_dolar) {
+                    const tasa = parseFloat(data.exchange_rate.tasa_dolar);
+                    if (tasaDisplayValue) {
+                        tasaDisplayValue.textContent = `Bs. ${tasa.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    }
+                    if (fechaTasaDisplay && data.exchange_rate.fecha_tasa) {
+                        const fecha = new Date(data.exchange_rate.fecha_tasa);
+                        fechaTasaDisplay.innerHTML = `<i class="fas fa-calendar-day me-1"></i>Tasa: ${fecha.toLocaleDateString('es-VE')}`;
+                    }
+                    window.exchangeRate = tasa;
+                } else {
+                    if (tasaDisplayValue) tasaDisplayValue.textContent = "Error al cargar";
+                }
+            } catch (error) {
+                console.error('Error al parsear tasa de cambio:', error);
+            }
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al cargar tasa de cambio');
+    };
+    
+    xhr.send(dataToSend);
+}
+
+// Configurar listeners para fechaPago cuando se abre el modal
+$(document).on('shown.bs.modal', '#modalAgregarDatosPago', function() {
+    const fechaPagoInput = document.getElementById('fechaPago');
+    
+    // Agregar listener para cambios
+    if (fechaPagoInput) {
+        fechaPagoInput.addEventListener('change', function() {
+            if (this.value) {
+                loadExchangeRateToday(this.value);
+            }
+        });
+        
+        fechaPagoInput.addEventListener('click', function() {
+            if (this.value) {
+                loadExchangeRateToday(this.value);
+            }
+        });
+    }
+});
+
+// Configurar listener para cambios en moneda y forma de pago
+$(document).on('change', '#moneda', function() {
+    const monedaValue = this.value;
+    const montoBs = document.getElementById('montoBs');
+    const montoRef = document.getElementById('montoRef');
+    const montoBsSuffix = document.getElementById('montoBsSuffix');
+    const montoRefSuffix = document.getElementById('montoRefSuffix');
+    
+    if (monedaValue === 'bs') {
+        if (montoBs) montoBs.disabled = false;
+        if (montoRef) montoRef.disabled = true;
+        if (montoBsSuffix) montoBsSuffix.style.display = 'inline';
+        if (montoRefSuffix) montoRefSuffix.style.display = 'none';
+    } else if (monedaValue === 'usd') {
+        if (montoBs) montoBs.disabled = true;
+        if (montoRef) montoRef.disabled = false;
+        if (montoBsSuffix) montoBsSuffix.style.display = 'none';
+        if (montoRefSuffix) montoRefSuffix.style.display = 'inline';
+    }
+    
+    // Calcular conversión y actualizar montoEquipo
+    calcularConversion();
+});
+
+// Función para calcular conversión entre monedas
+function calcularConversion() {
+    const moneda = document.getElementById('moneda');
+    const montoBs = document.getElementById('montoBs');
+    const montoRef = document.getElementById('montoRef');
+    const montoEquipo = document.getElementById('montoEquipo');
+    
+    if (!moneda) return;
+    
+    let montoUSD = 0;
+    
+    if (moneda.value === 'bs' && montoBs && montoBs.value && window.exchangeRate) {
+        const montoBsValue = parseFloat(montoBs.value);
+        if (!isNaN(montoBsValue)) {
+            montoUSD = montoBsValue / window.exchangeRate;
+            if (montoRef) {
+                montoRef.value = montoUSD.toFixed(2);
+            }
+        }
+    } else if (moneda.value === 'usd' && montoRef && montoRef.value) {
+        const montoUSDValue = parseFloat(montoRef.value);
+        if (!isNaN(montoUSDValue)) {
+            montoUSD = montoUSDValue;
+            if (window.exchangeRate && montoBs) {
+                const montoBS = montoUSDValue * window.exchangeRate;
+                montoBs.value = montoBS.toFixed(2);
+            }
+        }
+    }
+    
+    // Actualizar el campo montoEquipo con el monto en USD
+    if (montoEquipo) {
+        montoEquipo.textContent = "$" + montoUSD.toFixed(2);
+    }
+}
+
+// Listener para cambios en montoBs cuando moneda es BS
+$(document).on('input', '#montoBs', function() {
+    const moneda = document.getElementById('moneda');
+    if (moneda && moneda.value === 'bs') {
+        calcularConversion();
+    }
+});
+
+// Listener para cambios en montoRef cuando moneda es USD
+$(document).on('input', '#montoRef', function() {
+    const moneda = document.getElementById('moneda');
+    if (moneda && moneda.value === 'usd') {
+        calcularConversion();
+    }
+});
 }

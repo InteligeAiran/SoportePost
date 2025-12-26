@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // NOTA: Los event listeners para EnvioInput y ExoneracionInput ya están configurados arriba
   // (líneas ~170 y ~201) y ahora incluyen la preservación de archivos en variables globales.
-  
+
   if (anticiInputFile) {
     anticiInputFile.addEventListener("change", function () {
       var file = this.files[0];
@@ -2534,15 +2534,15 @@ function validateTicketCreation() {
         // También verificar el archivo preservado globalmente
         const archivoEnvioPreservado = window.archivoEnvioPreservado || null;
         if (!tieneArchivoEnvio && !archivoEnvioPreservado) {
-            Swal.fire({
-                icon: "warning",
-                title: "Campo requerido",
+        Swal.fire({
+            icon: "warning",
+            title: "Campo requerido",
                 text: "Por favor, seleccione el Documento de Envío después de marcar \"Cargar De Envío\".",
-                color: "black",
-                confirmButtonText: "OK",
-                confirmButtonColor: "#003594",
-            });
-            return false;
+            color: "black",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#003594",
+        });
+        return false;
         }
     }
     
@@ -2552,15 +2552,15 @@ function validateTicketCreation() {
         // También verificar el archivo preservado globalmente
         const archivoExoneracionPreservado = window.archivoExoneracionPreservado || null;
         if (!tieneArchivoExoneracion && !archivoExoneracionPreservado) {
-            Swal.fire({
-                icon: "warning",
-                title: "Campo requerido",
+        Swal.fire({
+            icon: "warning",
+            title: "Campo requerido",
                 text: "Por favor, seleccione el Documento de Exoneración después de marcar \"Cargar De Exoneración\".",
-                color: "black",
-                confirmButtonText: "OK",
-                confirmButtonColor: "#003594",
-            });
-            return false;
+            color: "black",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#003594",
+        });
+        return false;
         }
     }
     
@@ -2577,15 +2577,15 @@ function validateTicketCreation() {
         // También verificar el archivo preservado globalmente
         const archivoAnticipoPreservado = window.archivoAnticipoPreservado || null;
         if (!tieneArchivoAnticipo && !archivoAnticipoPreservado) {
-            Swal.fire({
-                icon: "warning",
-                title: "Campo requerido",
+        Swal.fire({
+            icon: "warning",
+            title: "Campo requerido",
                 text: "Por favor, seleccione el Documento de Anticipo después de marcar \"Cargar De Anticipo\".",
-                color: "black",
-                confirmButtonText: "OK",
-                confirmButtonColor: "#003594",
-            });
-            return false;
+            color: "black",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#003594",
+        });
+        return false;
         }
     }
     
