@@ -1198,7 +1198,7 @@ function mi_navbar() {}
                                             <label for="fechaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
                                                 <i class="fas fa-calendar-alt me-1 text-primary"></i>Fecha Pago <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <input type="date" class="form-control" id="fechaPago" placeholder="dd/mm/aaaa" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                            <input type="date" class="form-control" id="fechaPago" placeholder="dd/mm/aaaa" required style="font-size: 0.95rem; padding: 8px 12px;" onchange="console.log('onchange - Valor del input:', this.value); if(this.value) { console.log('Llamando loadExchangeRateToday con:', this.value); loadExchangeRateToday(this.value); }" onclick="console.log('onclick - Valor del input:', this.value); if(this.value) { console.log('Llamando loadExchangeRateToday con:', this.value); loadExchangeRateToday(this.value); }">
                                         </div>
                                         <div class="col-md-6 mb-2">
                                             <label for="formaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">

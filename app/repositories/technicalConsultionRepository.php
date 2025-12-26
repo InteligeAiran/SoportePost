@@ -997,6 +997,31 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetExchangeRateByDate($fecha){
+        $result = $this->model->GetExchangeRateByDate($fecha);
+        
+        // Debug: Log para ver qué se está retornando
+        error_log("GetExchangeRateByDate - Fecha recibida: " . $fecha);
+        error_log("GetExchangeRateByDate - Result: " . print_r($result, true));
+        
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $exchangeRate = pg_fetch_assoc($result['query'], 0);
+            
+            // Debug: Log para ver qué se está retornando
+            error_log("GetExchangeRateByDate - Datos obtenidos: " . print_r($exchangeRate, true));
+            error_log("GetExchangeRateByDate - Claves del array: " . print_r(array_keys($exchangeRate), true));
+            
+            pg_free_result($result['query']);
+            return $exchangeRate;
+        } else {
+            error_log("GetExchangeRateByDate - No se encontraron resultados. numRows: " . (isset($result['numRows']) ? $result['numRows'] : 'no definido'));
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
     public function GetBancos(){
         $result = $this->model->GetBancos();
         if ($result && isset($result['numRows']) && $result['numRows'] > 0) {

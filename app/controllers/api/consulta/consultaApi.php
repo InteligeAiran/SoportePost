@@ -342,6 +342,10 @@ class Consulta extends Controller
                     $this->handleGetExchangeRateToday();
                     break;
 
+                case 'GetExchangeRateByDate':
+                    $this->handleGetExchangeRateByDate();
+                    break;
+
                 case 'GetBancos':
                     $this->handleGetBancos();
                     break;
@@ -2448,6 +2452,37 @@ class Consulta extends Controller
             ];
             error_log("handleGetExchangeRateToday - Error: " . print_r($debugInfo, true));
             $this->response(['success' => false, 'message' => 'No se pudo obtener la tasa de cambio del día de hoy.', 'debug' => $debugInfo], 500);
+        }
+    }
+
+    public function handleGetExchangeRateByDate(){
+        $fecha = isset($_POST['fecha']) ? trim($_POST['fecha']) : null;
+        
+        if (empty($fecha)) {
+            $this->response(['success' => false, 'message' => 'La fecha es requerida.'], 400);
+            return;
+        }
+
+        // Log para debug
+        error_log("handleGetExchangeRateByDate - Fecha recibida: " . $fecha);
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetExchangeRateByDate($fecha);
+
+        // Log para debug
+        error_log("handleGetExchangeRateByDate - Resultado: " . print_r($result, true));
+
+        if ($result !== null && isset($result['tasa_dolar'])) {
+            $this->response(['success' => true, 'exchange_rate' => $result], 200);
+        } else {
+            $debugInfo = [
+                'fecha_recibida' => $fecha,
+                'result_is_null' => ($result === null),
+                'has_tasa_dolar' => isset($result['tasa_dolar']),
+                'result_keys' => ($result !== null ? array_keys($result) : [])
+            ];
+            error_log("handleGetExchangeRateByDate - Error: " . print_r($debugInfo, true));
+            $this->response(['success' => false, 'message' => 'No se pudo obtener la tasa de cambio para la fecha especificada.', 'debug' => $debugInfo], 500);
         }
     }
 
