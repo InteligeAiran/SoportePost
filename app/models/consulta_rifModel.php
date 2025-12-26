@@ -6391,6 +6391,45 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
+    public function GetExchangeRateByDate($fecha){
+
+        try {
+            // Validar y formatear la fecha a formato PostgreSQL (YYYY-MM-DD)
+            // El input type="date" envía el formato YYYY-MM-DD, pero validamos por si acaso
+            if (empty($fecha)) {
+                error_log("Error en GetExchangeRateByDate: Fecha vacía");
+                return false;
+            }
+
+            // Intentar parsear la fecha para asegurar formato correcto
+            $fecha_timestamp = strtotime($fecha);
+            if ($fecha_timestamp === false) {
+                error_log("Error en GetExchangeRateByDate: Fecha inválida: " . $fecha);
+                return false;
+            }
+            
+            // Formatear a YYYY-MM-DD (formato estándar de PostgreSQL para DATE)
+            $fecha_formateada = date('Y-m-d', $fecha_timestamp);
+            
+            // Usar ::date para hacer el cast explícito
+            $escaped_fecha = pg_escape_literal($this->db->getConnection(), $fecha_formateada);
+            $sql = "SELECT * FROM public.get_exchange_rate_by_date(" . $escaped_fecha . "::date);";
+
+            error_log("GetExchangeRateByDate - SQL: " . $sql);
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            error_log("Error en GetExchangeRateByDate: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
     public function GetBancos(){
 
         try {

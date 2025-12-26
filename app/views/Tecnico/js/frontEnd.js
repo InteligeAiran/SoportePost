@@ -1198,6 +1198,8 @@ function getTicketData() {
         }
     } else if (pdfPagoUrl) {
         // Solo pago disponible (sin envío)
+        // IMPORTANTE: Si hay pago pero NO hay envío, SIEMPRE mostrar el botón de envío
+        // porque el envío es obligatorio (excepto en estados sin envío)
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
             modalButtonsHTML = `
@@ -1206,12 +1208,13 @@ function getTicketData() {
                 </button>
             `;
         } else {
-            // Estados con envío - mostrar botón de envío
+            // Estados con envío - SIEMPRE mostrar botón de envío si falta el documento
+            // El envío es obligatorio, independientemente del status
             modalButtonsHTML = `
                 <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                     Ver Documento de Pago
                 </button>
-                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                     Cargar Documento de Envio
                 </button>
             `;

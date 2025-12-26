@@ -3332,6 +3332,11 @@ checkExoneracion.addEventListener("change", function() {
     const modal = document.getElementById("modalAgregarDatosPago");
     if (modal) {
       modal.addEventListener("shown.bs.modal", function() {
+        // Cargar la tasa de cambio del día de hoy cuando se abre el modal
+        if (typeof loadExchangeRateToday === 'function') {
+          loadExchangeRateToday();
+        }
+        
         // Pequeño delay para asegurar que los valores estén cargados
         setTimeout(() => {
           if (referenciaInput.value && serialPosPagoInput.value) {
@@ -4205,13 +4210,43 @@ function savePayment() {
     xhr.send();
   }
 
-  // Función para cargar la tasa de cambio del día de hoy y mostrarla en el display
-  function loadExchangeRateToday() {
+  // Función para cargar la tasa de cambio del día de hoy o de una fecha específica
+  // Si se proporciona una fecha, carga la tasa para esa fecha; si no, carga la del día de hoy
+  function loadExchangeRateToday(fecha = null) {
+    console.log("=== loadExchangeRateToday INICIO ===");
+    console.log("Fecha recibida como parámetro:", fecha);
+    console.log("Tipo de fecha:", typeof fecha);
+    
+    // Si no se proporciona fecha, intentar obtenerla del input
+    if (!fecha) {
+      const fechaPagoInput = document.getElementById("fechaPago");
+      if (fechaPagoInput && fechaPagoInput.value) {
+        fecha = fechaPagoInput.value;
+        console.log("Fecha obtenida del input fechaPago:", fecha);
+      }
+    }
+    
     if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      console.error("ENDPOINT_BASE o APP_PATH no están definidos");
       return;
     }
 
-    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateToday";
+    // Si se proporciona una fecha, usar el endpoint de fecha específica
+    let apiUrl;
+    let dataToSend;
+    
+    if (fecha) {
+      apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateByDate";
+      dataToSend = "action=GetExchangeRateByDate&fecha=" + encodeURIComponent(fecha);
+      console.log("Usando endpoint GetExchangeRateByDate con fecha:", fecha);
+    } else {
+      apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateToday";
+      dataToSend = null;
+      console.log("Usando endpoint GetExchangeRateToday (sin fecha)");
+    }
+    
+    console.log("URL final:", apiUrl);
+    console.log("Datos a enviar:", dataToSend);
     const tasaDisplayValue = document.getElementById("tasaDisplayValue");
     const fechaTasaDisplay = document.getElementById("fechaTasaDisplay");
 
@@ -4225,14 +4260,19 @@ function savePayment() {
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     
     xhr.onload = function() {
+      console.log("loadExchangeRateToday - Fecha recibida como parámetro:", fecha);
+      console.log("loadExchangeRateToday - URL:", apiUrl);
+      console.log("loadExchangeRateToday - Datos enviados:", dataToSend);
+      
       if (xhr.status === 200) {
         try {
           const data = JSON.parse(xhr.responseText);
           
           // Debug: mostrar respuesta en consola
-          console.log("Respuesta API GetExchangeRateToday:", data);
+          console.log("Respuesta API:", fecha ? "GetExchangeRateByDate" : "GetExchangeRateToday", data);
           console.log("data.success:", data.success);
           console.log("data.exchange_rate:", data.exchange_rate);
+          console.log("Fecha enviada al backend:", fecha);
           
           if (data.success && data.exchange_rate) {
             // Verificar si tasa_dolar existe
@@ -4261,49 +4301,26 @@ function savePayment() {
               }
             }
             
-            // Actualizar la fecha si está disponible
-            const fechaTasa = data.exchange_rate.fecha_tasa || null;
+            // Actualizar la fecha mostrada
+            // Siempre mostrar la fecha que el usuario seleccionó en el input
             if (fechaTasaDisplay) {
-              if (fechaTasa) {
-                // Formatear la fecha correctamente
-                let fechaFormateada = fechaTasa;
-                if (typeof fechaTasa === 'string') {
-                  // Si viene como string "YYYY-MM-DD", convertirla
-                  const partes = fechaTasa.split('-');
-                  if (partes.length === 3) {
-                    fechaFormateada = partes[2] + '/' + partes[1] + '/' + partes[0];
-                  } else {
-                    // Intentar parsear como fecha
-                    const fecha = new Date(fechaTasa);
-                    if (!isNaN(fecha.getTime())) {
-                      fechaFormateada = fecha.toLocaleDateString('es-VE', { 
-                        year: 'numeric', 
-                        month: '2-digit', 
-                        day: '2-digit' 
-                      });
-                    }
-                  }
-                } else {
-                  const fecha = new Date(fechaTasa);
-                  if (!isNaN(fecha.getTime())) {
-                    fechaFormateada = fecha.toLocaleDateString('es-VE', { 
-                      year: 'numeric', 
-                      month: '2-digit', 
-                      day: '2-digit' 
-                    });
-                  }
-                }
-                fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaFormateada;
+              let fechaAmostrar;
+              
+              // Si se proporcionó una fecha (fecha seleccionada por el usuario), usar esa
+              if (fecha) {
+                fechaAmostrar = formatDateToDDMMYYYY(fecha);
               } else {
-                // Si no hay fecha en la respuesta, usar la fecha de hoy
-                const hoy = new Date();
-                const fechaHoy = hoy.toLocaleDateString('es-VE', { 
-                  year: 'numeric', 
-                  month: '2-digit', 
-                  day: '2-digit' 
-                });
-                fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
+                // Si no se proporcionó fecha, intentar obtenerla del input
+                const fechaPagoInput = document.getElementById("fechaPago");
+                if (fechaPagoInput && fechaPagoInput.value) {
+                  fechaAmostrar = formatDateToDDMMYYYY(fechaPagoInput.value);
+                } else {
+                  // Si no hay fecha en el input, usar la fecha de hoy
+                  fechaAmostrar = formatDateToDDMMYYYY(new Date());
+                }
               }
+              
+              fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaAmostrar;
             }
           } else {
             if (tasaDisplayValue) {
@@ -4311,11 +4328,7 @@ function savePayment() {
             }
             if (fechaTasaDisplay) {
               const hoy = new Date();
-              const fechaHoy = hoy.toLocaleDateString('es-VE', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit' 
-              });
+              const fechaHoy = formatDateToDDMMYYYY(hoy);
               fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
             }
             exchangeRate = null;
@@ -4328,11 +4341,7 @@ function savePayment() {
           }
           if (fechaTasaDisplay) {
             const hoy = new Date();
-            const fechaHoy = hoy.toLocaleDateString('es-VE', { 
-              year: 'numeric', 
-              month: '2-digit', 
-              day: '2-digit' 
-            });
+            const fechaHoy = formatDateToDDMMYYYY(hoy);
             fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
           }
           exchangeRate = null;
@@ -4344,11 +4353,7 @@ function savePayment() {
         }
         if (fechaTasaDisplay) {
           const hoy = new Date();
-          const fechaHoy = hoy.toLocaleDateString('es-VE', { 
-            year: 'numeric', 
-            month: '2-digit', 
-            day: '2-digit' 
-          });
+          const fechaHoy = formatDateToDDMMYYYY(hoy);
           fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaHoy;
         }
         exchangeRate = null;
@@ -4362,10 +4367,200 @@ function savePayment() {
       exchangeRate = null;
     };
     
-    xhr.send();
+    // Enviar datos si hay fecha, si no enviar null (para GetExchangeRateToday)
+    xhr.send(dataToSend);
+  }
+  
+  // Hacer la función globalmente accesible para los atributos onclick/onchange del HTML
+  window.loadExchangeRateToday = loadExchangeRateToday;
+
+  // COMENTADO: No cargar automáticamente la tasa al iniciar
+  // La tasa se cargará cuando el usuario haga clic en el campo fechaPago
+  // loadExchangeRateToday();
+
+  // Función auxiliar para formatear fecha a DD/MM/YYYY
+  function formatDateToDDMMYYYY(fecha) {
+    if (!fecha) return '';
+    
+    // Si es string en formato YYYY-MM-DD
+    if (typeof fecha === 'string' && fecha.includes('-')) {
+      const partes = fecha.split('-');
+      if (partes.length === 3) {
+        // Asegurar que día y mes tengan 2 dígitos
+        const dia = partes[2].padStart(2, '0');
+        const mes = partes[1].padStart(2, '0');
+        const año = partes[0];
+        return dia + '/' + mes + '/' + año;
+      }
+    }
+    
+    // Si es un objeto Date
+    if (fecha instanceof Date) {
+      const dia = String(fecha.getDate()).padStart(2, '0');
+      const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+      const año = fecha.getFullYear();
+      return dia + '/' + mes + '/' + año;
+    }
+    
+    // Intentar parsear como fecha
+    const fechaObj = new Date(fecha);
+    if (!isNaN(fechaObj.getTime())) {
+      const dia = String(fechaObj.getDate()).padStart(2, '0');
+      const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+      const año = fechaObj.getFullYear();
+      return dia + '/' + mes + '/' + año;
+    }
+    
+    return fecha; // Retornar original si no se puede formatear
   }
 
-  loadExchangeRateToday();
+  // Función para cargar la tasa de cambio por fecha
+  function loadExchangeRateByDate(fecha) {
+    console.log("loadExchangeRateByDate llamada con fecha:", fecha);
+    
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+      console.error("ENDPOINT_BASE o APP_PATH no están definidos");
+      return;
+    }
+
+    if (!fecha) {
+      console.error("Fecha vacía o inválida");
+      return;
+    }
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateByDate";
+    console.log("URL de la API:", apiUrl);
+    const tasaDisplayValue = document.getElementById("tasaDisplayValue");
+    const fechaTasaDisplay = document.getElementById("fechaTasaDisplay");
+
+    // Mostrar estado de carga
+    if (tasaDisplayValue) {
+      tasaDisplayValue.textContent = "Cargando Tasa...";
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          
+          // Debug: mostrar respuesta en consola
+          console.log("Respuesta API GetExchangeRateByDate:", data);
+          console.log("data.success:", data.success);
+          console.log("data.exchange_rate:", data.exchange_rate);
+          
+          if (data.success && data.exchange_rate) {
+            const tasaValue = data.exchange_rate.tasa_dolar || null;
+            
+            if (tasaValue !== null && tasaValue !== undefined) {
+              const tasa = parseFloat(tasaValue);
+              
+              if (!isNaN(tasa)) {
+                exchangeRate = tasa; // Actualizar la variable global también
+                
+                // Mostrar la tasa formateada
+                if (tasaDisplayValue) {
+                  tasaDisplayValue.textContent = "Bs. " + tasa.toFixed(2);
+                }
+              } else {
+                if (tasaDisplayValue) {
+                  tasaDisplayValue.textContent = "Error en formato";
+                }
+              }
+            } else {
+              if (tasaDisplayValue) {
+                tasaDisplayValue.textContent = "No disponible";
+              }
+            }
+            
+            // Actualizar la fecha mostrada en formato DD/MM/YYYY
+            const fechaTasa = data.exchange_rate.fecha_tasa || fecha;
+            if (fechaTasaDisplay) {
+              const fechaFormateada = formatDateToDDMMYYYY(fechaTasa);
+              fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaFormateada;
+            }
+          } else {
+            if (tasaDisplayValue) {
+              tasaDisplayValue.textContent = "No disponible";
+            }
+            if (fechaTasaDisplay) {
+              // Formatear la fecha ingresada en formato DD/MM/YYYY
+              const fechaFormateada = formatDateToDDMMYYYY(fecha);
+              fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + fechaFormateada;
+            }
+            exchangeRate = null;
+          }
+        } catch (error) {
+          console.error("Error al parsear respuesta:", error);
+          if (tasaDisplayValue) {
+            tasaDisplayValue.textContent = "Error al cargar";
+          }
+          exchangeRate = null;
+        }
+      } else {
+        console.error("Error HTTP:", xhr.status, xhr.responseText);
+        try {
+          const errorData = JSON.parse(xhr.responseText);
+          console.error("Error detallado:", errorData);
+          if (tasaDisplayValue) {
+            tasaDisplayValue.textContent = "Error de conexión (" + xhr.status + ")";
+          }
+        } catch (e) {
+          if (tasaDisplayValue) {
+            tasaDisplayValue.textContent = "Error de conexión (" + xhr.status + ")";
+          }
+        }
+        exchangeRate = null;
+      }
+    };
+    
+    xhr.onerror = function() {
+      if (tasaDisplayValue) {
+        tasaDisplayValue.textContent = "Error de red";
+      }
+      exchangeRate = null;
+    };
+    
+    const data = "action=GetExchangeRateByDate&fecha=" + encodeURIComponent(fecha);
+    xhr.send(data);
+  }
+
+  // Event listener para el campo fechaPago
+  document.addEventListener('DOMContentLoaded', function() {
+    const fechaPagoInput = document.getElementById('fechaPago');
+    if (fechaPagoInput) {
+      // Los eventos onclick y onchange ya están manejados directamente en el HTML
+      // Pero mantenemos estos listeners como respaldo
+      fechaPagoInput.addEventListener('change', function() {
+        const fechaSeleccionada = this.value;
+        console.log("Cambio en fechaPago - Fecha seleccionada:", fechaSeleccionada);
+        if (fechaSeleccionada) {
+          console.log("Cargando tasa para fecha:", fechaSeleccionada);
+          loadExchangeRateToday(fechaSeleccionada);
+        }
+      });
+      
+      fechaPagoInput.addEventListener('click', function(e) {
+        const fechaSeleccionada = this.value;
+        console.log("Click en fechaPago - Fecha seleccionada:", fechaSeleccionada);
+        if (fechaSeleccionada) {
+          console.log("Cargando tasa para fecha:", fechaSeleccionada);
+          loadExchangeRateToday(fechaSeleccionada);
+        }
+      });
+      
+      // También ejecutar cuando se hace focus (por si se selecciona con teclado)
+      fechaPagoInput.addEventListener('focus', function() {
+        const fechaSeleccionada = this.value;
+        if (fechaSeleccionada) {
+          loadExchangeRateToday(fechaSeleccionada);
+        }
+      });
+    }
+  });
 
   // Función para manejar el cambio de moneda
   function handleCurrencyChange() {
@@ -5417,6 +5612,11 @@ checkEnvio.addEventListener("change", function() {
   const modalAgregarDatosPagoElement = document.getElementById("modalAgregarDatosPago");
   if (modalAgregarDatosPagoElement) {
     modalAgregarDatosPagoElement.addEventListener("shown.bs.modal", function() {
+      // Cargar la tasa de cambio del día de hoy cuando se abre el modal
+      if (typeof loadExchangeRateToday === 'function') {
+        loadExchangeRateToday();
+      }
+      
       const fechaCarga = document.getElementById("fechaCarga");
       if (fechaCarga) {
         const today = new Date();
