@@ -260,5 +260,88 @@ class emailModel extends Model{
             return ['query' => null, 'row' => null, 'numRows' => 0];
         }
     }
+
+    public function get_details_by_nroTicket($nro_ticket){
+        try{
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM get_details_by_nroTicket(".$escaped_nro_ticket.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en get_details_by_nroTicket: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    public function GetPresupuestoData($nro_ticket){
+        try{
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY fecha_creacion DESC LIMIT 1;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetPresupuestoData: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    public function GetPaymentData($nro_ticket){
+        try{
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_payment_record DESC LIMIT 1;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentData: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    public function GetTicketDetailsByNroTicket($nro_ticket){
+        try{
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT serial_pos, nro_ticket FROM tickets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketDetailsByNroTicket: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    public function GetTicketCompleteDataByNroTicket($nro_ticket){
+        try{
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "
+               SELECT 
+                    t.id_level_failure,
+                    f.name_failure,
+                    ut.date_create_ticket,
+                    a.name_accion_ticket,
+                    st.name_status_ticket,
+                    sp.name_status_payment,
+                    sd.name_status_domiciliacion,
+                    CONCAT(u.name, ' ', u.surname) as full_name_tecnico
+                FROM tickets t
+                LEFT JOIN tickets_failures tf ON tf.id_ticket = t.id_ticket
+                LEFT JOIN failures f ON f.id_failure = tf.id_failure
+                LEFT JOIN accions_tickets a ON a.id_accion_ticket = t.id_accion_ticket
+                LEFT JOIN status_tickets st ON st.id_status_ticket = t.id_status_ticket
+                LEFT JOIN status_payments sp ON sp.id_status_payment = t.id_status_payment
+                LEFT JOIN tickets_status_domiciliacion tsd ON tsd.id_ticket = t.id_ticket
+                LEFT JOIN status_domiciliacion sd ON sd.id_status_domiciliacion = tsd.id_status_domiciliacion
+                LEFT JOIN users_tickets ut ON ut.id_ticket = t.id_ticket
+                LEFT JOIN users u ON u.id_user = ut.id_tecnico_n1
+                WHERE t.nro_ticket = " . $escaped_nro_ticket . "
+                ORDER BY t.id_ticket DESC
+                LIMIT 1;
+            ";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketCompleteDataByNroTicket: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
 }
 ?>

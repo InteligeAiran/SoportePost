@@ -1695,46 +1695,77 @@ function mi_navbar()
                                 <input type="text" id="presupuestoFechaPago" class="form-control" readonly>
                             </div>
                             
-                            <!-- Campos de Pago Móvil - Destino -->
-                            <div class="col-md-6" id="presupuestoDestinoRifTipoContainer" style="display: none;">
-                                <label class="form-label fw-semibold">RIF Tipo Destino</label>
-                                <input type="text" id="presupuestoDestinoRifTipo" class="form-control" readonly>
-                            </div>
-                            
-                            <div class="col-md-6" id="presupuestoDestinoRifNumeroContainer" style="display: none;">
-                                <label class="form-label fw-semibold">RIF Número Destino</label>
-                                <input type="text" id="presupuestoDestinoRifNumero" class="form-control" readonly>
-                            </div>
-                            
-                            <div class="col-md-6" id="presupuestoDestinoTelefonoContainer" style="display: none;">
-                                <label class="form-label fw-semibold">Teléfono Destino</label>
-                                <input type="text" id="presupuestoDestinoTelefono" class="form-control" readonly>
-                            </div>
-                            
-                            <div class="col-md-6" id="presupuestoDestinoBancoContainer" style="display: none;">
-                                <label class="form-label fw-semibold">Banco Destino (Pago Móvil)</label>
-                                <input type="text" id="presupuestoDestinoBanco" class="form-control" readonly>
-                            </div>
-                            
-                            <!-- Campos de Pago Móvil - Origen -->
-                            <div class="col-md-6" id="presupuestoOrigenRifTipoContainer" style="display: none;">
-                                <label class="form-label fw-semibold">RIF Tipo Origen</label>
-                                <input type="text" id="presupuestoOrigenRifTipo" class="form-control" readonly>
-                            </div>
-                            
-                            <div class="col-md-6" id="presupuestoOrigenRifNumeroContainer" style="display: none;">
-                                <label class="form-label fw-semibold">RIF Número Origen</label>
-                                <input type="text" id="presupuestoOrigenRifNumero" class="form-control" readonly>
-                            </div>
-                            
-                            <div class="col-md-6" id="presupuestoOrigenTelefonoContainer" style="display: none;">
-                                <label class="form-label fw-semibold">Teléfono Origen</label>
-                                <input type="text" id="presupuestoOrigenTelefono" class="form-control" readonly>
-                            </div>
-                            
-                            <div class="col-md-6" id="presupuestoOrigenBancoContainer" style="display: none;">
-                                <label class="form-label fw-semibold">Banco Origen (Pago Móvil)</label>
-                                <input type="text" id="presupuestoOrigenBanco" class="form-control" readonly>
+                            <!-- Sección: Datos de Pago Móvil -->
+                            <div class="col-12" id="presupuestoPagoMovilContainer" style="display: none; margin-top: 15px;">
+                                <div class="row g-2">
+                                    <!-- Origen -->
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-success" style="border-width: 2px;">
+                                            <div class="card-header bg-success text-white" style="padding: 8px 12px;">
+                                                <h6 class="mb-0" style="font-size: 0.95rem; font-weight: 600;">
+                                                    <i class="fas fa-arrow-circle-up me-2"></i>Origen
+                                                </h6>
+                                            </div>
+                                            <div class="card-body" style="padding: 15px;">
+                                                <div class="mb-2" id="presupuestoOrigenRifContainer" style="display: none;">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-id-card me-1 text-primary"></i>RIF
+                                                    </label>
+                                                    <div class="d-flex gap-2">
+                                                        <input type="text" id="presupuestoOrigenRifTipo" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; width: 25%; background-color: #e9ecef; text-align: center; font-weight: 600;">
+                                                        <input type="text" id="presupuestoOrigenRifNumero" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; width: 75%; background-color: #e9ecef;">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-2" id="presupuestoOrigenTelefonoContainer" style="display: none;">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-phone me-1 text-primary"></i>Nro. Telefónico
+                                                    </label>
+                                                    <input type="text" id="presupuestoOrigenTelefono" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
+                                                </div>
+                                                <div id="presupuestoOrigenBancoContainer" style="display: none;">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-university me-1 text-primary"></i>Banco
+                                                    </label>
+                                                    <input type="text" id="presupuestoOrigenBanco" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Destino -->
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card" style="border-width: 2px; border-color: #6f42c1 !important;">
+                                            <div class="card-header text-white" style="padding: 8px 12px; background-color: #6f42c1;">
+                                                <h6 class="mb-0" style="font-size: 0.95rem; font-weight: 600;">
+                                                    <i class="fas fa-arrow-circle-down me-2"></i>Destino
+                                                </h6>
+                                            </div>
+                                            <div class="card-body" style="padding: 15px;">
+                                                <div class="mb-2" id="presupuestoDestinoRifContainer" style="display: none;">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-id-card me-1 text-primary"></i>RIF
+                                                    </label>
+                                                    <div class="d-flex gap-2">
+                                                        <input type="text" id="presupuestoDestinoRifTipo" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; width: 25%; background-color: #e9ecef; text-align: center; font-weight: 600;">
+                                                        <input type="text" id="presupuestoDestinoRifNumero" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; width: 75%; background-color: #e9ecef;">
+                                                    </div>
+                                                </div>
+                                                <div class="mb-2" id="presupuestoDestinoTelefonoContainer" style="display: none;">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-phone me-1 text-primary"></i>Nro. Telefónico
+                                                    </label>
+                                                    <input type="text" id="presupuestoDestinoTelefono" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
+                                                </div>
+                                                <div id="presupuestoDestinoBancoContainer" style="display: none;">
+                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fas fa-university me-1 text-primary"></i>Banco
+                                                    </label>
+                                                    <input type="text" id="presupuestoDestinoBanco" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="col-12 mt-3">
