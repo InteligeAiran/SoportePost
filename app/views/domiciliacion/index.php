@@ -766,6 +766,9 @@ function mi_navbar() {}
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            <!-- ✅ ALERTA INFORMATIVA PARA DOCUMENTO RECHAZADO (ESTILO IGUAL A DOCUMENTOS POR APROBAR) -->
+                            <div id="rejectedDocumentInfo" style="display: none;"></div>
+
                             <form id="uploadForm">
                                 <!-- Campos ocultos -->
                                 <input type="hidden" id="id_ticket">
@@ -807,6 +810,9 @@ function mi_navbar() {}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn" style="display: none;">
+                                <i class="fas fa-file-contract me-2"></i>Generar Convenio Firmado
+                            </button>
                             <button type="button" class="btn btn-primary" id="uploadFileBtn" disabled>Subir Archivo</button>
                         </div>
                     </div>

@@ -5163,6 +5163,45 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
+    public function getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
+            $escaped_document_type = pg_escape_literal($db_conn, $documentType);
+            
+            // Obtener el motivo de rechazo del documento rechazado más reciente
+            $sql = "SELECT 
+                        aa.id_motivo_rechazo,
+                        mr.name_motivo_rechazo
+                    FROM archivos_adjuntos aa
+                    INNER JOIN tickets t ON t.id_ticket = aa.id_ticket
+                    LEFT JOIN motivos_rechazo mr ON mr.id_motivo_rechazo = aa.id_motivo_rechazo
+                    WHERE aa.id_ticket = ".$escaped_ticket_id."
+                    AND aa.document_type = ".$escaped_document_type."
+                    AND aa.rechazado = 'TRUE'
+                    ORDER BY aa.uploaded_at DESC
+                    LIMIT 1";
+            
+            $result = $this->db->pgquery($sql);
+            
+            if ($result === false) {
+                error_log("Error al consultar motivo de rechazo: " . pg_last_error($db_conn));
+                return false;
+            }
+            
+            if (pg_num_rows($result) === 0) {
+                return false;
+            }
+            
+            return pg_fetch_assoc($result);
+            
+        } catch (Throwable $e) {
+            error_log("Excepción en getMotivoRechazoDocumento: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type) {
 
         try {

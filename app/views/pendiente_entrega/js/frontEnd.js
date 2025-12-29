@@ -2,7 +2,7 @@ let currentTicketIdForConfirmTaller = null;
 let currentNroTicketForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL NÚMERO DE TICKET
 let confirmInTallerModalInstance = null;
 let currentSerialPosForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL SERIAL POS
-let currentTicketNroForImage = null;
+let currentTicketNroForImage = null; 
 let bsPresupuestoPDFModal = null; // Instancia global del modal de presupuesto PDF
 let bsPresupuestoModal = null; // Instancia global del modal de presupuesto
 let bsViewModal = null; // Instancia global del modal de visualización 
@@ -211,7 +211,7 @@ function openUploadPresupuestoPDFModal(nroTicket, serialPos) {
         bsUploadPresupuestoPDFModal.show();
     } else {
         console.error("Error: Instancia de Bootstrap Modal para 'uploadPresupuestoPDFModal' no creada.");
-    }
+        }
 }
 
 // Función para mostrar el modal de visualización
@@ -253,28 +253,28 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
         return;
     }
 
-    // Función para limpiar la ruta del archivo
-    function cleanFilePath(filePath) {
-        if (!filePath) return null;
+        // Función para limpiar la ruta del archivo
+        function cleanFilePath(filePath) {
+            if (!filePath) return null;
 
-        // Reemplazar barras invertidas con barras normales
-        let cleanPath = filePath.replace(/\\/g, '/');
+            // Reemplazar barras invertidas con barras normales
+            let cleanPath = filePath.replace(/\\/g, '/');
 
         // Extraer la parte después de 'Documentos_SoportePost/' o 'uploads/'
-        const pathSegments = cleanPath.split('Documentos_SoportePost/');
-        if (pathSegments.length > 1) {
-            cleanPath = pathSegments[1];
+            const pathSegments = cleanPath.split('Documentos_SoportePost/');
+            if (pathSegments.length > 1) {
+                cleanPath = pathSegments[1];
         } else {
             // Si no tiene Documentos_SoportePost/, intentar con uploads/
             const uploadsSegments = cleanPath.split('uploads/');
             if (uploadsSegments.length > 1) {
                 cleanPath = 'uploads/' + uploadsSegments[1];
             }
-        }
+            }
 
-        // Construir la URL completa
-        return `http://${HOST}/Documentos/${cleanPath}`;
-    }
+          // Construir la URL completa
+          return `http://${HOST}/Documentos/${cleanPath}`;
+        }
 
     // Función para mostrar un documento
     function displayDocument(filePath, fileName, isImage) {
@@ -1257,7 +1257,7 @@ function getTicketDataFinaljs() {
                 const url_documento = row.document_url;
                 const documentType = row.document_type;
                 const filename = row.original_filename;
-                
+
                 // Verificar si existe PDF del presupuesto
                 const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
                 const hasPresupuestoPDF = pdfPathPresupuesto && pdfPathPresupuesto.trim() !== '';
@@ -1265,9 +1265,9 @@ function getTicketDataFinaljs() {
                 // Si hay al menos un documento (Envio_Destino o Presupuesto), mostrar botón
                 if ((hasEnvioDestinoDocument && url_documento) || hasPresupuestoPDF) {
                   const fileExtension = url_documento ? url_documento.split('.').pop().toLowerCase() : '';
-                  const isPdf = fileExtension === 'pdf';
+                    const isPdf = fileExtension === 'pdf';
                         
-                  return `<button type="button" class="btn btn-info btn-sm view-document-btn" 
+                    return `<button type="button" class="btn btn-info btn-sm view-document-btn" 
                       data-id-ticket="${idTicket}"
                       data-nro-ticket="${nroTicket}"
                       data-url-document="${url_documento || ''}"
@@ -2989,9 +2989,9 @@ $(document).ready(function () {
     
     // Llamar a la función showViewModal con los parámetros correctos
     if (typeof window.showViewModal === 'function') {
-      if (documentType === 'pdf') {
+    if (documentType === 'pdf') {
         window.showViewModal(idTicket, nroTicket, null, urlDocument, filename, hasPresupuesto, presupuestoPath);
-      } else {
+    } else {
         window.showViewModal(idTicket, nroTicket, urlDocument, null, filename, hasPresupuesto, presupuestoPath);
       }
     } else {
@@ -6612,12 +6612,11 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
         'presupuestoReferenciaContainer',
         'presupuestoDepositanteContainer',
         'presupuestoFechaPagoContainer',
-        'presupuestoDestinoRifTipoContainer',
-        'presupuestoDestinoRifNumeroContainer',
+        'presupuestoPagoMovilContainer',
+        'presupuestoDestinoRifContainer',
         'presupuestoDestinoTelefonoContainer',
         'presupuestoDestinoBancoContainer',
-        'presupuestoOrigenRifTipoContainer',
-        'presupuestoOrigenRifNumeroContainer',
+        'presupuestoOrigenRifContainer',
         'presupuestoOrigenTelefonoContainer',
         'presupuestoOrigenBancoContainer'
     ];
@@ -6706,17 +6705,96 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                         toggleField('presupuestoFechaPagoContainer', 'presupuestoFechaPago', null);
                     }
                     
-                    // Campos condicionales - Pago Móvil - Destino
-                    toggleField('presupuestoDestinoRifTipoContainer', 'presupuestoDestinoRifTipo', paymentData.destino_rif_tipo);
-                    toggleField('presupuestoDestinoRifNumeroContainer', 'presupuestoDestinoRifNumero', paymentData.destino_rif_numero);
-                    toggleField('presupuestoDestinoTelefonoContainer', 'presupuestoDestinoTelefono', paymentData.destino_telefono);
-                    toggleField('presupuestoDestinoBancoContainer', 'presupuestoDestinoBanco', paymentData.destino_banco);
+                    // Campos condicionales - Pago Móvil
+                    const pagoMovilContainer = document.getElementById('presupuestoPagoMovilContainer');
+                    const hasPagoMovilData = paymentData.destino_rif_tipo || paymentData.destino_rif_numero || 
+                                            paymentData.destino_telefono || paymentData.destino_banco ||
+                                            paymentData.origen_rif_tipo || paymentData.origen_rif_numero || 
+                                            paymentData.origen_telefono || paymentData.origen_banco;
                     
-                    // Campos condicionales - Pago Móvil - Origen
-                    toggleField('presupuestoOrigenRifTipoContainer', 'presupuestoOrigenRifTipo', paymentData.origen_rif_tipo);
-                    toggleField('presupuestoOrigenRifNumeroContainer', 'presupuestoOrigenRifNumero', paymentData.origen_rif_numero);
-                    toggleField('presupuestoOrigenTelefonoContainer', 'presupuestoOrigenTelefono', paymentData.origen_telefono);
-                    toggleField('presupuestoOrigenBancoContainer', 'presupuestoOrigenBanco', paymentData.origen_banco);
+                    if (pagoMovilContainer) {
+                        if (hasPagoMovilData) {
+                            pagoMovilContainer.style.display = '';
+                            
+                            // Destino - RIF
+                            const destinoRifContainer = document.getElementById('presupuestoDestinoRifContainer');
+                            const destinoRifTipo = document.getElementById('presupuestoDestinoRifTipo');
+                            const destinoRifNumero = document.getElementById('presupuestoDestinoRifNumero');
+                            if (destinoRifContainer && destinoRifTipo && destinoRifNumero) {
+                                if (paymentData.destino_rif_tipo && paymentData.destino_rif_numero) {
+                                    destinoRifTipo.value = paymentData.destino_rif_tipo;
+                                    destinoRifNumero.value = paymentData.destino_rif_numero;
+                                    destinoRifContainer.style.display = '';
+                                } else {
+                                    destinoRifContainer.style.display = 'none';
+                                }
+                            }
+                            
+                            // Destino - Teléfono
+                            const destinoTelefonoContainer = document.getElementById('presupuestoDestinoTelefonoContainer');
+                            const destinoTelefono = document.getElementById('presupuestoDestinoTelefono');
+                            if (destinoTelefonoContainer && destinoTelefono) {
+                                if (paymentData.destino_telefono) {
+                                    destinoTelefono.value = paymentData.destino_telefono;
+                                    destinoTelefonoContainer.style.display = '';
+                                } else {
+                                    destinoTelefonoContainer.style.display = 'none';
+                                }
+                            }
+                            
+                            // Destino - Banco
+                            const destinoBancoContainer = document.getElementById('presupuestoDestinoBancoContainer');
+                            const destinoBanco = document.getElementById('presupuestoDestinoBanco');
+                            if (destinoBancoContainer && destinoBanco) {
+                                if (paymentData.destino_banco) {
+                                    destinoBanco.value = paymentData.destino_banco;
+                                    destinoBancoContainer.style.display = '';
+                                } else {
+                                    destinoBancoContainer.style.display = 'none';
+                                }
+                            }
+                            
+                            // Origen - RIF
+                            const origenRifContainer = document.getElementById('presupuestoOrigenRifContainer');
+                            const origenRifTipo = document.getElementById('presupuestoOrigenRifTipo');
+                            const origenRifNumero = document.getElementById('presupuestoOrigenRifNumero');
+                            if (origenRifContainer && origenRifTipo && origenRifNumero) {
+                                if (paymentData.origen_rif_tipo && paymentData.origen_rif_numero) {
+                                    origenRifTipo.value = paymentData.origen_rif_tipo;
+                                    origenRifNumero.value = paymentData.origen_rif_numero;
+                                    origenRifContainer.style.display = '';
+                                } else {
+                                    origenRifContainer.style.display = 'none';
+                                }
+                            }
+                            
+                            // Origen - Teléfono
+                            const origenTelefonoContainer = document.getElementById('presupuestoOrigenTelefonoContainer');
+                            const origenTelefono = document.getElementById('presupuestoOrigenTelefono');
+                            if (origenTelefonoContainer && origenTelefono) {
+                                if (paymentData.origen_telefono) {
+                                    origenTelefono.value = paymentData.origen_telefono;
+                                    origenTelefonoContainer.style.display = '';
+                                } else {
+                                    origenTelefonoContainer.style.display = 'none';
+                                }
+                            }
+                            
+                            // Origen - Banco
+                            const origenBancoContainer = document.getElementById('presupuestoOrigenBancoContainer');
+                            const origenBanco = document.getElementById('presupuestoOrigenBanco');
+                            if (origenBancoContainer && origenBanco) {
+                                if (paymentData.origen_banco) {
+                                    origenBanco.value = paymentData.origen_banco;
+                                    origenBancoContainer.style.display = '';
+                                } else {
+                                    origenBancoContainer.style.display = 'none';
+                                }
+                            }
+                        } else {
+                            pagoMovilContainer.style.display = 'none';
+                        }
+                    }
                     
                     // Guardar datos para cálculos
                     document.getElementById('presupuestoMontoPagadoUSD').value = montoUSD.toFixed(2);
@@ -7144,6 +7222,9 @@ document.addEventListener('click', function(event) {
                                                 previewDoc.open();
                                                 previewDoc.write(htmlWithBaseReal);
                                                 previewDoc.close();
+                                                
+                                                // Enviar correo con datos de anticipo y presupuesto
+                                                sendAnticipoPresupuestoEmail(nroTicket);
                                                 
                                                 // Esperar un momento para que se actualice el iframe
                                                 setTimeout(() => {
@@ -10505,6 +10586,82 @@ $(document).on('shown.bs.modal', '#modalAgregarDatosPago', function() {
         });
     }
 });
+
+// Función para enviar correo con datos de anticipo y presupuesto
+function sendAnticipoPresupuestoEmail(nroTicket) {
+    try {
+        console.log('Iniciando envío de correo de anticipo y presupuesto para ticket:', nroTicket);
+        
+        if (!nroTicket) {
+            console.error('Error: nroTicket no está definido');
+            return;
+        }
+        
+        const data = new URLSearchParams();
+        data.append('action', 'send_anticipo_presupuesto_email');
+        data.append('nro_ticket', nroTicket);
+        
+        const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_anticipo_presupuesto_email`;
+        console.log('URL del endpoint:', url);
+        console.log('Datos a enviar:', data.toString());
+        
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        
+        xhr.onload = function() {
+            console.log('Respuesta recibida. Status:', xhr.status);
+            console.log('Respuesta completa:', xhr.responseText);
+            
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    console.log('Respuesta parseada:', response);
+                    
+                    if (response.success) {
+                        console.log('✅ Correo de anticipo y presupuesto enviado correctamente:', response.message);
+                        if (response.emails_sent !== undefined) {
+                            console.log(`📧 Correos enviados: ${response.emails_sent}/${response.total_emails}`);
+                        }
+                    } else {
+                        console.error('❌ Error al enviar correo:', response.message);
+                        // Mostrar alerta al usuario
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Aviso',
+                            text: 'El presupuesto se guardó correctamente, pero hubo un problema al enviar el correo: ' + (response.message || 'Error desconocido'),
+                            confirmButtonText: 'Aceptar',
+                            confirmButtonColor: '#003594'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error al parsear respuesta del servidor:', e);
+                    console.error('Respuesta recibida (texto):', xhr.responseText);
+                }
+            } else {
+                console.error('❌ Error HTTP al enviar correo:', xhr.status, xhr.statusText);
+                console.error('Respuesta del servidor:', xhr.responseText);
+            }
+        };
+        
+        xhr.onerror = function() {
+            console.error('❌ Error de red al enviar correo');
+        };
+        
+        xhr.ontimeout = function() {
+            console.error('❌ Timeout al enviar correo');
+        };
+        
+        // Configurar timeout de 30 segundos
+        xhr.timeout = 30000;
+        
+        xhr.send(data);
+        console.log('Petición enviada al servidor');
+    } catch (error) {
+        console.error('❌ Error en sendAnticipoPresupuestoEmail:', error);
+        console.error('Stack trace:', error.stack);
+    }
+}
 
 // Configurar listener para cambios en moneda y forma de pago
 $(document).on('change', '#moneda', function() {

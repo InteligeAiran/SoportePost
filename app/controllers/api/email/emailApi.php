@@ -97,6 +97,11 @@ class email extends Controller {
                     $this->handlesend_reassignment_email();
                 break;
 
+                case 'send_anticipo_presupuesto_email':
+                    // Manejo del envío de correo con datos de anticipo y presupuesto
+                    $this->handleSendAnticipoPresupuestoEmail();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en email'], 404);
                 break;
@@ -3091,6 +3096,688 @@ HTML;
             <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
                 </div>
             </div>
+        </body>
+</html>
+HTML;
+    }
+
+    /**
+     * Maneja el envío de correo con datos de anticipo y presupuesto
+     */
+    public function handleSendAnticipoPresupuestoEmail() {
+        try {
+            error_log("=== EJECUTANDO handleSendAnticipoPresupuestoEmail ===");
+            error_log("Fecha/Hora: " . date('Y-m-d H:i:s'));
+            error_log("POST recibido: " . print_r($_POST, true));
+            error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+            
+            $repository = new EmailRepository();
+            
+            // 1. Validar datos de entrada
+            $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+            error_log("Nro_ticket recibido: " . ($nro_ticket ? $nro_ticket : 'VACÍO'));
+            
+            if (empty($nro_ticket)) {
+                error_log("ERROR: Número de ticket vacío o no recibido");
+                $this->response(['success' => false, 'message' => 'Número de ticket requerido.'], 400);
+                return;
+            }
+            
+            // 2. Obtener datos del anticipo desde payment_records
+            error_log("Obteniendo datos de anticipo para ticket: " . $nro_ticket);
+            $paymentData = $repository->GetPaymentData($nro_ticket);
+            if (!$paymentData) {
+                error_log("ERROR: No se encontraron datos de anticipo para el ticket: " . $nro_ticket);
+                $this->response([
+                    'success' => false, 
+                    'message' => 'No se encontraron datos de anticipo para este ticket.',
+                    'debug' => ['nro_ticket' => $nro_ticket]
+                ], 404);
+                return;
+            }
+            error_log("Datos de anticipo obtenidos: " . print_r($paymentData, true));
+            
+            // 3. Obtener datos del presupuesto desde budgets
+            error_log("Obteniendo datos de presupuesto para ticket: " . $nro_ticket);
+            $presupuestoData = $repository->GetPresupuestoData($nro_ticket);
+            if (!$presupuestoData) {
+                error_log("ERROR: No se encontraron datos de presupuesto para el ticket: " . $nro_ticket);
+                $this->response([
+                    'success' => false, 
+                    'message' => 'No se encontraron datos de presupuesto para este ticket.',
+                    'debug' => ['nro_ticket' => $nro_ticket]
+                ], 404);
+                return;
+            }
+            error_log("Datos de presupuesto obtenidos: " . print_r($presupuestoData, true));
+            
+            // 4. Obtener datos del ticket para obtener el serial
+            $ticketDetails = $repository->GetTicketDetailsByNroTicket($nro_ticket);
+            if (!$ticketDetails) {
+                error_log("ERROR: No se encontraron detalles del ticket: " . $nro_ticket);
+                $this->response(['success' => false, 'message' => 'No se encontraron detalles del ticket.'], 404);
+                return;
+            }
+            
+            $serial = $ticketDetails['serial_pos'] ?? 'N/A';
+            
+            // 5. Obtener información del cliente
+            $result_client = $repository->GetClientInfo($serial);
+            $clientRif = $result_client['coddocumento'] ?? 'N/A';
+            $clientName = $result_client['razonsocial'] ?? 'N/A';
+            
+            // 5. Obtener datos del ticket completo
+            $result_ticket = $repository->GetTicketCompleteDataByNroTicket($nro_ticket);
+            
+            $ticketNivelFalla = $result_ticket['id_level_failure'] ?? 'N/A';
+            $name_failure = $result_ticket['name_failure'] ?? 'N/A';
+            $ticketfinished = $result_ticket['create_ticket'] ?? date('Y-m-d H:i');
+            $ticketaccion = $result_ticket['name_accion_ticket'] ?? 'N/A';
+            $ticketstatus = $result_ticket['name_status_ticket'] ?? 'N/A';
+            $ticketpaymnet = $result_ticket['name_status_payment'] ?? 'N/A';
+            $ticketdomiciliacion = $result_ticket['name_status_domiciliacion'] ?? 'N/A';
+            
+            // 6. Obtener datos del técnico que creó el ticket usando get_details_by_nroTicket desde EmailRepository
+            error_log("Obteniendo datos del técnico para ticket: " . $nro_ticket);
+            $tecnicoData = $repository->GetDetailsByNroTicket($nro_ticket);
+            if (!$tecnicoData || empty($tecnicoData['email'])) {
+                error_log("ERROR: No se encontraron datos del técnico para el ticket: " . $nro_ticket);
+                $this->response([
+                    'success' => false, 
+                    'message' => 'No se encontraron datos del técnico para este ticket.',
+                    'debug' => ['nro_ticket' => $nro_ticket]
+                ], 404);
+                return;
+            }
+            
+            $email_tecnico = $tecnicoData['email'] ?? '';
+            $nombre_tecnico = $tecnicoData['full_name'] ?? 'Técnico';
+            error_log("Datos del técnico obtenidos: " . print_r($tecnicoData, true));
+            error_log("Email del técnico: " . $email_tecnico);
+            error_log("Nombre del técnico: " . $nombre_tecnico);
+            
+            // 7. Preparar imágenes embebidas
+            $embeddedImages = [];
+            if (defined('FIRMA_CORREO')) {
+                $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+            }
+            
+            // 8. Generar cuerpo del correo
+            $subject_tecnico = '✅ NOTIFICACIÓN - Presupuesto Generado Correctamente';
+            $body_tecnico = $this->getAnticipoPresupuestoEmailBody(
+                $nombre_tecnico,
+                $nombre_tecnico,
+                $nro_ticket,
+                $clientRif,
+                $clientName,
+                $serial,
+                $ticketNivelFalla,
+                $name_failure,
+                $ticketfinished,
+                $ticketaccion,
+                $ticketstatus,
+                $ticketpaymnet,
+                $ticketdomiciliacion,
+                $paymentData,
+                $presupuestoData
+            );
+            
+            // 9. Enviar correo al técnico
+            error_log("=== INICIANDO ENVÍO DE CORREO DE ANTICIPO/PRESUPUESTO AL TÉCNICO ===");
+            error_log("Email del técnico: " . $email_tecnico);
+            error_log("Nombre del técnico: " . $nombre_tecnico);
+            error_log("Asunto: " . $subject_tecnico);
+            
+            try {
+                $email_sent = $this->emailService->sendEmail($email_tecnico, $subject_tecnico, $body_tecnico, [], $embeddedImages);
+                
+                if ($email_sent) {
+                    error_log("✅ CORREO DE ANTICIPO/PRESUPUESTO ENVIADO EXITOSAMENTE AL TÉCNICO: " . $email_tecnico);
+                    $this->response([
+                        'success' => true,
+                        'message' => 'Correo enviado correctamente al técnico.',
+                        'email_sent_to' => $email_tecnico,
+                        'tecnico_name' => $nombre_tecnico
+                    ], 200);
+                } else {
+                    $error = $this->emailService->getLastError();
+                    $error_msg = $error ? $error : 'Error desconocido del servicio de correo';
+                    error_log("❌ ERROR AL ENVIAR CORREO DE ANTICIPO/PRESUPUESTO AL TÉCNICO " . $email_tecnico . ": " . $error_msg);
+                    $this->response([
+                        'success' => false,
+                        'message' => 'No se pudo enviar el correo al técnico: ' . $error_msg,
+                        'error' => $error_msg
+                    ], 500);
+                }
+            } catch (\Exception $e) {
+                $error_msg = "Excepción: " . $e->getMessage();
+                error_log("❌ EXCEPCIÓN AL ENVIAR CORREO DE ANTICIPO/PRESUPUESTO AL TÉCNICO " . $email_tecnico . ": " . $error_msg);
+                $this->response([
+                    'success' => false,
+                    'message' => 'Error al procesar el envío del correo: ' . $error_msg,
+                    'error' => $error_msg
+                ], 500);
+            }
+            
+        } catch (\Throwable $e) {
+            error_log("ERROR EN handleSendAnticipoPresupuestoEmail: " . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => 'Error al procesar el envío del correo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Genera el cuerpo del correo para el técnico con datos de anticipo y presupuesto
+     */
+    private function getAnticipoPresupuestoEmailBody($nombre_tecnico, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion, $paymentData, $presupuestoData) {
+        // Asegurar que el nivel solo contenga el número
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        }
+        
+        // Formatear datos del anticipo
+        $moneda_anticipo = htmlspecialchars($paymentData['currency'] ?? 'N/A');
+        $monto_anticipo_usd = isset($paymentData['reference_amount']) ? number_format((float)$paymentData['reference_amount'], 2, ',', '.') : '0,00';
+        $monto_anticipo_bs = isset($paymentData['amount_bs']) ? number_format((float)$paymentData['amount_bs'], 2, ',', '.') : '0,00';
+        $metodo_pago = htmlspecialchars($paymentData['payment_method'] ?? 'N/A');
+        $referencia_pago = htmlspecialchars($paymentData['payment_reference'] ?? 'N/A');
+        $depositante = htmlspecialchars($paymentData['depositor'] ?? 'N/A');
+        $fecha_pago = isset($paymentData['payment_date']) ? date('d/m/Y', strtotime($paymentData['payment_date'])) : 'N/A';
+        
+        // Determinar tipo de método de pago (por nombre, case-insensitive)
+        $metodo_pago_lower = strtolower($metodo_pago);
+        $es_transferencia = (strpos($metodo_pago_lower, 'transferencia') !== false);
+        $es_pago_movil = (strpos($metodo_pago_lower, 'pago móvil') !== false || strpos($metodo_pago_lower, 'pago movil') !== false);
+        
+        // Campos para Transferencia
+        $origen_bank = htmlspecialchars($paymentData['origen_bank'] ?? '');
+        $destination_bank = htmlspecialchars($paymentData['destination_bank'] ?? '');
+        
+        // Campos para Pago Móvil - Destino
+        $destino_rif_tipo = htmlspecialchars($paymentData['destino_rif_tipo'] ?? '');
+        $destino_rif_numero = htmlspecialchars($paymentData['destino_rif_numero'] ?? '');
+        $destino_telefono = htmlspecialchars($paymentData['destino_telefono'] ?? '');
+        $destino_banco = htmlspecialchars($paymentData['destino_banco'] ?? '');
+        
+        // Campos para Pago Móvil - Origen
+        $origen_rif_tipo = htmlspecialchars($paymentData['origen_rif_tipo'] ?? '');
+        $origen_rif_numero = htmlspecialchars($paymentData['origen_rif_numero'] ?? '');
+        $origen_telefono = htmlspecialchars($paymentData['origen_telefono'] ?? '');
+        $origen_banco = htmlspecialchars($paymentData['origen_banco'] ?? '');
+        
+        // Formatear datos del presupuesto
+        $presupuesto_numero = htmlspecialchars($presupuestoData['presupuesto_numero'] ?? 'N/A');
+        $monto_taller = isset($presupuestoData['monto_taller']) ? number_format((float)$presupuestoData['monto_taller'], 2, ',', '.') : '0,00';
+        $diferencia_usd = isset($presupuestoData['diferencia_usd']) ? number_format((float)$presupuestoData['diferencia_usd'], 2, ',', '.') : '0,00';
+        $diferencia_bs = isset($presupuestoData['diferencia_bs']) ? number_format((float)$presupuestoData['diferencia_bs'], 2, ',', '.') : '0,00';
+        $descripcion_reparacion = htmlspecialchars($presupuestoData['descripcion_reparacion'] ?? 'N/A');
+        $fecha_presupuesto = isset($presupuestoData['fecha_presupuesto']) ? date('d/m/Y', strtotime($presupuestoData['fecha_presupuesto'])) : date('d/m/Y');
+        
+        // Calcular monto del taller en USD: anticipo + diferencia
+        $monto_anticipo_usd_float = isset($paymentData['reference_amount']) ? (float)$paymentData['reference_amount'] : 0;
+        $diferencia_usd_float = isset($presupuestoData['diferencia_usd']) ? (float)$presupuestoData['diferencia_usd'] : 0;
+        $monto_taller_usd = $monto_anticipo_usd_float + $diferencia_usd_float;
+        $monto_taller_usd_formatted = number_format($monto_taller_usd, 2, ',', '.');
+        
+        // Construir HTML condicional para Transferencia
+        $transferencia_html = '';
+        if ($es_transferencia && ($origen_bank || $destination_bank)) {
+            $transferencia_html = '
+                <div style="margin-top:25px; padding-top:20px; border-top:1px solid #e0e0e0;">
+                    <div class="summary-title" style="margin-bottom:20px; font-size:0.9rem;">INFORMACIÓN DE TRANSFERENCIA</div>
+                    <div class="details-grid">
+                        ' . ($origen_bank ? '
+                        <div class="detail-item">
+                            <div class="detail-label">Banco Origen</div>
+                            <div class="detail-value">' . htmlspecialchars($origen_bank) . '</div>
+                        </div>
+                        ' : '') . '
+                        ' . ($destination_bank ? '
+                        <div class="detail-item">
+                            <div class="detail-label">Banco Destino</div>
+                            <div class="detail-value">' . htmlspecialchars($destination_bank) . '</div>
+                        </div>
+                        ' : '') . '
+                    </div>
+                </div>
+            ';
+        }
+        
+        // Construir HTML condicional para Pago Móvil
+        $pago_movil_html = '';
+        if ($es_pago_movil && ($destino_rif_tipo || $destino_rif_numero || $destino_telefono || $destino_banco || $origen_rif_tipo || $origen_rif_numero || $origen_telefono || $origen_banco)) {
+            // Construir sección Origen
+            $origen_fields = '';
+            if ($origen_rif_tipo && $origen_rif_numero) {
+                $origen_fields .= '
+                    <div style="margin-bottom:15px;">
+                        <div style="font-weight:600; color:#003594; margin-bottom:6px; font-size:0.85rem;">
+                            <i class="fas fa-id-card" style="margin-right:5px;"></i>RIF
+                        </div>
+                        <div style="color:#495057; font-size:0.9rem;">' . htmlspecialchars($origen_rif_tipo) . '-' . htmlspecialchars($origen_rif_numero) . '</div>
+                    </div>
+                ';
+            }
+            if ($origen_telefono) {
+                $origen_fields .= '
+                    <div style="margin-bottom:15px;">
+                        <div style="font-weight:600; color:#003594; margin-bottom:6px; font-size:0.85rem;">
+                            <i class="fas fa-phone" style="margin-right:5px;"></i>Nro. Telefónico
+                        </div>
+                        <div style="color:#495057; font-size:0.9rem;">' . htmlspecialchars($origen_telefono) . '</div>
+                    </div>
+                ';
+            }
+            if ($origen_banco) {
+                $origen_fields .= '
+                    <div>
+                        <div style="font-weight:600; color:#003594; margin-bottom:6px; font-size:0.85rem;">
+                            <i class="fas fa-university" style="margin-right:5px;"></i>Banco
+                        </div>
+                        <div style="color:#495057; font-size:0.9rem;">' . htmlspecialchars($origen_banco) . '</div>
+                    </div>
+                ';
+            }
+            
+            // Construir sección Destino
+            $destino_fields = '';
+            if ($destino_rif_tipo && $destino_rif_numero) {
+                $destino_fields .= '
+                    <div style="margin-bottom:15px;">
+                        <div style="font-weight:600; color:#003594; margin-bottom:6px; font-size:0.85rem;">
+                            <i class="fas fa-id-card" style="margin-right:5px;"></i>RIF
+                        </div>
+                        <div style="color:#495057; font-size:0.9rem;">' . htmlspecialchars($destino_rif_tipo) . '-' . htmlspecialchars($destino_rif_numero) . '</div>
+                    </div>
+                ';
+            }
+            if ($destino_telefono) {
+                $destino_fields .= '
+                    <div style="margin-bottom:15px;">
+                        <div style="font-weight:600; color:#003594; margin-bottom:6px; font-size:0.85rem;">
+                            <i class="fas fa-phone" style="margin-right:5px;"></i>Nro. Telefónico
+                        </div>
+                        <div style="color:#495057; font-size:0.9rem;">' . htmlspecialchars($destino_telefono) . '</div>
+                    </div>
+                ';
+            }
+            if ($destino_banco) {
+                $destino_fields .= '
+                    <div>
+                        <div style="font-weight:600; color:#003594; margin-bottom:6px; font-size:0.85rem;">
+                            <i class="fas fa-university" style="margin-right:5px;"></i>Banco
+                        </div>
+                        <div style="color:#495057; font-size:0.9rem;">' . htmlspecialchars($destino_banco) . '</div>
+                    </div>
+                ';
+            }
+            
+            $pago_movil_html = '
+                <div style="margin-top:25px; padding-top:20px; border-top:1px solid #e0e0e0;">
+                    <div class="summary-title" style="margin-bottom:20px; font-size:0.9rem;">INFORMACIÓN DE PAGO MÓVIL</div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                        <!-- Origen Card -->
+                        ' . (($origen_rif_tipo || $origen_rif_numero || $origen_telefono || $origen_banco) ? '
+                        <div style="flex:1; min-width:280px; border:2px solid #28a745; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); position: absolute; margin-left: 3%;">
+                            <div style="background-color:#28a745; color:#fff; padding:8px 12px;">
+                                <h6 style="margin:0; font-size:0.95rem; font-weight:600;">
+                                    <i class="fas fa-arrow-circle-up" style="margin-right:8px;"></i>Origen
+                                </h6>
+                            </div>
+                            <div style="padding:15px; background-color:#fff;">
+                                ' . $origen_fields . '
+                            </div>
+                        </div>
+                        ' : '') . '
+                        
+                        <!-- Destino Card -->
+                        ' . (($destino_rif_tipo || $destino_rif_numero || $destino_telefono || $destino_banco) ? '
+                        <div style="flex:1; min-width:280px; border:2px solid #007bff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1); margin-left: 13%;">
+                            <div style="background-color:#007bff; color:#fff; padding:8px 12px;">
+                                <h6 style="margin:0; font-size:0.95rem; font-weight:600;">
+                                    <i class="fas fa-arrow-circle-down" style="margin-right:8px;"></i>Destino
+                                </h6>
+                            </div>
+                            <div style="padding:15px; background-color:#fff;">
+                                ' . $destino_fields . '
+                            </div>
+                        </div>
+                        ' : '') . '
+                    </div>
+                </div>
+            ';
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue,
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'tecnico_nombre' => htmlspecialchars($nombre_tecnico),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket),
+            'moneda_anticipo' => $moneda_anticipo,
+            'monto_anticipo_usd' => $monto_anticipo_usd,
+            'monto_anticipo_bs' => $monto_anticipo_bs,
+            'metodo_pago' => $metodo_pago,
+            'referencia_pago' => $referencia_pago,
+            'depositante' => $depositante,
+            'fecha_pago' => $fecha_pago,
+            'presupuesto_numero' => $presupuesto_numero,
+            'monto_taller' => $monto_taller,
+            'monto_taller_usd' => $monto_taller_usd_formatted,
+            'diferencia_usd' => $diferencia_usd,
+            'diferencia_bs' => $diferencia_bs,
+            'descripcion_reparacion' => $descripcion_reparacion,
+            'fecha_presupuesto' => $fecha_presupuesto,
+            // Campos condicionales
+            'es_transferencia' => $es_transferencia,
+            'es_pago_movil' => $es_pago_movil,
+            'origen_bank' => $origen_bank,
+            'destination_bank' => $destination_bank,
+            'destino_rif_tipo' => $destino_rif_tipo,
+            'destino_rif_numero' => $destino_rif_numero,
+            'destino_telefono' => $destino_telefono,
+            'destino_banco' => $destino_banco,
+            'origen_rif_tipo' => $origen_rif_tipo,
+            'origen_rif_numero' => $origen_rif_numero,
+            'origen_telefono' => $origen_telefono,
+            'origen_banco' => $origen_banco
+        ];
+        $currentYear = date("Y");
+        
+        // Preparar el logo HTML si está definido
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Factura - Anticipo y Presupuesto</title>
+            <style>
+        body{
+            margin:0;
+            padding:40px 20px;
+            background:#f5f5f5;
+            font-family:'Arial','Helvetica',sans-serif;
+        }
+        .invoice{
+            background:#ffffff;
+            max-width:800px;
+            margin:0 auto;
+            box-shadow:0 0 20px rgba(0,0,0,0.1);
+            border:1px solid #ddd;
+        }
+        .invoice-header{
+            background:#003594;
+            color:#ffffff;
+            padding:30px 40px;
+            border-bottom:4px solid #0056b3;
+        }
+        .invoice-header h1{
+            margin:0;
+            font-size:28px;
+            font-weight:bold;
+        }
+        .invoice-header p{
+            margin:8px 0 0;
+            font-size:14px;
+            opacity:0.9;
+        }
+        .invoice-body{
+            padding:40px;
+        }
+        .greeting{
+            font-size:16px;
+            color:#333;
+            margin-bottom:30px;
+        }
+        .greeting strong{
+            color:#003594;
+        }
+        .invoice-info{
+            display:flex;
+            justify-content:space-between;
+            margin-bottom:40px;
+            padding-bottom:20px;
+            border-bottom:2px solid #e0e0e0;
+            gap:100px;
+        }
+        .info-left, .info-right{
+            flex:1;
+        }
+        .info-label{
+            font-size:11px;
+            color:#666;
+            text-transform:uppercase;
+            letter-spacing:1px;
+            margin-bottom:5px;
+        }
+        .info-value{
+            font-size:14px;
+            color:#333;
+            font-weight:600;
+            margin-bottom:15px;
+            margin-left:2%;
+        }
+        .invoice-summary{
+            background:#f8f9fa;
+            border:2px solid #e0e0e0;
+            padding:30px;
+            margin:30px 0;
+        }
+        .summary-title{
+            font-size:18px;
+            font-weight:bold;
+            color:#003594;
+            margin-bottom:50px;
+            padding-bottom:10px;
+            border-bottom:2px solid #003594;
+        }
+        .summary-row{
+            display:flex;
+            justify-content:space-between;
+            padding:15px 0;
+            border-bottom:1px solid #e0e0e0;
+        }
+        .summary-row:last-child{
+            border-bottom:2px solid #003594;
+            font-weight:bold;
+            font-size:18px;
+            margin-top:10px;
+            padding-top:20px;
+            padding-bottom:20px;
+            background-color:#fff9e6;
+            margin-left:-30px;
+            margin-right:-30px;
+            padding-left:30px;
+            padding-right:30px;
+        }
+        .summary-label{
+            font-size:15px;
+            color:#333;
+            font-weight:bold;
+        }
+        .summary-value{
+            font-size:16px;
+            font-weight:600;
+            color:#003594;
+            font-family:'Courier New',monospace;
+            margin-left:2%;
+        }
+        .summary-row:last-child .summary-label{
+            font-weight:bold;
+        }
+        .summary-row:last-child .summary-value{
+            font-size:18px;
+            color:#003594;
+            font-weight:bold;
+        }
+        .invoice-details{
+            margin-top:40px;
+            padding-top:30px;
+            border-top:1px solid #e0e0e0;
+        }
+        .details-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:20px;
+            margin-top:20px;
+        }
+        .detail-item{
+            padding:12px 0;
+            border-bottom:1px dotted #ddd;
+        }
+        .detail-label{
+            font-size:12px;
+            color:#666;
+            text-transform:uppercase;
+            margin-bottom:5px;
+        }
+        .detail-value{
+            font-size:14px;
+            color:#333;
+            font-weight:500;
+        }
+        .invoice-footer{
+            background:#f8f9fa;
+            padding:25px 40px;
+            text-align:center;
+            border-top:1px solid #e0e0e0;
+        }
+        .invoice-footer p{
+            margin:5px 0;
+            font-size:12px;
+            color:#666;
+        }
+        .logo-container{
+            text-align:center;
+            margin:20px 0;
+        }
+        .logo{
+            max-width:200px;
+            height:auto;
+        }
+        @media(max-width:600px){
+            .invoice-body{padding:25px;}
+            .invoice-info{flex-direction:column;}
+            .info-right{margin-top:20px;}
+            .details-grid{grid-template-columns:1fr;}
+        }
+
+        #total-to-pay-row {
+            background-color: #fff4e5;
+        }
+            </style>
+        </head>
+        <body>
+    <div class="invoice">
+        <div class="invoice-header">
+            <h1>FACTURA DE PRESUPUESTO</h1>
+            <p>Ticket #{$map['ticket']} | {$map['fecha_presupuesto']}</p>
+        </div>
+        <div class="invoice-body">
+            <div class="greeting">
+                Hola, <strong>Técnico {$map['tecnico_nombre']}</strong>
+            </div>
+            
+            <div class="invoice-info">
+                <div class="info-left">
+                    <div class="info-label">Cliente</div>
+                    <div class="info-value">{$map['razon']}</div>
+                    <div class="info-label">RIF</div>
+                    <div class="info-value">{$map['rif']}</div>
+                    <div class="info-label">Serial POS</div>
+                    <div class="info-value" style="font-family:monospace;">{$map['serial']}</div>
+                </div>
+                <div class="info-right">
+                    <div class="info-label">Número de Presupuesto</div>
+                    <div class="info-value" style="font-family:monospace;">{$map['presupuesto_numero']}</div>
+                    <div class="info-label">Fecha de Creación</div>
+                    <div class="info-value">{$map['fecha']}</div>
+                    <div class="info-label">Técnico</div>
+                    <div class="info-value">{$map['tecnico']}</div>
+                </div>
+            </div>
+
+            <div class="invoice-summary">
+                <div class="summary-title">RESUMEN FINANCIERO</div>
+                <div class="summary-row">
+                    <span class="summary-label">Monto del Taller</span>
+                    <span class="summary-value">\${$map['monto_taller_usd']}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Monto Anticipo</span>
+                    <span class="summary-value">\${$map['monto_anticipo_usd']}</span>
+                </div>
+                <div class="summary-row" id ="total-to-pay-row">
+                    <span class="summary-label">TOTAL A PAGAR:</span>
+                    <span class="summary-value">\${$map['diferencia_usd']}</span>
+                </div>
+            </div>
+
+            <div class="invoice-details">
+                <div class="summary-title" style="margin-bottom:25px;">DATOS ANTICIPO</div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Método de Pago</div>
+                        <div class="detail-value">{$map['metodo_pago']}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Referencia de Pago</div>
+                        <div class="detail-value">{$map['referencia_pago']}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Depositante</div>
+                        <div class="detail-value">{$map['depositante']}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Fecha de Pago</div>
+                        <div class="detail-value">{$map['fecha_pago']}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Tipo de Moneda</div>
+                        <div class="detail-value">{$map['moneda_anticipo']}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Monto en Bs</div>
+                        <div class="detail-value">Bs. {$map['monto_anticipo_bs']}</div>
+                    </div>
+                </div>
+                
+                {$transferencia_html}
+                
+                {$pago_movil_html}
+                <div style="margin-top:25px; padding-top:20px; border-top:1px solid #e0e0e0;">
+                    <div class="detail-label">Descripción de Reparación</div>
+                    <div class="detail-value" style="margin-top:8px; padding:15px; background:#f8f9fa; border-left:3px solid #003594;">{$map['descripcion_reparacion']}</div>
+                </div>
+            </div>
+
+            {$logoHtml}
+        </div>
+        <div class="invoice-footer">
+            <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+        </div>
+    </div>
         </body>
 </html>
 HTML;

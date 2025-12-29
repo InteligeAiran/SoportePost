@@ -574,7 +574,8 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
                 // DETERMINAR EL id_status_payment BASÁNDOSE EN LOS DOCUMENTOS EXISTENTES
                             error_log("Determinando status payment para ticket: " . $nro_ticket . " y documento: " . $document_type);
 
-                $id_status_payment = $this->determineStatusPayment($nro_ticket, $document_type);
+                // ✅ USAR determineStatusPaymentAfterUpload PARA ACTUALIZAR DOMICILIACIÓN CUANDO ES convenio_firmado
+                $id_status_payment = $this->determineStatusPaymentAfterUpload($nro_ticket, $document_type);
             error_log("Status payment determinado: " . $id_status_payment);
 
                 $sqlticket = "UPDATE tickets SET id_status_payment = ".$id_status_payment." WHERE nro_ticket = '".$nro_ticket."';";
