@@ -282,6 +282,10 @@ class Consulta extends Controller
                     $this->handleGetMotivosDomiciliacion();
                     break;
 
+                case 'getMotivoRechazo':
+                    $this->handleGetMotivoRechazoDocumento();
+                    break;
+
                 case 'GetAccountsBanks':
                     $this->handleGetAccountsBanks();
                     break;
@@ -2158,6 +2162,26 @@ class Consulta extends Controller
             $this->response(['success' => true, 'motivos' => $result], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetMotivoRechazoDocumento(){
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        $nroTicket = isset($_POST['nroTicket']) ? $_POST['nroTicket'] : '';
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : 'convenio_firmado';
+
+        if (!$ticketId) {
+            $this->response(['success' => false, 'message' => 'ID de ticket requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType);
+
+        if ($result !== false && $result !== null) {
+            $this->response(['success' => true, 'motivo' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró motivo de rechazo.'], 404);
         }
     }
 

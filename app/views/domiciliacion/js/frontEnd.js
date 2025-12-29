@@ -195,32 +195,22 @@ function searchDomiciliacionTickets() {
         const currentNameStatusDomiciliacion = row.name_status_domiciliacion;
         const documentoConvenio = row.convenio_firmado;
         
-        // Solo mostrar el botón de adjuntar documento si el status es 4 (Deudor - Convenio Firmado)
+        // Mostrar el botón de adjuntar/visualizar documento si el status es 4 (Deudor - Convenio Firmado) o 6 (Convenio Firmado Aprovado)
         if (currentStatusDomiciliacion == 4) {
             // Verificar si ya tiene documento de convenio
             const tieneConvenio = row.convenio_firmado === "Sí";
             
             if (tieneConvenio) {
-                // Si ya tiene convenio, mostrar botón para visualizar
+                // Si ya tiene convenio, mostrar solo botón para visualizar (sin botón de cambiar estatus)
                 return `
                     <div class="d-flex gap-1">
-                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#changeStatusDomiciliacionModal"
-                            data-id="${idTicket}"
-                            data-nro-ticket="${row.nro_ticket}"
-                            data-current-status-id="${currentStatusDomiciliacion}"
-                            data-current-status-name="${currentNameStatusDomiciliacion}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
-                            </svg>
-                        </button>
                         <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
                             data-id="${idTicket}" 
                             data-nro-ticket="${row.nro_ticket}"
                             data-convenio-url="${row.convenio_url || ''}"
                             data-convenio-filename="${row.convenio_filename || ''}"
                             data-serial="${row.serial_pos || ''}"
+                            data-current-status-id="${currentStatusDomiciliacion}"
                             data=
                             title="Visualizar Documento de Convenio">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
@@ -230,20 +220,9 @@ function searchDomiciliacionTickets() {
                         </button>
                     </div>`;
             } else {
-                // Si no tiene convenio, mostrar botón para adjuntar
+                // Si no tiene convenio, mostrar solo botón para adjuntar (sin botón de cambiar estatus)
                 return `
                     <div class="d-flex gap-1">
-                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#changeStatusDomiciliacionModal"
-                            data-id="${idTicket}"
-                            data-nro-ticket="${row.nro_ticket}"
-                            data-current-status-id="${currentStatusDomiciliacion}"
-                            data-current-status-name="${currentNameStatusDomiciliacion}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
-                            </svg>
-                        </button>
                         <button type="button" class="btn btn-success btn-sm adjuntar-documento-btn" 
                             data-id="${idTicket}" 
                             data-nro-ticket="${row.nro_ticket}"
@@ -254,6 +233,59 @@ function searchDomiciliacionTickets() {
                         </button>
                     </div>`;
             }
+        } else if (currentStatusDomiciliacion == 6) {
+            // Si el estatus es 6 (Convenio Firmado Aprovado), mostrar solo botón para visualizar
+            return `
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
+                        data-id="${idTicket}" 
+                        data-nro-ticket="${row.nro_ticket}"
+                        data-convenio-url="${row.convenio_url || ''}"
+                        data-convenio-filename="${row.convenio_filename || ''}"
+                        data-serial="${row.serial_pos || ''}"
+                        data-current-status-id="${currentStatusDomiciliacion}"
+                        data=
+                        title="Visualizar Documento de Convenio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                        </svg>
+                    </button>
+                </div>`;
+        } else if (currentStatusDomiciliacion == 7) {
+            // Si el estatus es 7 (Convenio Firmado Rechazado), mostrar botón para visualizar y adjuntar
+            return `
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
+                        data-id="${idTicket}" 
+                        data-nro-ticket="${row.nro_ticket}"
+                        data-convenio-url="${row.convenio_url || ''}"
+                        data-convenio-filename="${row.convenio_filename || ''}"
+                        data-serial="${row.serial_pos || ''}"
+                        data-current-status-id="${currentStatusDomiciliacion}"
+                        data=
+                        title="Visualizar Documento de Convenio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn btn-sm adjuntar-documento-btn" 
+                        style="background-color: #fd7e14; border-color: #fd7e14; color: white;"
+                        data-id="${idTicket}" 
+                        data-nro-ticket="${row.nro_ticket}"
+                        data-convenio-filename="${row.convenio_filename || ''}"
+                        data-convenio-fecha="${row.convenio_fecha || ''}"
+                        data-convenio-url="${row.convenio_url || ''}"
+                        data-serial-pos="${row.serial_pos || ''}"
+                        data-motivo-rechazo="${row.motivo_rechazo || ''}"
+                        data-current-status-id="${currentStatusDomiciliacion}"
+                        title="Adjuntar Documento de Convenio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"></path>
+                        </svg>
+                    </button>
+                </div>`;
         } else {
             // Para otros estados, solo mostrar botón de cambiar estatus
             return `
@@ -677,6 +709,8 @@ function searchDomiciliacionTickets() {
                 function clearFilters(api) {
                   api.columns().search('').draw(false);
                   api.search('').draw(false);
+                  // Limpiar funciones de búsqueda personalizadas
+                  $.fn.dataTable.ext.search.pop();
                 }
 
                 // Función para buscar automáticamente el primer botón con datos
@@ -690,9 +724,9 @@ function searchDomiciliacionTickets() {
                   
                   const searchTerms = [
                     { button: "btn-pendiente-revisar", term: "^1$", column: 5, status: "Pendiente", action: "Pendiente Por revisar domiciliacion" },
-                    { button: "btn-solvente", term: "^2$|^6$", column: 5, status: "Solvente", action: "Tickets Solventes" },
+                    { button: "btn-solvente", term: "^2$", column: 5, status: "Solvente", action: "Tickets Solventes" },
                     { button: "btn-gestion-comercial", term: "^3$", column: 5, status: "Gestión Comercial", action: "Gestión Comercial" },
-                    { button: "btn-convenio-firmado", term: "^4$", column: 5, status: "Convenio Firmado", action: "Deudor - Convenio Firmado" },
+                    { button: "btn-convenio-firmado", term: "^(4|6|7)$", column: 5, status: "Convenio Firmado", action: "Deudor - Convenio Firmado - Convenio Firmado Aprovado - Convenio Firmado Rechazado" },
                     { button: "btn-desafiliado-deuda", term: "^5$", column: 5, status: "Desafiliado", action: "Deudor - Desafiliado con Deuda" }
                   ];
 
@@ -812,9 +846,9 @@ function searchDomiciliacionTickets() {
                 // Event listeners para los botones
 
                 $("#btn-solvente").on("click", function () {
-                  if (checkDataExists(dataTableInstance, "^2$|^6$", 5)) {
+                  if (checkDataExists(dataTableInstance, "^2$", 5)) {
                     clearFilters(dataTableInstance);
-                    dataTableInstance.column(5).search("^2$|^6$", true, false).draw();
+                    dataTableInstance.column(5).search("^2$", true, false).draw();
                     setActiveButton("btn-solvente");
                     showActionsColumn();
                   } else {
@@ -845,14 +879,27 @@ function searchDomiciliacionTickets() {
                 });
 
                 $("#btn-convenio-firmado").on("click", function () {
-                  if (checkDataExists(dataTableInstance, "^4$", 5)) {
-                    clearFilters(dataTableInstance);
-                    dataTableInstance.column(5).search("^4$", true, false).draw();
-                    setActiveButton("btn-convenio-firmado");
-                    showActionsColumn();
-                  } else {
-                    findFirstButtonWithData();
-                  }
+                  clearFilters(dataTableInstance);
+                  
+                  // Usar una función de búsqueda personalizada para incluir estatus 4, 6 y 7
+                  $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                      // Solo aplicar este filtro en nuestra tabla
+                      if (settings.nTable.id !== 'tabla-ticket') {
+                        return true;
+                      }
+                      
+                      // Obtener el valor de la columna 5 (id_status_domiciliacion)
+                      const statusId = parseInt(data[5]) || 0;
+                      
+                      // Incluir solo estatus 4, 6 y 7
+                      return statusId === 4 || statusId === 6 || statusId === 7;
+                    }
+                  );
+                  
+                  dataTableInstance.draw();
+                  setActiveButton("btn-convenio-firmado");
+                  showActionsColumn();
                 });
 
                 $("#btn-desafiliado-deuda").on("click", function () {
@@ -916,7 +963,9 @@ function searchDomiciliacionTickets() {
                   const convenioUrl = $(this).data("convenio-url");
                   const convenioFilename = $(this).data("convenio-filename");
                   const ticketRechazado = $(this).data("rechazado");
+                  const currentStatusId = $(this).data("current-status-id");
                   const BotonRechazo = document.getElementById('RechazoDocumento');
+                  const BotonAprobar = document.getElementById('approveTicketFromImage');
                   const serial = $(this).data("serial");
                   
                   // ✅ GUARDAR EL TICKET CORRECTO PARA EL RECHAZO
@@ -937,10 +986,36 @@ function searchDomiciliacionTickets() {
                       return;
                   }
                   
-                if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
-                  BotonRechazo.style.display = 'none';
+                  // ✅ OCULTAR BOTÓN DE APROBAR SI EL ESTATUS ES 6 (Convenio Firmado Aprovado)
+                  // ✅ MOSTRAR BOTÓN DE APROBAR SI EL ESTATUS ES 7 (Convenio Firmado Rechazado)
+                  if (currentStatusId == 6) {
+                      if (BotonAprobar) {
+                          BotonAprobar.style.display = 'none';
+                      }
+                  } else if (currentStatusId == 7) {
+                      // Para estatus 7, mostrar botón de aprobar
+                      if (BotonAprobar) {
+                          BotonAprobar.style.display = 'block';
+                      }
+                      // Ocultar botón de rechazar para estatus 7
+                      if (BotonRechazo) {
+                          BotonRechazo.style.display = 'none';
+                      }
+                  } else {
+                      if (BotonAprobar) {
+                          BotonAprobar.style.display = 'block';
+                      }
+                  }
+                  
+                // ✅ OCULTAR BOTÓN DE RECHAZAR SI EL ESTATUS ES 7 O SI YA ESTÁ RECHAZADO
+                if (currentStatusId == 7 || ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+                  if (BotonRechazo) {
+                      BotonRechazo.style.display = 'none';
+                  }
                 } else {
-                  BotonRechazo.style.display = 'block';
+                  if (BotonRechazo) {
+                      BotonRechazo.style.display = 'block';
+                  }
                 }
 
                   // Determinar si es PDF o imagen basándose en la extensión
@@ -950,13 +1025,13 @@ function searchDomiciliacionTickets() {
                   
                   if (isPdf) {
                       // Es un PDF
-                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename);
+                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename, currentStatusId);
                   } else if (isImage) {
                       // Es una imagen
-                      showViewModal(ticketId, nroTicket, convenioUrl, null, convenioFilename);
+                      showViewModal(ticketId, nroTicket, convenioUrl, null, convenioFilename, currentStatusId);
                   } else {
                       // Tipo de archivo no reconocido, intentar como PDF
-                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename);
+                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename, currentStatusId);
                   }
               });
 
@@ -1242,9 +1317,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  document
-    .getElementById("generateNotaEntregaBtn")
-    .addEventListener("click", function () {
+  const generateNotaEntregaBtn = document.getElementById("generateNotaEntregaBtn");
+  if (generateNotaEntregaBtn) {
+    generateNotaEntregaBtn.addEventListener("click", function () {
       const ticketId = document.getElementById("generate_id_ticket").value;
 
       // Obtener datos del ticket para generar el número del convenio
@@ -1327,6 +1402,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const data = `action=GetPaymentAgreementData&id_ticket=${ticketId}`;
       xhr.send(data);
     });
+  }
 });
 
 function handleTicketApprovalFromImage() {
@@ -1730,7 +1806,7 @@ function showAttachDocumentModal(ticketId = null) {
   }
 }
 
-function showUploadDocumentModal(ticketId = null, nroTicket = null) {
+function showUploadDocumentModal(ticketId = null, nroTicket = null, currentStatusId = null, convenioFilename = '', convenioFecha = '', convenioUrl = '', serialPos = '', motivoRechazo = '') {
   // Si se pasan parámetros, usarlos directamente
   if (!ticketId) {
     ticketId = document.getElementById("generate_id_ticket").value;
@@ -1746,6 +1822,7 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
 
   const modalTicketId = document.getElementById("modalTicketId");
   const idTicketHidden = document.getElementById("id_ticket");
+  const uploadFormElement = document.getElementById("uploadForm");
 
   if (modalTicketId) modalTicketId.textContent = nroTicket || ticketId;
   if (idTicketHidden) {
@@ -1761,9 +1838,57 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
     typeDocument.value = "convenio_firmado";
   }
 
+  // ✅ MOSTRAR INFORMACIÓN DEL DOCUMENTO RECHAZADO SI EL ESTATUS ES 7 (ESTILO IGUAL A DOCUMENTOS POR APROBAR)
+  const rejectedDocumentInfo = document.getElementById("rejectedDocumentInfo");
+  const generateNotaEntregaBtn = document.getElementById("generateNotaEntregaBtn");
+  
+  if (currentStatusId == 7 && rejectedDocumentInfo && uploadFormElement) {
+    // Usar el motivo de rechazo directamente desde los datos de la tabla (igual que documentos_aprobar)
+    const motivoRechazoFinal = motivoRechazo || 'No especificado';
+    
+    // Crear el HTML con el mismo diseño que Documentos Por Aprobar
+    const infoHtml = `
+      <div class="alert mb-3" id="CartWrong" role="alert" style="background: linear-gradient(135deg, #6f42c1, #007bff); color: white; border: none;">
+        <h6 class="alert-heading">Documento Rechazado</h6>
+        <p class="mb-1"><strong>Serial POS:</strong> ${serialPos || 'No disponible'}</p>
+        <p class="mb-1"><strong>Tipo de Documento:</strong> convenio_firmado</p>
+        <p class="mb-0"><strong>Motivo de Rechazo:</strong> <span class="motivo-rechazo-highlight">${motivoRechazoFinal}</span></p>
+      </div>
+    `;
+    
+    // Eliminar cualquier alerta previa
+    const existingInfo = uploadFormElement.querySelector('#CartWrong');
+    if (existingInfo) {
+      existingInfo.remove();
+    }
+    
+    // Insertar la nueva alerta al inicio del formulario
+    uploadFormElement.insertAdjacentHTML('afterbegin', infoHtml);
+    rejectedDocumentInfo.style.display = "block";
+    
+    // ✅ MOSTRAR BOTÓN DE GENERAR CONVENIO FIRMADO CUANDO EL ESTATUS ES 7
+    if (generateNotaEntregaBtn) {
+      generateNotaEntregaBtn.style.display = "block";
+    }
+  } else {
+    // Ocultar la alerta si no es estatus 7
+    if (rejectedDocumentInfo) {
+      rejectedDocumentInfo.style.display = "none";
+      // Eliminar cualquier alerta previa
+      const existingInfo = uploadFormElement ? uploadFormElement.querySelector('#CartWrong') : null;
+      if (existingInfo) {
+        existingInfo.remove();
+      }
+    }
+    
+    // ✅ OCULTAR BOTÓN DE GENERAR CONVENIO FIRMADO SI NO ES ESTATUS 7
+    if (generateNotaEntregaBtn) {
+      generateNotaEntregaBtn.style.display = "none";
+    }
+  }
+
   // Limpiar campos del modal y estados de validación
   const documentFileInput = document.getElementById("documentFile");
-  const uploadForm = document.getElementById("uploadForm");
   const fileFormatInfo = document.getElementById("fileFormatInfo");
   const uploadFileBtn = document.getElementById("uploadFileBtn");
   
@@ -1778,8 +1903,8 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
     documentFileInput.style.removeProperty("padding-right");
   }
   
-  if (uploadForm) {
-    uploadForm.classList.remove("was-validated");
+  if (uploadFormElement) {
+    uploadFormElement.classList.remove("was-validated");
   }
   
   // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
@@ -3506,9 +3631,15 @@ $(document).ready(function () {
     $(document).on("click", ".adjuntar-documento-btn", function () {
       const idTicket = $(this).data("id");
       const nroTicket = $(this).data("nro-ticket");
+      const currentStatusId = $(this).data("current-status-id");
+      const convenioFilename = $(this).data("convenio-filename") || '';
+      const convenioFecha = $(this).data("convenio-fecha") || '';
+      const convenioUrl = $(this).data("convenio-url") || '';
+      const serialPos = $(this).data("serial-pos") || '';
+      const motivoRechazo = $(this).data("motivo-rechazo") || '';
 
       // Usar la función showUploadDocumentModal con los parámetros correctos
-      showUploadDocumentModal(idTicket, nroTicket);
+      showUploadDocumentModal(idTicket, nroTicket, currentStatusId, convenioFilename, convenioFecha, convenioUrl, serialPos, motivoRechazo);
 
       // Usar la instancia global del modal
       if (!uploadDocumentModalInstance) {
@@ -3526,7 +3657,21 @@ $(document).ready(function () {
       saveStatusDomiciliacionChangeBtn.addEventListener("click", function () {
         const idTicket = document.getElementById("idTicket").value;
 
-        const newStatusId = modalNewStatusDomiciliacionSelect.value;
+        let newStatusId = modalNewStatusDomiciliacionSelect.value;
+        
+        // ✅ LÓGICA ESPECIAL: Si el estatus actual es 1 y se selecciona "Deudor", cambiar a estatus 3
+        const currentStatusId = window.currentDomiciliacionStatusId;
+        const selectedOption = modalNewStatusDomiciliacionSelect.options[modalNewStatusDomiciliacionSelect.selectedIndex];
+        const isDeudorOption = selectedOption.getAttribute('data-is-deudor') === 'true' || 
+                               selectedOption.textContent === 'Deudor' ||
+                               (selectedOption.textContent.includes('Deudor') && 
+                                !selectedOption.textContent.includes('Convenio') && 
+                                !selectedOption.textContent.includes('Desafiliado'));
+        
+        if (currentStatusId == 1 && isDeudorOption) {
+          // Cambiar el newStatusId a 3 (Gestión Comercial - Espera Respuesta Cliente)
+          newStatusId = "3";
+        }
 
         const id_user_input = document.getElementById("iduser");
 
@@ -3583,10 +3728,20 @@ $(document).ready(function () {
         if (newStatusId === "2" || newStatusId === "3" || newStatusId === "4") {
           // Obtener el nombre del status actual y el nuevo status
           const currentStatusName = modalCurrentStatusDomiciliacion.value;
-          const newStatusName =
-            modalNewStatusDomiciliacionSelect.options[
-              modalNewStatusDomiciliacionSelect.selectedIndex
-            ].text;
+          // ✅ Si convertimos "Deudor" a estatus 3, obtener el nombre correcto del estatus 3
+          let newStatusName;
+          if (currentStatusId == 1 && isDeudorOption && newStatusId === "3") {
+            // Buscar la opción con valor 3 en el select para obtener su nombre
+            const status3Option = Array.from(modalNewStatusDomiciliacionSelect.options).find(
+              opt => opt.value === "3"
+            );
+            newStatusName = status3Option ? status3Option.text : "Gestión Comercial - Espera Respuesta Cliente";
+          } else {
+            newStatusName =
+              modalNewStatusDomiciliacionSelect.options[
+                modalNewStatusDomiciliacionSelect.selectedIndex
+              ].text;
+          }
 
           // Mostrar modal de confirmación personalizado y bonito
           Swal.fire({
@@ -3896,6 +4051,9 @@ function updateDomiciliacionStatus(
 
 function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
   // Acepta parámetros: ID del status actual y si tiene convenio firmado
+  
+  // Guardar el currentStatusId en una variable global para usarlo en el event listener
+  window.currentDomiciliacionStatusId = currentStatusIdToExclude;
 
   const xhr = new XMLHttpRequest();
 
@@ -3920,9 +4078,46 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
             '<option value="" disabled selected hidden>Seleccione</option>'; // Limpiar y agregar la opción por defecto
 
           if (Array.isArray(response.estatus) && response.estatus.length > 0) {
+            // Encontrar el ID del estatus "Deudor" (sin "Convenio Firmado" ni "Desafiliado")
+            let deudorStatusId = null;
+            response.estatus.forEach((status) => {
+              if (status.name_status_domiciliacion === 'Deudor' || 
+                  (status.name_status_domiciliacion.includes('Deudor') && 
+                   !status.name_status_domiciliacion.includes('Convenio') && 
+                   !status.name_status_domiciliacion.includes('Desafiliado'))) {
+                deudorStatusId = status.id_status_domiciliacion;
+              }
+            });
+
             response.estatus.forEach((status) => {
               // *** AQUÍ ESTÁ LA LÓGICA CLAVE: FILTRAR LA OPCIÓN ACTUAL POR ID ***
               if (status.id_status_domiciliacion != currentStatusIdToExclude) {
+                
+                // ✅ LÓGICA ESPECIAL: Cuando el estatus actual es 1 (Pendiente revisar domiciliacion)
+                // Solo mostrar Solvente (2) y Deudor
+                if (currentStatusIdToExclude == 1) {
+                  if (status.id_status_domiciliacion != 2 && status.id_status_domiciliacion != deudorStatusId) {
+                    return; // Saltar este estatus
+                  }
+                }
+                
+                // ✅ LÓGICA ESPECIAL: Cuando el estatus actual es 3 (Gestión Comercial - Espera Respuesta Cliente)
+                // Mostrar: Solvente (2), Deudor - Convenio Firmado (4) y Deudor - Desafiliado con Deuda (5)
+                // NO mostrar: Deudor básico, estatus 1, ni estatus 3
+                if (currentStatusIdToExclude == 3) {
+                  // Excluir estatus 1, 3, y Deudor básico
+                  if (status.id_status_domiciliacion == 1 || 
+                      status.id_status_domiciliacion == 3 ||
+                      status.id_status_domiciliacion == deudorStatusId) {
+                    return; // Saltar estatus 1, 3, y Deudor básico
+                  }
+                  // Solo permitir estatus 2 (Solvente), 4 y 5
+                  if (status.id_status_domiciliacion != 2 && 
+                      status.id_status_domiciliacion != 4 && 
+                      status.id_status_domiciliacion != 5) {
+                    return; // Saltar cualquier otro estatus que no sea 2, 4 o 5
+                  }
+                }
                 
                 // ✅ SIMPLE: Si no tiene documento, ocultar los estatus de convenio aprobado/rechazado
                 if (convenioFirmado !== 'Sí' && 
@@ -3934,6 +4129,11 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
                 const option = document.createElement("option");
 
                 option.value = status.id_status_domiciliacion;
+                
+                // Guardar el ID de Deudor en un atributo data para referencia
+                if (status.id_status_domiciliacion == deudorStatusId) {
+                  option.setAttribute('data-is-deudor', 'true');
+                }
 
                 option.textContent = status.name_status_domiciliacion;
 
@@ -3979,7 +4179,17 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
               this.style.color = "#6c757d"; // Color gris para la opción por defecto
             }
 
-            if (selectedValue === "3") {
+            // ✅ LÓGICA ESPECIAL: Si el estatus actual es 1 y se selecciona "Deudor", mostrar campo de observaciones
+            // porque se convertirá a estatus 3
+            const currentStatusId = window.currentDomiciliacionStatusId;
+            const selectedOption = this.options[this.selectedIndex];
+            const isDeudorOption = selectedOption.getAttribute('data-is-deudor') === 'true' || 
+                                   selectedOption.textContent === 'Deudor' ||
+                                   (selectedOption.textContent.includes('Deudor') && 
+                                    !selectedOption.textContent.includes('Convenio') && 
+                                    !selectedOption.textContent.includes('Desafiliado'));
+            
+            if (selectedValue === "3" || (currentStatusId == 1 && isDeudorOption)) {
               // Mostrar campo de observaciones
 
               if (!observationsContainer) {
@@ -4263,34 +4473,46 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (xhr.status === 200 && result.success) {
+              // ✅ CERRAR EL MODAL DE SUBIDA PRIMERO
+              uploadDocumentModalInstance.hide();
+
+              // ✅ OBTENER DATOS DEL DOCUMENTO RECIÉN SUBIDO
+              const filePath = result.file_path || '';
+              const originalFilename = result.original_filename || '';
+              const mimeType = result.mime_type || '';
+              const nroTicketValue = nroTicket || idTicketElement.getAttribute("data-nro-ticket");
+              
+              // ✅ DETERMINAR SI ES PDF O IMAGEN
+              const fileExtension = originalFilename.toLowerCase().split('.').pop();
+              const isPdf = fileExtension === 'pdf';
+              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
+              
+              // ✅ CONSTRUIR LA URL COMPLETA DEL DOCUMENTO USANDO LA FUNCIÓN EXISTENTE
+              function cleanFilePath(filePath) {
+                if (!filePath) return null;
+                let cleanPath = filePath.replace(/\\/g, '/');
+                const pathSegments = cleanPath.split('Documentos_SoportePost/');
+                if (pathSegments.length > 1) {
+                  cleanPath = pathSegments[1];
+                }
+                // Usar window.location.origin para obtener el host dinámicamente
+                return `${window.location.origin}/Documentos/${cleanPath}`;
+              }
+              
+              const fullUrl = cleanFilePath(filePath);
+              
+              // ✅ RECARGAR LA TABLA PRIMERO PARA ACTUALIZAR EL ESTATUS
+              searchDomiciliacionTickets();
+              
+              // ✅ MOSTRAR MENSAJE DE ÉXITO Y LUEGO EL MODAL
               Swal.fire({
                 icon: "success",
-
                 title: "¡Éxito!",
-
-                text: result.message,
-
+                text: "Documento subido exitosamente.",
                 confirmButtonColor: "#003594",
-
                 confirmButtonText: "Ok",
-
                 color: "black",
-              }).then((result) => {
-                // *** RESETEAR EL SELECT AL ESTADO INICIAL ***
-
-                const modalNewStatusDomiciliacionSelect =
-                  document.getElementById("modalNewStatusDomiciliacionSelect");
-
-                if (modalNewStatusDomiciliacionSelect) {
-                  modalNewStatusDomiciliacionSelect.value = "";
-
-                  modalNewStatusDomiciliacionSelect.selectedIndex = 0;
-                }
-
-                uploadDocumentModalInstance.hide();
-
-                // Recargar la página para actualizar los datos
-
+              }).then(() => {
                 window.location.reload();
               });
             } else {
@@ -4411,19 +4633,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (generateNotaEntregaBtn) {
       generateNotaEntregaBtn.addEventListener("click", function () {
-        if (!idTicket) {
+        const idTicketValue = document.getElementById("id_ticket") ? document.getElementById("id_ticket").value : null;
+        const nroTicketValue = document.getElementById("id_ticket") ? document.getElementById("id_ticket").getAttribute("data-nro-ticket") : null;
+        
+        if (!idTicketValue) {
           Swal.fire({
             icon: "warning",
-
             title: "Ticket no disponible",
-
             text: "No se encontró el ID del ticket para generar el acuerdo de pago.",
+            confirmButtonColor: '#003594'
           });
-
           return;
         }
 
-        // Obtener datos del ticket para el acuerdo de pago
+        // Cerrar el modal de subir documento
+        if (uploadDocumentModalInstance) {
+          uploadDocumentModalInstance.hide();
+        }
+
+        // Mostrar el modal de generar convenio usando la función correcta
+        showGenerateConvenioModal(idTicketValue, nroTicketValue);
+        return;
+        
+        // Obtener datos del ticket para el acuerdo de pago (código anterior - ya no se usa)
 
         const xhr = new XMLHttpRequest();
 
@@ -4850,7 +5082,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Limpiar el formulario cuando se cierre el modal
     uploadDocumentModalElement.addEventListener("hidden.bs.modal", function () {
+      // ✅ OCULTAR Y ELIMINAR ALERTA DE DOCUMENTO RECHAZADO AL CERRAR EL MODAL
+      const rejectedDocumentInfo = document.getElementById("rejectedDocumentInfo");
       const uploadForm = document.getElementById("uploadForm");
+      if (rejectedDocumentInfo) {
+        rejectedDocumentInfo.style.display = "none";
+      }
+      // Eliminar cualquier alerta previa
+      if (uploadForm) {
+        const existingInfo = uploadForm.querySelector('#CartWrong');
+        if (existingInfo) {
+          existingInfo.remove();
+        }
+      }
       const documentFileInput = document.getElementById("documentFile");
       const fileFormatInfo = document.getElementById("fileFormatInfo");
       const uploadFileBtn = document.getElementById("uploadFileBtn");
@@ -7195,28 +7439,32 @@ document.addEventListener("DOMContentLoaded", function () {
           doc.body.scrollTop = 0;
 
           // Pequeño delay para asegurar que el scroll se haya aplicado
-                setTimeout(() => {
+          setTimeout(() => {
             // Llamar a la función de impresión
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
           }, 100);
 
           // Restaurar títulos después de que el diálogo de impresión se lance
-              setTimeout(() => {
+          setTimeout(() => {
             doc.title = originalIframeTitle;
             window.document.title = originalWindowTitle;
 
             // Limpiar el iframe
             if (iframe && iframe.parentNode) {
               document.body.removeChild(iframe);
-                }
+            }
+            
+            window.location.reload();
           }, 500);
-          } else {
+        } else {
           // Si el usuario presiona "Cerrar"
           // Limpiar el iframe
           if (iframe && iframe.parentNode) {
             document.body.removeChild(iframe);
           }
+          
+          window.location.reload();
         }
       });
     });
@@ -7288,31 +7536,7 @@ function getPaymentAgreementFormData() {
   };
 }
 
-const closeButton = changeStatusDomiciliacionModalElement.querySelector("#close-button");
-
-if (closeIconBtn) {
-  closeIconBtn.addEventListener("click", function () {
-    // *** OCULTAR CAMPO DE OBSERVACIONES ***
-
-    const observationsContainer = document.getElementById(
-      "observationsContainer"
-    );
-
-    if (observationsContainer) {
-      observationsContainer.style.display = "none";
-
-      const observationsText = document.getElementById("observationsText");
-
-      if (observationsText) {
-        observationsText.value = "";
-      }
-    }
-
-    changeStatusDomiciliacionModal.hide();
-  });
-}
-
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, currentStatusId = null) {
     // Verificar que el modal existe antes de continuar
     const modalElementView = document.getElementById("viewDocumentModal");
     if (!modalElementView) {
@@ -7326,6 +7550,37 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
             confirmButtonColor: '#003594'
         });
         return;
+    }
+
+    // ✅ MANEJAR BOTONES SEGÚN EL ESTATUS
+    const BotonAprobar = document.getElementById('approveTicketFromImage');
+    const BotonRechazo = document.getElementById('RechazoDocumento');
+    
+    // Ocultar/mostrar botones según el estatus
+    if (currentStatusId == 6) {
+        // Estatus 6: Ocultar botón de aprobar y rechazar
+        if (BotonAprobar) {
+            BotonAprobar.style.display = 'none';
+        }
+        if (BotonRechazo) {
+            BotonRechazo.style.display = 'none';
+        }
+    } else if (currentStatusId == 7) {
+        // Estatus 7: Mostrar botón de aprobar, ocultar rechazar
+        if (BotonAprobar) {
+            BotonAprobar.style.display = 'block';
+        }
+        if (BotonRechazo) {
+            BotonRechazo.style.display = 'none';
+        }
+    } else {
+        // Otros estatus: Mostrar ambos botones normalmente
+        if (BotonAprobar) {
+            BotonAprobar.style.display = 'block';
+        }
+        if (BotonRechazo) {
+            BotonRechazo.style.display = 'block';
+        }
     }
 
     // Verificar que todos los elementos necesarios existen
@@ -7418,7 +7673,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         const viewDocumentModal = new bootstrap.Modal(modalElementView);
         viewDocumentModal.show();
 
-
         const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
         if (buttonCerrarModal) {
             buttonCerrarModal.addEventListener("click", function() {
@@ -7482,6 +7736,42 @@ function getMotivos() {
 
   // ¡Aquí se envía el documentType!
   const datos = `action=GetMotivos`;
+  xhr.send(datos);
+}
+
+// ✅ FUNCIÓN PARA OBTENER EL MOTIVO DE RECHAZO DEL DOCUMENTO RECHAZADO
+function getMotivoRechazoDocumento(ticketId, nroTicket, callback) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getMotivoRechazoDocumento`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    let motivoRechazo = "No especificado";
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success && response.motivo) {
+          motivoRechazo = response.motivo.name_motivo_rechazo || "No especificado";
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+    // Llamar al callback con el motivo de rechazo
+    if (typeof callback === 'function') {
+      callback(motivoRechazo);
+    }
+  };
+
+  xhr.onerror = function () {
+    if (typeof callback === 'function') {
+      callback("No especificado");
+    }
+  };
+
+  const datos = `action=getMotivoRechazo&ticketId=${encodeURIComponent(ticketId)}&nroTicket=${encodeURIComponent(nroTicket || '')}&documentType=convenio_firmado`;
   xhr.send(datos);
 }
  

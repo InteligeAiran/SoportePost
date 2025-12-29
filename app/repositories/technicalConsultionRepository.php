@@ -770,6 +770,10 @@ class TechnicalConsultionRepository
         return $this->model->getDocumentByType($ticketId, $documentType);
     }
 
+    public function getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType) {
+        return $this->model->getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType);
+    }
+
     public function GetMotivos($documentId) {
         $result = $this->model->GetMotivos($documentId);
 
