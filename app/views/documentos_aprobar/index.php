@@ -181,11 +181,44 @@ function mi_navbar() {}
 
         #btn-asignados,
         #btn-por-asignar,
+        #btn-anticipos-aprobados,
         /* #btn-recibidos, */
         #btn-devuelto {
             padding: 0.5rem 1rem;
             border-radius: 0.25rem;
             font-size: 13px;
+        }
+
+        /* Estilo base para el botón Anticipos Aprobados cuando es el activo */
+        #btn-anticipos-aprobados.btn-primary {
+            background-color: #28a745; /* Verde success */
+            border-color: #28a745;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Anticipos Aprobados cuando es el activo */
+        #btn-anticipos-aprobados.btn-primary:hover,
+        #btn-anticipos-aprobados.btn-primary:focus {
+            background-color: #28a745; /* Verde success */
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.25rem rgba(0, 53, 148, 0.25);
+        }
+
+        /* Estilo para el botón Anticipos Aprobados cuando NO es el activo (es gris) */
+        #btn-anticipos-aprobados.btn-secondary {
+            background-color: #A0A0A0;
+            border-color: #A0A0A0;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Estilo hover/focus para el botón Anticipos Aprobados cuando NO es el activo */
+        #btn-anticipos-aprobados.btn-secondary:hover,
+        #btn-anticipos-aprobados.btn-secondary:focus {
+            background-color: #B0B0B0;
+            border-color: #B0B0B0;
+            box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
         }
 
         /* #btn-recibidos {

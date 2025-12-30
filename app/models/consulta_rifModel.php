@@ -793,7 +793,7 @@ class consulta_rifModel extends Model
 
 
             // 10. NUEVO: Guardar archivos adjuntos DESPUÉS de crear el historial
-            // Obtener id_failure del ticket para verificar si es "Actualización de Software"
+            // Obtener id_failure del ticket para verificar si es "Actualización de Software" (9) o "Sin Llaves/Dukpt Vacío" (12)
             $sqlGetFailure = "SELECT tf.id_failure FROM tickets_failures tf WHERE tf.id_ticket = " . (int)$idTicketCreado . " LIMIT 1";
             $resultGetFailure = pg_query($db_conn, $sqlGetFailure);
             $id_failure = null;
@@ -805,13 +805,15 @@ class consulta_rifModel extends Model
             }
             
             $isActualizacionSoftware = ($id_failure === 9);
+            $isSinLlavesDukpt = ($id_failure === 12);
+            $isFallaSinPago = $isActualizacionSoftware || $isSinLlavesDukpt;
 
             if (!empty($envio)) {
                 $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $envio, 'envio_stored', '/path/to/envio', 'application/pdf', 1024, 'Envio');
             }
 
-            // Si NO es "Actualización de Software", guardar exoneración y anticipo
-            if (!$isActualizacionSoftware) {
+            // Si NO es "Actualización de Software" ni "Sin Llaves/Dukpt Vacío", guardar exoneración y anticipo
+            if (!$isFallaSinPago) {
                 if (!empty($exoneracion)) {
                     $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $exoneracion, 'exoneracion_stored', '/path/to/exoneracion', 'application/pdf', 1024, 'Exoneracion');
                 }
@@ -820,7 +822,7 @@ class consulta_rifModel extends Model
                     $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $anticipo, 'anticipo_stored', '/path/to/anticipo', 'application/pdf', 1024, 'Anticipo');
                 }
 
-                // 11. Transferir pago de la tabla temporal a la principal si existe (solo si NO es Actualización de Software)
+                // 11. Transferir pago de la tabla temporal a la principal si existe (solo si NO es Actualización de Software ni Sin Llaves/Dukpt Vacío)
                 $paymentTransferResult = $this->TransferPaymentFromTempToMain($serial, $Nr_ticket);
                 if ($paymentTransferResult !== false && $paymentTransferResult !== true) {
                     // Se transfirió un pago exitosamente
@@ -831,7 +833,8 @@ class consulta_rifModel extends Model
                 }
                 // Si $paymentTransferResult === true, significa que no había pago temporal para transferir (no es un error)
             } else {
-                error_log("Ticket de Actualización de Software (id_failure = 9): Se omiten anticipo, exoneración y transferencia de pago.");
+                $fallaName = $isActualizacionSoftware ? "Actualización de Software (id_failure = 9)" : "Sin Llaves/Dukpt Vacío (id_failure = 12)";
+                error_log("Ticket de {$fallaName}: Se omiten anticipo, exoneración y transferencia de pago.");
             }
 
             // 12. Obtener el estado actual del ticket
