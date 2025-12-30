@@ -737,6 +737,8 @@ function getTicketData() {
               const id_domiciliacion = currentDomiciliacion;
               const idFailure = currentIdFailure;
               const isActualizacionSoftware = idFailure === 9;
+              const isSinLlavesDukpt = idFailure === 12;
+              const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
 
@@ -753,9 +755,9 @@ function getTicketData() {
                 return;
               }
 
-              // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software)
+              // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
               // Solo requiere documento de Envío, no anticipo ni exoneración
-              if (isActualizacionSoftware) {
+              if (isFallaSinPago) {
                 if (url_envio === "" || url_envio === null || url_envio === undefined) {
                   Swal.fire({
                     icon: 'warning',
@@ -769,7 +771,7 @@ function getTicketData() {
                 }
                 // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
               } else {
-                // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9)
+                // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9 y id_failure != 12)
                 if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                   showButton = true;
                 } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
@@ -1108,6 +1110,8 @@ function getTicketData() {
     const estado_cliente = $(this).data('estado-cliente');
     const idFailure = $(this).data('id-failure') ? parseInt($(this).data('id-failure')) : null;
     const isActualizacionSoftware = idFailure === 9;
+    const isSinLlavesDukpt = idFailure === 12;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');
@@ -1148,8 +1152,8 @@ function getTicketData() {
         // Solo envío disponible
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
-            if (!isActualizacionSoftware) {
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
                 modalButtonsHTML = `
                     <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
                         Cargar Documento de Exoneración
@@ -1165,8 +1169,8 @@ function getTicketData() {
                 <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                     Ver Documento de Envio
                 </button>`;
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
-            if (!isActualizacionSoftware) {
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
                 modalButtonsHTML += `
                 <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
@@ -1223,8 +1227,8 @@ function getTicketData() {
         // Ningún documento disponible
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
-            if (!isActualizacionSoftware) {
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
                 modalButtonsHTML = `
                     <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
                         Cargar Documento de Exoneración
@@ -1240,8 +1244,8 @@ function getTicketData() {
                 <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                     Cargar Documento de Envio
                 </button>`;
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9)
-            if (!isActualizacionSoftware) {
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
                 modalButtonsHTML += `
                 <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración

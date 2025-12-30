@@ -1069,9 +1069,11 @@ function getTicketDataFinaljs() {
                               const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
                               const pdfPathEscaped = pdfPathPresupuesto ? pdfPathPresupuesto.replace(/"/g, '&quot;') : '';
                               
-                              // Obtener id_failure para validar si es "Actualización de Software" (id_failure = 9)
+                              // Obtener id_failure para validar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
                               const idFailure = row.id_failure ? parseInt(row.id_failure) : null;
                               const isActualizacionSoftware = idFailure === 9;
+                              const isSinLlavesDukpt = idFailure === 12;
+                              const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
                               
                               actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
                                                   data-id-ticket="${idTicket}"
@@ -1080,7 +1082,7 @@ function getTicketDataFinaljs() {
                                                   data-nro-ticket="${nroTicket}"
                                                   data-pdf-presupuesto="${pdfPathEscaped}"
                                                   data-id-failure="${idFailure || ''}"
-                                                  data-is-actualizacion-software="${isActualizacionSoftware ? 'true' : 'false'}">
+                                                  data-is-actualizacion-software="${isFallaSinPago ? 'true' : 'false'}">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
                                                     <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
                                                   </svg>
@@ -1093,10 +1095,12 @@ function getTicketDataFinaljs() {
                       // 1. NO hay datos en budgets para este nro_ticket
                       // 2. O si HAY datos en budgets Y el id_status_ticket NO es 2 ("En proceso")
                       // NO mostrar botón si: hay presupuesto Y está en proceso
-                      // NO mostrar botón si: id_failure = 9 ("Actualización de Software")
+                      // NO mostrar botón si: id_failure = 9 ("Actualización de Software") o id_failure = 12 ("Sin Llaves/Dukpt Vacío")
                       const idFailure = row.id_failure ? parseInt(row.id_failure) : null;
                       const isActualizacionSoftware = idFailure === 9;
-                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isActualizacionSoftware;
+                      const isSinLlavesDukpt = idFailure === 12;
+                      const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago;
                       
                       // Agregar botón de presupuesto solo si cumple las condiciones
                       let presupuestoButton = '';
@@ -1122,9 +1126,9 @@ function getTicketDataFinaljs() {
                       const hasPresupuestoPDF = pdfPath && pdfPath.trim() !== '';
                       
                       // Agregar botón para cargar PDF del presupuesto (solo si no existe)
-                      // NO mostrar si es "Actualización de Software" (id_failure = 9)
+                      // NO mostrar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
                       let uploadPresupuestoPDFButton = '';
-                      if (!hasPresupuestoPDF && !isActualizacionSoftware) {
+                      if (!hasPresupuestoPDF && !isFallaSinPago) {
                           // Botón para cargar PDF
                           uploadPresupuestoPDFButton = `<button type="button" class="btn btn-info btn-sm upload-presupuesto-pdf-btn" title="Cargar PDF Presupuesto"
                               data-id-ticket="${idTicket}"
@@ -2041,17 +2045,19 @@ function getTicketDataFinaljs() {
                     const nroTicket = $(this).data("nro-ticket");
                     const regionName = $(this).data("region-name");
                     
-                    // Obtener id_failure para validar si es "Actualización de Software" (id_failure = 9)
+                    // Obtener id_failure para validar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
                     const idFailure = $(this).data("id-failure") ? parseInt($(this).data("id-failure")) : null;
                     const isActualizacionSoftware = idFailure === 9;
+                    const isSinLlavesDukpt = idFailure === 12;
+                    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
                     
                     // Obtener el PDF del presupuesto directamente del atributo data del botón
                     const pdfPathPresupuesto = $(this).data("pdf-presupuesto") || '';
                     const hasPresupuestoPDF = pdfPathPresupuesto && pdfPathPresupuesto.trim() !== '';
                     
-                    // Validación: Si no hay PDF del presupuesto Y NO es "Actualización de Software", mostrar alerta y detener
-                    // Para "Actualización de Software" (id_failure = 9), no se requiere presupuesto
-                    if (!hasPresupuestoPDF && !isActualizacionSoftware) {
+                    // Validación: Si no hay PDF del presupuesto Y NO es "Actualización de Software" ni "Sin Llaves/Dukpt Vacío", mostrar alerta y detener
+                    // Para "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12), no se requiere presupuesto
+                    if (!hasPresupuestoPDF && !isFallaSinPago) {
                         Swal.fire({
                             title: 'Documento de Presupuesto Requerido',
                             html: `
@@ -6554,10 +6560,12 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
         nroTicketSpan.textContent = nroTicket;
     }
     
-    // Verificar si es "Actualización de Software" (id_failure = 9)
+    // Verificar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
     const isActualizacionSoftware = idFailure === 9;
+    const isSinLlavesDukpt = idFailure === 12;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
     
-    // Ocultar la sección "Datos del Anticipo" si es Actualización de Software
+    // Ocultar la sección "Datos del Anticipo" si es Actualización de Software o Sin Llaves/Dukpt Vacío
     const datosAnticipoCard = document.querySelector('.presupuesto-card-pago');
     const datosAnticipoContainers = [
         'presupuestoMonedaContainer',
@@ -6566,7 +6574,7 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
         'presupuestoMetodoPagoContainer'
     ];
     
-    if (isActualizacionSoftware) {
+    if (isFallaSinPago) {
         // Ocultar card y campos de "Datos del Anticipo"
         if (datosAnticipoCard) {
             datosAnticipoCard.style.display = 'none';
@@ -6628,8 +6636,8 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
         }
     });
     
-    // Si es "Actualización de Software", no cargar datos de pago
-    if (isActualizacionSoftware) {
+    // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", no cargar datos de pago
+    if (isFallaSinPago) {
         // Establecer fecha de hoy (no editable)
         const today = new Date();
         const fechaFormateada = today.toISOString().split('T')[0];

@@ -1022,16 +1022,18 @@ class Consulta extends Controller
 
         $fecha_para_nombre_archivo = date('Ymd_His');
 
-        // Verificar si es "Actualización de Software" (id_failure = 9)
+        // Verificar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
         $isActualizacionSoftware = ($falla_id == 9);
+        $isSinLlavesDukpt = ($falla_id == 12);
+        $isFallaSinPago = $isActualizacionSoftware || $isSinLlavesDukpt;
 
         // 8. Procesar cada tipo de archivo adjunto
-        // Si es "Actualización de Software", NO procesar anticipo ni exoneración
+        // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", NO procesar anticipo ni exoneración
         $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
-        $exoneracionOk = $isActualizacionSoftware ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
-        $anticipoOk = $isActualizacionSoftware ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
+        $exoneracionOk = $isFallaSinPago ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
+        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
 
-        if (!$envioOk || (!$isActualizacionSoftware && (!$exoneracionOk || !$anticipoOk))) {
+        if (!$envioOk || (!$isFallaSinPago && (!$exoneracionOk || !$anticipoOk))) {
             error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
         }
 

@@ -812,8 +812,10 @@ function updateDocumentTypeVisibility() {
   
   const idFailure = fallaSelect2.value ? parseInt(fallaSelect2.value) : null;
   const isActualizacionSoftware = idFailure === 9;
+  const isSinLlavesDukpt = idFailure === 12;
+  const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
   
-  if (isActualizacionSoftware) {
+  if (isFallaSinPago) {
     // Ocultar los radio buttons de Exoneración y Anticipo
     checkExoneracionContainer.style.display = 'none';
     checkAnticipoContainer.style.display = 'none';
@@ -857,7 +859,7 @@ function updateDocumentTypeVisibility() {
       updateIconoAgregarInfoVisibility();
     }
   } else {
-    // Mostrar los radio buttons si no es Actualización de Software
+    // Mostrar los radio buttons si no es Actualización de Software ni Sin Llaves/Dukpt Vacío
     checkExoneracionContainer.style.display = '';
     checkAnticipoContainer.style.display = '';
   }
@@ -1387,10 +1389,12 @@ function UpdateGuarantees() {
   const idStatusPaymentReingreso = validarGarantiaReingreso(fechaUltimoTicketGlobal);
   const idStatusPaymentInstalacion = validarGarantiaInstalacion(fechaInstalacionGlobal);
 
-  // Verificar si es "Actualización de Software" (id_failure = 9)
+  // Verificar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
   const fallaSelect2 = document.getElementById("FallaSelect2");
   const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
   const isActualizacionSoftware = idFailure === 9;
+  const isSinLlavesDukpt = idFailure === 12;
+  const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
 
   // Obtener elementos con validación de existencia
   const inputExoneracion = document.getElementById("ExoneracionInput");
@@ -1425,8 +1429,8 @@ function UpdateGuarantees() {
 
   let idStatusPayment;
   
-  // Si es "Actualización de Software", manejar lógica especial
-  if (isActualizacionSoftware) {
+  // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", manejar lógica especial
+  if (isFallaSinPago) {
     if (uploadNowRadio && uploadNowRadio.checked) {
       const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
       
@@ -2106,12 +2110,14 @@ function SendDataFailure2(idStatusPayment) {
     
     // VALIDACIÓN: Verificar relación entre anticipo y detalles de pago
     // Solo validar si se seleccionó "Sí" para cargar documentos ahora
-    // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9), NO se requiere anticipo ni detalles de pago
+    // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12), NO se requiere anticipo ni detalles de pago
     const fallaSelect2 = document.getElementById("FallaSelect2");
     const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
     const isActualizacionSoftware = idFailure === 9;
+    const isSinLlavesDukpt = idFailure === 12;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
     
-    if (uploadNowRadioLocal && uploadNowRadioLocal.checked && !isActualizacionSoftware) {
+    if (uploadNowRadioLocal && uploadNowRadioLocal.checked && !isFallaSinPago) {
       // Verificar si hay pago registrado hoy para este serial en la tabla temporal
       const existePago = await verificarPagoExisteHoy(serial);
       
@@ -2567,12 +2573,14 @@ function validateTicketCreation() {
     // Validar Anticipo: Si el botón está visible, debe haber archivo
     // NOTA: La validación completa de Anticipo (con pago) se hace en continuarCreacionTicket()
     // Pero aquí validamos que si el botón está visible, el archivo debe estar cargado
-    // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9), NO se requiere anticipo
+    // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12), NO se requiere anticipo
     const fallaSelect2 = document.getElementById("FallaSelect2");
     const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
     const isActualizacionSoftware = idFailure === 9;
+    const isSinLlavesDukpt = idFailure === 12;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
     
-    if (!isActualizacionSoftware && isElementVisible(botonCargaAnticipo)) {
+    if (!isFallaSinPago && isElementVisible(botonCargaAnticipo)) {
         const tieneArchivoAnticipo = inputAnticipo && inputAnticipo.files && inputAnticipo.files.length > 0;
         // También verificar el archivo preservado globalmente
         const archivoAnticipoPreservado = window.archivoAnticipoPreservado || null;

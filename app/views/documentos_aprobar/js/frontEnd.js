@@ -454,6 +454,7 @@ function getTicketAprovalDocument() {
                                 const motivoRechazo = row.motivo_rechazo;
                                 const uploadedAt = row.uploaded_at;
                                 const idMotivoRechazo = row.id_motivo_rechazo;
+                                const idStatusPayment = row.id_status_payment || '';
                                 
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
                                 
@@ -475,6 +476,7 @@ function getTicketAprovalDocument() {
                                             data-motivo-rechazo="${motivoRechazo || ''}"
                                             data-uploaded-at="${uploadedAt || ''}"
                                             data-id-motivo-rechazo="${idMotivoRechazo || ''}"
+                                            data-id-status-payment="${idStatusPayment}"
                                             data-rechazado="${isRejected ? 'true' : 'false'}"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#visualizarImagenModal" 
@@ -536,19 +538,19 @@ function getTicketAprovalDocument() {
                                 const api = this.api();
 
                                 const buttonsHtml = `
-                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
+                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                                         </svg>
                                     </button>
 
-                                    <!-- <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
-                                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
+                                    <button id="btn-anticipos-aprobados" class="btn btn-secondary me-2" title="Anticipos Aprobados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
                                         </svg>
-                                    </button> -->
+                                    </button>
 
-                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Anticipos Rechazados">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                         </svg>
@@ -558,8 +560,8 @@ function getTicketAprovalDocument() {
 
                                 function setActiveButton(activeButtonId) {
                                     $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-anticipos-aprobados").removeClass("btn-primary").addClass("btn-secondary");
                                     $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                                    // $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
@@ -593,15 +595,15 @@ function getTicketAprovalDocument() {
                                     { 
                                         button: "btn-por-asignar", 
                                         searchTerms: [
-                                            { column: 'id_status_payment', value: '7|5' }
+                                            { column: 'id_status_payment', value: '7' }
                                         ]
                                     },
-                                    // { 
-                                    //     button: "btn-recibidos", 
-                                    //     searchTerms: [
-                                    //         { column: 'id_status_payment', value: '9|10|11' }
-                                    //     ]
-                                    // },
+                                    { 
+                                        button: "btn-anticipos-aprobados", 
+                                        searchTerms: [
+                                            { column: 'id_status_payment', value: '6' }
+                                        ]
+                                    },
                                     { 
                                         button: "btn-asignados", 
                                         searchTerms: [
@@ -619,14 +621,11 @@ function getTicketAprovalDocument() {
                                         api.columns().search('').draw(false);
                                         
                                         if (button === "btn-por-asignar") {
-                                            api.column(1).search('7|5', true, false, true).draw();
+                                            api.column(1).search('^7$', true, false, true).draw();
                                             api.column(11).visible(false);
-                                        // } else if (button === "btn-recibidos") {
-                                        //     api.column(1).search('9|10|11', true, false, true).draw();
-                                        //     api.column(11).visible(false);
-                                        //     api.column(12).visible(false);
-                                        //     api.column(10).visible(false);
-                                        //     api.column(9).visible(false);
+                                        } else if (button === "btn-anticipos-aprobados") {
+                                            api.column(1).search('^6$', true, false, true).draw();
+                                            api.column(11).visible(false);
                                         } else if (button === "btn-asignados") {
                                             api.search('').draw(false);
                                             api.column(11).visible(true);
@@ -676,12 +675,27 @@ function getTicketAprovalDocument() {
                                     // ✅ LIMPIAR FILTROS PERSONALIZADOS
                                     $.fn.dataTable.ext.search.pop();
                                     
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$|^5$' }];
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$' }];
                                     if (checkDataExistsById(searchTerms)) {
                                         api.columns().search('').draw(false);
-                                        api.column(1).search('^7$|^5$', true, false, true).draw();
+                                        api.column(1).search('^7$', true, false, true).draw();
                                         api.column(11).visible(false);
                                         setActiveButton("btn-por-asignar");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
+
+                                $("#btn-anticipos-aprobados").on("click", function () {
+                                    // ✅ LIMPIAR FILTROS PERSONALIZADOS
+                                    $.fn.dataTable.ext.search.pop();
+                                    
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^6$' }];
+                                    if (checkDataExistsById(searchTerms)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(1).search('^6$', true, false, true).draw();
+                                        api.column(11).visible(false);
+                                        setActiveButton("btn-anticipos-aprobados");
                                     } else {
                                         findFirstButtonWithData();
                                     }
@@ -734,6 +748,7 @@ function getTicketAprovalDocument() {
                                         const idPayment = parseInt(data[1]); // Columna 1: id_status_payment
                                         const idDomiciliacion = parseInt(data[2]); // Columna 2: id_status_domiciliacion
                                         
+                                        // Incluir: 12 (Exoneración Rechazada), 13 (Anticipo Rechazado), 14 (Envío Rechazado)
                                         const isPaymentRejected = [12, 13, 14].includes(idPayment);
                                         const isDomiciliacionRejected = idDomiciliacion === 7;
                                         
@@ -879,6 +894,7 @@ function getTicketAprovalDocument() {
                             const nroTicket = $(this).data("nro-ticket");
                             const serialPos = $(this).data("serial-pos");
                             const documentoRechazado = $(this).data("rechazado") === true || $(this).data("rechazado") === 'true';
+                            const idStatusPayment = $(this).data("id-status-payment");
                             
                             const envioValor = $(this).data("envio");
                             const exoValor = $(this).data("exoneracion");
@@ -904,6 +920,7 @@ function getTicketAprovalDocument() {
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
                             VizualizarImage.setAttribute('data-serial-pos', serialPos);
                             VizualizarImage.setAttribute('data-rechazado', documentoRechazado ? 'true' : 'false');
+                            VizualizarImage.setAttribute('data-id-status-payment', idStatusPayment || '');
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -1392,6 +1409,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
         const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
         const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado') === 'true';
+        const idStatusPayment = parseInt(visualizarImagenModalElement.getAttribute('data-id-status-payment')) || 0;
 
         if (!selectedOption) {
             Swal.fire({
@@ -1424,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const fileName = document.original_filename;
 
                         // Mostrar el documento en el modal de aprobación
-                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado);
+                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment);
                         getMotivos(selectedOption);
 
                         // Ocultar el modal de selección
@@ -3778,7 +3796,7 @@ function showElapsedLegend(e) {
     });
 }
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado) {
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0) {
     // Obtener elementos del modal de aprobación
     const imageApprovalModalElement = document.getElementById("imageApprovalModal");
     const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
@@ -3790,6 +3808,11 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
     const currentSerialDisplay = document.getElementById("currentSerialDisplay");
     const approveTicketFromImageBtn = document.getElementById("approveTicketFromImage");
+    const rejectDocumentBtn = document.getElementById("RechazoDocumento");
+    const paymentValidationContainer = document.getElementById("paymentValidationContainer");
+    
+    // ✅ Verificar si el documento está aprobado (id_status_payment = 6)
+    const isDocumentApproved = idStatusPayment === 6;
 
     // LIMPIEZA COMPLETA Y FORZADA
     if (mediaViewerContainer) {
@@ -3826,8 +3849,8 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
     currentSerialDisplay.textContent = serialPos || 'Sin posición';
 
-    // Controlar la visibilidad del botón de aprobar
-    if (approveTicketFromImageBtn) {
+    // ✅ Controlar la visibilidad del botón de aprobar (solo si NO está aprobado)
+    if (approveTicketFromImageBtn && !isDocumentApproved) {
         const allowedTypes = ['Exoneracion', 'Anticipo'];
         const isRejected = documentoRechazado === 'Sí';
 
@@ -3893,21 +3916,47 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     }
     
     // Si el documento es de tipo "Anticipo" (pago), obtener y mostrar los datos de pago
-    console.log('showApprovalModal - documentType:', documentType, 'ticketId:', ticketId);
+    console.log('showApprovalModal - documentType:', documentType, 'ticketId:', ticketId, 'idStatusPayment:', idStatusPayment);
     
-    if (documentType === 'Anticipo') {
+    // ✅ Si el documento está aprobado, ocultar validación de pago y botones de acción
+    if (isDocumentApproved) {
+        console.log('Documento aprobado (id_status_payment = 6), ocultando validación de pago y botones de acción');
+        if (paymentValidationContainer) {
+            paymentValidationContainer.style.display = 'none';
+        }
+        if (approveTicketFromImageBtn) {
+            approveTicketFromImageBtn.style.display = 'none';
+        }
+        if (rejectDocumentBtn) {
+            rejectDocumentBtn.style.display = 'none';
+        }
+    } else if (documentType === 'Anticipo') {
         console.log('Es documento de Anticipo, cargando datos de pago...');
         // El ticketId que viene aquí es el nro_ticket (se establece en el atributo data-ticket-id)
         // Asegurarse de que sea el nro_ticket correcto
         const nroTicketToUse = ticketId || currentTicketIdDisplay.textContent;
         console.log('nroTicketToUse para consulta:', nroTicketToUse);
         loadPaymentDataForEnvio(nroTicketToUse);
+        
+        // Mostrar botones de acción si no está aprobado
+        if (approveTicketFromImageBtn) {
+            approveTicketFromImageBtn.style.display = 'block';
+        }
+        if (rejectDocumentBtn) {
+            rejectDocumentBtn.style.display = documentoRechazado ? 'none' : 'block';
+        }
     } else {
         console.log('No es documento de Anticipo, ocultando contenedor de validación');
         // Ocultar el contenedor de validación de pago si no es Anticipo
-        const paymentValidationContainer = document.getElementById('paymentValidationContainer');
         if (paymentValidationContainer) {
             paymentValidationContainer.style.display = 'none';
+        }
+        // Mostrar botones de acción para otros tipos de documentos
+        if (approveTicketFromImageBtn) {
+            approveTicketFromImageBtn.style.display = 'block';
+        }
+        if (rejectDocumentBtn) {
+            rejectDocumentBtn.style.display = documentoRechazado ? 'none' : 'block';
         }
     }
     
