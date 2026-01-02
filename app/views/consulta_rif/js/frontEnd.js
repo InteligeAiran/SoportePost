@@ -1477,20 +1477,20 @@ function UpdateGuarantees() {
         const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
 
         if (tieneExoneracion && tieneEnvio) {
-          idStatusPayment = 5; // Exoneración + Envío = Pendiente por revisión
+          idStatusPayment = 5; // Exoneración + Envío =Exoneracion Pendiente por Revision
         } else if (tieneAnticipo && tieneEnvio) {
           idStatusPayment = 7; // Anticipo + Envío = Pago anticipo pendiente por revisión
         } else if (tieneExoneracion && !tieneEnvio) {
-          idStatusPayment = 11; // Solo exoneración = Pendiente por cargar envío
+          idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
         } else if (tieneAnticipo && !tieneEnvio) {
-          idStatusPayment = 11; // Solo anticipo = Pendiente por cargar envío
+          idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
         } else if (tieneEnvio && !tieneExoneracion && !tieneAnticipo) {
-          idStatusPayment = 10; // Solo envío = Pendiente por cargar documento
+          idStatusPayment = 10; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
         } else {
-          idStatusPayment = 10; // Pendiente por cargar documento
+          idStatusPayment = 9; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion) (Habia un 10)
         }
       } else {
-        idStatusPayment = 9;
+        idStatusPayment = 9; // Pendiente Por Cargar Documentos
       }
     }
   }
@@ -3043,6 +3043,7 @@ checkExoneracion.addEventListener("change", function() {
         // Remover listeners de conversión
         montoRef.removeEventListener("input", calculateUsdToBs);
         montoRef.removeEventListener("keyup", calculateUsdToBs);
+        montoRef.removeEventListener("blur", formatUsdDecimal);
         montoRef.removeEventListener("input", updateMontoEquipo);
         montoRef.removeEventListener("keyup", updateMontoEquipo);
       }
@@ -3242,6 +3243,18 @@ checkExoneracion.addEventListener("change", function() {
   function cleanDecimalInput(event) {
     const input = event.target;
     const originalValue = input.value;
+    // ✅ Guardar la posición del cursor antes de modificar el valor
+    const cursorPosition = input.selectionStart || 0;
+    
+    // Verificar si el valor solo contiene caracteres válidos (números y máximo un punto)
+    const isValidFormat = /^[0-9]*\.?[0-9]*$/.test(originalValue);
+    const pointCount = (originalValue.match(/\./g) || []).length;
+    
+    // Si el formato es válido y tiene máximo un punto, no hacer nada (evitar interferir con escritura normal)
+    if (isValidFormat && pointCount <= 1) {
+      return;
+    }
+    
     // Eliminar todo lo que no sea número o punto
     let cleaned = originalValue.replace(/[^0-9.]/g, '');
     // Asegurar solo un punto decimal
@@ -3249,8 +3262,36 @@ checkExoneracion.addEventListener("change", function() {
     if (parts.length > 2) {
       cleaned = parts[0] + '.' + parts.slice(1).join('');
     }
+    
     if (originalValue !== cleaned) {
+      // ✅ Calcular la nueva posición del cursor de manera más precisa
+      // Contar caracteres válidos antes de la posición del cursor en el valor original
+      let validCharsBeforeCursor = 0;
+      let hasPointBeforeCursor = false;
+      
+      for (let i = 0; i < cursorPosition && i < originalValue.length; i++) {
+        const char = originalValue[i];
+        if (/[0-9]/.test(char)) {
+          validCharsBeforeCursor++;
+        } else if (char === '.' && !hasPointBeforeCursor) {
+          validCharsBeforeCursor++;
+          hasPointBeforeCursor = true;
+        }
+      }
+      
+      // La nueva posición del cursor será igual a los caracteres válidos contados
+      let newCursorPosition = validCharsBeforeCursor;
+      
+      // Asegurar que la posición esté dentro de los límites del valor limpiado
+      newCursorPosition = Math.min(newCursorPosition, cleaned.length);
+      
       input.value = cleaned;
+      
+      // ✅ Restaurar la posición del cursor después de actualizar el valor
+      // Usar requestAnimationFrame para asegurar que el DOM se actualice primero
+      requestAnimationFrame(function() {
+        input.setSelectionRange(newCursorPosition, newCursorPosition);
+      });
     }
   }
 
@@ -4585,12 +4626,14 @@ function savePayment() {
     // Limpiar valores y listeners anteriores
     montoBsInput.removeEventListener("input", calculateBsToUsd);
     montoBsInput.removeEventListener("keyup", calculateBsToUsd);
+    montoBsInput.removeEventListener("blur", formatBsDecimal);
     montoBsInput.removeEventListener("input", calculateUsdToBs);
     montoBsInput.removeEventListener("keyup", calculateUsdToBs);
     montoRefInput.removeEventListener("input", calculateBsToUsd);
     montoRefInput.removeEventListener("keyup", calculateBsToUsd);
     montoRefInput.removeEventListener("input", calculateUsdToBs);
     montoRefInput.removeEventListener("keyup", calculateUsdToBs);
+    montoRefInput.removeEventListener("blur", formatUsdDecimal);
 
     if (selectedCurrency === "bs") {
       // Bolívares seleccionado: habilitar Monto Bs, bloquear Monto REF
@@ -4672,8 +4715,10 @@ function savePayment() {
       montoRefInput.removeEventListener("input", calculateBsToUsd);
       montoRefInput.removeEventListener("input", calculateUsdToBs);
       montoRefInput.removeEventListener("keyup", calculateUsdToBs);
+      montoRefInput.removeEventListener("blur", formatUsdDecimal);
       montoRefInput.addEventListener("input", calculateUsdToBs);
       montoRefInput.addEventListener("keyup", calculateUsdToBs);
+      montoRefInput.addEventListener("blur", formatUsdDecimal);
       
       // Agregar listener al campo Monto REF para actualizar Monto del Equipo cuando se escribe directamente
       montoRefInput.removeEventListener("input", updateMontoEquipo);
@@ -4731,6 +4776,22 @@ function savePayment() {
     }
   }
 
+  // Función para formatear el campo USD a 2 decimales cuando pierde el foco
+  function formatUsdDecimal() {
+    const montoRefInput = document.getElementById("montoRef");
+    if (!montoRefInput || montoRefInput.disabled) {
+      return;
+    }
+
+    const value = montoRefInput.value;
+    if (value && value.trim() !== "") {
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        montoRefInput.value = numValue.toFixed(2);
+      }
+    }
+  }
+
   // Función para actualizar el campo "Monto del Equipo" con el valor de USD
   function updateMontoEquipo() {
     const montoRefInput = document.getElementById("montoRef");
@@ -4783,21 +4844,17 @@ function savePayment() {
         montoRefSuffix.textContent = "USD";
       }
       
-      // Formatear Monto Bs con 2 decimales
-      montoBsInput.value = montoBs.toFixed(2);
+      // ✅ NO formatear Monto Bs mientras el usuario está escribiendo
+      // El formateo se hace solo cuando el campo pierde el foco (formatBsDecimal en blur)
+      // Esto permite que el usuario escriba sin que el cursor se mueva al final
       
       // Actualizar el campo "Monto del Equipo"
       updateMontoEquipo();
       
     } else {
       montoRefInput.value = "";
-      // Formatear Monto Bs con 2 decimales incluso si está vacío o es 0
-      if (montoBsInput.value && montoBsInput.value.trim() !== "") {
-        const numValue = parseFloat(montoBsInput.value);
-        if (!isNaN(numValue) && numValue > 0) {
-          montoBsInput.value = numValue.toFixed(2);
-        }
-      }
+      // ✅ NO formatear Monto Bs mientras el usuario está escribiendo
+      // El formateo se hace solo cuando el campo pierde el foco (formatBsDecimal en blur)
       // Ocultar sufijo si no hay valor
       const montoRefSuffix = document.getElementById("montoRefSuffix");
       if (montoRefSuffix) {
@@ -4899,6 +4956,7 @@ function savePayment() {
         // Remover cualquier listener que pueda estar activo
         montoRef.removeEventListener("input", calculateUsdToBs);
         montoRef.removeEventListener("keyup", calculateUsdToBs);
+        montoRef.removeEventListener("blur", formatUsdDecimal);
         montoRef.removeEventListener("input", updateMontoEquipo);
         montoRef.removeEventListener("keyup", updateMontoEquipo);
       }

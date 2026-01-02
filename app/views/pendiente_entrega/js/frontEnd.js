@@ -6823,22 +6823,86 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                     // Agregar event listener para calcular diferencia (remover primero para evitar duplicados)
                     const montoTallerInput = document.getElementById('presupuestoMontoTaller');
                     if (montoTallerInput) {
-                        // Validar que solo se ingresen números y un punto decimal
-                        montoTallerInput.addEventListener('input', function(e) {
-                            let value = e.target.value;
-                            // Remover cualquier carácter que no sea número o punto decimal
-                            value = value.replace(/[^0-9.]/g, '');
-                            // Asegurar que solo haya un punto decimal
-                            const parts = value.split('.');
+                        // ✅ Función para limpiar el input preservando la posición del cursor
+                        function cleanTallerInput(event) {
+                            const input = event.target;
+                            const originalValue = input.value;
+                            // ✅ Guardar la posición del cursor antes de modificar el valor
+                            const cursorPosition = input.selectionStart || 0;
+                            
+                            // Verificar si el valor solo contiene caracteres válidos (números y máximo un punto)
+                            const isValidFormat = /^[0-9]*\.?[0-9]*$/.test(originalValue);
+                            const pointCount = (originalValue.match(/\./g) || []).length;
+                            
+                            // Si el formato es válido y tiene máximo un punto, no hacer nada (evitar interferir con escritura normal)
+                            if (isValidFormat && pointCount <= 1) {
+                                calcularDiferenciaPresupuesto();
+                                return;
+                            }
+                            
+                            // Eliminar todo lo que no sea número o punto
+                            let cleaned = originalValue.replace(/[^0-9.]/g, '');
+                            // Asegurar solo un punto decimal
+                            const parts = cleaned.split('.');
                             if (parts.length > 2) {
-                                value = parts[0] + '.' + parts.slice(1).join('');
+                                cleaned = parts[0] + '.' + parts.slice(1).join('');
                             }
-                            // Si el valor cambió, actualizarlo
-                            if (e.target.value !== value) {
-                                e.target.value = value;
+                            
+                            if (originalValue !== cleaned) {
+                                // ✅ Calcular la nueva posición del cursor
+                                // Contar caracteres válidos antes de la posición del cursor en el valor original
+                                let validCharsBeforeCursor = 0;
+                                let hasPointBeforeCursor = false;
+                                
+                                for (let i = 0; i < cursorPosition && i < originalValue.length; i++) {
+                                    const char = originalValue[i];
+                                    if (/[0-9]/.test(char)) {
+                                        validCharsBeforeCursor++;
+                                    } else if (char === '.' && !hasPointBeforeCursor) {
+                                        validCharsBeforeCursor++;
+                                        hasPointBeforeCursor = true;
+                                    }
+                                }
+                                
+                                // La nueva posición del cursor será igual a los caracteres válidos contados
+                                let newCursorPosition = validCharsBeforeCursor;
+                                
+                                // Asegurar que la posición esté dentro de los límites del valor limpiado
+                                newCursorPosition = Math.min(newCursorPosition, cleaned.length);
+                                
+                                input.value = cleaned;
+                                
+                                // ✅ Restaurar la posición del cursor después de actualizar el valor
+                                requestAnimationFrame(function() {
+                                    input.setSelectionRange(newCursorPosition, newCursorPosition);
+                                });
                             }
+                            
                             calcularDiferenciaPresupuesto();
-                        });
+                        }
+                        
+                        // ✅ Función para formatear a 2 decimales cuando pierde el foco
+                        function formatTallerDecimal() {
+                            const input = document.getElementById('presupuestoMontoTaller');
+                            if (!input || input.disabled) {
+                                return;
+                            }
+                            
+                            const value = input.value;
+                            if (value && value.trim() !== "") {
+                                const numValue = parseFloat(value);
+                                if (!isNaN(numValue)) {
+                                    input.value = numValue.toFixed(2);
+                            calcularDiferenciaPresupuesto();
+                                }
+                            }
+                        }
+                        
+                        // Validar que solo se ingresen números y un punto decimal (preservando cursor)
+                        montoTallerInput.addEventListener('input', cleanTallerInput);
+                        
+                        // ✅ Formatear a 2 decimales cuando pierde el foco
+                        montoTallerInput.addEventListener('blur', formatTallerDecimal);
                         
                         // Prevenir pegar texto no numérico
                         montoTallerInput.addEventListener('paste', function(e) {
