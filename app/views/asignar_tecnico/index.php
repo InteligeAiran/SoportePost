@@ -843,6 +843,8 @@ function mi_navbar() {}
         <!-- Bootstrap core JavaScript-->
         <!--JQUERY-->
 
+        <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
+
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
