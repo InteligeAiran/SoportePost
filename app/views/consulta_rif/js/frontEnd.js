@@ -1477,20 +1477,20 @@ function UpdateGuarantees() {
         const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
 
         if (tieneExoneracion && tieneEnvio) {
-          idStatusPayment = 5; // Exoneración + Envío =Exoneracion Pendiente por Revision
+          idStatusPayment = 5; // Exoneración + Envío = Pendiente por revisión
         } else if (tieneAnticipo && tieneEnvio) {
           idStatusPayment = 7; // Anticipo + Envío = Pago anticipo pendiente por revisión
         } else if (tieneExoneracion && !tieneEnvio) {
-          idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+          idStatusPayment = 11; // Solo exoneración = Pendiente por cargar envío
         } else if (tieneAnticipo && !tieneEnvio) {
-          idStatusPayment = 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+          idStatusPayment = 11; // Solo anticipo = Pendiente por cargar envío
         } else if (tieneEnvio && !tieneExoneracion && !tieneAnticipo) {
-          idStatusPayment = 10; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion)
+          idStatusPayment = 10; // Solo envío = Pendiente por cargar documento
         } else {
-          idStatusPayment = 9; // Pendiente Por Cargar Documento(Pago anticipo o Exoneracion) (Habia un 10)
+          idStatusPayment = 10; // Pendiente por cargar documento
         }
       } else {
-        idStatusPayment = 9; // Pendiente Por Cargar Documentos
+        idStatusPayment = 9;
       }
     }
   }
