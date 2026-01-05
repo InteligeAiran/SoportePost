@@ -1566,7 +1566,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
@@ -1654,7 +1654,8 @@ function formatTicketDetailsPanel(d) {
             </div>
         </div>
     `;
-}
+}*/
+
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
     const historyPanel = $("#ticket-history-content");

@@ -687,7 +687,7 @@ function mi_navbar() {}
                                     
                                     <!-- Wrapper con position-relative para que Bootstrap muestre los mensajes de feedback -->
                                     <div class="position-relative">
-                                        <input class="form-control" type="file" id="documentFile" accept="image/jpg,image/png,image/gif,application/pdf" required>
+                                        <input class="form-control" type="file" id="documentFile" accept="image/jpg, image/png, image/gif, application/pdf" required>
 
                                         <!-- Mensajes de validación de Bootstrap -->
                                         <div class="valid-feedback">
@@ -972,6 +972,8 @@ function mi_navbar() {}
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
         <!--JQUERY-->
+
+        <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>

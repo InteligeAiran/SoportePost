@@ -1169,6 +1169,7 @@ function mi_navbar() {}
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+        <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>

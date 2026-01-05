@@ -14,9 +14,9 @@ function mi_navbar() {}
         <?php echo tituloPagina; ?>
     </title>
 
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
@@ -1024,6 +1024,7 @@ function mi_navbar() {}
 
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+    <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
@@ -1042,7 +1043,6 @@ function mi_navbar() {}
     <script src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
     <script src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
     <script src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
-
 
     <script src="<?php echo APP; ?>js/Datatablebuttons5.js"></script>
     <script src="<?php echo APP; ?>js/Datatablebuttons.min.js"></script>

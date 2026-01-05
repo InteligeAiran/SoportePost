@@ -683,6 +683,7 @@ function mi_navbar() {}
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
 
         <script async defer src="https://buttons.github.io/buttons.js"></script>
+        <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
@@ -690,8 +691,7 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
-        <script
-            src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
@@ -703,8 +703,7 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
-        <script
-            src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
+        <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
         <script src="<?php echo APP; ?>js/datatables.js"></script>
 

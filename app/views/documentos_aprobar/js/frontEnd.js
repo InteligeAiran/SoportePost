@@ -1856,7 +1856,7 @@ $(document).ready(function () {
 
     // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
     const validExtensions = [".jpg", ".png", ".gif", ".pdf"];
-    const validMimeTypes = ["image/jpg", "image/png", "image/gif", "application/pdf"];
+    const validMimeTypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"];
     
     const fileName = file.name.toLowerCase();
     const fileExtension = fileName.substring(fileName.lastIndexOf("."));
@@ -2406,7 +2406,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
@@ -2489,7 +2489,7 @@ function formatTicketDetailsPanel(d) {
             </div>
         </div>
     `;
-}
+}*/
 
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
