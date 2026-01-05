@@ -112,7 +112,7 @@ class ConsultaRifTutorial {
         this.overlay.id = 'tutorial-overlay';
         this.overlay.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 9998; transition: opacity 0.3s ease;
+            background: rgba(0,0,0,0.2); z-index: 9998; transition: opacity 0.3s ease;
         `;
         document.body.appendChild(this.overlay);
     }
@@ -359,7 +359,6 @@ let usuariosAcciones = {
 };
 
 function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
-  console.log(`Redirigiendo para acción: ${idStatusAccion}, Ticket ID: ${idTicket}, Nro Ticket: ${nroTicket}`);
   for (const usuario in usuariosAcciones) {
     if (usuariosAcciones[usuario].acciones.includes(idStatusAccion)) {
       const modulo = usuariosAcciones[usuario].modulo;
@@ -378,7 +377,6 @@ function redirigirPorAccion(idStatusAccion, idTicket, nroTicket) {
     }
   }
   // If no matching action is found
-  console.log(`Acción ${idStatusAccion} no encontrada. No se pudo redirigir.`);
   Swal.fire({
     icon: 'error',
     title: 'Error',
@@ -424,8 +422,6 @@ let resolvedTicketSearchHandler = null;
 /*document.addEventListener("DOMContentLoaded", (event) => {
   const anchoPantalla = window.innerWidth;
   const altoPantalla = window.innerHeight;
-  console.log(`Ancho de la pantalla: ${anchoPantalla}px`);
-  console.log(`Alto de la pantalla: ${altoPantalla}px`);
 });*/
 
 
@@ -482,33 +478,88 @@ function showNoDataMessage(container, message = "No hay datos disponibles.") {
   }
 }
 
-const minimumLoadingTime = 6000; // 6 segundos en milisegundos
-
 window.addEventListener("load", function () {
-    // Definición de variables y funciones auxiliares
-    // ===============================================
-
-    const dashboardLoadingOverlay = document.getElementById("dashboard-loading-overlay");
-    const loadingStatusElement = document.getElementById("loading-status");
-    const progressBarElement = document.querySelector(".loading-progress-bar");
+    const dashboardLoadingOverlay = document.getElementById("loadingOverlay");
+    const overlayMessageElement = document.getElementById("loadingOverlayMessage");
+    let progressWrapperElement = null;
+    let progressBarElement = null;
+    let loadingStatusElement = null;
     const minimumLoadingTime = 6000; // 6 segundos
+    let dashboardLoadingActive = true; // Flag para mantener el overlay visible
 
-    // Función para actualizar el estado de la carga
+    // Función para forzar que el overlay permanezca visible
+    function forceOverlayVisible() {
+        if (dashboardLoadingOverlay) {
+            dashboardLoadingOverlay.style.display = "flex";
+            dashboardLoadingOverlay.style.opacity = "1";
+            dashboardLoadingOverlay.style.visibility = "visible";
+            dashboardLoadingOverlay.classList.add("show");
+            document.body.classList.add("loading-overlay-open");
+        }
+    }
+
+    // Interceptar las llamadas a hideLoadingOverlay para evitar que se oculte durante la carga
+    const originalHideLoadingOverlay = window.hideLoadingOverlay;
+    if (typeof originalHideLoadingOverlay === "function") {
+        window.hideLoadingOverlay = function(force) {
+            if (dashboardLoadingActive && !force) {
+                // Si el dashboard está cargando y no es un cierre forzado, mantener visible
+                forceOverlayVisible();
+                return;
+            }
+            // Si es un cierre forzado o el dashboard terminó, permitir ocultar
+            return originalHideLoadingOverlay.call(this, force);
+        };
+    }
+
+    function ensureDashboardOverlayUI() {
+        if (!dashboardLoadingOverlay) return;
+        const card = dashboardLoadingOverlay.querySelector(".loading-card") || dashboardLoadingOverlay;
+        if (!progressWrapperElement) {
+            progressWrapperElement = document.createElement("div");
+            progressWrapperElement.className = "dashboard-loading-progress";
+            progressWrapperElement.innerHTML = `
+                <div class="dashboard-progress-track">
+                    <div class="dashboard-progress-bar"></div>
+                </div>
+                <p class="dashboard-loading-status">Inicializando...</p>
+            `;
+            card.appendChild(progressWrapperElement);
+        }
+        progressBarElement = progressWrapperElement.querySelector(".dashboard-progress-bar");
+        loadingStatusElement = progressWrapperElement.querySelector(".dashboard-loading-status");
+    }
+
+    function cleanupDashboardOverlayUI() {
+        if (progressWrapperElement) {
+            progressWrapperElement.remove();
+            progressWrapperElement = null;
+            progressBarElement = null;
+            loadingStatusElement = null;
+        }
+    }
+
     function updateLoadingStatus(message, progress) {
+        if (overlayMessageElement) {
+            overlayMessageElement.textContent = message;
+        }
         if (loadingStatusElement) {
             loadingStatusElement.textContent = message;
         }
-        if (progressBarElement && progress !== undefined) {
-            // Se usa la propiedad 'transition' del CSS para la animación fluida
+        if (progressBarElement && typeof progress === "number") {
             progressBarElement.style.width = `${progress}%`;
         }
+        // Asegurar que el overlay permanezca visible después de cada actualización
+        forceOverlayVisible();
     }
 
-    // Mostrar el overlay de carga al inicio
-    if (dashboardLoadingOverlay) {
-        dashboardLoadingOverlay.style.display = 'flex';
-        updateLoadingStatus("Inicializando dashboard...", 0);
+    if (typeof showLoadingOverlay === "function") {
+        showLoadingOverlay("Preparando datos...");
     }
+    ensureDashboardOverlayUI();
+        updateLoadingStatus("Inicializando dashboard...", 0);
+    // Forzar que el overlay esté visible al inicio
+    forceOverlayVisible();
 
     // Lista de funciones de carga y sus mensajes/progreso (aproximado)
     // Se definen en orden secuencial
@@ -543,7 +594,6 @@ window.addEventListener("load", function () {
                 try {
                     updateLoadingStatus(item.status, item.progress);
                     await item.func(); // <--- Ejecución secuencial (await)
-                    //console.log(`Función completada: ${item.func.name}`);
                 } catch (error) {
                     console.error(`Error al cargar ${item.func.name}:`, error);
                     hasError = true;
@@ -558,6 +608,15 @@ window.addEventListener("load", function () {
     // Ejecución de la Carga Secuencial y Manejo del Tiempo Mínimo
     // =============================================================
 
+    // Intervalo para mantener el overlay visible durante la carga
+    const keepOverlayVisibleInterval = setInterval(() => {
+        if (dashboardLoadingActive) {
+            forceOverlayVisible();
+        } else {
+            clearInterval(keepOverlayVisibleInterval);
+        }
+    }, 100); // Verificar cada 100ms
+
     const startTime = Date.now();
 
     loadInitialDataSequentially()
@@ -570,35 +629,110 @@ window.addEventListener("load", function () {
 
             // Paso 2: Esperar el tiempo restante para alcanzar el mínimo de 10 segundos
             if (remainingTime > 0) {
-                //console.log(`Esperando ${remainingTime}ms para el tiempo mínimo de carga.`);
                 await new Promise(resolve => setTimeout(resolve, remainingTime));
             }
 
-            // Paso 3: Ocultar el overlay de carga con transición
+            // Paso 3: Marcar que el dashboard terminó de cargar
+            dashboardLoadingActive = false;
+            
+            // Limpiar el intervalo que mantiene el overlay visible INMEDIATAMENTE
+            if (keepOverlayVisibleInterval) {
+                clearInterval(keepOverlayVisibleInterval);
+            }
+            
+            // Limpiar cualquier timer del loading-overlay.js que pueda interferir
+            if (typeof window.clearTableCheckTimers === 'function') {
+                window.clearTableCheckTimers();
+            }
+            
+            // Restaurar la función original de hideLoadingOverlay
+            if (originalHideLoadingOverlay) {
+                window.hideLoadingOverlay = originalHideLoadingOverlay;
+            }
+            
+            // Paso 4: Ocultar el overlay con transición suave
             if (dashboardLoadingOverlay) {
-                dashboardLoadingOverlay.style.transition = "opacity 0.5s ease-out";
+                // Limpiar UI primero
+                cleanupDashboardOverlayUI();
+                
+                // Aplicar transición suave de fade out
+                dashboardLoadingOverlay.style.transition = "opacity 0.4s ease-out";
                 dashboardLoadingOverlay.style.opacity = "0";
+                
+                // Esperar a que termine la transición antes de ocultar completamente
                 setTimeout(() => {
-                    dashboardLoadingOverlay.style.display = 'none';
-                    // Si hubo un error, muestra la alerta DESPUÉS de ocultar el overlay.
+                    dashboardLoadingOverlay.style.display = "none";
+                    dashboardLoadingOverlay.style.visibility = "hidden";
+                    dashboardLoadingOverlay.style.opacity = "";
+                    dashboardLoadingOverlay.style.transition = "";
+                    dashboardLoadingOverlay.classList.remove("show");
+                    
+                    // Limpiar clases del body
+                    document.body.classList.remove("loading-overlay-open");
+                    
+                    // Forzar el cierre en loading-overlay.js también
+                    if (typeof hideLoadingOverlay === "function") {
+                        hideLoadingOverlay(true);
+                    }
+                    
+                    // Mostrar error si existe
                     if (hasError) {
-                         Swal.fire({
+                        Swal.fire({
                             icon: "warning",
                             title: "Carga Parcial",
                             text: "Algunos datos no se cargaron correctamente, pero el dashboard es visible. Revise la consola para detalles.",
                             confirmButtonColor: "#003594",
                         });
                     }
-                }, 500);
+                }, 400); // Esperar 400ms para que termine la transición
+            } else if (typeof hideLoadingOverlay === "function") {
+                hideLoadingOverlay(true);
             }
         })
         .catch(error => {
             // Este catch solo se activa si loadInitialDataSequentially lanza un error fatal
             console.error("Error FATAL durante la carga secuencial:", error);
-            updateLoadingStatus("Error crítico. Reintente.", 100);
-            if (dashboardLoadingOverlay) {
-                dashboardLoadingOverlay.style.display = 'none';
+            dashboardLoadingActive = false;
+            
+            // Limpiar el intervalo que mantiene el overlay visible INMEDIATAMENTE
+            if (keepOverlayVisibleInterval) {
+                clearInterval(keepOverlayVisibleInterval);
             }
+            
+            // Limpiar cualquier timer del loading-overlay.js que pueda interferir
+            if (typeof window.clearTableCheckTimers === 'function') {
+                window.clearTableCheckTimers();
+            }
+            
+            // Restaurar la función original de hideLoadingOverlay
+            if (originalHideLoadingOverlay) {
+                window.hideLoadingOverlay = originalHideLoadingOverlay;
+            }
+            
+            updateLoadingStatus("Error crítico. Reintente.", 100);
+            cleanupDashboardOverlayUI();
+            
+            // Ocultar con transición suave
+            if (dashboardLoadingOverlay) {
+                dashboardLoadingOverlay.style.transition = "opacity 0.4s ease-out";
+                dashboardLoadingOverlay.style.opacity = "0";
+                
+                setTimeout(() => {
+                    dashboardLoadingOverlay.style.display = "none";
+                    dashboardLoadingOverlay.style.visibility = "hidden";
+                    dashboardLoadingOverlay.style.opacity = "";
+                    dashboardLoadingOverlay.style.transition = "";
+                    dashboardLoadingOverlay.classList.remove("show");
+                    document.body.classList.remove("loading-overlay-open");
+                    
+                    if (typeof hideLoadingOverlay === "function") {
+                        hideLoadingOverlay(true);
+                    }
+                }, 400);
+            } else if (typeof hideLoadingOverlay === "function") {
+                hideLoadingOverlay(true);
+            }
+            
             Swal.fire({
                 icon: "error",
                 title: "Error de Carga Crítico",
@@ -719,7 +853,6 @@ window.addEventListener("load", function () {
         if (modalElement && modalTimelineInstance) {
             modalTimelineInstance.hide();
             forceCleanupAfterModalClose();
-            console.log("Cierre forzado del modal de línea de tiempo.");
         } else {
             console.error("No se encontró el elemento #TimelineModal o la instancia para cierre forzado.");
         }
@@ -1049,7 +1182,6 @@ window.addEventListener("load", function () {
             const clickedButton = event.target.closest(".taller-ticket-detail");
       if (clickedButton) {
         const ticketId = clickedButton.dataset.ticketId;
-        console.log(`Clic en detalle de ticket de taller, ID: ${ticketId}`);
       }
     });
   }
@@ -2740,7 +2872,6 @@ function loadTallerTicketDetails() {
     .then((data) => {
       if (data.success) {
         allTallerTickets = data.details; // Almacenar todos los tickets
-        console.log(data.details);
         displayFilteredTickets(allTallerTickets, 'TallerTicketsContent'); // Mostrar todos al principio
         attachMarkReceivedListeners(); // Adjuntar listeners a los botones "Marcar como Recibido"
 
@@ -3548,7 +3679,6 @@ fetch("/SoportePost/app/controllers/dashboard.php", {
   .then((responseText) => {
     if (responseText) {
       try {
-        console.log("Response text:", responseText); // Mostrar la respuesta para depuración
         const data = JSON.parse(responseText); // Intentar parsear como JSON
         if (data.expired_sessions) {
           window.location.href = data.redirect;
@@ -3563,7 +3693,6 @@ fetch("/SoportePost/app/controllers/dashboard.php", {
         }
       } catch (error) {
         console.error("JSON parse error:", error);
-        console.log("Response text:", responseText); // Mostrar la respuesta para depuración
       }
     } else {
       console.error("Empty response from server");
@@ -5908,7 +6037,6 @@ window.addEventListener("load", async () => {
     backdrops.forEach(backdrop => backdrop.remove());
   }
 
-  console.log("Page fully loaded. Starting async loads...");
   try {
     await Promise.all([
       loadMonthlyCreatedTicketsChart(),
@@ -5933,7 +6061,6 @@ window.addEventListener("load", async () => {
       getTicketPercentage(),
       // Agrega aquí todas tus funciones load async similares
     ]);
-    console.log("All data loaded successfully");
   } catch (error) {
     console.error("Error in parallel loads:", error);
     // Muestra un mensaje global si falla la carga inicial

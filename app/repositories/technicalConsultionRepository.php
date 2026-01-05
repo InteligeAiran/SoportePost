@@ -111,11 +111,11 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket)
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla)
     {
         // Llama al método SaveDataFalla del modelo.
         // Este método ahora devolverá el array con 'idTicketCreado' y 'status_info'.
-        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket);
+        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla,  $id_user, $rif, $Nr_ticket, $descripcion_falla);
         return $result_from_model;
     }
 
@@ -687,6 +687,11 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function getStatusPayment($id_ticket){
+        $result = $this->model->getStatusTicketPayment($id_ticket);
+        return $result;
+    }
+
     public function EntregarTicketDevolucion($id_ticket, $id_user){
         $result = $this->model->EntregarTicketDevolucion($id_ticket, $id_user);
         return $result;
@@ -765,6 +770,10 @@ class TechnicalConsultionRepository
         return $this->model->getDocumentByType($ticketId, $documentType);
     }
 
+    public function getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType) {
+        return $this->model->getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType);
+    }
+
     public function GetMotivos($documentId) {
         $result = $this->model->GetMotivos($documentId);
 
@@ -785,8 +794,8 @@ class TechnicalConsultionRepository
         return $result;
     }
 
-    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type){
-        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type);
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = ''){
+        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
         return $result;
     }
 
@@ -930,6 +939,280 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetAllComponentsPOS(){
+        $result = $this->model->GetAllComponentsPOS();
+        if ($result) {
+            $ticket = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetPaymentMethods(){
+        $result = $this->model->GetPaymentMethods();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $paymentMethods = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $paymentMethods[] = $agente;
+            }
+            return $paymentMethods;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetExchangeRate(){
+        $result = $this->model->GetExchangeRate();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $exchangeRate = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $exchangeRate;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetExchangeRateToday(){
+        $result = $this->model->GetExchangeRateToday();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $exchangeRate = pg_fetch_assoc($result['query'], 0);
+            
+            // Debug: Log para ver qué se está retornando
+            error_log("GetExchangeRateToday - Datos obtenidos: " . print_r($exchangeRate, true));
+            error_log("GetExchangeRateToday - Claves del array: " . print_r(array_keys($exchangeRate), true));
+            
+            pg_free_result($result['query']);
+            return $exchangeRate;
+        } else {
+            error_log("GetExchangeRateToday - No se encontraron resultados. numRows: " . (isset($result['numRows']) ? $result['numRows'] : 'no definido'));
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetExchangeRateByDate($fecha){
+        $result = $this->model->GetExchangeRateByDate($fecha);
+        
+        // Debug: Log para ver qué se está retornando
+        error_log("GetExchangeRateByDate - Fecha recibida: " . $fecha);
+        error_log("GetExchangeRateByDate - Result: " . print_r($result, true));
+        
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $exchangeRate = pg_fetch_assoc($result['query'], 0);
+            
+            // Debug: Log para ver qué se está retornando
+            error_log("GetExchangeRateByDate - Datos obtenidos: " . print_r($exchangeRate, true));
+            error_log("GetExchangeRateByDate - Claves del array: " . print_r(array_keys($exchangeRate), true));
+            
+            pg_free_result($result['query']);
+            return $exchangeRate;
+        } else {
+            error_log("GetExchangeRateByDate - No se encontraron resultados. numRows: " . (isset($result['numRows']) ? $result['numRows'] : 'no definido'));
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetBancos(){
+        $result = $this->model->GetBancos();
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $bancos = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $banco = pg_fetch_assoc($result['query'], $i);
+                $bancos[] = $banco;
+            }
+            pg_free_result($result['query']);
+            return $bancos;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return [];
+        }
+    }
+
+    public function GetPaymentData($nro_ticket){
+        $result = $this->model->GetPaymentData($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $payment_data = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $payment_data;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetPresupuestoData($nro_ticket){
+        $result = $this->model->GetPresupuestoData($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $cliente_data = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $cliente_data;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function SaveBudget($nro_ticket, $monto_taller, $diferencia_usd, $diferencia_bs, $descripcion_reparacion, $fecha_presupuesto, $presupuesto_numero, $user_creator){
+        return $this->model->SaveBudget($nro_ticket, $monto_taller, $diferencia_usd, $diferencia_bs, $descripcion_reparacion, $fecha_presupuesto, $presupuesto_numero, $user_creator);
+    }
+    
+    public function UpdateVerifiedPaymentData($nro_ticket, $nro_payment_reference_verified, $payment_date_verified){
+        return $this->model->UpdateVerifiedPaymentData($nro_ticket, $nro_payment_reference_verified, $payment_date_verified);
+    }
+    
+    public function UpdatePresupuestoPDFPath($id_budget, $pdf_path){
+        return $this->model->UpdatePresupuestoPDFPath($id_budget, $pdf_path);
+    }
+    
+    public function UpdatePresupuestoPDFPathByNroTicket($nro_ticket, $pdf_path){
+        return $this->model->UpdatePresupuestoPDFPathByNroTicket($nro_ticket, $pdf_path);
+    }
+    
+    public function getTicketDetailsByNroTicket($nro_ticket){
+        return $this->model->GetTicketDetailsByNroTicket($nro_ticket);
+    }
+    
+    public function GetBudgetIdByNroTicket($nro_ticket){
+        return $this->model->GetBudgetIdByNroTicket($nro_ticket);
+    }
+
+    public function GetEstatusPago(){
+        $result = $this->model->GetEstatusPago();
+        if ($result) {
+            //var_dump($result);  
+            $estatus = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $estatus[] = $agente;
+            }
+            //var_dump($agente);
+            return $estatus;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Guarda un pago en la tabla temporal temp_payment_uploads
+     * 
+     * @param string $serial_pos Serial del POS
+     * @param int|null $user_loader ID del usuario que carga el pago
+     * @param string|null $payment_date Fecha del pago
+     * @param string|null $origen_bank Banco de origen
+     * @param string|null $destination_bank Banco de destino
+     * @param string $payment_method Método de pago
+     * @param string $currency Moneda (BS o USD)
+     * @param float|null $reference_amount Monto de referencia
+     * @param float $amount_bs Monto en Bolívares
+     * @param string|null $payment_reference Referencia del pago
+     * @param string|null $depositor Depositante
+     * @param string|null $observations Observaciones
+     * @param string|null $record_number Número de registro
+     * @param string $loadpayment_date Fecha de carga del pago
+     * @param bool $confirmation_number Número de confirmación
+     * @param int $payment_status Estado del pago
+     * @param string|null $destino_rif_tipo Tipo de RIF del destino (Pago Móvil)
+     * @param string|null $destino_rif_numero Número de RIF del destino (Pago Móvil)
+     * @param string|null $destino_telefono Teléfono del destino (Pago Móvil)
+     * @param string|null $destino_banco Banco del destino (Pago Móvil)
+     * @param string|null $origen_rif_tipo Tipo de RIF del origen (Pago Móvil)
+     * @param string|null $origen_rif_numero Número de RIF del origen (Pago Móvil)
+     * @param string|null $origen_telefono Teléfono del origen (Pago Móvil)
+     * @param string|null $origen_banco Banco del origen (Pago Móvil)
+     * @return int|false ID del registro guardado o false en caso de error
+     */
+    public function SavePayment(
+        $serial_pos,
+        $nro_ticket = null,
+        $user_loader, 
+        $payment_date, 
+        $origen_bank, 
+        $destination_bank, 
+        $payment_method, 
+        $currency, 
+        $reference_amount, 
+        $amount_bs, 
+        $payment_reference, 
+        $depositor, 
+        $observations, 
+        $record_number, 
+        $loadpayment_date, 
+        $confirmation_number, 
+        $payment_status, 
+        $destino_rif_tipo = null, 
+        $destino_rif_numero = null, 
+        $destino_telefono = null, 
+        $destino_banco = null, 
+        $origen_rif_tipo = null, 
+        $origen_rif_numero = null, 
+        $origen_telefono = null, 
+        $origen_banco = null
+    ){
+        $result = $this->model->SavePayment(
+            $serial_pos,
+            $nro_ticket,
+            $user_loader, 
+            $payment_date, 
+            $origen_bank, 
+            $destination_bank, 
+            $payment_method, 
+            $currency, 
+            $reference_amount, 
+            $amount_bs, 
+            $payment_reference, 
+            $depositor, 
+            $observations, 
+            $record_number, 
+            $loadpayment_date, 
+            $confirmation_number, 
+            $payment_status, 
+            $destino_rif_tipo, 
+            $destino_rif_numero, 
+            $destino_telefono, 
+            $destino_banco, 
+            $origen_rif_tipo, 
+            $origen_rif_numero, 
+            $origen_telefono, 
+            $origen_banco
+        );
+        
+        return $result;
+    }
+
+    /**
+     * Transfiere el pago de la tabla temporal a la tabla principal cuando se crea el ticket
+     * 
+     * @param string $serial_pos Serial del POS
+     * @param string $nro_ticket Número del ticket creado
+     * @return bool|int ID del registro insertado en payment_records o false en caso de error
+     */
+    public function TransferPaymentFromTempToMain($serial_pos, $nro_ticket) {
+        return $this->model->TransferPaymentFromTempToMain($serial_pos, $nro_ticket);
+    }
+
+    public function CheckPaymentExistsToday($serial_pos) {
+        return $this->model->CheckPaymentExistsToday($serial_pos);
+    }
 
 }
 ?>

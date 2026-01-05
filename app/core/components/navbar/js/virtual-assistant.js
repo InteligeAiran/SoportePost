@@ -98,7 +98,7 @@ class TicketManagementTutorial {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.2);
             z-index: 9998;
             transition: opacity 0.3s ease;
         `;
@@ -107,22 +107,18 @@ class TicketManagementTutorial {
 
     // Mostrar paso específico del tutorial
     async showStep(stepIndex) {
-        console.log(`🤖 Tutorial: Mostrando paso ${stepIndex + 1} de ${this.tutorialSteps.length}`);
         
         if (stepIndex >= this.tutorialSteps.length) {
-            console.log('🤖 Tutorial: Finalizando tutorial - todos los pasos completados');
             this.endTutorial();
             return;
         }
 
         const step = this.tutorialSteps[stepIndex];
-        console.log(`🤖 Tutorial: Buscando elemento para "${step.title}" con selector: ${step.selector}`);
         
         let element = document.querySelector(step.selector);
         
         // Si no se encuentra el elemento, intentar con selectores alternativos
         if (!element) {
-            console.log(`🤖 Tutorial: Elemento no encontrado con selector principal, buscando alternativos...`);
             element = this.findAlternativeElement(step);
         }
         
@@ -135,7 +131,6 @@ class TicketManagementTutorial {
             return;
         }
 
-        console.log(`🤖 Tutorial: Elemento encontrado para "${step.title}"`);
 
         // Remover highlight anterior
         this.removeHighlight();
@@ -152,7 +147,6 @@ class TicketManagementTutorial {
         // Agregar listeners
         this.addStepListeners();
         
-        console.log(`🤖 Tutorial: Paso ${stepIndex + 1} configurado correctamente`);
     }
     
     // Buscar elemento alternativo si el selector principal no funciona
@@ -202,21 +196,17 @@ class TicketManagementTutorial {
         
         const selectors = alternativeSelectors[step.title];
         if (selectors) {
-            console.log(`🤖 Tutorial: Buscando selectores alternativos para "${step.title}"`);
             for (const selector of selectors) {
                 try {
                     const element = document.querySelector(selector);
                     if (element) {
-                        console.log(`🤖 Tutorial: Elemento alternativo encontrado para "${step.title}": ${selector}`);
                         return element;
                     }
                 } catch (e) {
-                    console.log(`🤖 Tutorial: Error con selector alternativo "${selector}": ${e.message}`);
                 }
             }
         }
         
-        console.log(`🤖 Tutorial: No se encontraron elementos alternativos para "${step.title}"`);
         return null;
     }
     
@@ -387,7 +377,6 @@ class TicketManagementTutorial {
 
         // Debug final para "Estatus de Taller"
         if (step.title === 'Estatus de Taller') {
-            console.log(`🤖 Tutorial: Estatus de Taller - Posición final: top=${top}, left=${left}`);
         }
 
         tooltip.style.cssText = `
@@ -419,12 +408,14 @@ class TicketManagementTutorial {
         }
 
         tooltip.innerHTML = `
+            <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -25px -25px 20px -25px; border-radius: 12px 12px 0 0;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+            </div>
             <div style="margin-bottom: 15px;">
-                <h4 style="margin: 0 0 12px 0; color: #333; font-size: 20px; font-weight: bold;">${step.title}</h4>
-                <p style="margin: 0; color: #555; font-size: 16px; line-height: 1.5; font-weight: 500;">${step.description}</p>
+                <p style="margin: 0; color: #555; font-size: 15px; line-height: 1.6;">${step.description}</p>
                 ${additionalInfo}
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px;">
                 <div style="font-size: 13px; color: #666; font-weight: 500;">
                     Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}
                 </div>
@@ -710,7 +701,7 @@ class ConsultaRIFTutorial {
         this.overlay.id = 'tutorial-overlay';
         this.overlay.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); z-index: 9998;
+            background: rgba(0, 0, 0, 0.2); z-index: 9998;
         `;
         document.body.appendChild(this.overlay);
     }
@@ -850,15 +841,19 @@ class ConsultaRIFTutorial {
         `;
 
         tooltip.innerHTML = `
-            <h4 style="margin:0 0 12px; color:#333; font-size:20px; font-weight:bold;">${step.title}</h4>
-            <p style="margin:0; color:#555; font-size:16pxpx; line-height:1.5;">${step.description}</p>
-            <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #e9ecef; padding-top:12px;">
-                <div style="font-size:13px; color:#666;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
+            <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -25px -25px 20px -25px; border-radius: 12px 12px 0 0;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 0; color: #555; font-size: 15px; line-height: 1.6;">${step.description}</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px;">
+                <div style="font-size: 13px; color: #666; font-weight: 500;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
                 <div>
-                    <button id="tutorial-skip" style="background:#6c757d; color:white; border:none; padding:8px 16px; border-radius:6px; margin-right:8px; cursor:pointer;">Saltar</button>
+                    <button id="tutorial-skip" style="background:#6c757d; color:white; border:none; padding:10px 18px; border-radius:6px; margin-right:10px; cursor:pointer; font-size:13px; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
                     ${this.currentStep === this.tutorialSteps.length - 1
-                        ? '<button id="tutorial-finish" style="background:#28a745; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Finalizar</button>'
-                        : '<button id="tutorial-next" style="background:#007bff; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Siguiente</button>'
+                        ? '<button id="tutorial-finish" style="background:#28a745; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor=\'#218838\'" onmouseout="this.style.backgroundColor=\'#28a745\'">Finalizar</button>'
+                        : '<button id="tutorial-next" style="background:#007bff; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor=\'#0056b3\'" onmouseout="this.style.backgroundColor=\'#007bff\'">Siguiente</button>'
                     }
                 </div>
             </div>
@@ -884,7 +879,6 @@ class ConsultaRIFTutorial {
         if (this.currentStep === 2) {
             const buscarPorNombreBtn = document.getElementById('buscarPorNombreBtn');
             if (buscarPorNombreBtn) {
-                console.log("🤖 Tutorial: Haciendo click automático en 'Buscar por Razón Social'");
                 buscarPorNombreBtn.click();
                 // Esperar un momento para que se muestren los elementos
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -903,7 +897,6 @@ class ConsultaRIFTutorial {
             const razonInput = document.getElementById('RazonInput');
             
             if (buscarRazonBtn && razonInput) {
-                console.log("🤖 Tutorial: Escribiendo 'INV' en el campo y haciendo búsqueda automática");
                 
                 // Limpiar tooltip actual
                 this.removeHighlight();
@@ -938,7 +931,6 @@ class ConsultaRIFTutorial {
         
        // Si estamos avanzando DESDE el paso 6 (Serial del POS), hacer click automático
        if (this.currentStep === 6) {
-            console.log("Tutorial: Haciendo click automático en el serial POS");
 
             this.removeHighlight();
             this.removeTooltip();
@@ -947,7 +939,6 @@ class ConsultaRIFTutorial {
             const serialLink = document.querySelector('#rifCountTable tbody tr td.serial-pos-column a');
 
             if (serialLink) {
-                console.log("Encontrado enlace serial:", serialLink.textContent.trim());
 
                 // Scroll a la tabla
                 const table = document.getElementById('rifCountTable');
@@ -1024,6 +1015,317 @@ class ConsultaRIFTutorial {
         const avatar = document.getElementById('assistantAvatar');
         if (panel) panel.style.display = '';
         if (avatar) avatar.style.display = '';
+    }
+}
+
+// TUTORIAL DE CONSULTA TICKET
+class ConsultaTicketTutorial {
+    constructor() {
+        this.currentStep = 0;
+        this.isActive = false;
+        this.overlay = null;
+        this.highlightedElement = null;
+        this.tutorialSteps = [
+            {
+                selector: '#tipoBusqueda',
+                title: 'Tipo de Búsqueda',
+                description: 'Este módulo te permite buscar tickets de diferentes formas. Selecciona el tipo de búsqueda que necesites.',
+                position: 'bottom',
+            },
+            {
+                selector: '#regiones',
+                title: 'Selector de Tipo de Búsqueda',
+                description: 'Aquí puedes elegir entre: <strong>Rango de Fecha</strong>, <strong>Serial</strong>, <strong>RIF</strong>, <strong>Región</strong>, <strong>Estatus</strong> o <strong>Bancos</strong>. Cada opción mostrará campos diferentes para tu búsqueda.',
+                position: 'bottom',
+            },
+            {
+                selector: '#rifInput',
+                title: 'Búsqueda por RIF',
+                description: 'Si seleccionaste "RIF", aquí ingresas el número de RIF del cliente (ej: J-12345678-9). También puedes seleccionar el tipo de RIF (J, V, E, G) en el dropdown.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '3' && document.getElementById('rifInput') && document.getElementById('rifInput').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#serialInput',
+                title: 'Búsqueda por Serial',
+                description: 'Si seleccionaste "Serial", aquí ingresas el número de serial del POS (ej: 10000CT27000041).',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '2' && document.getElementById('serialInput') && document.getElementById('serialInput').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#inputsDate',
+                title: 'Búsqueda por Rango de Fecha',
+                description: 'Si seleccionaste "Rango de Fecha", aquí puedes elegir una fecha inicial y una fecha final para buscar tickets en ese período.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '1' && document.getElementById('inputsDate') && document.getElementById('inputsDate').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#SelectRgions',
+                title: 'Búsqueda por Región',
+                description: 'Si seleccionaste "Región", aquí puedes elegir una región específica para filtrar los tickets.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '4' && document.getElementById('SelectRgions') && document.getElementById('SelectRgions').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#SelectStatus',
+                title: 'Búsqueda por Estatus',
+                description: 'Si seleccionaste "Estatus", aquí puedes elegir un estatus específico para filtrar los tickets (ej: Abierto, Cerrado, En Proceso).',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '5' && document.getElementById('SelectStatus') && document.getElementById('SelectStatus').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#SelectBancos',
+                title: 'Búsqueda por Banco',
+                description: 'Si seleccionaste "Bancos", aquí puedes elegir un banco específico para filtrar los tickets.',
+                position: 'bottom',
+                waitFor: () => {
+                    const select = document.getElementById('regiones');
+                    return select && select.value === '6' && document.getElementById('SelectBancos') && document.getElementById('SelectBancos').offsetParent !== null;
+                }
+            },
+            {
+                selector: '#rifCountTable',
+                title: 'Resultados de la Búsqueda',
+                description: 'Aquí aparecerán todos los tickets que coincidan con tu búsqueda. Puedes ver información detallada de cada ticket y realizar acciones sobre ellos.',
+                position: 'top',
+                waitFor: () => {
+                    const table = document.getElementById('rifCountTable');
+                    return table && table.offsetParent !== null && table.style.display !== 'none';
+                }
+            }
+        ];
+    }
+
+    startTutorial() {
+        if (this.isActive) return;
+        this.isActive = true;
+        this.currentStep = 0;
+        this.createOverlay();
+        this.hideChatbot();
+        this.showStep(0);
+    }
+
+    createOverlay() {
+        this.overlay = document.createElement('div');
+        this.overlay.id = 'tutorial-overlay';
+        this.overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.2); z-index: 9998;
+        `;
+        document.body.appendChild(this.overlay);
+    }
+
+    hideChatbot() {
+        const chatbot = document.getElementById('virtual-assistant-panel');
+        if (chatbot) chatbot.style.display = 'none';
+    }
+
+    async showStep(stepIndex) {
+        if (stepIndex >= this.tutorialSteps.length) {
+            this.endTutorial();
+            return;
+        }
+
+        const step = this.tutorialSteps[stepIndex];
+
+        // Esperar a que el elemento exista o condición
+        if (step.waitFor) {
+            await this.waitForCondition(step.waitFor);
+        }
+
+        let element = document.querySelector(step.selector);
+        if (!element) {
+            console.warn(`Elemento no encontrado: ${step.selector}`);
+            this.nextStep();
+            return;
+        }
+
+        // Scroll al elemento
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Remover highlight y tooltip anteriores
+        this.removeHighlight();
+        this.removeTooltip();
+
+        // Crear highlight
+        this.highlightElement(element);
+
+        // Crear tooltip
+        this.createTooltip(element, step);
+
+        // Agregar listeners
+        this.addListeners();
+    }
+
+    waitForCondition(condition) {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+            const maxAttempts = 50;
+            const checkInterval = setInterval(() => {
+                attempts++;
+                try {
+                    if (condition()) {
+                        clearInterval(checkInterval);
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        reject(new Error('Timeout esperando condición'));
+                    }
+                } catch (error) {
+                    clearInterval(checkInterval);
+                    reject(error);
+                }
+            }, 200);
+        });
+    }
+
+    highlightElement(element) {
+        this.highlightedElement = element;
+        const rect = element.getBoundingClientRect();
+        const highlight = document.createElement('div');
+        highlight.id = 'tutorial-highlight';
+        highlight.style.cssText = `
+            position: fixed;
+            top: ${rect.top - 4}px;
+            left: ${rect.left - 4}px;
+            width: ${rect.width + 8}px;
+            height: ${rect.height + 8}px;
+            border: 3px solid #007bff;
+            border-radius: 8px;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0, 123, 255, 0.5);
+        `;
+        document.body.appendChild(highlight);
+    }
+
+    createTooltip(element, step) {
+        const tooltip = document.createElement('div');
+        tooltip.id = 'tutorial-tooltip';
+        const rect = element.getBoundingClientRect();
+        const position = step.position || 'bottom';
+        
+        let top, left;
+        const tooltipWidth = 350;
+        const tooltipHeight = 200;
+
+        switch (position) {
+            case 'top':
+                top = rect.top - tooltipHeight - 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                break;
+            case 'bottom':
+                top = rect.bottom + 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+                break;
+            case 'left':
+                top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                left = rect.left - tooltipWidth - 20;
+                break;
+            case 'right':
+                top = rect.top + (rect.height / 2) - (tooltipHeight / 2);
+                left = rect.right + 20;
+                break;
+            default:
+                top = rect.bottom + 20;
+                left = rect.left + (rect.width / 2) - (tooltipWidth / 2);
+        }
+
+        // Ajustar si se sale de la pantalla
+        if (left < 10) left = 10;
+        if (left + tooltipWidth > window.innerWidth - 10) left = window.innerWidth - tooltipWidth - 10;
+        if (top < 10) top = 10;
+        if (top + tooltipHeight > window.innerHeight - 10) top = window.innerHeight - tooltipHeight - 10;
+
+        tooltip.style.cssText = `
+            position: fixed;
+            top: ${top}px;
+            left: ${left}px;
+            width: ${tooltipWidth}px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        `;
+
+        tooltip.innerHTML = `
+            <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -20px -20px 20px -20px; border-radius: 12px 12px 0 0;">
+                <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <p style="margin: 0; color: #555; font-size: 15px; line-height: 1.6;">${step.description}</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e9ecef; padding-top: 15px;">
+                <span style="color: #666; font-size: 13px; font-weight: 500;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</span>
+                <div>
+                    <button id="tutorial-skip" style="background: #6c757d; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; margin-right: 10px; font-size: 13px; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
+                    <button id="tutorial-next" style="background: #007bff; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007bff'">Siguiente</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(tooltip);
+    }
+
+    addListeners() {
+        const nextBtn = document.getElementById('tutorial-next');
+        const skipBtn = document.getElementById('tutorial-skip');
+        
+        if (nextBtn) {
+            nextBtn.onclick = () => this.nextStep();
+        }
+        
+        if (skipBtn) {
+            skipBtn.onclick = () => this.endTutorial();
+        }
+    }
+
+    nextStep() {
+        this.currentStep++;
+        if (this.currentStep >= this.tutorialSteps.length) {
+            this.endTutorial();
+            return;
+        }
+        this.showStep(this.currentStep);
+    }
+
+    removeHighlight() {
+        const highlight = document.getElementById('tutorial-highlight');
+        if (highlight) highlight.remove();
+    }
+
+    removeTooltip() {
+        const tooltip = document.getElementById('tutorial-tooltip');
+        if (tooltip) tooltip.remove();
+    }
+
+    endTutorial() {
+        this.isActive = false;
+        this.removeHighlight();
+        this.removeTooltip();
+        if (this.overlay) {
+            this.overlay.remove();
+        }
+        const chatbot = document.getElementById('virtual-assistant-panel');
+        if (chatbot) chatbot.style.display = '';
     }
 }
 
@@ -1269,7 +1571,7 @@ class GestionCoordinadorTutorial {
         this.createOverlay = () => {
             this.overlay = document.createElement('div');
             this.overlay.id = 'tutorial-overlay';
-            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;';
             document.body.appendChild(this.overlay);
         };
 
@@ -1427,11 +1729,18 @@ class GestionCoordinadorTutorial {
         <style>
             @keyframes popIn { from {opacity:0;transform:scale(0.9) translateY(-10px);} to {opacity:1;transform:scale(1);} }
         </style>
-        <h4 style="margin:0 0 14px;color:#007bff;font-weight:700;font-size:20px;">${step.title}</h4>
-        <p style="margin:0;color:#333;font-size:15px;line-height:1.6;">${step.description}</p>
-        <div style="display:flex;justify-content:flex-end;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;">
-            <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip" style="background:#6c757d; color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:600; margin-right:8px;">Saltar</button>
-            <button id="tutorial-next" class="tutorial-btn tutorial-btn-next" style="background:${nextBg}; color:white; border:none; padding:11px 20px; border-radius:12px; font-size:14px; cursor:pointer; font-weight:600;">${nextText}</button>
+        <div style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 20px; margin: -24px -24px 20px -24px; border-radius: 18px 18px 0 0;">
+            <h4 style="margin: 0; font-size: 18px; font-weight: 600;">${step.title}</h4>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <p style="margin:0;color:#555;font-size:15px;line-height:1.6;">${step.description}</p>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e9ecef;padding-top:15px;">
+            <div style="font-size:13px;color:#666;font-weight:500;">Paso ${this.currentStep + 1} de ${this.tutorialSteps.length}</div>
+            <div>
+                <button id="tutorial-skip" class="tutorial-btn tutorial-btn-skip" style="background:#6c757d; color:white; border:none; padding:10px 18px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; margin-right:10px; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='#5a6268'" onmouseout="this.style.backgroundColor='#6c757d'">Saltar</button>
+                <button id="tutorial-next" class="tutorial-btn tutorial-btn-next" style="background:${nextBg}; color:white; border:none; padding:10px 18px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; transition: all 0.2s ease;" onmouseover="this.style.backgroundColor='${nextBg === '#28a745' ? '#218838' : '#0056b3'}'" onmouseout="this.style.backgroundColor='${nextBg}'">${nextText}</button>
+            </div>
         </div>
     `;
 
@@ -1770,7 +2079,7 @@ class GestionTecnicoTutorial {
         this.createOverlay = () => {
             this.overlay = document.createElement('div');
             this.overlay.id = 'tutorial-overlay';
-            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;';
             document.body.appendChild(this.overlay);
         };
         this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>80){rej();return;} setTimeout(tick,125);} ; tick(); });
@@ -1961,7 +2270,7 @@ class GestionTallerTutorial {
         this.createOverlay = () => {
             this.overlay = document.createElement('div');
             this.overlay.id = 'tutorial-overlay';
-            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;';
+            this.overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;';
             document.body.appendChild(this.overlay);
         };
         this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
@@ -2151,7 +2460,7 @@ class GestionRosalTutorial {
         };
 
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.waitForCondition = (fn) => new Promise((res, rej) => { let n=0; const tick=()=>{ try{ if(fn()){res();return;} }catch{} if(n++>100){rej();return;} setTimeout(tick,60);} ; tick(); });
         this.prepareElementForHighlight = async (el) => {
             return new Promise(resolve => {
@@ -2270,7 +2579,7 @@ class GestionRegionTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => { if (idx >= this.tutorialSteps.length) return this.endTutorial(); const step = this.tutorialSteps[idx]; try { if (step.waitFor) await this.waitForCondition(step.waitFor); } catch { this.nextStep(); return; } if (typeof this.restoreButtons==='function') this.restoreButtons(); this.removeHighlight(); this.removeTooltip(); let el = document.querySelector(step.selector); if (!el) { this.nextStep(); return; } if (step.onShow) { try { await step.onShow(); } catch {} } el = document.querySelector(step.selector) || el; await this.prepareElementForHighlight(el); this.highlightElement(el); this.createTooltip(el, step); this.addListeners(); };
         this.addListeners = () => { const next=document.getElementById('tutorial-next'); const skip=document.getElementById('tutorial-skip'); if(next) next.onclick=()=>this.nextStep(); if(skip) skip.onclick=()=>this.endTutorial(); };
         this.nextStep = async () => { const prev = this.tutorialSteps[this.currentStep]; if (prev?.onNext) { try { await prev.onNext(); } catch {} } this.currentStep++; if (this.currentStep >= this.tutorialSteps.length || prev?.isLastStep) { this.endTutorial(); return; } this.removeHighlight(); this.removeTooltip(); this.showStep(this.currentStep); };
@@ -2370,7 +2679,7 @@ class GestionComponentesTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => { 
             if (idx >= this.tutorialSteps.length) return this.endTutorial(); 
             const step = this.tutorialSteps[idx]; 
@@ -2527,7 +2836,7 @@ class GestionDomiciliacionTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => { 
             if (idx >= this.tutorialSteps.length) return this.endTutorial(); 
             const step = this.tutorialSteps[idx]; 
@@ -2713,7 +3022,7 @@ class GestionComercialTutorial {
         this.removeHighlight = () => { const h=document.getElementById('tutorial-highlight'); if(h) h.remove(); };
         this.removeTooltip = () => { const t=document.getElementById('tutorial-tooltip'); if(t) t.remove(); };
         this.startTutorial = () => { if (this.isActive) return; this.isActive = true; this.currentStep = 0; this.createOverlay(); this.showStep(0); };
-        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9998;'; document.body.appendChild(this.overlay); };
+        this.createOverlay = () => { this.overlay = document.createElement('div'); this.overlay.id='tutorial-overlay'; this.overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);z-index:9998;'; document.body.appendChild(this.overlay); };
         this.showStep = async (idx) => {
             if (idx >= this.tutorialSteps.length) return this.endTutorial();
             const step = this.tutorialSteps[idx];
@@ -2743,6 +3052,7 @@ class VirtualAssistant {
         this.panelPosition = { x: 0, y: 0 };
         this.ticketTutorial = new TicketManagementTutorial();
         this.rifTutorial = new ConsultaRIFTutorial();
+        this.consultaTicketTutorial = new ConsultaTicketTutorial();
         this.gestioncoordinacionTutorial = new GestionCoordinadorTutorial();
         this.GestionTecnicoTutorial = new GestionTecnicoTutorial();
         this.GestionTallerTutorial = new GestionTallerTutorial();
@@ -3191,8 +3501,10 @@ class VirtualAssistant {
         this.panel.style.top = '';
         this.panel.style.transform = 'translate(-50%, -50%)';
         
+        // Restaurar mensaje de bienvenida si no existe
+        this.restoreWelcomeMessage();
+        
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual abierto - Posición centrada');
     }
     
     closePanel() {
@@ -3205,10 +3517,9 @@ class VirtualAssistant {
         this.clearChat();
         
         // Log para debugging
-        console.log('🤖 Panel del asistente virtual cerrado - Chat borrado');
     }
     
-    // Función para borrar el chat (manteniendo mensaje inicial de Ana y posición del panel)
+    // Función para borrar el chat (manteniendo mensaje inicial de Intelix y posición del panel)
     clearChat() {
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
@@ -3217,19 +3528,17 @@ class VirtualAssistant {
             const currentTop = this.panel.style.top;
             const currentTransform = this.panel.style.transform;
             
-            // Buscar el mensaje inicial de Ana
-            const initialMessage = chatMessages.querySelector('.message.assistant-message');
+            // Buscar el mensaje inicial de Intelix
+            const initialMessage = chatMessages.querySelector('.message.assistant-message.welcome-msg');
             
-            // Si hay un mensaje inicial de Ana, mantenerlo
-            if (initialMessage && initialMessage.textContent.includes('¡Hola! Soy Ana')) {
+            // Si hay un mensaje inicial de Intelix, mantenerlo
+            if (initialMessage && initialMessage.textContent.includes('¡Hola! Soy Intelix')) {
                 // Borrar todo y volver a agregar solo el mensaje inicial
                 chatMessages.innerHTML = '';
                 chatMessages.appendChild(initialMessage);
-                console.log('🤖 Chat borrado - Manteniendo mensaje inicial de Ana');
             } else {
                 // Si no hay mensaje inicial, borrar todo
                 chatMessages.innerHTML = '';
-                console.log('🤖 Chat completamente borrado');
             }
             
             // Restaurar la posición del panel
@@ -3239,12 +3548,55 @@ class VirtualAssistant {
         }
     }
     
+    // Función para restaurar el mensaje de bienvenida
+    restoreWelcomeMessage() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        // Verificar si ya existe el mensaje de bienvenida
+        const existingWelcomeMsg = chatMessages.querySelector('.message.assistant-message.welcome-msg');
+        if (existingWelcomeMsg && existingWelcomeMsg.textContent.includes('¡Hola! Soy Intelix')) {
+            return; // Ya existe, no hacer nada
+        }
+        
+        // Obtener la ruta de la imagen del avatar del panel header o usar APP_PATH global
+        let avatarPath = '';
+        const panelAvatar = document.querySelector('.panel-avatar');
+        if (panelAvatar && panelAvatar.src) {
+            avatarPath = panelAvatar.src;
+        } else if (typeof APP_PATH !== 'undefined') {
+            avatarPath = `${APP_PATH}app/public/img/assistant/woman-avatar.png`;
+        } else {
+            // Fallback: intentar obtener de la URL base
+            const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+            avatarPath = `${baseUrl}/app/public/img/assistant/woman-avatar.png`;
+        }
+        
+        // Si no existe, crear el mensaje de bienvenida
+        const welcomeMessageHTML = `
+            <div class="message assistant-message welcome-msg">
+                <div class="message-avatar">
+                    <img src="${avatarPath}" alt="Intelix" class="msg-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNDUiIHZpZXdCb3g9IjAgMCA0NSA0NSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjIuNSIgY3k9IjIyLjUiIHI9IjIyLjUiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB4PSIxMSIgeT0iMTEiIHdpZHRoPSIyMyIgaGVpZ2h0PSIyMyIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIj4KPHBhdGggZD0iTTEyIDEyQzE0LjIwOTEgMTIgMTYgMTAuMjA5MSAxNiA4QzE2IDUuNzkwODYgMTQuMjA5MSA0IDEyIDRDOS43OTA4NiA0IDggNS43OTA4NiA4IDhDOCAxMC4yMDkxIDkuNzkwODYgMTIgMTIgMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNMTIgMTRDOS4zMzMgMTQgNCAxNS43NzkxIDQgMTlIMjBDMjAgMTUuNzc5MSAxOC42NjcgMTQgMTYgMTRIMTJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+';">
+                </div>
+                <div class="message-content">
+                    <div class="message-bubble">
+                        <p>¡Hola! Soy Intelix, tu asistente virtual. Puedo ayudarte con consultas inteligentes del sistema.</p>
+                        <p><strong>¿En qué te puedo ayudar hoy?</strong></p>
+                    </div>
+                    <div class="message-time">Ahora</div>
+                </div>
+            </div>
+        `;
+        
+        // Insertar el mensaje de bienvenida al inicio
+        chatMessages.insertAdjacentHTML('afterbegin', welcomeMessageHTML);
+    }
+    
     toggleCategory(categoryName) {
         const targetOptions = document.getElementById(`${categoryName}-options`);
         const targetHeader = document.querySelector(`[data-category="${categoryName}"]`);
         
         if (!targetOptions || !targetHeader) {
-            console.log(`🤖 No se encontró la categoría "${categoryName}"`);
             return;
         }
         
@@ -3259,7 +3611,6 @@ class VirtualAssistant {
             if (arrow) {
                 arrow.style.transform = 'rotate(0deg)';
             }
-            console.log(`🤖 Categoría "${categoryName}" cerrada`);
         } else {
             // Si está cerrada, cerrar todas las demás y abrir esta
             const allCategoryOptions = document.querySelectorAll('.category-options');
@@ -3295,12 +3646,10 @@ class VirtualAssistant {
                 targetOptions.style.transform = 'translateY(0)';
             }, 10);
             
-            console.log(`🤖 Categoría "${categoryName}" abierta`);
         }
     }
     
     handleChatQuery(query, buttonElement) {
-        console.log(`🤖 Consulta IA: ${query}`);
         
         // Obtener el texto del botón
         const queryText = buttonElement.querySelector('.option-text').textContent;
@@ -3364,7 +3713,6 @@ class VirtualAssistant {
     }
     
     addAssistantMessage(message, data = null) {
-        console.log('🤖 addAssistantMessage llamada con:', message, data);
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message assistant-message';
@@ -3391,7 +3739,6 @@ class VirtualAssistant {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        console.log('🤖 Mensaje agregado al DOM');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -3422,11 +3769,9 @@ class VirtualAssistant {
     
     async processAIQuery(query, params = {}) {
         try {
-            console.log('🤖 processAIQuery llamada con:', query, params);
             
             // Hacer consulta real a la API
             const bodyParams = { action: query, ...params };
-            console.log('🤖 Parámetros enviados:', bodyParams);
             
             const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/ai/${query}`, {
                 method: 'POST',
@@ -3436,15 +3781,12 @@ class VirtualAssistant {
                 body: new URLSearchParams(bodyParams)
             });
 
-            console.log('🤖 Respuesta recibida:', response);
-            console.log('🤖 Status:', response.status);
 
             if (!response.ok) {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
 
             const result = await response.json();
-            console.log('🤖 Resultado JSON:', result);
             
             if (result.success) {
                 // Procesar respuesta exitosa
@@ -3507,7 +3849,6 @@ class VirtualAssistant {
 
         case 'technician_individual_efficiency':
             // Mostrar lista de técnicos para seleccionar
-            console.log('🤖 Datos recibidos para technician_individual_efficiency:', data);
             this.showTechnicianSelection(data);
             break;
 
@@ -3684,12 +4025,8 @@ addChartMessage(data) {
 
     // Función para mostrar la lista de técnicos para seleccionar
     showTechnicianSelection(technicians) {
-        console.log('🤖 showTechnicianSelection llamada con:', technicians);
-        console.log('🤖 Es array?', Array.isArray(technicians));
-        console.log('🤖 Longitud:', technicians ? technicians.length : 'undefined');
         
         if (!technicians || !Array.isArray(technicians) || technicians.length === 0) {
-            console.log('🤖 No se encontraron técnicos disponibles');
             this.addAssistantMessage('❌ No se encontraron técnicos disponibles.');
             return;
         }
@@ -3720,7 +4057,6 @@ addChartMessage(data) {
             </div>
         `;
 
-        console.log('🤖 HTML generado para técnicos:', techniciansHtml);
         
         // Crear mensaje con HTML directamente
         const chatMessages = document.getElementById('chatMessages');
@@ -3739,7 +4075,6 @@ addChartMessage(data) {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        console.log('🤖 Mensaje agregado al chat');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -3749,7 +4084,6 @@ addChartMessage(data) {
 
     // Función para seleccionar un técnico
     selectTechnician(technicianId, technicianName) {
-        console.log('🤖 selectTechnician llamada con:', technicianId, technicianName);
         
         // Mostrar mensaje de carga
         this.addAssistantMessage(`🔍 Analizando el rendimiento de <strong>${technicianName}</strong>...`);
@@ -3760,10 +4094,8 @@ addChartMessage(data) {
 
     // Función para mostrar el rendimiento del técnico seleccionado
     showTechnicianPerformance(data) {
-        console.log('🤖 showTechnicianPerformance llamada con:', data);
         
         if (!data) {
-            console.log('🤖 No hay datos de rendimiento');
             this.addAssistantMessage('❌ No se pudo obtener el rendimiento del técnico.');
             return;
         }
@@ -3783,7 +4115,6 @@ addChartMessage(data) {
             }
         }
 
-        console.log('🤖 recentTickets parseado:', recentTickets);
 
         const performanceHtml = `
             <div class="technician-performance-container" style="margin-top: 20px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #e9ecef;">
@@ -3854,7 +4185,6 @@ addChartMessage(data) {
             </div>
         `;
 
-        console.log('🤖 HTML generado para rendimiento:', performanceHtml);
         
         // Crear mensaje con HTML directamente
         const chatMessages = document.getElementById('chatMessages');
@@ -3873,7 +4203,6 @@ addChartMessage(data) {
             </div>
         `;
         chatMessages.appendChild(messageDiv);
-        console.log('🤖 Mensaje de rendimiento agregado al chat');
         
         // Forzar scroll después de agregar el mensaje
         setTimeout(() => {
@@ -4056,9 +4385,6 @@ addChartMessage(data) {
 
     // Función para mostrar tickets pendientes con configuración de días críticos
     showPendingTicketsWithConfig(data) {
-        console.log('🤖 showPendingTicketsWithConfig llamada con:', data);
-        console.log('🤖 Tipo de data:', typeof data);
-        console.log('🤖 Keys de data:', Object.keys(data || {}));
         
         if (!data) {
             this.addAssistantMessage('❌ No se pudieron obtener los tickets pendientes.');
@@ -4066,7 +4392,6 @@ addChartMessage(data) {
         }
 
         const daysCritical = data.days_critical || 5;
-        console.log('🤖 daysCritical:', daysCritical);
         
         // Generar ID único para el input
         const inputId = `daysCriticalInput_${Date.now()}`;
@@ -4129,7 +4454,6 @@ addChartMessage(data) {
             html: configHtml
         });
         
-        console.log('🤖 Mensaje enviado con HTML personalizado');
     }
 
     // Función para actualizar días críticos
@@ -4149,21 +4473,16 @@ addChartMessage(data) {
             return;
         }
 
-        console.log('🤖 Actualizando días críticos a:', daysCritical);
-        console.log('🤖 Input value:', input.value);
-        console.log('🤖 Input ID:', inputId);
         
         // Mostrar mensaje de carga
         this.addAssistantMessage(`🔄 Actualizando prioridades con ${daysCritical} días críticos...`);
         
         // Hacer nueva consulta con los días críticos actualizados
-        console.log('🤖 Enviando consulta con days_critical:', daysCritical);
         this.processAIQuery('pending_tickets', { days_critical: daysCritical });
     }
 
     // Función para mostrar tickets por prioridad específica
     showTicketsByPriority(priority, daysCritical) {
-        console.log('🤖 showTicketsByPriority llamada con:', priority, daysCritical);
         
         // Mostrar mensaje de carga
         const priorityNames = {
@@ -4183,7 +4502,6 @@ addChartMessage(data) {
 
     // Función para mostrar la lista de tickets por prioridad
     showTicketsList(data) {
-        console.log('🤖 showTicketsList llamada con:', data);
         
         if (!data || !data.tickets) {
             this.addAssistantMessage('❌ No se pudieron obtener los tickets.');
@@ -4246,7 +4564,8 @@ addChartMessage(data) {
 
         // Solo redirigir si NO estamos en dashboard
         if (!window.location.pathname.includes('dashboard')) {
-            window.location.href = 'dashboard';
+            // Agregar parámetro para que el tutorial se ejecute automáticamente al cargar
+            window.location.href = 'dashboard?tutorial=tickets';
             return;
         }
 
@@ -4274,6 +4593,23 @@ addChartMessage(data) {
     }
         }, 800);
 
+    }
+
+    startConsultaTicketTutorial() {
+        this.closeModuleSelectionModal();
+
+        // Solo redirigir si NO estamos en consulta_ticket
+        if (!window.location.pathname.includes('consulta_ticket')) {
+            window.location.href = 'consulta_ticket?tutorial=consulta_ticket';
+            return;
+        }
+
+        // Si ya estamos en consulta_ticket → iniciar tutorial directamente
+        setTimeout(() => {
+            if (this.consultaTicketTutorial) {
+                this.consultaTicketTutorial.startTutorial();
+            }
+        }, 800);
     }
 
     startGestionCoordinacionTutorial() {
@@ -4365,23 +4701,18 @@ addChartMessage(data) {
     }
 
     startComponentesTutorial() {
-        console.log('🎬 startComponentesTutorial llamado');
         this.closeModuleSelectionModal();
         
         // Verificar si estamos en el módulo correcto (con o sin acento)
         const pathname = window.location.pathname;
         const isInModule = pathname.includes('periférico_pos') || pathname.includes('periferico_pos') || decodeURIComponent(pathname).includes('periférico_pos');
         
-        console.log(`📍 Pathname actual: ${pathname}`);
-        console.log(`📍 ¿Estamos en el módulo? ${isInModule}`);
 
         if (!isInModule) {
-            console.log('🔄 Redirigiendo a periférico_pos...');
             window.location.href = 'periférico_pos';
             return;
         }
         
-        console.log('✅ Iniciando tutorial de componentes...');
         setTimeout(() => {
             if (this.GestionComponentesTutorial) {
                 this.GestionComponentesTutorial.startTutorial();
@@ -4433,13 +4764,11 @@ addChartMessage(data) {
 
 
     startReportsTutorial() {
-        console.log('Iniciando tutorial: Reportes');
         // this.reportsTutorial.startT  utorial();
     }
 
     // Procesar consultas de ayuda localmente (sin hacer peticiones HTTP)
     processLocalHelpQuery(query) {
-        console.log('🤖 Procesando consulta de ayuda local:', query);
         
         // Ocultar indicador de carga
         this.hideChatLoading();
@@ -4566,7 +4895,6 @@ addChartMessage(data) {
             }
 
             const data = await response.json();
-            console.log('📋 Datos recibidos del API:', data);
             
             if (data.success && Array.isArray(data.modules)) {
                 // Filtrar solo módulos activos y con permisos
@@ -4591,7 +4919,7 @@ addChartMessage(data) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.2);
             z-index: 10000;
             display: flex;
             justify-content: center;
@@ -4839,8 +5167,6 @@ addChartMessage(data) {
             }
 
             const data = await response.json();
-            console.log('📋 Submódulos recibidos:', data);
-            console.log('📋 Estructura del primer submódulo:', data.submodules && data.submodules[0]);
             
             if (data.success && Array.isArray(data.submodules)) {
                 return data.submodules;
@@ -4855,7 +5181,6 @@ addChartMessage(data) {
 
     // Crear modal de submódulos
     createSubmodulesModal(moduleName, submodules) {
-        console.log('📋 Creando modal para submódulos:', submodules);
         
         // Crear overlay
         const overlay = document.createElement('div');
@@ -4866,7 +5191,7 @@ addChartMessage(data) {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.2);
             z-index: 10000;
             display: flex;
             justify-content: center;
@@ -5004,14 +5329,11 @@ addChartMessage(data) {
 
         // En addSubmodulesListeners()
         const submoduleCards = document.querySelectorAll('.submodule-card');
-        console.log(`📋 Encontrados ${submoduleCards.length} cards de submódulos`);
         
         submoduleCards.forEach((card, index) => {
                 const urlArchivo = card.dataset.urlArchivo?.trim();
-            console.log(`📝 Card ${index + 1}: urlArchivo="${urlArchivo}"`);
             
             card.onclick = () => {
-                console.log(`🖱️ Click en card ${index + 1} con urlArchivo="${urlArchivo}"`);
                 
                 if (!urlArchivo) {
                     console.warn('⚠️ Este submódulo no tiene tutorial disponible (urlArchivo vacío)');
@@ -5031,7 +5353,6 @@ addChartMessage(data) {
         // Asegúrate de que urlArchivo sea algo como: "consulta_rif" o "reporte_ticket"
         const cleanPath = urlArchivo.trim().replace(/^\/+/, ''); // Quita slashes iniciales
         const fullUrl = `${window.location.origin}/SoportePost/${cleanPath}`;
-        console.log(`🔗 buildSubmoduleUrl: urlArchivo="${urlArchivo}" → fullUrl="${fullUrl}"`);
         return fullUrl;
     }
 
@@ -5069,14 +5390,12 @@ addChartMessage(data) {
         // Normalizar: convertir a minúsculas y quitar espacios
         clean = clean.toLowerCase().trim();
 
-        console.log(`🔍 getTutorialParam: urlArchivo="${urlArchivo}" → clean="${clean}"`);
 
         return map[clean] || null;
     }
 
   // Iniciar tutorial de submódulo específico
     startSubmoduleTutorial(fullUrl) {
-        console.log(`🚀 startSubmoduleTutorial llamado con fullUrl: "${fullUrl}"`);
         this.closeSubmodulesModal();
         this.showRedirectMessage();
 
@@ -5086,14 +5405,11 @@ addChartMessage(data) {
                 const pathnameParts = tutorialUrl.pathname.split('/').filter(p => p);
                 const urlArchivo = pathnameParts[pathnameParts.length - 1] || pathnameParts[pathnameParts.length - 2] || '';
                 
-                console.log(`📂 URL extraída: pathname="${tutorialUrl.pathname}", urlArchivo="${urlArchivo}"`);
                 
             const tutorialType = this.getTutorialParam(urlArchivo);
 
             if (tutorialType) {
                 tutorialUrl.searchParams.set('tutorial', tutorialType);
-                    console.log(`✅ Redirigiendo con tutorial: ${tutorialType}`);
-                    console.log(`🔗 URL final: ${tutorialUrl.toString()}`);
             } else {
                     console.warn(`⚠️ Submódulo sin tutorial: ${urlArchivo} → redirigiendo sin parámetro`);
                 // NO agrega 'tutorial=active'
@@ -5193,7 +5509,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Esperar un poco para que se cargue el sidenav
     setTimeout(() => {
         window.virtualAssistant = new VirtualAssistant();
-        console.log('🤖 Asistente Virtual Ana inicializado');
     }, 1000);
 });
 
@@ -5363,23 +5678,19 @@ document.head.appendChild(styleSheet);
 
 // === DETECCIÓN Y EJECUCIÓN AUTOMÁTICA DEL TUTORIAL ===
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOMContentLoaded: Buscando parámetro de tutorial...');
     const urlParams = new URLSearchParams(window.location.search);
     let tutorialParam = urlParams.get('tutorial');
 
-    console.log(`🔍 Parámetro 'tutorial' directo: "${tutorialParam}"`);
 
     // Soporte para ?tutorial-rif o ?tutorial=rif
     if (!tutorialParam) {
         const match = window.location.search.match(/[?&]tutorial[-=]([a-z]+)/i);
         if (match) {
             tutorialParam = match[1].toLowerCase();
-            console.log(`🔍 Parámetro 'tutorial' encontrado en regex: "${tutorialParam}"`);
         }
     }
 
     if (!tutorialParam) {
-        console.log('ℹ️ No se encontró parámetro de tutorial en la URL');
         return;
     }
 
@@ -5387,6 +5698,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tutorialMap = {
         'rif': 'startRifTutorial',
         'tickets': 'startTicketTutorial',
+        'consulta_ticket': 'startConsultaTicketTutorial',
         'gestion_coordinacion': 'startGestionCoordinacionTutorial',
         'tecnicos': 'startTechnicianTutorial',
         'taller': 'startLabTutorial',
@@ -5405,28 +5717,68 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    console.log(`✅ Tutorial activado desde URL: ?tutorial=${tutorialParam} → método: ${methodName}()`);
 
     // Limpiar URL
     const cleanUrl = window.location.pathname + window.location.hash;
     window.history.replaceState({}, document.title, cleanUrl);
 
-    // Esperar a que el asistente esté listo
+    // Función para verificar si el overlay de carga está visible
+    const isLoadingOverlayVisible = () => {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (!loadingOverlay) return false;
+        
+        const style = window.getComputedStyle(loadingOverlay);
+        // Verificar si el overlay está visible (display, visibility, opacity)
+        const isVisible = style.display !== 'none' && 
+                         style.visibility !== 'hidden' && 
+                         parseFloat(style.opacity) > 0;
+        
+        // También verificar si el body tiene la clase que indica overlay abierto
+        const bodyHasOverlayClass = document.body.classList.contains('loading-overlay-open');
+        
+        return isVisible || bodyHasOverlayClass;
+    };
+
+    // Función para esperar a que el overlay desaparezca
+    const waitForLoadingOverlayToHide = (callback) => {
+        let attempts = 0;
+        const maxAttempts = 100; // 20 segundos (200ms * 100)
+        
+        const checkInterval = setInterval(() => {
+            attempts++;
+            const overlayVisible = isLoadingOverlayVisible();
+            
+            if (!overlayVisible) {
+                clearInterval(checkInterval);
+                // Esperar un poco más para asegurar que la transición termine
+                setTimeout(callback, 300);
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkInterval);
+                // Si el overlay no desaparece después del timeout, ejecutar de todas formas
+                console.warn('⚠️ Overlay de carga no desapareció, ejecutando tutorial de todas formas');
+                setTimeout(callback, 300);
+            }
+        }, 200);
+    };
+
+    // Esperar a que el asistente esté listo Y que el overlay de carga desaparezca
     let attempts = 0;
     const maxAttempts = 50; // 10 segundos (200ms * 50)
     const waitForAssistant = setInterval(() => {
         attempts++;
         if (window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function') {
             clearInterval(waitForAssistant);
-            console.log(`🎬 Ejecutando tutorial: ${methodName}()`);
-            window.virtualAssistant[methodName]();
+            
+            // Ahora esperar a que el overlay de carga desaparezca antes de ejecutar
+            waitForLoadingOverlayToHide(() => {
+                window.virtualAssistant[methodName]();
+            });
         } else if (attempts >= maxAttempts) {
             clearInterval(waitForAssistant);
             console.error(`❌ Timeout: Método de tutorial no encontrado después de ${maxAttempts} intentos`);
             console.error(`   window.virtualAssistant existe: ${!!window.virtualAssistant}`);
             console.error(`   método ${methodName} existe: ${window.virtualAssistant && typeof window.virtualAssistant[methodName] === 'function'}`);
         } else if (attempts % 10 === 0) {
-            console.log(`⏳ Esperando asistente... (intento ${attempts}/${maxAttempts})`);
         }
     }, 200);
 

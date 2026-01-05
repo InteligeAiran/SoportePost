@@ -949,3 +949,121 @@
     tr:nth-child(even) {
         background-color: #f9f9f9;
     }
+
+    .dashboard-loading-progress {
+        width: 320px;
+        margin: 18px auto 0;
+        text-align: center;
+    }
+
+    .dashboard-progress-track {
+        width: 100%;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(248, 250, 252, 0.2);
+        overflow: hidden;
+    }
+
+    .dashboard-progress-bar {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #38bdf8, #6366f1);
+        transition: width 0.35s ease;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .dashboard-loading-status {
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: rgba(248, 250, 252, 0.8);
+        letter-spacing: 0.3px;
+    }
+
+    /* === Global Loading Overlay === */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(5, 10, 25, 0.78);
+        backdrop-filter: blur(10px);
+        z-index: 5000;
+        transition: opacity 0.3s ease;
+    }
+
+    .loading-overlay-open {
+        overflow: hidden;
+    }
+
+    .loading-card {
+        background: rgba(15, 23, 42, 0.95);
+        border-radius: 22px;
+        padding: 40px 60px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        position: relative;
+        min-width: 260px;
+    }
+
+    .loading-spinner {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 5px solid rgba(59, 130, 246, 0.15);
+        border-top-color: #38bdf8;
+        animation: loadingSpinner 0.9s linear infinite;
+        margin: 0 auto 20px;
+        position: relative;
+    }
+
+    .loading-spinner::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #38bdf8;
+        box-shadow: 0 0 20px rgba(56, 189, 248, 0.7);
+    }
+
+    #loadingOverlayMessage {
+        color: #f8fafc;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
+
+    @keyframes loadingSpinner {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (min-width: 1450px) and (max-width: 1500px) {
+       
+    }
+
+    @media (min-width: 1600px) and ( max-width: 2600px) {
+        #ModalPresupuesto{
+            max-width: 100%;
+            width: 1400px;
+            margin-left: auto;
+            margin-right: 175px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+
+        }
+    }

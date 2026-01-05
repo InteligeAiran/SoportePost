@@ -14,9 +14,9 @@ function mi_navbar() {}
         <?php echo tituloPagina; ?>
     </title>
 
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
@@ -756,34 +756,64 @@ function mi_navbar() {}
         <!-- END MODAL DE ESTATUS DOMICILIACION -->
 
         <!--MODAL PARA SUBIR EL DOCUMENTO DE CONVENIO FIRMADO-->
-            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-header bg-gradient-primary">
-                            <strong>
-                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                                    Documento de Convenio Firmado para el Nro Ticket: <span id="modalTicketId"></span></h5>
-                                <input type="hidden" id="id_ticket"></input>
-                                <input type="hidden" id="type_document"></input>
-                            </strong>
+                        <div class="modal-header bg-gradient-primary text-white">
+                            <h5 class="modal-title" id="uploadDocumentModalLabel">
+                                Subir Documento de Convenio Firmado para el Nro Ticket: <span id="modalTicketId" class="fw-bold"></span>
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                            <!-- ✅ ALERTA INFORMATIVA PARA DOCUMENTO RECHAZADO (ESTILO IGUAL A DOCUMENTOS POR APROBAR) -->
+                            <div id="rejectedDocumentInfo" style="display: none;"></div>
+
                             <form id="uploadForm">
+                                <!-- Campos ocultos -->
+                                <input type="hidden" id="id_ticket">
+                                <input type="hidden" id="type_document">
+
                                 <div class="mb-3">
-                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
-                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
-                                        style="display:block">
-                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                                    <label for="documentFile" class="form-label text-gray-700 fw-semibold">
+                                        Seleccionar Archivo:
+                                    </label>
+                                    
+                                    <!-- Wrapper con position-relative para que Bootstrap muestre los mensajes de feedback -->
+                                    <div class="position-relative">
+                                        <input class="form-control" type="file" id="documentFile" accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf" required>
+
+                                        <!-- Mensajes de validación de Bootstrap -->
+                                        <div class="valid-feedback">
+                                            Formato correcto
                                 </div>
-                                <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
-                                    <img id="imagePreview" class="img-fluid img-preview" src="#" alt="Previsualización de Imagen" style="display: none;">
+                                        <div class="invalid-feedback">
+                                            Solo se permiten imágenes (JPG, PNG, GIF) o PDF
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mensaje informativo que se oculta cuando hay validación activa -->
+                                    <small id="fileFormatInfo" class="text-gray-500 d-block mt-1" style="transition: opacity 0.2s;">
+                                        Formatos permitidos: JPG, PNG, GIF o PDF
+                                    </small>
                                 </div>
+
+                                <!-- Previsualización DESACTIVADA POR MOTIVOS DE SEGURIDAD -->
+                                <!-- La previsualización ha sido desactivada para prevenir posibles inyecciones de código -->
+                                <div id="imagePreviewContainer" class="text-center" style="display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; overflow: hidden !important; max-height: 0 !important; padding: 0 !important; margin: 0 !important;">
+                                    <img id="imagePreview" class="img-fluid rounded shadow-sm" src="#" alt="Previsualización" style="display: none !important; visibility: hidden !important; opacity: 0 !important; max-height: 0 !important; height: 0 !important; width: 0 !important;">
+                                </div>
+                                
+                                <!-- Mensaje de validación (opcional, para mensajes adicionales) -->
                                 <div id="uploadMessage" class="message-box hidden"></div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="CerrarBoton">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
+                            <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn" style="display: none;">
+                                <i class="fas fa-file-contract me-2"></i>Generar Convenio Firmado
+                            </button>
+                            <button type="button" class="btn btn-primary" id="uploadFileBtn" disabled>Subir Archivo</button>
                         </div>
                     </div>
                 </div>
@@ -994,6 +1024,7 @@ function mi_navbar() {}
 
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+    <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
@@ -1012,7 +1043,6 @@ function mi_navbar() {}
     <script src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
     <script src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
     <script src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
-
 
     <script src="<?php echo APP; ?>js/Datatablebuttons5.js"></script>
     <script src="<?php echo APP; ?>js/Datatablebuttons.min.js"></script>

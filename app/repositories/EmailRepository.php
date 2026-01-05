@@ -179,9 +179,84 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetEmailAreaFinanzas(){
+         $result = $this->model->GetEmailAreaFinanzas();
+        return $result ? $result['row'] : null;
+    }
+
     public function GetTicketDataById($ticketId){
         // Lógica para obtener datos del ticket por ID
         $result = $this->model->GetTicketDataById($ticketId);
         return $result ? $result['row'] : null;
+    }
+
+    public function GetDetailsByNroTicket($nro_ticket){
+        $result = $this->model->get_details_by_nroTicket($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $details = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $details;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetPresupuestoData($nro_ticket){
+        $result = $this->model->GetPresupuestoData($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $presupuesto_data = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $presupuesto_data;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetPaymentData($nro_ticket){
+        $result = $this->model->GetPaymentData($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $payment_data = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $payment_data;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetTicketDetailsByNroTicket($nro_ticket){
+        $result = $this->model->GetTicketDetailsByNroTicket($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $ticket_details = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $ticket_details;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
+    }
+
+    public function GetTicketCompleteDataByNroTicket($nro_ticket){
+        $result = $this->model->GetTicketCompleteDataByNroTicket($nro_ticket);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $ticket_data = pg_fetch_assoc($result['query'], 0);
+            pg_free_result($result['query']);
+            return $ticket_data;
+        } else {
+            if ($result && isset($result['query'])) {
+                pg_free_result($result['query']);
+            }
+            return null;
+        }
     }
 }

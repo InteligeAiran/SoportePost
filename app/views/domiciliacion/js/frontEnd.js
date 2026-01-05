@@ -195,32 +195,22 @@ function searchDomiciliacionTickets() {
         const currentNameStatusDomiciliacion = row.name_status_domiciliacion;
         const documentoConvenio = row.convenio_firmado;
         
-        // Solo mostrar el botón de adjuntar documento si el status es 4 (Deudor - Convenio Firmado)
+        // Mostrar el botón de adjuntar/visualizar documento si el status es 4 (Deudor - Convenio Firmado) o 6 (Convenio Firmado Aprovado)
         if (currentStatusDomiciliacion == 4) {
             // Verificar si ya tiene documento de convenio
             const tieneConvenio = row.convenio_firmado === "Sí";
             
             if (tieneConvenio) {
-                // Si ya tiene convenio, mostrar botón para visualizar
+                // Si ya tiene convenio, mostrar solo botón para visualizar (sin botón de cambiar estatus)
                 return `
                     <div class="d-flex gap-1">
-                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#changeStatusDomiciliacionModal"
-                            data-id="${idTicket}"
-                            data-nro-ticket="${row.nro_ticket}"
-                            data-current-status-id="${currentStatusDomiciliacion}"
-                            data-current-status-name="${currentNameStatusDomiciliacion}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
-                            </svg>
-                        </button>
                         <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
                             data-id="${idTicket}" 
                             data-nro-ticket="${row.nro_ticket}"
                             data-convenio-url="${row.convenio_url || ''}"
                             data-convenio-filename="${row.convenio_filename || ''}"
                             data-serial="${row.serial_pos || ''}"
+                            data-current-status-id="${currentStatusDomiciliacion}"
                             data=
                             title="Visualizar Documento de Convenio">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
@@ -230,20 +220,9 @@ function searchDomiciliacionTickets() {
                         </button>
                     </div>`;
             } else {
-                // Si no tiene convenio, mostrar botón para adjuntar
+                // Si no tiene convenio, mostrar solo botón para adjuntar (sin botón de cambiar estatus)
                 return `
                     <div class="d-flex gap-1">
-                        <button type="button" id="BtnChange" class="btn btn-primary btn-sm cambiar-estatus-domiciliacion-btn"
-                            data-bs-toggle="modal"
-                            data-bs-target="#changeStatusDomiciliacionModal"
-                            data-id="${idTicket}"
-                            data-nro-ticket="${row.nro_ticket}"
-                            data-current-status-id="${currentStatusDomiciliacion}"
-                            data-current-status-name="${currentNameStatusDomiciliacion}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar2-check-fill" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5m9.954 3H2.545c-.3 0-.545.224-.545.5v1c0 .276.244.5.545.5h10.91c.3 0 .545-.224.545-.5v-1c0-.276-.244-.5-.546-.5m-2.6 5.854a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
-                            </svg>
-                        </button>
                         <button type="button" class="btn btn-success btn-sm adjuntar-documento-btn" 
                             data-id="${idTicket}" 
                             data-nro-ticket="${row.nro_ticket}"
@@ -254,6 +233,59 @@ function searchDomiciliacionTickets() {
                         </button>
                     </div>`;
             }
+        } else if (currentStatusDomiciliacion == 6) {
+            // Si el estatus es 6 (Convenio Firmado Aprovado), mostrar solo botón para visualizar
+            return `
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
+                        data-id="${idTicket}" 
+                        data-nro-ticket="${row.nro_ticket}"
+                        data-convenio-url="${row.convenio_url || ''}"
+                        data-convenio-filename="${row.convenio_filename || ''}"
+                        data-serial="${row.serial_pos || ''}"
+                        data-current-status-id="${currentStatusDomiciliacion}"
+                        data=
+                        title="Visualizar Documento de Convenio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                        </svg>
+                    </button>
+                </div>`;
+        } else if (currentStatusDomiciliacion == 7) {
+            // Si el estatus es 7 (Convenio Firmado Rechazado), mostrar botón para visualizar y adjuntar
+            return `
+                <div class="d-flex gap-1">
+                    <button type="button" class="btn btn-info btn-sm visualizar-documento-btn" 
+                        data-id="${idTicket}" 
+                        data-nro-ticket="${row.nro_ticket}"
+                        data-convenio-url="${row.convenio_url || ''}"
+                        data-convenio-filename="${row.convenio_filename || ''}"
+                        data-serial="${row.serial_pos || ''}"
+                        data-current-status-id="${currentStatusDomiciliacion}"
+                        data=
+                        title="Visualizar Documento de Convenio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn btn-sm adjuntar-documento-btn" 
+                        style="background-color: #fd7e14; border-color: #fd7e14; color: white;"
+                        data-id="${idTicket}" 
+                        data-nro-ticket="${row.nro_ticket}"
+                        data-convenio-filename="${row.convenio_filename || ''}"
+                        data-convenio-fecha="${row.convenio_fecha || ''}"
+                        data-convenio-url="${row.convenio_url || ''}"
+                        data-serial-pos="${row.serial_pos || ''}"
+                        data-motivo-rechazo="${row.motivo_rechazo || ''}"
+                        data-current-status-id="${currentStatusDomiciliacion}"
+                        title="Adjuntar Documento de Convenio">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
+                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"></path>
+                        </svg>
+                    </button>
+                </div>`;
         } else {
             // Para otros estados, solo mostrar botón de cambiar estatus
             return `
@@ -310,7 +342,7 @@ function searchDomiciliacionTickets() {
 
                 zeroRecords: "No se encontraron resultados para la búsqueda",
 
-                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                info: "_TOTAL_ Registros",
 
                 infoEmpty: "No hay datos disponibles",
 
@@ -677,66 +709,39 @@ function searchDomiciliacionTickets() {
                 function clearFilters(api) {
                   api.columns().search('').draw(false);
                   api.search('').draw(false);
+                  // Limpiar funciones de búsqueda personalizadas
+                  $.fn.dataTable.ext.search.pop();
                 }
 
                 // Función para buscar automáticamente el primer botón con datos
 
                 function findFirstButtonWithData() {
-                  console.log('🔍 findFirstButtonWithData iniciado');
-                  console.log('nroTicket:', nroTicket);
-                  
                   // Debug: Ver todos los datos disponibles
                   const allData = dataTableInstance.rows().data().toArray();
-                  console.log('📊 Todos los datos disponibles:', allData);
-                  console.log('📊 Total de tickets:', allData.length);
-                  
-                  // Debug: Ver la estructura del primer ticket
-                  if (allData.length > 0) {
-                    console.log('🔍 Estructura del primer ticket:', allData[0]);
-                    console.log('🔍 Columnas del primer ticket:', allData[0].length);
-                    console.log('🔍 nro_ticket del primer ticket:', allData[0][1]);
-                  }
-                  
-                  // Debug: Ver todos los nro_ticket disponibles
-                  const allTickets = allData.map(row => row.nro_ticket);
-                  console.log('🎫 Todos los nro_ticket disponibles:', allTickets);
                   
                   // Debug: Ver el ticket específico si existe
                   const targetTicket = allData.find(row => row.nro_ticket === nroTicket);
-                  if (targetTicket) {
-                    console.log('🎯 Ticket encontrado:', targetTicket);
-                    console.log('🎯 id_status_domiciliacion del ticket:', targetTicket.id_status_domiciliacion);
-                    console.log('🎯 name_status_domiciliacion del ticket:', targetTicket.name_status_domiciliacion);
-                  } else {
-                    console.log('❌ Ticket no encontrado en los datos');
-                  }
                   
                   const searchTerms = [
                     { button: "btn-pendiente-revisar", term: "^1$", column: 5, status: "Pendiente", action: "Pendiente Por revisar domiciliacion" },
-                    { button: "btn-solvente", term: "^2$|^6$", column: 5, status: "Solvente", action: "Tickets Solventes" },
+                    { button: "btn-solvente", term: "^2$", column: 5, status: "Solvente", action: "Tickets Solventes" },
                     { button: "btn-gestion-comercial", term: "^3$", column: 5, status: "Gestión Comercial", action: "Gestión Comercial" },
-                    { button: "btn-convenio-firmado", term: "^4$", column: 5, status: "Convenio Firmado", action: "Deudor - Convenio Firmado" },
+                    { button: "btn-convenio-firmado", term: "^(4|6|7)$", column: 5, status: "Convenio Firmado", action: "Deudor - Convenio Firmado - Convenio Firmado Aprovado - Convenio Firmado Rechazado" },
                     { button: "btn-desafiliado-deuda", term: "^5$", column: 5, status: "Desafiliado", action: "Deudor - Desafiliado con Deuda" }
                   ];
 
                   // Si hay un nroTicket, buscar el filtro que contenga ese ticket
                   if (nroTicket) {
-                    console.log('🎯 Buscando ticket específico:', nroTicket);
                     let ticketFound = false;
                     
                     for (const { button, term, column, status, action } of searchTerms) {
-                      console.log(`🔍 Probando filtro: ${button} con término: ${term}`);
                       clearFilters(dataTableInstance);
                       dataTableInstance.column(column).search(term, true, false).draw();
                       const filteredData = dataTableInstance.rows({ filter: 'applied' }).data().toArray();
                       const filteredTickets = filteredData.map(row => row.nro_ticket);
-                      console.log(`📋 Tickets en filtro ${button}:`, filteredTickets);
-                      console.log(`📋 Datos completos del filtro ${button}:`, filteredData);
                       const ticketExists = filteredData.some(row => row.nro_ticket === nroTicket);
-                      console.log(`✅ Ticket ${nroTicket} encontrado en filtro ${button}:`, ticketExists);
                       
                       if (ticketExists) {
-                        console.log(`🎯 ¡TICKET ENCONTRADO! Activando filtro: ${button}`);
                         clearFilters(dataTableInstance);
                         dataTableInstance.column(column).search(term, true, false).draw();
                         if (button === "btn-desafiliado-deuda") {
@@ -744,15 +749,12 @@ function searchDomiciliacionTickets() {
                         } else {
                           dataTableInstance.column(9).visible(true);
                         }
-                        console.log('🎯 Llamando setActiveButton para:', button);
                         setActiveButton(button);
                         
                         // Aplicar búsqueda del ticket DESPUÉS de activar el filtro
-                        console.log('🔍 Aplicando búsqueda del ticket después del filtro');
                         const searchInput = $('.dataTables_filter input');
                         searchInput.val(nroTicket);
                         dataTableInstance.search(nroTicket).draw();
-                        console.log('✅ Búsqueda del ticket aplicada:', searchInput.val());
                         
                         // Resaltar la fila del ticket encontrado
                         setTimeout(() => {
@@ -760,7 +762,6 @@ function searchDomiciliacionTickets() {
                             const rowData = this.data();
                             if (rowData.nro_ticket === nroTicket) {
                               $(this.node()).addClass('table-active').css('background-color', '#e0f2f7');
-                              console.log('🎨 Fila del ticket resaltada con color azul claro');
                             } else {
                               $(this.node()).removeClass('table-active').css('background-color', '');
                             }
@@ -774,7 +775,6 @@ function searchDomiciliacionTickets() {
                     
                     // Si no se encuentra el ticket en ningún filtro
                     if (!ticketFound) {
-                      console.log('❌ Ticket no encontrado en ningún filtro');
                       Swal.fire({
                         icon: 'warning',
                         title: 'Ticket no encontrado',
@@ -789,12 +789,9 @@ function searchDomiciliacionTickets() {
                   }
 
                   // Buscar el primer filtro con datos
-                  console.log('🔍 Buscando primer filtro con datos');
                   for (const { button, term, column, status, action } of searchTerms) {
                     const hasData = checkDataExists(dataTableInstance, term, column);
-                    console.log(`📊 Filtro ${button} tiene datos:`, hasData);
                     if (hasData) {
-                      console.log(`🎯 Activando primer filtro con datos: ${button}`);
                       clearFilters(dataTableInstance);
                       dataTableInstance.column(column).search(term, true, false).draw();
                       if (button === "btn-desafiliado-deuda") {
@@ -806,11 +803,9 @@ function searchDomiciliacionTickets() {
                       
                       // Aplicar búsqueda del ticket DESPUÉS de activar el filtro
                       if (nroTicket) {
-                        console.log('🔍 Aplicando búsqueda del ticket después del filtro');
                         const searchInput = $('.dataTables_filter input');
                         searchInput.val(nroTicket);
                         dataTableInstance.search(nroTicket).draw();
-                        console.log('✅ Búsqueda del ticket aplicada:', searchInput.val());
                         
                         // Resaltar la fila del ticket encontrado
                         setTimeout(() => {
@@ -818,7 +813,6 @@ function searchDomiciliacionTickets() {
                             const rowData = this.data();
                             if (rowData.nro_ticket === nroTicket) {
                               $(this.node()).addClass('table-active').css('background-color', '#e0f2f7');
-                              console.log('🎨 Fila del ticket resaltada con color azul claro');
                             } else {
                               $(this.node()).removeClass('table-active').css('background-color', '');
                             }
@@ -831,7 +825,6 @@ function searchDomiciliacionTickets() {
                   }
 
                   // Si no hay datos
-                  console.log('❌ No hay datos en ningún filtro');
                   return false;
                 }
 
@@ -853,9 +846,9 @@ function searchDomiciliacionTickets() {
                 // Event listeners para los botones
 
                 $("#btn-solvente").on("click", function () {
-                  if (checkDataExists(dataTableInstance, "^2$|^6$", 5)) {
+                  if (checkDataExists(dataTableInstance, "^2$", 5)) {
                     clearFilters(dataTableInstance);
-                    dataTableInstance.column(5).search("^2$|^6$", true, false).draw();
+                    dataTableInstance.column(5).search("^2$", true, false).draw();
                     setActiveButton("btn-solvente");
                     showActionsColumn();
                   } else {
@@ -886,14 +879,27 @@ function searchDomiciliacionTickets() {
                 });
 
                 $("#btn-convenio-firmado").on("click", function () {
-                  if (checkDataExists(dataTableInstance, "^4$", 5)) {
-                    clearFilters(dataTableInstance);
-                    dataTableInstance.column(5).search("^4$", true, false).draw();
-                    setActiveButton("btn-convenio-firmado");
-                    showActionsColumn();
-                  } else {
-                    findFirstButtonWithData();
-                  }
+                  clearFilters(dataTableInstance);
+                  
+                  // Usar una función de búsqueda personalizada para incluir estatus 4, 6 y 7
+                  $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
+                      // Solo aplicar este filtro en nuestra tabla
+                      if (settings.nTable.id !== 'tabla-ticket') {
+                        return true;
+                      }
+                      
+                      // Obtener el valor de la columna 5 (id_status_domiciliacion)
+                      const statusId = parseInt(data[5]) || 0;
+                      
+                      // Incluir solo estatus 4, 6 y 7
+                      return statusId === 4 || statusId === 6 || statusId === 7;
+                    }
+                  );
+                  
+                  dataTableInstance.draw();
+                  setActiveButton("btn-convenio-firmado");
+                  showActionsColumn();
                 });
 
                 $("#btn-desafiliado-deuda").on("click", function () {
@@ -957,7 +963,9 @@ function searchDomiciliacionTickets() {
                   const convenioUrl = $(this).data("convenio-url");
                   const convenioFilename = $(this).data("convenio-filename");
                   const ticketRechazado = $(this).data("rechazado");
+                  const currentStatusId = $(this).data("current-status-id");
                   const BotonRechazo = document.getElementById('RechazoDocumento');
+                  const BotonAprobar = document.getElementById('approveTicketFromImage');
                   const serial = $(this).data("serial");
                   
                   // ✅ GUARDAR EL TICKET CORRECTO PARA EL RECHAZO
@@ -978,10 +986,36 @@ function searchDomiciliacionTickets() {
                       return;
                   }
                   
-                if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
-                  BotonRechazo.style.display = 'none';
+                  // ✅ OCULTAR BOTÓN DE APROBAR SI EL ESTATUS ES 6 (Convenio Firmado Aprovado)
+                  // ✅ MOSTRAR BOTÓN DE APROBAR SI EL ESTATUS ES 7 (Convenio Firmado Rechazado)
+                  if (currentStatusId == 6) {
+                      if (BotonAprobar) {
+                          BotonAprobar.style.display = 'none';
+                      }
+                  } else if (currentStatusId == 7) {
+                      // Para estatus 7, mostrar botón de aprobar
+                      if (BotonAprobar) {
+                          BotonAprobar.style.display = 'block';
+                      }
+                      // Ocultar botón de rechazar para estatus 7
+                      if (BotonRechazo) {
+                          BotonRechazo.style.display = 'none';
+                      }
+                  } else {
+                      if (BotonAprobar) {
+                          BotonAprobar.style.display = 'block';
+                      }
+                  }
+                  
+                // ✅ OCULTAR BOTÓN DE RECHAZAR SI EL ESTATUS ES 7 O SI YA ESTÁ RECHAZADO
+                if (currentStatusId == 7 || ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+                  if (BotonRechazo) {
+                      BotonRechazo.style.display = 'none';
+                  }
                 } else {
-                  BotonRechazo.style.display = 'block';
+                  if (BotonRechazo) {
+                      BotonRechazo.style.display = 'block';
+                  }
                 }
 
                   // Determinar si es PDF o imagen basándose en la extensión
@@ -991,13 +1025,13 @@ function searchDomiciliacionTickets() {
                   
                   if (isPdf) {
                       // Es un PDF
-                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename);
+                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename, currentStatusId);
                   } else if (isImage) {
                       // Es una imagen
-                      showViewModal(ticketId, nroTicket, convenioUrl, null, convenioFilename);
+                      showViewModal(ticketId, nroTicket, convenioUrl, null, convenioFilename, currentStatusId);
                   } else {
                       // Tipo de archivo no reconocido, intentar como PDF
-                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename);
+                      showViewModal(ticketId, nroTicket, null, convenioUrl, convenioFilename, currentStatusId);
                   }
               });
 
@@ -1006,7 +1040,42 @@ function searchDomiciliacionTickets() {
             $("#tabla-ticket tbody")
               .off("click", "tr") // Mantener este .off() para el clic de la fila
 
-              .on("click", "tr", function () {
+              .on("click", "tr", function (e) {
+                // Verificar si el clic fue en un botón, enlace o input
+                const clickedElement = $(e.target);
+                const isButton = clickedElement.is('button') || 
+                                clickedElement.closest('button').length > 0 ||
+                                clickedElement.is('a') || 
+                                clickedElement.closest('a').length > 0 ||
+                                clickedElement.is('input') || 
+                                clickedElement.closest('input').length > 0 ||
+                                clickedElement.hasClass('truncated-cell') ||
+                                clickedElement.hasClass('expanded-cell');
+                
+                // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                if (isButton) {
+                    return; // No hacer nada, dejar que el botón maneje su propio evento
+                }
+                
+                // Solo ocultar overlay si el clic fue directamente en la fila
+                // 1. Matamos cualquier otro handler (por si acaso)
+                e.stopPropagation();
+                
+                // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                $('#loadingOverlay').removeClass('show').hide();
+                
+                // 3. Si el script usa opacity o visibility, también lo matamos
+                $('#loadingOverlay').css({
+                    'display': 'none',
+                    'opacity': '0',
+                    'visibility': 'hidden'
+                });
+                
+                // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                setTimeout(() => {
+                    $('#loadingOverlay').hide();
+                }, 50);
+
                 const tr = $(this);
 
                 const rowData = dataTableInstance.row(tr).data();
@@ -1248,9 +1317,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  document
-    .getElementById("generateNotaEntregaBtn")
-    .addEventListener("click", function () {
+  const generateNotaEntregaBtn = document.getElementById("generateNotaEntregaBtn");
+  if (generateNotaEntregaBtn) {
+    generateNotaEntregaBtn.addEventListener("click", function () {
       const ticketId = document.getElementById("generate_id_ticket").value;
 
       // Obtener datos del ticket para generar el número del convenio
@@ -1333,6 +1402,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const data = `action=GetPaymentAgreementData&id_ticket=${ticketId}`;
       xhr.send(data);
     });
+  }
 });
 
 function handleTicketApprovalFromImage() {
@@ -1520,8 +1590,6 @@ document.addEventListener('click', function(event) {
         const motivoId = motivoRechazoSelectElement ? motivoRechazoSelectElement.value : "";
         const id_user = document.getElementById('iduser').value;
         const documentType = 'convenio_firmado';
-
-        console.log('🔍 Datos para rechazo:', { ticketId, nroticket, motivoId, id_user, documentType });
         
         // Cerrar el modal de confirmación mientras se procesa la solicitud
         if (confirmarRechazoModal) {
@@ -1561,7 +1629,6 @@ document.addEventListener('click', function(event) {
                                         try {
                                             const responseEmail = JSON.parse(xhrEmail.responseText);
                                             if (responseEmail.success) {
-                                                console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
                                             } else {
                                                 console.error('Error correo rechazo:', responseEmail.message);
                                             }
@@ -1739,7 +1806,7 @@ function showAttachDocumentModal(ticketId = null) {
   }
 }
 
-function showUploadDocumentModal(ticketId = null, nroTicket = null) {
+function showUploadDocumentModal(ticketId = null, nroTicket = null, currentStatusId = null, convenioFilename = '', convenioFecha = '', convenioUrl = '', serialPos = '', motivoRechazo = '') {
   // Si se pasan parámetros, usarlos directamente
   if (!ticketId) {
     ticketId = document.getElementById("generate_id_ticket").value;
@@ -1755,6 +1822,7 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
 
   const modalTicketId = document.getElementById("modalTicketId");
   const idTicketHidden = document.getElementById("id_ticket");
+  const uploadFormElement = document.getElementById("uploadForm");
 
   if (modalTicketId) modalTicketId.textContent = nroTicket || ticketId;
   if (idTicketHidden) {
@@ -1768,6 +1836,138 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null) {
   const typeDocument = document.getElementById("type_document");
   if (typeDocument) {
     typeDocument.value = "convenio_firmado";
+  }
+
+  // ✅ MOSTRAR INFORMACIÓN DEL DOCUMENTO RECHAZADO SI EL ESTATUS ES 7 (ESTILO IGUAL A DOCUMENTOS POR APROBAR)
+  const rejectedDocumentInfo = document.getElementById("rejectedDocumentInfo");
+  const generateNotaEntregaBtn = document.getElementById("generateNotaEntregaBtn");
+  
+  if (currentStatusId == 7 && rejectedDocumentInfo && uploadFormElement) {
+    // Usar el motivo de rechazo directamente desde los datos de la tabla (igual que documentos_aprobar)
+    const motivoRechazoFinal = motivoRechazo || 'No especificado';
+    
+    // Crear el HTML con el mismo diseño que Documentos Por Aprobar
+    const infoHtml = `
+      <div class="alert mb-3" id="CartWrong" role="alert" style="background: linear-gradient(135deg, #6f42c1, #007bff); color: white; border: none;">
+        <h6 class="alert-heading">Documento Rechazado</h6>
+        <p class="mb-1"><strong>Serial POS:</strong> ${serialPos || 'No disponible'}</p>
+        <p class="mb-1"><strong>Tipo de Documento:</strong> convenio_firmado</p>
+        <p class="mb-0"><strong>Motivo de Rechazo:</strong> <span class="motivo-rechazo-highlight">${motivoRechazoFinal}</span></p>
+      </div>
+    `;
+    
+    // Eliminar cualquier alerta previa
+    const existingInfo = uploadFormElement.querySelector('#CartWrong');
+    if (existingInfo) {
+      existingInfo.remove();
+    }
+    
+    // Insertar la nueva alerta al inicio del formulario
+    uploadFormElement.insertAdjacentHTML('afterbegin', infoHtml);
+    rejectedDocumentInfo.style.display = "block";
+    
+    // ✅ MOSTRAR BOTÓN DE GENERAR CONVENIO FIRMADO CUANDO EL ESTATUS ES 7
+    if (generateNotaEntregaBtn) {
+      generateNotaEntregaBtn.style.display = "block";
+    }
+  } else {
+    // Ocultar la alerta si no es estatus 7
+    if (rejectedDocumentInfo) {
+      rejectedDocumentInfo.style.display = "none";
+      // Eliminar cualquier alerta previa
+      const existingInfo = uploadFormElement ? uploadFormElement.querySelector('#CartWrong') : null;
+      if (existingInfo) {
+        existingInfo.remove();
+      }
+    }
+    
+    // ✅ OCULTAR BOTÓN DE GENERAR CONVENIO FIRMADO SI NO ES ESTATUS 7
+    if (generateNotaEntregaBtn) {
+      generateNotaEntregaBtn.style.display = "none";
+    }
+  }
+
+  // Limpiar campos del modal y estados de validación
+  const documentFileInput = document.getElementById("documentFile");
+  const fileFormatInfo = document.getElementById("fileFormatInfo");
+  const uploadFileBtn = document.getElementById("uploadFileBtn");
+  
+  if (documentFileInput) {
+    documentFileInput.value = "";
+    documentFileInput.classList.remove("is-valid", "is-invalid");
+    // Limpiar estilos de background-image
+    documentFileInput.style.removeProperty("background-image");
+    documentFileInput.style.removeProperty("background-position");
+    documentFileInput.style.removeProperty("background-repeat");
+    documentFileInput.style.removeProperty("background-size");
+    documentFileInput.style.removeProperty("padding-right");
+  }
+  
+  if (uploadFormElement) {
+    uploadFormElement.classList.remove("was-validated");
+  }
+  
+  // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+  const imagePreview = document.getElementById("imagePreview");
+  const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+  if (imagePreview) {
+    imagePreview.style.display = "none";
+    imagePreview.src = "#";
+  }
+  if (imagePreviewContainer) {
+    imagePreviewContainer.style.display = "none";
+  }
+  
+  // Verificar que uploadMessage existe antes de usarlo
+  const uploadMessage = document.getElementById("uploadMessage");
+  if (uploadMessage) {
+    uploadMessage.textContent = "";
+    uploadMessage.classList.add("hidden");
+  }
+  
+  // Mostrar el mensaje informativo
+  if (fileFormatInfo) {
+    fileFormatInfo.style.display = "block";
+    fileFormatInfo.style.visibility = "visible";
+  }
+  
+  // Deshabilitar el botón de subir al abrir el modal
+  if (uploadFileBtn) {
+    uploadFileBtn.disabled = true;
+  }
+  
+  // Restaurar visibilidad de los mensajes de feedback
+  if (documentFileInput && documentFileInput.parentElement) {
+    const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+    const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+    if (validFeedback) {
+      validFeedback.style.display = '';
+      validFeedback.style.visibility = '';
+    }
+    if (invalidFeedback) {
+      invalidFeedback.style.display = '';
+      invalidFeedback.style.visibility = '';
+    }
+  }
+
+  // Configurar el listener para el input de archivo usando jQuery (más confiable)
+  // Remover cualquier listener previo y agregar el nuevo
+  if (documentFileInput && typeof $ !== 'undefined') {
+    $(documentFileInput).off("change").on("change", function(e) {
+      // Usar la función global handleFileSelectForUpload si está disponible
+      if (typeof window.handleFileSelectForUpload !== 'undefined') {
+        window.handleFileSelectForUpload.call(this, e);
+      } else {
+        // Si no está disponible, esperar un poco y volver a intentar
+        setTimeout(() => {
+          if (typeof window.handleFileSelectForUpload !== 'undefined') {
+            window.handleFileSelectForUpload.call(this, e);
+          } else {
+            console.warn("handleFileSelectForUpload no está disponible");
+          }
+        }, 100);
+      }
+    });
   }
 
   // Usar la instancia global del modal
@@ -1793,8 +1993,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-
-        //console.log(response);
 
         if (response.success) {
           const srcImagen = response.rutaImagen;
@@ -1838,7 +2036,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
 
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
@@ -2004,7 +2202,7 @@ function formatTicketDetailsPanel(d) {
         </div>
 
     `;
-}
+}*/
 
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 
@@ -2068,16 +2266,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
       timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
     } else if (diffWeeks > 0) {
       const remainingDays = diffDays % 7;
-      timeText = `${diffWeeks}W ${remainingDays}D`;
+      timeText = `${diffWeeks}S ${remainingDays}D`;
     } else if (diffDays > 0) {
       const remainingHours = diffHours % 24;
       const remainingMinutes = diffMinutes % 60;
-      timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+      timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}Min`;
     } else if (diffHours > 0) {
       const remainingMinutes = diffMinutes % 60;
-      timeText = `${diffHours}H ${remainingMinutes}M`;
+      timeText = `${diffHours}H ${remainingMinutes}Min`;
     } else if (diffMinutes > 0) {
-      timeText = `${diffMinutes}M`;
+      timeText = `${diffMinutes}Min`;
     } else {
       return null;
     }
@@ -2105,10 +2303,84 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
         success: function(response) {
       if (response.success && response.history && response.history.length > 0) {
         let historyHtml = `
-                    <div class="d-flex justify-content-end mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#17a2b8" class="bi bi-info-square-fill" viewBox="0 0 16 16" style="cursor: pointer;" data-toggle="collapse" data-target="#colorLegend_${ticketId}" aria-expanded="false" aria-controls="colorLegend_${ticketId}" title="Leyenda de Colores">
+                            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.93 4.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                        </svg>
                         <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
                         </button>
+                    </div>
+                    <div class="collapse mb-3" id="colorLegend_${ticketId}">
+                            <div class="alert alert-info" role="alert">
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #ffc107; color: #ffffff; min-width: 80px; padding: 6px 12px;">Amarillo</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestión actual</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #5d9cec; color: #ffffff; min-width: 80px; padding: 6px 12px;">Azul</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestiones anteriores</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #fd7e14; color: #ffffff; min-width: 80px; padding: 6px 12px;">Naranja</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Taller</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #28a745; color: #ffffff; min-width: 80px; padding: 6px 12px;">Verde</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Domiciliación</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TG:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Gestión Anterior</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TR:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Revisión Domiciliación</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TT:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración en Taller</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div style="text-align: center; margin-bottom: 12px;">
+                                        <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
+                            </div>
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Mes(es)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">S</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Semana(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">D</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Día(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #3b82f6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">H</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Hora(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #f59e0b; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">Min</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Minuto(s)</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px;">
+                                        <p style="color: #ffffff; font-size: 0.85em; font-style: italic; margin: 0;">
+                                            Ejemplo: <strong>1M 2S 3D 6H 11Min</strong> significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="accordion" id="ticketHistoryAccordion">
                 `;
@@ -2121,30 +2393,6 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 
           let timeElapsed = null;
                     let timeBadge = '';
-
-          if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
-                        timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
-            if (timeElapsed) {
-                            let badgeColor = 'success';
-              if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
-                                badgeColor = 'danger';
-                            } else if (timeElapsed.weeks > 0 || timeElapsed.businessDays > 2) {
-                                badgeColor = 'warning';
-              } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
-                                badgeColor = 'orange';
-              } else if (timeElapsed.hours >= 1) {
-                                badgeColor = 'purple';
-                            }
-
-                            let backgroundColor = '#28a745';
-                            if (badgeColor === 'purple') backgroundColor = '#6f42c1';
-                            else if (badgeColor === 'orange') backgroundColor = '#fd7e14';
-                            else if (badgeColor === 'warning') backgroundColor = '#ffc107';
-                            else if (badgeColor === 'danger') backgroundColor = '#dc3545';
-
-              timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
-            }
-          }
 
                     const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
                     const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
@@ -2160,6 +2408,167 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
                     const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
                     const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    
+                    // Calcular tiempos para Domiciliación
+                    let durationFromPreviousText = '';
+                    let durationFromCreationText = '';
+                    if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Desde la creación del ticket
+                        let ticketCreationDate = null;
+                        const lastHistoryItem = response.history[response.history.length - 1];
+                        if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                            ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                        } else {
+                            // Buscar el elemento con "Ticket Creado"
+                            for (let i = response.history.length - 1; i >= 0; i--) {
+                                const histItem = response.history[i];
+                                if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                                    ticketCreationDate = histItem.fecha_de_cambio;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (ticketCreationDate) {
+                            const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                            if (duration) {
+                                durationFromCreationText = duration.text;
+                            }
+                        }
+                    }
+                    
+                    // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    let durationLabFromPreviousText = '';
+                    let durationLabFromTallerText = '';
+                    const currentAccionForLab = cleanString(item.name_accion_ticket);
+                    const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+                    
+                    if (isEnElRosalForLab) {
+                        // Tiempo 1: Desde la gestión anterior (TG)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationLabFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+                        // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+                        // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
+                        let totalTallerMinutes = 0;
+                        for (let i = index + 1; i < response.history.length; i++) {
+                            const histItem = response.history[i];
+                            const prevHistItem = response.history[i - 1] || null; // La gestión más reciente que esta
+                            
+                            if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {
+                                const histStatusLab = cleanString(histItem.name_status_lab);
+                                const isReparacionStatus = histStatusLab && 
+                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                                     histStatusLab.toLowerCase().includes('reparado'));
+                                const isRecibidoEnTaller = histStatusLab && 
+                                    histStatusLab.toLowerCase().includes('recibido en taller');
+                                
+                                // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                                // El tiempo es desde esta gestión hasta la siguiente más reciente
+                                if (isReparacionStatus && !isRecibidoEnTaller) {
+                                    const duration = calculateTimeElapsed(histItem.fecha_de_cambio, prevHistItem.fecha_de_cambio);
+                                    if (duration && duration.minutes) {
+                                        totalTallerMinutes += duration.minutes;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Convertir el total de minutos a formato legible
+                        if (totalTallerMinutes > 0) {
+                            const totalHours = Math.floor(totalTallerMinutes / 60);
+                            const remainingMinutes = totalTallerMinutes % 60;
+                            const totalDays = Math.floor(totalHours / 24);
+                            const remainingHours = totalHours % 24;
+                            const totalWeeks = Math.floor(totalDays / 7);
+                            const remainingDaysAfterWeeks = totalDays % 7;
+                            const totalMonths = Math.floor(totalDays / 30.44);
+                            
+                            if (totalMonths > 0) {
+                                const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                                durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                            } else if (totalWeeks > 0) {
+                                durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                            } else if (totalDays > 0) {
+                                durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                            } else if (totalHours > 0) {
+                                durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                            } else {
+                                durationLabFromTallerText = `${remainingMinutes}Min`;
+                            }
+                        }
+                    }
+                    
+                    // Prioridad: Si la acción es "En el Rosal" (terminó la estadía en taller), mostrar TG y TT; si no, mostrar TG y TR si hay cambio de Domiciliación; si no, tiempo normal
+                    if (isEnElRosalForLab && (durationLabFromPreviousText || durationLabFromTallerText)) {
+                        let tgTtText = '';
+                        if (durationLabFromPreviousText && durationLabFromTallerText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}<br>TT: ${durationLabFromTallerText}`;
+                        } else if (durationLabFromPreviousText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}`;
+                        } else if (durationLabFromTallerText) {
+                            tgTtText = `TT: ${durationLabFromTallerText}`;
+                        }
+                        timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #fd7e14 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tgTtText}</span>`;
+                    } else if (statusDomChanged && cleanString(item.name_status_domiciliacion) && (durationFromPreviousText || durationFromCreationText)) {
+                        // Si hay cambio de domiciliación, mostrar TG y TR en el badge en formato vertical (uno arriba del otro)
+                        // Solo mostrar las líneas que tienen valores (no mostrar "N/A")
+                        let tdTrText = '';
+                        if (durationFromPreviousText && durationFromCreationText) {
+                            tdTrText = `TG: ${durationFromPreviousText}<br>TR: ${durationFromCreationText}`;
+                        } else if (durationFromPreviousText) {
+                            tdTrText = `TG: ${durationFromPreviousText}`;
+                        } else if (durationFromCreationText) {
+                            tdTrText = `TR: ${durationFromCreationText}`;
+                        }
+                        if (tdTrText) {
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #28a745 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tdTrText}</span>`;
+                        }
+                    } else if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        // Si no hay cambio de domiciliación ni taller, mostrar el tiempo normal
+                        timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                        if (timeElapsed) {
+                            let badgeColor = 'success';
+                            if (timeElapsed.months > 0 || timeElapsed.businessDays > 5) {
+                                badgeColor = 'danger';
+                            } else if (timeElapsed.weeks > 0 || timeElapsed.businessDays > 2) {
+                                badgeColor = 'warning';
+                            } else if (timeElapsed.days > 0 || timeElapsed.hours > 8) {
+                                badgeColor = 'orange';
+                            } else if (timeElapsed.hours >= 1) {
+                                badgeColor = 'purple';
+                            }
+
+                            let backgroundColor = '#28a745';
+                            if (badgeColor === 'purple') backgroundColor = '#6f42c1';
+                            else if (badgeColor === 'orange') backgroundColor = '#fd7e14';
+                            else if (badgeColor === 'warning') backgroundColor = '#ffc107';
+                            else if (badgeColor === 'danger') backgroundColor = '#dc3545';
+
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important; white-space: nowrap; overflow: visible;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                        }
+                    }
+                    
+                    // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+                    // Nota: durationLabFromPreviousText y durationLabFromTallerText ya se calcularon arriba para el badge (solo cuando es "En el Rosal")
+                    
+                    // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+                    // Nota: durationFromPreviousText y durationFromCreationText ya se calcularon arriba para el badge
                     const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
                     const componentsChanged = getChange(item.components_list, prevItem.components_list);
                     const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
@@ -2169,6 +2578,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -2177,18 +2587,44 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-          const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    
+                    // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
+                    // La gestión actual ya es amarilla por defecto
+                    // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
+                    const currentStatusLabForColor = cleanString(item.name_status_lab);
+                    const isReparacionStatus = currentStatusLabForColor && 
+                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
+                         currentStatusLabForColor.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = currentStatusLabForColor && 
+                        currentStatusLabForColor.toLowerCase().includes('recibido en taller');
+                    
+                    if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
+                        headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
+                        textColor = "color: #ffffff;";
+                    }
+                    // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
+                    else if (statusDomChanged && !isLatest) {
+                        headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
+                        textColor = "color: #ffffff;";
+                    }
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
                     if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
                         statusHeaderText = cleanString(item.name_status_lab) || "Desconocido";
-          }
+                    }
 
-          // Se define el texto del botón aquí con la condición ternaria
-          const buttonText = isCreation
+                    // Se define el texto del botón aquí con la condición ternaria
+                    let buttonText = isCreation
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
+
+          // Calcular el padding derecho para evitar que el badge trunque el texto
+          const hasTimeBadge = timeBadge && timeBadge.trim() !== '';
+          const hasCreationBadge = creationBadge && creationBadge.trim() !== '';
+          const buttonPaddingRight = (hasTimeBadge || hasCreationBadge) ? '120px' : '15px';
 
           historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
@@ -2199,7 +2635,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
                                         aria-expanded="false" aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                        style="${textColor}; padding-right: ${buttonPaddingRight} !important;">
                                         ${buttonText}
                                     </button>
                                 </h2>
@@ -2247,10 +2683,26 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <th class="text-start">Estatus Taller:</th>
                                                     <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
+                                                ${isEnElRosalForLab ? `
+                                                    ${durationLabFromTallerText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Total Duración en Taller:</th>
+                                                            <td class="highlighted-change">${durationLabFromTallerText}</td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
                                                     <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
+                                                ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                                                    ${durationFromCreationText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
+                                                            <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
@@ -2259,6 +2711,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -2348,81 +2808,194 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
-  const decodeHistorySafe = (encoded) => {
-    try {
-      if (!encoded) return [];
-      return JSON.parse(decodeURIComponent(encoded));
-    } catch (e) {
+    // ... (Mantener las funciones auxiliares: decodeHistorySafe, cleanString, parseCustomDate, calculateTimeElapsed, generateFileName)
+    const decodeHistorySafe = (encoded) => {
+        try {
+            if (!encoded) return [];
+            return JSON.parse(decodeURIComponent(encoded));
+        } catch (e) {
             console.error('Error decoding history:', e);
-      return [];
-    }
-  };
+            return [];
+        }
+    };
 
     const cleanString = (str) => (typeof str === 'string' ? str.replace(/\s/g, ' ').trim() : (str ?? ''));
 
-  const parseCustomDate = (dateStr) => {
-    if (!dateStr) return null;
+    const parseCustomDate = (dateStr) => {
+        if (!dateStr) return null;
         const parts = String(dateStr).split(' ');
-    if (parts.length !== 2) return null;
+        if (parts.length !== 2) return null;
         const [day, month, year] = parts[0].split('-');
         const [hours, minutes] = parts[1].split(':');
         const d = new Date(year, (Number(month) || 1) - 1, Number(day) || 1, Number(hours) || 0, Number(minutes) || 0);
-    return isNaN(d.getTime()) ? null : d;
-  };
+        return isNaN(d.getTime()) ? null : d;
+    };
 
-  const calculateTimeElapsed = (startDateStr, endDateStr) => {
-    if (!startDateStr || !endDateStr) return null;
-    const start = parseCustomDate(startDateStr);
-    const end = parseCustomDate(endDateStr);
-    if (!start || !end) return null;
-    const diffMs = end - start;
-    if (diffMs <= 0) return null;
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMinutes / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    const diffWeeks = Math.floor(diffDays / 7);
-    const diffMonths = Math.floor(diffDays / 30.44);
+    const calculateTimeElapsed = (startDateStr, endDateStr) => {
+        if (!startDateStr || !endDateStr) return null;
+        const start = parseCustomDate(startDateStr);
+        const end = parseCustomDate(endDateStr);
+        if (!start || !end) return null;
+        const diffMs = end - start;
+        if (diffMs <= 0) return null;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMinutes / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
         let text = '';
-    if (diffMonths > 0) {
-      const remainingDays = Math.floor(diffDays % 30.44);
-      text = `${diffMonths}M ${remainingDays}D`;
-    } else if (diffWeeks > 0) {
-      text = `${diffWeeks}W ${diffDays % 7}D`;
-    } else if (diffDays > 0) {
-      text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
-    } else if (diffHours > 0) {
-      text = `${diffHours}H ${diffMinutes % 60}M`;
-    } else if (diffMinutes > 0) {
-      // Mostrar minutos cuando es al menos 1 minuto
-      text = `${diffMinutes}M`;
-    } else {
-      // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
-      text = `N/A`;
-    }
+        if (diffMonths > 0) {
+            const remainingDays = Math.floor(diffDays % 30.44);
+            text = `${diffMonths}M ${remainingDays}D`;
+        } else if (diffWeeks > 0) {
+            text = `${diffWeeks}S ${diffDays % 7}D`;
+        } else if (diffDays > 0) {
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}Min`;
+        } else if (diffHours > 0) {
+            text = `${diffHours}H ${diffMinutes % 60}Min`;
+        } else if (diffMinutes > 0) {
+            // Mostrar minutos cuando es al menos 1 minuto
+            text = `${diffMinutes}Min`;
+        } else {
+            // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
+            text = `N/A`;
+        }
         return { text, ms: diffMs, minutes: diffMinutes, hours: diffHours, days: diffDays, weeks: diffWeeks, months: diffMonths };
-  };
+    };
 
-  const history = decodeHistorySafe(historyEncoded);
+    const history = decodeHistorySafe(historyEncoded);
 
-    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
         let fileName = `Historial_Ticket_${ticketNumber}`;
-        
         if (serial && serial.length >= 4) {
             const lastFourDigits = serial.slice(-4);
             fileName += `-${lastFourDigits}`;
         }
-        
         return `${fileName}.pdf`;
     };
 
     const fileName = generateFileName(currentTicketNroForImage, serialPos);
 
     let itemsHtml = '';
+    const getChange = (itemVal, prevVal) => {
+        const cleanItem = cleanString(itemVal);
+        const cleanPrev = cleanString(prevVal);
+        return cleanItem !== cleanPrev;
+    };
+
     history.forEach((item, index) => {
         const previous = history[index + 1] || null;
         const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
         const elapsedText = elapsed ? elapsed.text : 'N/A';
+        
+        // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+        // Mostrar tiempo total sumando todas las gestiones naranjas
+        let durationLabFromPreviousText = '';
+        let durationLabFromTallerText = '';
+        const currentAccion = cleanString(item.name_accion_ticket);
+        const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+        const isEnElRosalForLab = isEnElRosal; // Alias para compatibilidad
+        
+        if (previous && isEnElRosal) {
+            // Tiempo 1: Desde la gestión anterior (TG)
+            if (previous && previous.fecha_de_cambio) {
+                const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                if (elapsedFromPrevious) {
+                    durationLabFromPreviousText = elapsedFromPrevious.text;
+                }
+            }
+            
+            // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+            // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+            // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
+            let totalTallerMinutes = 0;
+            for (let i = index + 1; i < history.length; i++) {
+                    const histItem = history[i];
+                const prevHistItem = history[i - 1] || null; // La gestión más reciente que esta
+                
+                if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {
+                    const histStatusLab = cleanString(histItem.name_status_lab);
+                    const isReparacionStatus = histStatusLab && 
+                        (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                         histStatusLab.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = histStatusLab && 
+                        histStatusLab.toLowerCase().includes('recibido en taller');
+                    
+                    // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                    // El tiempo es desde esta gestión hasta la siguiente más reciente
+                    if (isReparacionStatus && !isRecibidoEnTaller) {
+                        const duration = calculateTimeElapsed(histItem.fecha_de_cambio, prevHistItem.fecha_de_cambio);
+                        if (duration && duration.minutes) {
+                            totalTallerMinutes += duration.minutes;
+                        }
+                    }
+                }
+            }
+            
+            // Convertir el total de minutos a formato legible
+            if (totalTallerMinutes > 0) {
+                const totalHours = Math.floor(totalTallerMinutes / 60);
+                const remainingMinutes = totalTallerMinutes % 60;
+                const totalDays = Math.floor(totalHours / 24);
+                const remainingHours = totalHours % 24;
+                const totalWeeks = Math.floor(totalDays / 7);
+                const remainingDaysAfterWeeks = totalDays % 7;
+                const totalMonths = Math.floor(totalDays / 30.44);
+                
+                if (totalMonths > 0) {
+                    const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                    durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                } else if (totalWeeks > 0) {
+                    durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                } else if (totalDays > 0) {
+                    durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                } else if (totalHours > 0) {
+                    durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                } else {
+                    durationLabFromTallerText = `${remainingMinutes}Min`;
+                }
+            }
+        }
+        
+        // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+        // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+        let durationFromPreviousText = '';
+        let durationFromCreationText = '';
+        const statusDomChanged = previous ? getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) : false;
+        
+        if (previous && statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                    durationFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde la creación del ticket
+                let ticketCreationDate = null;
+                const lastHistoryItem = history[history.length - 1];
+                if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                    ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                } else {
+                    // Buscar el elemento con "Ticket Creado"
+                    for (let i = history.length - 1; i >= 0; i--) {
+                        const histItem = history[i];
+                        if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                            ticketCreationDate = histItem.fecha_de_cambio;
+                            break;
+                        }
+                    }
+                }
+                
+                if (ticketCreationDate) {
+                    // Calcular duración desde la creación del ticket hasta el cambio actual
+                    const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                    if (duration) {
+                    durationFromCreationText = duration.text;
+                }
+            }
+        }
 
         itemsHtml += `
             <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -2444,9 +3017,20 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        ${(() => {
+                            const currentAccion = cleanString(item.name_accion_ticket);
+                            const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+                            return isEnElRosal && durationLabFromTallerText ? `
+                                <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Total Duración en Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${durationLabFromTallerText}</td></tr>
+                            ` : '';
+                        })()}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        ${previous && statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                            ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
+                                                ` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -2459,11 +3043,40 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
                         ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
-                    </table>
+                </table>
                 </div>
             </div>
         `;
     });
+
+    const legendHTML_Integrated = `
+        <div class="legend-integrated" style="margin: 10px 0; padding: 10px; background: #e0f2fe; border: 1px solid #93c5fd; border-radius: 6px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <p style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">
+                LEYENDA DE TIEMPO
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; font-size: 11px; font-weight: 500; flex-wrap: wrap;">
+                <span style="color: #7c3aed;">
+                    <strong style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">M</strong> Mes(es)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">S</strong> Semana(s)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">D</strong> Día(s)
+                </span>
+                <span style="color: #1e40af;">
+                    <strong style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">H</strong> Hora(s)
+                </span>
+                <span style="color: #9a3412;">
+                    <strong style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">Min</strong> Minuto(s)
+                </span>
+            </div>
+            <p style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+                *Ejemplo: **1M 2S 3D 6H 11Min** significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+            </p>
+        </div>
+    `;
+
 
     const printContent = `
         <!DOCTYPE html>
@@ -2473,6 +3086,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${fileName}</title>
             <style>
+                /* ... (Mantener todos los estilos CSS anteriores, asegurando que la clase .legend-float NO exista para no confundir) ... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -2696,13 +3310,24 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     margin-top: 6px;
                 }
                 
+                /* Estilos para la leyenda integrada */
+                .legend-integrated {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #e0f2fe;
+                    border: 1px solid #93c5fd;
+                    border-radius: 6px;
+                    text-align: center;
+                    page-break-inside: avoid; /* Evita que la leyenda se rompa entre páginas */
+                }
+                
                 /* Optimizaciones para impresión */
                 @media print {
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    
+
                     body {
                         margin-top: 50px !important;
                         margin-bottom: 40px !important;
@@ -2823,7 +3448,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-                    </div>
+                </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -2837,6 +3462,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <div class="info-value">${new Date().toLocaleString()}</div>
                     </div>
                 </div>
+                
+                ${legendHTML_Integrated}
 
                 <div class="content-wrapper">
                     <div class="history-section">
@@ -2845,8 +3472,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                             <p style="margin: 0 0 14px 0; color: #6c757d; font-size: 12px; text-align: center;">
                                 <strong>Nota:</strong> En la columna "Tiempo desde gestión anterior" con un valor "N/A" indica que la gestión se realizó en menos de 1 minuto.
                             </p>
-                            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
-                        </div>
+            ${itemsHtml || '<p style="text-align:center; color:#666;">Sin historial disponible.</p>'}
+        </div>
                     </div>
                 </div>
 
@@ -2871,10 +3498,10 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const printWindow = window.open('', '', 'height=800,width=1024');
     printWindow.document.write(printContent);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
-  printWindow.close();
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
 }
 
 function showElapsedLegend(e) {
@@ -2892,14 +3519,14 @@ function showElapsedLegend(e) {
 
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
 
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">Una semana o más, o más de 2 días hábiles</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
 
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">Un mes o más, o más de 5 días hábiles</span></div>
+            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
 
         </div>`;
 
   Swal.fire({
-    title: "Agenda de colores",
+    title: "Leyenda",
 
     html: legendHtml,
 
@@ -2963,8 +3590,6 @@ $(document).ready(function () {
       const dataTableInstance = $("#tabla-ticket").DataTable();
       const rowData = dataTableInstance.row($(this).closest('tr')).data();
       const convenioFirmado = rowData.convenio_firmado || 'No';
-      
-      console.log('🔍 convenio_firmado:', convenioFirmado);
 
       document.getElementById("idTicket").value = idTicket;
 
@@ -3006,9 +3631,15 @@ $(document).ready(function () {
     $(document).on("click", ".adjuntar-documento-btn", function () {
       const idTicket = $(this).data("id");
       const nroTicket = $(this).data("nro-ticket");
+      const currentStatusId = $(this).data("current-status-id");
+      const convenioFilename = $(this).data("convenio-filename") || '';
+      const convenioFecha = $(this).data("convenio-fecha") || '';
+      const convenioUrl = $(this).data("convenio-url") || '';
+      const serialPos = $(this).data("serial-pos") || '';
+      const motivoRechazo = $(this).data("motivo-rechazo") || '';
 
       // Usar la función showUploadDocumentModal con los parámetros correctos
-      showUploadDocumentModal(idTicket, nroTicket);
+      showUploadDocumentModal(idTicket, nroTicket, currentStatusId, convenioFilename, convenioFecha, convenioUrl, serialPos, motivoRechazo);
 
       // Usar la instancia global del modal
       if (!uploadDocumentModalInstance) {
@@ -3026,7 +3657,21 @@ $(document).ready(function () {
       saveStatusDomiciliacionChangeBtn.addEventListener("click", function () {
         const idTicket = document.getElementById("idTicket").value;
 
-        const newStatusId = modalNewStatusDomiciliacionSelect.value;
+        let newStatusId = modalNewStatusDomiciliacionSelect.value;
+        
+        // ✅ LÓGICA ESPECIAL: Si el estatus actual es 1 y se selecciona "Deudor", cambiar a estatus 3
+        const currentStatusId = window.currentDomiciliacionStatusId;
+        const selectedOption = modalNewStatusDomiciliacionSelect.options[modalNewStatusDomiciliacionSelect.selectedIndex];
+        const isDeudorOption = selectedOption.getAttribute('data-is-deudor') === 'true' || 
+                               selectedOption.textContent === 'Deudor' ||
+                               (selectedOption.textContent.includes('Deudor') && 
+                                !selectedOption.textContent.includes('Convenio') && 
+                                !selectedOption.textContent.includes('Desafiliado'));
+        
+        if (currentStatusId == 1 && isDeudorOption) {
+          // Cambiar el newStatusId a 3 (Gestión Comercial - Espera Respuesta Cliente)
+          newStatusId = "3";
+        }
 
         const id_user_input = document.getElementById("iduser");
 
@@ -3083,10 +3728,20 @@ $(document).ready(function () {
         if (newStatusId === "2" || newStatusId === "3" || newStatusId === "4") {
           // Obtener el nombre del status actual y el nuevo status
           const currentStatusName = modalCurrentStatusDomiciliacion.value;
-          const newStatusName =
-            modalNewStatusDomiciliacionSelect.options[
-              modalNewStatusDomiciliacionSelect.selectedIndex
-            ].text;
+          // ✅ Si convertimos "Deudor" a estatus 3, obtener el nombre correcto del estatus 3
+          let newStatusName;
+          if (currentStatusId == 1 && isDeudorOption && newStatusId === "3") {
+            // Buscar la opción con valor 3 en el select para obtener su nombre
+            const status3Option = Array.from(modalNewStatusDomiciliacionSelect.options).find(
+              opt => opt.value === "3"
+            );
+            newStatusName = status3Option ? status3Option.text : "Gestión Comercial - Espera Respuesta Cliente";
+          } else {
+            newStatusName =
+              modalNewStatusDomiciliacionSelect.options[
+                modalNewStatusDomiciliacionSelect.selectedIndex
+              ].text;
+          }
 
           // Mostrar modal de confirmación personalizado y bonito
           Swal.fire({
@@ -3396,6 +4051,9 @@ function updateDomiciliacionStatus(
 
 function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
   // Acepta parámetros: ID del status actual y si tiene convenio firmado
+  
+  // Guardar el currentStatusId en una variable global para usarlo en el event listener
+  window.currentDomiciliacionStatusId = currentStatusIdToExclude;
 
   const xhr = new XMLHttpRequest();
 
@@ -3420,9 +4078,46 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
             '<option value="" disabled selected hidden>Seleccione</option>'; // Limpiar y agregar la opción por defecto
 
           if (Array.isArray(response.estatus) && response.estatus.length > 0) {
+            // Encontrar el ID del estatus "Deudor" (sin "Convenio Firmado" ni "Desafiliado")
+            let deudorStatusId = null;
+            response.estatus.forEach((status) => {
+              if (status.name_status_domiciliacion === 'Deudor' || 
+                  (status.name_status_domiciliacion.includes('Deudor') && 
+                   !status.name_status_domiciliacion.includes('Convenio') && 
+                   !status.name_status_domiciliacion.includes('Desafiliado'))) {
+                deudorStatusId = status.id_status_domiciliacion;
+              }
+            });
+
             response.estatus.forEach((status) => {
               // *** AQUÍ ESTÁ LA LÓGICA CLAVE: FILTRAR LA OPCIÓN ACTUAL POR ID ***
               if (status.id_status_domiciliacion != currentStatusIdToExclude) {
+                
+                // ✅ LÓGICA ESPECIAL: Cuando el estatus actual es 1 (Pendiente revisar domiciliacion)
+                // Solo mostrar Solvente (2) y Deudor
+                if (currentStatusIdToExclude == 1) {
+                  if (status.id_status_domiciliacion != 2 && status.id_status_domiciliacion != deudorStatusId) {
+                    return; // Saltar este estatus
+                  }
+                }
+                
+                // ✅ LÓGICA ESPECIAL: Cuando el estatus actual es 3 (Gestión Comercial - Espera Respuesta Cliente)
+                // Mostrar: Solvente (2), Deudor - Convenio Firmado (4) y Deudor - Desafiliado con Deuda (5)
+                // NO mostrar: Deudor básico, estatus 1, ni estatus 3
+                if (currentStatusIdToExclude == 3) {
+                  // Excluir estatus 1, 3, y Deudor básico
+                  if (status.id_status_domiciliacion == 1 || 
+                      status.id_status_domiciliacion == 3 ||
+                      status.id_status_domiciliacion == deudorStatusId) {
+                    return; // Saltar estatus 1, 3, y Deudor básico
+                  }
+                  // Solo permitir estatus 2 (Solvente), 4 y 5
+                  if (status.id_status_domiciliacion != 2 && 
+                      status.id_status_domiciliacion != 4 && 
+                      status.id_status_domiciliacion != 5) {
+                    return; // Saltar cualquier otro estatus que no sea 2, 4 o 5
+                  }
+                }
                 
                 // ✅ SIMPLE: Si no tiene documento, ocultar los estatus de convenio aprobado/rechazado
                 if (convenioFirmado !== 'Sí' && 
@@ -3434,18 +4129,15 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
                 const option = document.createElement("option");
 
                 option.value = status.id_status_domiciliacion;
+                
+                // Guardar el ID de Deudor en un atributo data para referencia
+                if (status.id_status_domiciliacion == deudorStatusId) {
+                  option.setAttribute('data-is-deudor', 'true');
+                }
 
                 option.textContent = status.name_status_domiciliacion;
 
                 select.appendChild(option);
-              } else {
-                console.log(
-                  "Excluyendo status:",
-                  status.name_status_domiciliacion,
-                  "(ID:",
-                  status.id_status_domiciliacion,
-                  ")"
-                );
               }
             });
           } else {
@@ -3487,7 +4179,17 @@ function getStatusDom(currentStatusIdToExclude = null, convenioFirmado = 'No') {
               this.style.color = "#6c757d"; // Color gris para la opción por defecto
             }
 
-            if (selectedValue === "3") {
+            // ✅ LÓGICA ESPECIAL: Si el estatus actual es 1 y se selecciona "Deudor", mostrar campo de observaciones
+            // porque se convertirá a estatus 3
+            const currentStatusId = window.currentDomiciliacionStatusId;
+            const selectedOption = this.options[this.selectedIndex];
+            const isDeudorOption = selectedOption.getAttribute('data-is-deudor') === 'true' || 
+                                   selectedOption.textContent === 'Deudor' ||
+                                   (selectedOption.textContent.includes('Deudor') && 
+                                    !selectedOption.textContent.includes('Convenio') && 
+                                    !selectedOption.textContent.includes('Desafiliado'));
+            
+            if (selectedValue === "3" || (currentStatusId == 1 && isDeudorOption)) {
               // Mostrar campo de observaciones
 
               if (!observationsContainer) {
@@ -3670,32 +4372,62 @@ document.addEventListener("DOMContentLoaded", function () {
     if (uploadFileBtn) {
       uploadFileBtn.addEventListener("click", function () {
         const documentFileInput = document.getElementById("documentFile");
+        if (!documentFileInput) {
+          console.error("Elemento documentFile no encontrado");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo obtener el input de archivo.",
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#003594",
+            color: "black",
+          });
+          return;
+        }
 
-        const idTicket = document.getElementById("id_ticket").value;
+        const idTicketElement = document.getElementById("id_ticket");
+        if (!idTicketElement) {
+          console.error("Elemento id_ticket no encontrado");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo obtener el ID del ticket.",
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#003594",
+            color: "black",
+          });
+          return;
+        }
+        const idTicket = idTicketElement.value;
 
-        const nroTicket = document
-          .getElementById("id_ticket")
-          .getAttribute("data-nro-ticket");
+        const nroTicket = idTicketElement.getAttribute("data-nro-ticket");
 
-        const idUser = document.getElementById("iduser").value;
+        const idUserElement = document.getElementById("iduser");
+        if (!idUserElement) {
+          console.error("Elemento iduser no encontrado");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo obtener el ID del usuario.",
+            confirmButtonText: "Ok",
+            confirmButtonColor: "#003594",
+            color: "black",
+          });
+          return;
+        }
+        const idUser = idUserElement.value;
 
         const file = documentFileInput.files[0];
 
         if (!file) {
           Swal.fire({
             icon: "warning",
-
             title: "¡Advertencia!",
-
             text: "Por favor, selecciona un archivo antes de continuar.",
-
             confirmButtonText: "Ok",
-
             confirmButtonColor: "#003594",
-
             color: "black",
           });
-
           return;
         }
 
@@ -3741,34 +4473,46 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (xhr.status === 200 && result.success) {
+              // ✅ CERRAR EL MODAL DE SUBIDA PRIMERO
+              uploadDocumentModalInstance.hide();
+
+              // ✅ OBTENER DATOS DEL DOCUMENTO RECIÉN SUBIDO
+              const filePath = result.file_path || '';
+              const originalFilename = result.original_filename || '';
+              const mimeType = result.mime_type || '';
+              const nroTicketValue = nroTicket || idTicketElement.getAttribute("data-nro-ticket");
+              
+              // ✅ DETERMINAR SI ES PDF O IMAGEN
+              const fileExtension = originalFilename.toLowerCase().split('.').pop();
+              const isPdf = fileExtension === 'pdf';
+              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
+              
+              // ✅ CONSTRUIR LA URL COMPLETA DEL DOCUMENTO USANDO LA FUNCIÓN EXISTENTE
+              function cleanFilePath(filePath) {
+                if (!filePath) return null;
+                let cleanPath = filePath.replace(/\\/g, '/');
+                const pathSegments = cleanPath.split('Documentos_SoportePost/');
+                if (pathSegments.length > 1) {
+                  cleanPath = pathSegments[1];
+                }
+                // Usar window.location.origin para obtener el host dinámicamente
+                return `${window.location.origin}/Documentos/${cleanPath}`;
+              }
+              
+              const fullUrl = cleanFilePath(filePath);
+              
+              // ✅ RECARGAR LA TABLA PRIMERO PARA ACTUALIZAR EL ESTATUS
+              searchDomiciliacionTickets();
+              
+              // ✅ MOSTRAR MENSAJE DE ÉXITO Y LUEGO EL MODAL
               Swal.fire({
                 icon: "success",
-
                 title: "¡Éxito!",
-
-                text: result.message,
-
+                text: "Documento subido exitosamente.",
                 confirmButtonColor: "#003594",
-
                 confirmButtonText: "Ok",
-
                 color: "black",
-              }).then((result) => {
-                // *** RESETEAR EL SELECT AL ESTADO INICIAL ***
-
-                const modalNewStatusDomiciliacionSelect =
-                  document.getElementById("modalNewStatusDomiciliacionSelect");
-
-                if (modalNewStatusDomiciliacionSelect) {
-                  modalNewStatusDomiciliacionSelect.value = "";
-
-                  modalNewStatusDomiciliacionSelect.selectedIndex = 0;
-                }
-
-                uploadDocumentModalInstance.hide();
-
-                // Recargar la página para actualizar los datos
-
+              }).then(() => {
                 window.location.reload();
               });
             } else {
@@ -3813,17 +4557,38 @@ document.addEventListener("DOMContentLoaded", function () {
           uploadDocumentModalInstance.hide();
         }
 
-        // Limpiar el formulario
+        // Limpiar el formulario y estados de validación
         const uploadForm = document.getElementById("uploadForm");
+        const documentFileInput = document.getElementById("documentFile");
+        const fileFormatInfo = document.getElementById("fileFormatInfo");
+        const uploadFileBtn = document.getElementById("uploadFileBtn");
+        
         if (uploadForm) {
           uploadForm.reset();
         }
 
-        // Limpiar la previsualización de imagen
+        if (documentFileInput) {
+          documentFileInput.classList.remove("is-valid", "is-invalid");
+          documentFileInput.style.removeProperty("background-image");
+          documentFileInput.style.removeProperty("background-position");
+          documentFileInput.style.removeProperty("background-repeat");
+          documentFileInput.style.removeProperty("background-size");
+          documentFileInput.style.removeProperty("padding-right");
+        }
+        
+        if (uploadForm) {
+          uploadForm.classList.remove("was-validated");
+        }
+
+        // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
         const imagePreview = document.getElementById("imagePreview");
+        const imagePreviewContainer = document.getElementById("imagePreviewContainer");
         if (imagePreview) {
           imagePreview.style.display = "none";
           imagePreview.src = "#";
+        }
+        if (imagePreviewContainer) {
+          imagePreviewContainer.style.display = "none";
         }
 
         // Limpiar mensajes
@@ -3831,6 +4596,31 @@ document.addEventListener("DOMContentLoaded", function () {
         if (uploadMessage) {
           uploadMessage.innerHTML = "";
           uploadMessage.classList.add("hidden");
+        }
+        
+        // Mostrar el mensaje informativo
+        if (fileFormatInfo) {
+          fileFormatInfo.style.display = "block";
+          fileFormatInfo.style.visibility = "visible";
+        }
+        
+        // Deshabilitar el botón de subir
+        if (uploadFileBtn) {
+          uploadFileBtn.disabled = true;
+        }
+        
+        // Restaurar visibilidad de los mensajes de feedback
+        if (documentFileInput && documentFileInput.parentElement) {
+          const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+          const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+          if (validFeedback) {
+            validFeedback.style.display = '';
+            validFeedback.style.visibility = '';
+          }
+          if (invalidFeedback) {
+            invalidFeedback.style.display = '';
+            invalidFeedback.style.visibility = '';
+          }
         }
       });
     }
@@ -3843,19 +4633,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (generateNotaEntregaBtn) {
       generateNotaEntregaBtn.addEventListener("click", function () {
-        if (!idTicket) {
+        const idTicketValue = document.getElementById("id_ticket") ? document.getElementById("id_ticket").value : null;
+        const nroTicketValue = document.getElementById("id_ticket") ? document.getElementById("id_ticket").getAttribute("data-nro-ticket") : null;
+        
+        if (!idTicketValue) {
           Swal.fire({
             icon: "warning",
-
             title: "Ticket no disponible",
-
             text: "No se encontró el ID del ticket para generar el acuerdo de pago.",
+            confirmButtonColor: '#003594'
           });
-
           return;
         }
 
-        // Obtener datos del ticket para el acuerdo de pago
+        // Cerrar el modal de subir documento
+        if (uploadDocumentModalInstance) {
+          uploadDocumentModalInstance.hide();
+        }
+
+        // Mostrar el modal de generar convenio usando la función correcta
+        showGenerateConvenioModal(idTicketValue, nroTicketValue);
+        return;
+        
+        // Obtener datos del ticket para el acuerdo de pago (código anterior - ya no se usa)
 
         const xhr = new XMLHttpRequest();
 
@@ -3956,38 +4756,400 @@ document.addEventListener("DOMContentLoaded", function () {
     const imagePreview = document.getElementById("imagePreview");
 
     if (documentFile && imagePreview) {
-      documentFile.addEventListener("change", function (e) {
-        const file = e.target.files[0];
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    // El listener de cambio de archivo ahora se maneja con handleFileSelectForUpload
+    // que incluye validación de Bootstrap
+  }
 
-        if (file && file.type.startsWith("image/")) {
-          const reader = new FileReader();
+  // Función de validación de archivos (reemplaza la previsualización antigua)
+  // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+  // Hacer la función disponible globalmente para que pueda ser usada desde otras funciones
+  window.handleFileSelectForUpload = function(event) {
+    const input = event.target || this; // Compatible con jQuery y addEventListener
+    const file = input.files ? input.files[0] : null;
+    const imagePreview = document.getElementById("imagePreview");
+    const uploadMessage = document.getElementById("uploadMessage");
+    const uploadFileBtn = document.getElementById("uploadFileBtn");
+    const fileFormatInfo = document.getElementById("fileFormatInfo");
+    const uploadForm = document.getElementById("uploadForm");
 
-          reader.onload = function (e) {
-            imagePreview.src = e.target.result;
-
-            imagePreview.style.display = "block";
-          };
-
-          reader.readAsDataURL(file);
-        } else {
-          imagePreview.style.display = "none";
-        }
-      });
+    // Limpiar estados previos
+    input.classList.remove("is-valid", "is-invalid");
+    if (uploadForm) {
+      uploadForm.classList.remove("was-validated");
+    }
+    
+    // Restaurar visibilidad de los mensajes de feedback de Bootstrap
+    const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+    const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+    if (validFeedback) {
+      validFeedback.style.display = '';
+    }
+    if (invalidFeedback) {
+      invalidFeedback.style.display = '';
+    }
+    
+    // Mostrar el mensaje informativo cuando no hay validación (se ocultará después si hay archivo)
+    if (fileFormatInfo) {
+      fileFormatInfo.style.display = "block";
+      fileFormatInfo.style.visibility = "visible";
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    if (imagePreview) {
+      imagePreview.style.display = "none";
+      imagePreview.src = "#";
+    }
+    // Verificar que uploadMessage existe antes de usarlo
+    if (uploadMessage) {
+      uploadMessage.classList.add("hidden");
+      uploadMessage.textContent = "";
     }
 
-    // Limpiar el formulario cuando se cierre el modal
+    if (!file) {
+      // Si no hay archivo, deshabilitar el botón
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      return;
+    }
 
+    // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
+    const validExtensions = [".jpg", ".png", ".gif", ".pdf"];
+    const validMimeTypes = ["image/jpg", "image/png", "image/gif", "application/pdf"];
+    
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+    
+    // Validar por extensión (más confiable) - DEBE estar en la lista
+    const isValidExtension = validExtensions.includes(fileExtension);
+    
+    // Si hay MIME type, también debe ser válido
+    const hasMimeType = file.type && file.type.trim() !== "";
+    const isValidMimeType = hasMimeType ? validMimeTypes.includes(file.type) : true;
+    
+    // El archivo es válido SOLO si la extensión es válida
+    // Si no hay extensión válida, el archivo es inválido independientemente del MIME type
+    const isValid = isValidExtension && (isValidMimeType || !hasMimeType);
+
+    // Agregar clase was-validated al formulario para que Bootstrap muestre los mensajes
+    // Esto es necesario para que Bootstrap muestre los estilos de validación (borde rojo/verde e íconos)
+    if (uploadForm) {
+      uploadForm.classList.add("was-validated");
+    }
+
+    if (isValid) {
+      // ARCHIVO VÁLIDO
+      // Primero remover is-invalid para asegurar que no haya conflicto
+      input.classList.remove("is-invalid");
+      
+      // Remover el background-image rojo (ícono de X) que Bootstrap aplica con is-invalid
+      input.style.removeProperty("background-image");
+      input.style.removeProperty("background-position");
+      input.style.removeProperty("background-repeat");
+      input.style.removeProperty("background-size");
+      input.style.removeProperty("padding-right");
+      
+      // Limpiar estilos inline que puedan interferir
+      input.style.removeProperty("border-color");
+      input.style.removeProperty("box-shadow");
+      
+      // Luego agregar is-valid - Bootstrap aplicará automáticamente el ícono verde (checkmark)
+      input.classList.add("is-valid");
+      
+      // OCULTAR COMPLETAMENTE el mensaje inválido y su ícono rojo
+      if (invalidFeedback) {
+        invalidFeedback.style.setProperty("display", "none", "important");
+        invalidFeedback.style.setProperty("visibility", "hidden", "important");
+        invalidFeedback.style.setProperty("opacity", "0", "important");
+        invalidFeedback.style.setProperty("height", "0", "important");
+        invalidFeedback.style.setProperty("margin", "0", "important");
+        invalidFeedback.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para forzar la ocultación
+      if (typeof $ !== 'undefined') {
+        $('.invalid-feedback').hide();
+      }
+      
+      // MOSTRAR el mensaje válido y su ícono verde
+      if (validFeedback) {
+        validFeedback.style.setProperty("display", "block", "important");
+        validFeedback.style.setProperty("visibility", "visible", "important");
+        validFeedback.style.setProperty("opacity", "1", "important");
+        validFeedback.style.removeProperty("height");
+        validFeedback.style.removeProperty("margin");
+        validFeedback.style.removeProperty("padding");
+      }
+      // También usar jQuery para forzar la visualización
+      if (typeof $ !== 'undefined') {
+        $('.valid-feedback').show();
+      }
+      
+      // OCULTAR el mensaje informativo cuando hay validación activa (archivo válido)
+      if (fileFormatInfo) {
+        fileFormatInfo.style.setProperty("display", "none", "important");
+        fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+        fileFormatInfo.style.setProperty("opacity", "0", "important");
+        fileFormatInfo.style.setProperty("height", "0", "important");
+        fileFormatInfo.style.setProperty("margin", "0", "important");
+        fileFormatInfo.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para asegurar que se oculte
+      if (typeof $ !== 'undefined') {
+        $('#fileFormatInfo').hide();
+      }
+      
+      // Habilitar el botón de subir
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = false;
+      }
+      
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+      if (imagePreview) {
+        imagePreview.style.display = "none";
+        imagePreview.src = "#";
+      }
+        } else {
+      // ARCHIVO INVÁLIDO
+      // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
+      input.classList.remove("is-valid");
+      
+      // Remover el background-image verde (ícono de checkmark) que Bootstrap aplica con is-valid
+      input.style.removeProperty("background-image");
+      input.style.removeProperty("background-position");
+      input.style.removeProperty("background-repeat");
+      input.style.removeProperty("background-size");
+      input.style.removeProperty("padding-right");
+      
+      // Remover cualquier estilo inline que pueda interferir
+      input.style.removeProperty("border-color");
+      input.style.removeProperty("box-shadow");
+      input.style.removeProperty("border");
+      
+      // SEGUNDO: Agregar is-invalid - Bootstrap aplicará automáticamente el borde rojo y el ícono rojo (X)
+      input.classList.add("is-invalid");
+      
+      // Asegurar que el formulario tenga was-validated (ya se agregó arriba, pero lo verificamos)
+      if (uploadForm && !uploadForm.classList.contains("was-validated")) {
+        uploadForm.classList.add("was-validated");
+      }
+      
+      // Forzar el ícono rojo (X) y el borde rojo de Bootstrap
+      // Bootstrap usa background-image con un SVG para el ícono de error
+      // SVG del ícono de error de Bootstrap (X roja)
+      const invalidIconSvg = "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e\")";
+      
+      // Aplicar estilos para el ícono rojo inmediatamente
+      input.style.setProperty("background-image", invalidIconSvg, "important");
+      input.style.setProperty("background-repeat", "no-repeat", "important");
+      input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+      input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+      input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+      
+      // Forzar el borde rojo de Bootstrap usando CSS inline como respaldo
+      // Bootstrap usa border-color: #dc3545 para is-invalid
+      // También usar setTimeout para asegurar que se ejecute después del reflow del DOM
+      setTimeout(() => {
+        // Verificar y forzar que NO tenga is-valid (muy importante)
+        if (input.classList.contains("is-valid")) {
+          input.classList.remove("is-valid");
+        }
+        // Verificar y forzar la clase is-invalid si no está presente
+        if (!input.classList.contains("is-invalid")) {
+          input.classList.add("is-invalid");
+        }
+        
+        // Forzar nuevamente el ícono rojo
+        input.style.setProperty("background-image", invalidIconSvg, "important");
+        input.style.setProperty("background-repeat", "no-repeat", "important");
+        input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+        input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+        input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+        
+        // Aplicar borde rojo directamente si Bootstrap no lo hace
+        const computedStyle = window.getComputedStyle(input);
+        if (computedStyle.borderColor !== 'rgb(220, 53, 69)' && computedStyle.borderColor !== '#dc3545') {
+          input.style.setProperty("border-color", "#dc3545", "important");
+          input.style.setProperty("box-shadow", "0 0 0 0.2rem rgba(220, 53, 69, 0.25)", "important");
+        }
+      }, 50);
+      
+      // También ejecutar después de un pequeño delay adicional para asegurar
+      setTimeout(() => {
+        // Forzar nuevamente que NO tenga is-valid
+        input.classList.remove("is-valid");
+        // Forzar que SÍ tenga is-invalid
+        if (!input.classList.contains("is-invalid")) {
+          input.classList.add("is-invalid");
+        }
+        // Forzar nuevamente el ícono rojo
+        input.style.setProperty("background-image", invalidIconSvg, "important");
+        input.style.setProperty("background-repeat", "no-repeat", "important");
+        input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+        input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+        input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+      }, 100);
+      
+      // OCULTAR COMPLETAMENTE el mensaje válido y su ícono verde
+      if (validFeedback) {
+        validFeedback.style.setProperty("display", "none", "important");
+        validFeedback.style.setProperty("visibility", "hidden", "important");
+        validFeedback.style.setProperty("opacity", "0", "important");
+        validFeedback.style.setProperty("height", "0", "important");
+        validFeedback.style.setProperty("margin", "0", "important");
+        validFeedback.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para forzar la ocultación
+      if (typeof $ !== 'undefined') {
+        $('.valid-feedback').hide();
+      }
+      
+      // MOSTRAR el mensaje inválido y su ícono rojo
+      if (invalidFeedback) {
+        invalidFeedback.style.setProperty("display", "block", "important");
+        invalidFeedback.style.setProperty("visibility", "visible", "important");
+        invalidFeedback.style.setProperty("opacity", "1", "important");
+        invalidFeedback.style.removeProperty("height");
+        invalidFeedback.style.removeProperty("margin");
+        invalidFeedback.style.removeProperty("padding");
+      }
+      // También usar jQuery para forzar la visualización
+      if (typeof $ !== 'undefined') {
+        $('.invalid-feedback').show();
+      }
+      
+      // OCULTAR el mensaje informativo cuando hay validación activa (archivo inválido)
+      if (fileFormatInfo) {
+        fileFormatInfo.style.setProperty("display", "none", "important");
+        fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+        fileFormatInfo.style.setProperty("opacity", "0", "important");
+        fileFormatInfo.style.setProperty("height", "0", "important");
+        fileFormatInfo.style.setProperty("margin", "0", "important");
+        fileFormatInfo.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para asegurar que se oculte
+      if (typeof $ !== 'undefined') {
+        $('#fileFormatInfo').hide();
+      }
+      
+      // Deshabilitar el botón de subir
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+      if (imagePreview) {
+          imagePreview.style.display = "none";
+        imagePreview.src = "#";
+      }
+      
+      // Limpiar el input después de 6 segundos (aumentado de 3 a 6 segundos)
+      setTimeout(() => {
+        input.value = "";
+        input.classList.remove("is-invalid");
+        input.style.removeProperty("border-color");
+        input.style.removeProperty("box-shadow");
+        if (uploadForm) {
+          uploadForm.classList.remove("was-validated");
+        }
+        // Mostrar nuevamente el mensaje informativo
+        if (fileFormatInfo) {
+          fileFormatInfo.style.removeProperty("display");
+          fileFormatInfo.style.removeProperty("visibility");
+          fileFormatInfo.style.removeProperty("opacity");
+          fileFormatInfo.style.removeProperty("height");
+          fileFormatInfo.style.removeProperty("margin");
+          fileFormatInfo.style.removeProperty("padding");
+        }
+        // También usar jQuery para asegurar que se muestre
+        if (typeof $ !== 'undefined') {
+          $('#fileFormatInfo').show();
+        }
+        // Restaurar visibilidad de los mensajes de feedback
+        const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+        const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+        if (validFeedback) {
+          validFeedback.style.display = '';
+          validFeedback.style.visibility = '';
+        }
+        if (invalidFeedback) {
+          invalidFeedback.style.display = '';
+          invalidFeedback.style.visibility = '';
+        }
+      }, 6000); // Aumentado de 3000ms a 6000ms (6 segundos)
+    }
+  };
+
+    // Limpiar el formulario cuando se cierre el modal
     uploadDocumentModalElement.addEventListener("hidden.bs.modal", function () {
+      // ✅ OCULTAR Y ELIMINAR ALERTA DE DOCUMENTO RECHAZADO AL CERRAR EL MODAL
+      const rejectedDocumentInfo = document.getElementById("rejectedDocumentInfo");
       const uploadForm = document.getElementById("uploadForm");
+      if (rejectedDocumentInfo) {
+        rejectedDocumentInfo.style.display = "none";
+      }
+      // Eliminar cualquier alerta previa
+      if (uploadForm) {
+        const existingInfo = uploadForm.querySelector('#CartWrong');
+        if (existingInfo) {
+          existingInfo.remove();
+        }
+      }
+      const documentFileInput = document.getElementById("documentFile");
+      const fileFormatInfo = document.getElementById("fileFormatInfo");
+      const uploadFileBtn = document.getElementById("uploadFileBtn");
 
       if (uploadForm) {
         uploadForm.reset();
       }
 
+      if (documentFileInput) {
+        documentFileInput.classList.remove("is-valid", "is-invalid");
+        documentFileInput.style.removeProperty("background-image");
+        documentFileInput.style.removeProperty("background-position");
+        documentFileInput.style.removeProperty("background-repeat");
+        documentFileInput.style.removeProperty("background-size");
+        documentFileInput.style.removeProperty("padding-right");
+      }
+      
+      if (uploadForm) {
+        uploadForm.classList.remove("was-validated");
+      }
+
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+      const imagePreview = document.getElementById("imagePreview");
+      const imagePreviewContainer = document.getElementById("imagePreviewContainer");
       if (imagePreview) {
         imagePreview.style.display = "none";
-
         imagePreview.src = "#";
+      }
+      if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = "none";
+      }
+      
+      // Mostrar el mensaje informativo
+      if (fileFormatInfo) {
+        fileFormatInfo.style.display = "block";
+        fileFormatInfo.style.visibility = "visible";
+      }
+      
+      // Deshabilitar el botón de subir
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      
+      // Restaurar visibilidad de los mensajes de feedback
+      if (documentFileInput && documentFileInput.parentElement) {
+        const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+        const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+        if (validFeedback) {
+          validFeedback.style.display = '';
+          validFeedback.style.visibility = '';
+        }
+        if (invalidFeedback) {
+          invalidFeedback.style.display = '';
+          invalidFeedback.style.visibility = '';
+        }
       }
     });
   }
@@ -6277,28 +7439,32 @@ document.addEventListener("DOMContentLoaded", function () {
           doc.body.scrollTop = 0;
 
           // Pequeño delay para asegurar que el scroll se haya aplicado
-                setTimeout(() => {
+          setTimeout(() => {
             // Llamar a la función de impresión
             iframe.contentWindow.focus();
             iframe.contentWindow.print();
           }, 100);
 
           // Restaurar títulos después de que el diálogo de impresión se lance
-              setTimeout(() => {
+          setTimeout(() => {
             doc.title = originalIframeTitle;
             window.document.title = originalWindowTitle;
 
             // Limpiar el iframe
             if (iframe && iframe.parentNode) {
               document.body.removeChild(iframe);
-                }
+            }
+            
+            window.location.reload();
           }, 500);
-          } else {
+        } else {
           // Si el usuario presiona "Cerrar"
           // Limpiar el iframe
           if (iframe && iframe.parentNode) {
             document.body.removeChild(iframe);
           }
+          
+          window.location.reload();
         }
       });
     });
@@ -6370,31 +7536,7 @@ function getPaymentAgreementFormData() {
   };
 }
 
-const closeButton = changeStatusDomiciliacionModalElement.querySelector("#close-button");
-
-if (closeIconBtn) {
-  closeIconBtn.addEventListener("click", function () {
-    // *** OCULTAR CAMPO DE OBSERVACIONES ***
-
-    const observationsContainer = document.getElementById(
-      "observationsContainer"
-    );
-
-    if (observationsContainer) {
-      observationsContainer.style.display = "none";
-
-      const observationsText = document.getElementById("observationsText");
-
-      if (observationsText) {
-        observationsText.value = "";
-      }
-    }
-
-    changeStatusDomiciliacionModal.hide();
-  });
-}
-
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, currentStatusId = null) {
     // Verificar que el modal existe antes de continuar
     const modalElementView = document.getElementById("viewDocumentModal");
     if (!modalElementView) {
@@ -6408,6 +7550,37 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
             confirmButtonColor: '#003594'
         });
         return;
+    }
+
+    // ✅ MANEJAR BOTONES SEGÚN EL ESTATUS
+    const BotonAprobar = document.getElementById('approveTicketFromImage');
+    const BotonRechazo = document.getElementById('RechazoDocumento');
+    
+    // Ocultar/mostrar botones según el estatus
+    if (currentStatusId == 6) {
+        // Estatus 6: Ocultar botón de aprobar y rechazar
+        if (BotonAprobar) {
+            BotonAprobar.style.display = 'none';
+        }
+        if (BotonRechazo) {
+            BotonRechazo.style.display = 'none';
+        }
+    } else if (currentStatusId == 7) {
+        // Estatus 7: Mostrar botón de aprobar, ocultar rechazar
+        if (BotonAprobar) {
+            BotonAprobar.style.display = 'block';
+        }
+        if (BotonRechazo) {
+            BotonRechazo.style.display = 'none';
+        }
+    } else {
+        // Otros estatus: Mostrar ambos botones normalmente
+        if (BotonAprobar) {
+            BotonAprobar.style.display = 'block';
+        }
+        if (BotonRechazo) {
+            BotonRechazo.style.display = 'block';
+        }
     }
 
     // Verificar que todos los elementos necesarios existen
@@ -6456,7 +7629,7 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         }
 
         // Construir la URL completa
-        return `http://localhost/Documentos/${cleanPath}`;
+        return `http://${HOST}/Documentos/${cleanPath}`;
     }
 
     // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
@@ -6500,7 +7673,6 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         const viewDocumentModal = new bootstrap.Modal(modalElementView);
         viewDocumentModal.show();
 
-
         const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
         if (buttonCerrarModal) {
             buttonCerrarModal.addEventListener("click", function() {
@@ -6526,7 +7698,7 @@ function getMotivos() {
   motivoRechazoSelect.innerHTML = '<option value="">Cargando...</option>';
 
   // Aquí cambiamos el endpoint para apuntar a la API de motivos
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetMotivos`);
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getMotivosDomiciliacion`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
@@ -6564,6 +7736,42 @@ function getMotivos() {
 
   // ¡Aquí se envía el documentType!
   const datos = `action=GetMotivos`;
+  xhr.send(datos);
+}
+
+// ✅ FUNCIÓN PARA OBTENER EL MOTIVO DE RECHAZO DEL DOCUMENTO RECHAZADO
+function getMotivoRechazoDocumento(ticketId, nroTicket, callback) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/getMotivoRechazoDocumento`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    let motivoRechazo = "No especificado";
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success && response.motivo) {
+          motivoRechazo = response.motivo.name_motivo_rechazo || "No especificado";
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+    // Llamar al callback con el motivo de rechazo
+    if (typeof callback === 'function') {
+      callback(motivoRechazo);
+    }
+  };
+
+  xhr.onerror = function () {
+    if (typeof callback === 'function') {
+      callback("No especificado");
+    }
+  };
+
+  const datos = `action=getMotivoRechazo&ticketId=${encodeURIComponent(ticketId)}&nroTicket=${encodeURIComponent(nroTicket || '')}&documentType=convenio_firmado`;
   xhr.send(datos);
 }
  

@@ -1,3 +1,12 @@
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <p id="loadingOverlayMessage" class="mt-3 mb-0">Procesando...</p>
+    </div>
+</div>
+
+<script src="<?php echo APP; ?>app/assets/js/loading-overlay.js"></script>
+
 <script>
     var expired_sessions = <?php echo json_encode($this->expired_sessions ?? false); ?>;
     var message = <?php echo json_encode($this->message ?? ''); ?>;

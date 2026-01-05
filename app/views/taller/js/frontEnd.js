@@ -426,7 +426,7 @@ function getTicketData() {
                                 lengthMenu: "Mostrar _MENU_",
                                 emptyTable: "No hay datos disponibles en la tabla",
                                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                info: "_TOTAL_ Registros",
                                 infoEmpty: "No hay datos disponibles",
                                 infoFiltered: " de _MAX_ Disponibles",
                                 search: "Buscar:",
@@ -586,9 +586,41 @@ function getTicketData() {
 
                                 // Table row click handler
                                 $("#tabla-ticket tbody").off("click", "tr").on("click", "tr", function (e) {
-                                    if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('input[type="checkbox"]')) {
-                                        return;
-                                    }
+                                  // Verificar si el clic fue en un botón, enlace o input
+                                  const clickedElement = $(e.target);
+                                  const isButton = clickedElement.is('button') || 
+                                                  clickedElement.closest('button').length > 0 ||
+                                                  clickedElement.is('a') || 
+                                                  clickedElement.closest('a').length > 0 ||
+                                                  clickedElement.is('input') || 
+                                                  clickedElement.closest('input').length > 0 ||
+                                                  clickedElement.hasClass('truncated-cell') ||
+                                                  clickedElement.hasClass('expanded-cell');
+                                  
+                                  // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                                  if (isButton) {
+                                      return; // No hacer nada, dejar que el botón maneje su propio evento
+                                  }
+                                  
+                                  // Solo ocultar overlay si el clic fue directamente en la fila
+                                  // 1. Matamos cualquier otro handler (por si acaso)
+                                  e.stopPropagation();
+                                  
+                                  // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                                  $('#loadingOverlay').removeClass('show').hide();
+                                  
+                                  // 3. Si el script usa opacity o visibility, también lo matamos
+                                  $('#loadingOverlay').css({
+                                      'display': 'none',
+                                      'opacity': '0',
+                                      'visibility': 'hidden'
+                                  });
+                                  
+                                  // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                                  setTimeout(() => {
+                                      $('#loadingOverlay').hide();
+                                  }, 50);
+
                                     const tr = $(this);
                                     const rowData = api.row(tr).data();
                                     if (!rowData) return;
@@ -820,7 +852,6 @@ function sendTicketToRosal(id, nro, withoutKeys, serialPos) {
             xhr.send(dataToSendString); // Envía la solicitud solo si se confirmó
         } else {
             // Si el usuario hace clic en "No, cancelar" o cierra el modal, simplemente no se hace nada
-            console.log("Envío cancelado por el usuario.");
         }
     });
 }
@@ -1009,7 +1040,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -1046,7 +1076,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
@@ -1129,7 +1159,7 @@ function formatTicketDetailsPanel(d) {
             </div>
         </div>
     `;
-}
+}*/
 
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
     const historyPanel = $("#ticket-history-content");
@@ -1191,16 +1221,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
             timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
         } else if (diffWeeks > 0) {
             const remainingDays = diffDays % 7;
-            timeText = `${diffWeeks}W ${remainingDays}D`;
+            timeText = `${diffWeeks}S ${remainingDays}D`;
         } else if (diffDays > 0) {
             const remainingHours = diffHours % 24;
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}Min`;
         } else if (diffHours > 0) {
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffHours}H ${remainingMinutes}M`;
+            timeText = `${diffHours}H ${remainingMinutes}Min`;
         } else if (diffMinutes > 0) {
-            timeText = `${diffMinutes}M`;
+            timeText = `${diffMinutes}Min`;
         } else {
             return null;
         }
@@ -1228,10 +1258,84 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
         success: function(response) {
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = `
-                    <div class="d-flex justify-content-end mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#17a2b8" class="bi bi-info-square-fill" viewBox="0 0 16 16" style="cursor: pointer;" data-toggle="collapse" data-target="#colorLegend_${ticketId}" aria-expanded="false" aria-controls="colorLegend_${ticketId}" title="Leyenda de Colores">
+                            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.93 4.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                        </svg>
                         <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
                         </button>
+                    </div>
+                    <div class="collapse mb-3" id="colorLegend_${ticketId}">
+                            <div class="alert alert-info" role="alert">
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #ffc107; color: #ffffff; min-width: 80px; padding: 6px 12px;">Amarillo</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestión actual</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #5d9cec; color: #ffffff; min-width: 80px; padding: 6px 12px;">Azul</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestiones anteriores</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #fd7e14; color: #ffffff; min-width: 80px; padding: 6px 12px;">Naranja</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Taller</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #28a745; color: #ffffff; min-width: 80px; padding: 6px 12px;">Verde</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Domiciliación</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TG:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Gestión Anterior</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TR:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Revisión Domiciliación</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TT:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración en Taller</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div style="text-align: center; margin-bottom: 12px;">
+                                        <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
+                            </div>
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Mes(es)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">S</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Semana(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">D</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Día(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #3b82f6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">H</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Hora(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #f59e0b; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">Min</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Minuto(s)</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px;">
+                                        <p style="color: #ffffff; font-size: 0.85em; font-style: italic; margin: 0;">
+                                            Ejemplo: <strong>1M 2S 3D 6H 11Min</strong> significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="accordion" id="ticketHistoryAccordion">
                 `;
@@ -1244,8 +1348,145 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 
                     let timeElapsed = null;
                     let timeBadge = '';
-
-                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                    
+                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
+                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
+                    
+                    // Verificar si hay cambio de domiciliación o taller para calcular TG/TR o TG/TT
+                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
+                    let durationFromPreviousText = '';
+                    let durationFromCreationText = '';
+                    let durationLabFromPreviousText = '';
+                    let durationLabFromTallerText = '';
+                    
+                    // Calcular tiempos para Domiciliación
+                    if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Desde la creación del ticket
+                        let ticketCreationDate = null;
+                        const lastHistoryItem = response.history[response.history.length - 1];
+                        if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                            ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                        } else {
+                            // Buscar el elemento con "Ticket Creado"
+                            for (let i = response.history.length - 1; i >= 0; i--) {
+                                const histItem = response.history[i];
+                                if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                                    ticketCreationDate = histItem.fecha_de_cambio;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (ticketCreationDate) {
+                            // Calcular duración desde la creación del ticket hasta el cambio actual
+                            const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                            if (duration) {
+                                durationFromCreationText = duration.text;
+                            }
+                        }
+                    }
+                    
+                    // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    const currentAccionForLab = cleanString(item.name_accion_ticket);
+                    const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+                    
+                    if (isEnElRosalForLab) {
+                        // Tiempo 1: Desde la gestión anterior (TG)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationLabFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+                        // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+                        // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
+                        let totalTallerMinutes = 0;
+                        for (let i = index + 1; i < response.history.length; i++) {
+                            const histItem = response.history[i];
+                            const prevHistItem = response.history[i - 1] || null; // La gestión más reciente que esta
+                            
+                            if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {
+                                const histStatusLab = cleanString(histItem.name_status_lab);
+                                const isReparacionStatus = histStatusLab && 
+                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                                     histStatusLab.toLowerCase().includes('reparado'));
+                                const isRecibidoEnTaller = histStatusLab && 
+                                    histStatusLab.toLowerCase().includes('recibido en taller');
+                                
+                                // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                                // El tiempo es desde esta gestión hasta la siguiente más reciente
+                                if (isReparacionStatus && !isRecibidoEnTaller) {
+                                    const duration = calculateTimeElapsed(histItem.fecha_de_cambio, prevHistItem.fecha_de_cambio);
+                                    if (duration && duration.minutes) {
+                                        totalTallerMinutes += duration.minutes;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Convertir el total de minutos a formato legible
+                        if (totalTallerMinutes > 0) {
+                            const totalHours = Math.floor(totalTallerMinutes / 60);
+                            const remainingMinutes = totalTallerMinutes % 60;
+                            const totalDays = Math.floor(totalHours / 24);
+                            const remainingHours = totalHours % 24;
+                            const totalWeeks = Math.floor(totalDays / 7);
+                            const remainingDaysAfterWeeks = totalDays % 7;
+                            const totalMonths = Math.floor(totalDays / 30.44);
+                            
+                            if (totalMonths > 0) {
+                                const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                                durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                            } else if (totalWeeks > 0) {
+                                durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                            } else if (totalDays > 0) {
+                                durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                            } else if (totalHours > 0) {
+                                durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                            } else {
+                                durationLabFromTallerText = `${remainingMinutes}Min`;
+                            }
+                        }
+                    }
+                    
+                    // Prioridad: Si la acción es "En el Rosal" (terminó la estadía en taller), mostrar TG y TT; si no, mostrar TG y TR si hay cambio de Domiciliación; si no, tiempo normal
+                    if (isEnElRosalForLab && (durationLabFromPreviousText || durationLabFromTallerText)) {
+                        let tgTtText = '';
+                        if (durationLabFromPreviousText && durationLabFromTallerText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}<br>TT: ${durationLabFromTallerText}`;
+                        } else if (durationLabFromPreviousText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}`;
+                        } else if (durationLabFromTallerText) {
+                            tgTtText = `TT: ${durationLabFromTallerText}`;
+                        }
+                        timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #fd7e14 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2;">${tgTtText}</span>`;
+                    } else if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Si hay cambio de domiciliación, mostrar TG y TR en el badge en formato vertical (uno arriba del otro)
+                        // Solo mostrar las líneas que tienen valores (no mostrar "N/A")
+                        let tdTrText = '';
+                        if (durationFromPreviousText && durationFromCreationText) {
+                            tdTrText = `TG: ${durationFromPreviousText}<br>TR: ${durationFromCreationText}`;
+                        } else if (durationFromPreviousText) {
+                            tdTrText = `TG: ${durationFromPreviousText}`;
+                        } else if (durationFromCreationText) {
+                            tdTrText = `TR: ${durationFromCreationText}`;
+                        }
+                        if (tdTrText) {
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #28a745 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tdTrText}</span>`;
+                        }
+                    } else if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        // Si no hay cambio de domiciliación ni taller, mostrar el tiempo normal
                         timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
                         if (timeElapsed) {
                             let badgeColor = 'success';
@@ -1265,12 +1506,9 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             else if (badgeColor === 'warning') backgroundColor = '#ffc107';
                             else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important; white-space: nowrap; overflow: visible;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
                         }
                     }
-                    
-                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
-                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
                     const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
                     const creationBadge = isCreation && item.fecha_de_cambio ? 
@@ -1280,9 +1518,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
                     const usuarioGestionChanged = getChange(item.usuario_gestion, prevItem.usuario_gestion);
                     const tecnicoChanged = getChange(item.full_name_tecnico_n2_history, prevItem.full_name_tecnico_n2_history);
-                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
-                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    // statusLabChanged y statusDomChanged ya están declarados arriba cuando se calculan TG/TT y TG/TR para el badge
                     const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    
+                    // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+                    // Nota: durationLabFromPreviousText y durationLabFromTallerText ya se calcularon arriba para el badge (solo cuando es "En el Rosal")
+                    
+                    // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+                    // Nota: durationFromPreviousText y durationFromCreationText ya se calcularon arriba para el badge
                     const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
                     const componentsChanged = getChange(item.components_list, prevItem.components_list);
                     const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
@@ -1292,6 +1537,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -1300,8 +1546,29 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    
+                    // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
+                    // La gestión actual ya es amarilla por defecto
+                    // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
+                    const currentStatusLabForColor = cleanString(item.name_status_lab);
+                    const isReparacionStatus = currentStatusLabForColor && 
+                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
+                         currentStatusLabForColor.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = currentStatusLabForColor && 
+                        currentStatusLabForColor.toLowerCase().includes('recibido en taller');
+                    
+                    if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
+                        headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
+                        textColor = "color: #ffffff;";
+                    }
+                    // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
+                    else if (statusDomChanged && !isLatest) {
+                        headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
+                        textColor = "color: #ffffff;";
+                    }
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
                     if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
@@ -1313,6 +1580,11 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
 
+                    // Calcular el padding derecho para evitar que el badge trunque el texto
+                    const hasTimeBadge = timeBadge && timeBadge.trim() !== '';
+                    const hasCreationBadge = creationBadge && creationBadge.trim() !== '';
+                    const buttonPaddingRight = (hasTimeBadge || hasCreationBadge) ? '120px' : '15px';
+
                     historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -1322,7 +1594,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
                                         aria-expanded="false" aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                        style="${textColor}; padding-right: ${buttonPaddingRight} !important;">
                                         ${buttonText}
                                     </button>
                                 </h2>
@@ -1370,10 +1642,26 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <th class="text-start">Estatus Taller:</th>
                                                     <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
+                                                ${isEnElRosalForLab ? `
+                                                    ${durationLabFromTallerText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Total Duración en Taller:</th>
+                                                            <td class="highlighted-change">${durationLabFromTallerText}</td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
                                                     <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
+                                                ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                                                    ${durationFromCreationText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
+                                                            <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
@@ -1382,6 +1670,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -1471,6 +1767,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
+    // ... (Mantener las funciones auxiliares: decodeHistorySafe, cleanString, parseCustomDate, calculateTimeElapsed, generateFileName)
     const decodeHistorySafe = (encoded) => {
         try {
             if (!encoded) return [];
@@ -1510,14 +1807,14 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             const remainingDays = Math.floor(diffDays % 30.44);
             text = `${diffMonths}M ${remainingDays}D`;
         } else if (diffWeeks > 0) {
-            text = `${diffWeeks}W ${diffDays % 7}D`;
+            text = `${diffWeeks}S ${diffDays % 7}D`;
         } else if (diffDays > 0) {
-            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}Min`;
         } else if (diffHours > 0) {
-            text = `${diffHours}H ${diffMinutes % 60}M`;
+            text = `${diffHours}H ${diffMinutes % 60}Min`;
         } else if (diffMinutes > 0) {
             // Mostrar minutos cuando es al menos 1 minuto
-            text = `${diffMinutes}M`;
+            text = `${diffMinutes}Min`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;
@@ -1527,25 +1824,137 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const history = decodeHistorySafe(historyEncoded);
 
-    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
         let fileName = `Historial_Ticket_${ticketNumber}`;
-        
         if (serial && serial.length >= 4) {
             const lastFourDigits = serial.slice(-4);
             fileName += `-${lastFourDigits}`;
         }
-        
         return `${fileName}.pdf`;
     };
 
     const fileName = generateFileName(currentTicketNroForImage, serialPos);
+
+    const getChange = (itemVal, prevVal) => {
+        const cleanItem = cleanString(itemVal);
+        const cleanPrev = cleanString(prevVal);
+        return cleanItem !== cleanPrev;
+    };
 
     let itemsHtml = '';
     history.forEach((item, index) => {
         const previous = history[index + 1] || null;
         const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
         const elapsedText = elapsed ? elapsed.text : 'N/A';
+        
+        // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+        // Mostrar tiempo total sumando todas las gestiones naranjas
+        let durationLabFromPreviousText = '';
+        let durationLabFromTallerText = '';
+        const currentAccion = cleanString(item.name_accion_ticket);
+        const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+        
+        if (previous && isEnElRosal) {
+            // Tiempo 1: Desde la gestión anterior (TG)
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationLabFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+            // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+            // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+            // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
+            let totalTallerMinutes = 0;
+                for (let i = index + 1; i < history.length; i++) {
+                    const histItem = history[i];
+                const prevHistItem = history[i - 1] || null; // La gestión más reciente que esta
+                
+                if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {
+                    const histStatusLab = cleanString(histItem.name_status_lab);
+                    const isReparacionStatus = histStatusLab && 
+                        (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                         histStatusLab.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = histStatusLab && 
+                        histStatusLab.toLowerCase().includes('recibido en taller');
+                    
+                    // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                    // El tiempo es desde esta gestión hasta la siguiente más reciente
+                    if (isReparacionStatus && !isRecibidoEnTaller) {
+                        const duration = calculateTimeElapsed(histItem.fecha_de_cambio, prevHistItem.fecha_de_cambio);
+                        if (duration && duration.minutes) {
+                            totalTallerMinutes += duration.minutes;
+                        }
+                    }
+                }
+            }
+            
+            // Convertir el total de minutos a formato legible
+            if (totalTallerMinutes > 0) {
+                const totalHours = Math.floor(totalTallerMinutes / 60);
+                const remainingMinutes = totalTallerMinutes % 60;
+                const totalDays = Math.floor(totalHours / 24);
+                const remainingHours = totalHours % 24;
+                const totalWeeks = Math.floor(totalDays / 7);
+                const remainingDaysAfterWeeks = totalDays % 7;
+                const totalMonths = Math.floor(totalDays / 30.44);
+                
+                if (totalMonths > 0) {
+                    const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                    durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                } else if (totalWeeks > 0) {
+                    durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                } else if (totalDays > 0) {
+                    durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                } else if (totalHours > 0) {
+                    durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                } else {
+                    durationLabFromTallerText = `${remainingMinutes}Min`;
+                }
+            }
+        }
+        
+        // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+        // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+        let durationFromPreviousText = '';
+        let durationFromCreationText = '';
+        if (previous) {
+            const statusDomChanged = getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion);
+            if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde la creación del ticket
+                let ticketCreationDate = null;
+                const lastHistoryItem = history[history.length - 1];
+                if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                    ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                } else {
+                    // Buscar el elemento con "Ticket Creado"
+                    for (let i = history.length - 1; i >= 0; i--) {
+                        const histItem = history[i];
+                        if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                            ticketCreationDate = histItem.fecha_de_cambio;
+                            break;
+                        }
+                    }
+                }
+                
+                if (ticketCreationDate) {
+                    // Calcular duración desde la creación del ticket hasta el cambio actual
+                    const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                    if (duration) {
+                        durationFromCreationText = duration.text;
+                    }
+                }
+            }
+        }
 
         itemsHtml += `
             <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -1567,9 +1976,20 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        ${(() => {
+                            const currentAccion = cleanString(item.name_accion_ticket);
+                            const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+                            return isEnElRosal && durationLabFromTallerText ? `
+                                <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Total Duración en Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${durationLabFromTallerText}</td></tr>
+                            ` : '';
+                        })()}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        ${previous && getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) && cleanString(item.name_status_domiciliacion) ? `
+                            ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
+                        ` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -1588,6 +2008,35 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         `;
     });
 
+    const legendHTML_Integrated = `
+        <div class="legend-integrated" style="margin: 10px 0; padding: 10px; background: #e0f2fe; border: 1px solid #93c5fd; border-radius: 6px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <p style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">
+                LEYENDA DE TIEMPO
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; font-size: 11px; font-weight: 500; flex-wrap: wrap;">
+                <span style="color: #7c3aed;">
+                    <strong style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">M</strong> Mes(es)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">S</strong> Semana(s)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">D</strong> Día(s)
+                </span>
+                <span style="color: #1e40af;">
+                    <strong style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">H</strong> Hora(s)
+                </span>
+                <span style="color: #9a3412;">
+                    <strong style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">Min</strong> Minuto(s)
+                </span>
+            </div>
+            <p style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+                *Ejemplo: **1M 2S 3D 6H 11Min** significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+            </p>
+        </div>
+    `;
+
+
     const printContent = `
         <!DOCTYPE html>
         <html lang="es">
@@ -1596,6 +2045,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${fileName}</title>
             <style>
+                /* ... (Mantener todos los estilos CSS anteriores, asegurando que la clase .legend-float NO exista para no confundir) ... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -1819,13 +2269,24 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     margin-top: 6px;
                 }
                 
+                /* Estilos para la leyenda integrada */
+                .legend-integrated {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #e0f2fe;
+                    border: 1px solid #93c5fd;
+                    border-radius: 6px;
+                    text-align: center;
+                    page-break-inside: avoid; /* Evita que la leyenda se rompa entre páginas */
+                }
+                
                 /* Optimizaciones para impresión */
                 @media print {
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    
+
                     body {
                         margin-top: 50px !important;
                         margin-bottom: 40px !important;
@@ -1946,7 +2407,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-            </div>
+                </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -1960,6 +2421,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <div class="info-value">${new Date().toLocaleString()}</div>
                     </div>
                 </div>
+                
+                ${legendHTML_Integrated}
 
                 <div class="content-wrapper">
                     <div class="history-section">
@@ -2007,12 +2470,12 @@ function showElapsedLegend(e) {
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">Una semana o más, o más de 2 días hábiles</span></div>
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">Un mes o más, o más de 5 días hábiles</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
+            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
         </div>`;
 
     Swal.fire({
-        title: 'Agenda de colores',
+        title: 'Leyenda',
         html: legendHtml,
         icon: 'info',
         confirmButtonText: 'Entendido',
@@ -2631,9 +3094,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const buttonCerrarModal = document.getElementById("CancelarFecha");
 
+  // Función para resetear el select a su estado original
+  function resetModalNewStatusSelect() {
+    if (modalNewStatusSelect) {
+      // Resetear el select a su estado original (opción vacía/placeholder)
+      modalNewStatusSelect.selectedIndex = 0; // Seleccionar la primera opción (Seleccione)
+      modalNewStatusSelect.value = ""; // Asegurar que el valor esté vacío
+      
+      // Remover cualquier atributo de validación que pueda tener
+      modalNewStatusSelect.classList.remove("is-valid", "is-invalid");
+      
+      // Restaurar el estilo original si fue modificado
+      modalNewStatusSelect.style.color = "";
+    }
+  }
+
   if (buttonCerrarModal) {
     buttonCerrarModal.addEventListener("click", function () {
       rescheduleModal.hide(); // Oculta el modal de renovación
+      // Resetear el select cuando se cierra el modal
+      resetModalNewStatusSelect();
+    });
+  }
+
+  // También escuchar el evento de cierre del modal (por si se cierra de otra forma: ESC, clic fuera, etc.)
+  const rescheduleModalElement = document.getElementById("rescheduleModal");
+  if (rescheduleModalElement) {
+    rescheduleModalElement.addEventListener("hidden.bs.modal", function () {
+      // Resetear el select cuando el modal se oculta completamente
+      resetModalNewStatusSelect();
     });
   }
 
@@ -2844,7 +3333,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.send(datos);
                         Swal.showLoading();
                     } else {
-                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
@@ -2927,7 +3415,6 @@ document.addEventListener("DOMContentLoaded", () => {
                           xhr.send(datos);
                           Swal.showLoading();
                         } else {
-                            console.log("Envío a Gestión Comercial cancelado.");
                             overdueTicketsQueue.shift();
                             processNextOverdueTicket();
                         }
@@ -2935,8 +3422,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 } else if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
                     // --- Lógica para "Cerrar" (si se usa la X o se hace clic fuera si allowOutsideClick está habilitado) ---
-                    console.log("Modal cerrado.");
-                    
                     // Después de cerrar, procesamos el siguiente ticket
                     overdueTicketsQueue.shift();
                     processNextOverdueTicket();
@@ -3142,7 +3627,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         xhr.send(datos);
                         Swal.showLoading();
                     } else {
-                        console.log("Renovación de fecha cancelada.");      
                         overdueTicketsQueue.shift();
                         processNextOverdueTicket();
                     }
@@ -3292,13 +3776,10 @@ document.addEventListener("DOMContentLoaded", () => {
              
             }
           } else if (result.dismiss === Swal.DismissReason.cancel) {
-            console.log("Modal de selección cerrado.");
             overdueTicketsQueue = []; // Clear the queue if user cancels main selection modal
           }
         });
       }
-    } else {
-      console.log("No hay más tickets vencidos para procesar.");
     }
   }
 
@@ -3329,12 +3810,8 @@ document.addEventListener("DOMContentLoaded", () => {
             response.tickets.length > 0
           ) {
             overdueTicketsQueue = response.tickets; // Llenar la cola
-            console.log("Tickets vencidos encontrados:", response);
             processNextOverdueTicket(); // Iniciar el procesamiento de la cola
           } else {
-            console.log(
-              "No hay tickets con fecha de repuesto vencida o error al obtenerlos."
-            );
             // Opcional: Mostrar un SweetAlert si no hay tickets vencidos
             // Swal.fire({
             //     icon: 'info',
@@ -3470,10 +3947,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         return;
       }
-
-      console.log(
-        `Sending Ticket ID: ${ticketId}, New Repuesto Date: ${selectedDate} to backend.`
-      );
       const xhr = new XMLHttpRequest();
       xhr.open(
         "POST",

@@ -1,8 +1,10 @@
 let currentSelectedTicket = null;
 let currentTicketNroForImage = null;
+let paymentAgreementModalInstance = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
+    paymentAgreementModalInstance = new bootstrap.Modal(document.getElementById("paymentAgreementModal"));
     
     if (approveTicketFromImageBtn) {
         approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
@@ -100,7 +102,49 @@ function handleTicketApprovalFromImage() {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            // Realizar la aprobación
+            // Si es documento de Anticipo, validar campos antes de aprobar
+            if (documentType === 'Anticipo') {
+                const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+                const dateCorrectionField = document.getElementById('dateCorrectionField');
+                
+                // Verificar si los campos están visibles
+                const isReferenceFieldVisible = referenceCorrectionField && 
+                                               window.getComputedStyle(referenceCorrectionField).display !== 'none';
+                const isDateFieldVisible = dateCorrectionField && 
+                                          window.getComputedStyle(dateCorrectionField).display !== 'none';
+                
+                // Validar campos visibles
+                const missingFields = [];
+                
+                if (isReferenceFieldVisible) {
+                    const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+                    if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
+                        missingFields.push('Nro de Referencia Correcto');
+                    }
+                }
+                
+                if (isDateFieldVisible) {
+                    const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+                    if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
+                        missingFields.push('Fecha de Pago Correcta');
+                    }
+                }
+                
+                // Si hay campos visibles vacíos, mostrar alerta y detener
+                if (missingFields.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campos Requeridos',
+                        html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black'
+                    });
+                    return; // Detener la ejecución
+                }
+            }
+            
+            // Si llegamos aquí, los campos están completos o no son visibles, realizar la aprobación
             approveTicket(nro_ticket, documentType, id_ticket);
         }
     });
@@ -180,8 +224,94 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
         });
     };
 
+    // Si es documento de Anticipo, validar y obtener los datos verificados
+    let verifiedReference = '';
+    let verifiedDate = '';
+    
+    if (documentType === 'Anticipo') {
+        console.log('Documento es Anticipo, validando campos verificados...');
+        
+        // Verificar si hay datos en los campos de corrección individuales
+        const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+        const dateCorrectNo = document.getElementById('dateCorrectNo');
+        const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+        const dateCorrectionField = document.getElementById('dateCorrectionField');
+        
+        // Verificar si los campos están visibles
+        const isReferenceFieldVisible = referenceCorrectionField && 
+                                       window.getComputedStyle(referenceCorrectionField).display !== 'none';
+        const isDateFieldVisible = dateCorrectionField && 
+                                  window.getComputedStyle(dateCorrectionField).display !== 'none';
+        
+        console.log('Campo de referencia visible:', isReferenceFieldVisible);
+        console.log('Campo de fecha visible:', isDateFieldVisible);
+        
+        // Validar campos visibles
+        const missingFields = [];
+        
+        if (isReferenceFieldVisible) {
+            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+            if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
+                missingFields.push('Nro de Referencia Correcto');
+            }
+        }
+        
+        if (isDateFieldVisible) {
+            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+            if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
+                missingFields.push('Fecha de Pago Correcta');
+            }
+        }
+        
+        // Si hay campos visibles vacíos, mostrar alerta y detener
+        if (missingFields.length > 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campos Requeridos',
+                html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003594',
+                color: 'black'
+            });
+            return; // Detener la ejecución
+        }
+        
+        // Si llegamos aquí, los campos están completos o no son visibles
+        // Si el radio de referencia está en "No", usar el valor corregido
+        if (referenceCorrectNo && referenceCorrectNo.checked) {
+            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+            if (referenceCorrectOnly && referenceCorrectOnly.value.trim() !== '') {
+                verifiedReference = referenceCorrectOnly.value.trim();
+                console.log('Nro de referencia verificado capturado:', verifiedReference);
+            }
+        }
+        
+        // Si el radio de fecha está en "No", usar el valor corregido
+        if (dateCorrectNo && dateCorrectNo.checked) {
+            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+            if (dateCorrectOnly && dateCorrectOnly.value.trim() !== '') {
+                verifiedDate = dateCorrectOnly.value.trim();
+                console.log('Fecha de pago verificada capturada:', verifiedDate);
+            }
+        }
+        
+        console.log('Datos verificados finales - Referencia:', verifiedReference, 'Fecha:', verifiedDate);
+    }
+    
     // Enviar los datos
-    const data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    let data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
+    
+    // Agregar datos verificados si es Anticipo y hay valores
+    if (documentType === 'Anticipo') {
+        if (verifiedReference) {
+            data += `&nro_payment_reference_verified=${encodeURIComponent(verifiedReference)}`;
+        }
+        if (verifiedDate) {
+            data += `&payment_date_verified=${encodeURIComponent(verifiedDate)}`;
+        }
+        console.log('Datos a enviar:', data);
+    }
+    
     xhr.send(data);
 }
 
@@ -324,7 +454,7 @@ function getTicketAprovalDocument() {
                                 const motivoRechazo = row.motivo_rechazo;
                                 const uploadedAt = row.uploaded_at;
                                 const idMotivoRechazo = row.id_motivo_rechazo;
-                                const rechazado = row.documento_rechazado;
+                                const idStatusPayment = row.id_status_payment || '';
                                 
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
                                 
@@ -346,7 +476,8 @@ function getTicketAprovalDocument() {
                                             data-motivo-rechazo="${motivoRechazo || ''}"
                                             data-uploaded-at="${uploadedAt || ''}"
                                             data-id-motivo-rechazo="${idMotivoRechazo || ''}"
-                                            data-rechazado="${rechazado || ''}"
+                                            data-id-status-payment="${idStatusPayment}"
+                                            data-rechazado="${isRejected ? 'true' : 'false'}"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#visualizarImagenModal" 
                                             title="Visualizar Imágenes">
@@ -389,7 +520,7 @@ function getTicketAprovalDocument() {
                                 lengthMenu: "Mostrar _MENU_",
                                 emptyTable: "No hay datos disponibles en la tabla",
                                 zeroRecords: "No se encontraron resultados para la búsqueda",
-                                info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                info: "_TOTAL_ Registros",
                                 infoEmpty: "No hay datos disponibles",
                                 infoFiltered: " de _MAX_ Disponibles",
                                 search: "Buscar:",
@@ -407,19 +538,19 @@ function getTicketAprovalDocument() {
                                 const api = this.api();
 
                                 const buttonsHtml = `
-                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Pendientes por revisión Documentos">
+                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                             <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
                                         </svg>
                                     </button>
 
-                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Pendiente por cargar Documentos">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
-                                            <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
+                                    <button id="btn-anticipos-aprobados" class="btn btn-secondary me-2" title="Anticipos Aprobados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
                                         </svg>
                                     </button>
 
-                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Documentos Rechazados">
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Anticipos Rechazados">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                         </svg>
@@ -429,8 +560,8 @@ function getTicketAprovalDocument() {
 
                                 function setActiveButton(activeButtonId) {
                                     $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
+                                    $("#btn-anticipos-aprobados").removeClass("btn-primary").addClass("btn-secondary");
                                     $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
-                                    $("#btn-recibidos").removeClass("btn-primary").addClass("btn-secondary");
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
@@ -464,13 +595,13 @@ function getTicketAprovalDocument() {
                                     { 
                                         button: "btn-por-asignar", 
                                         searchTerms: [
-                                            { column: 'id_status_payment', value: '7|5' }
+                                            { column: 'id_status_payment', value: '7' }
                                         ]
                                     },
                                     { 
-                                        button: "btn-recibidos", 
+                                        button: "btn-anticipos-aprobados", 
                                         searchTerms: [
-                                            { column: 'id_status_payment', value: '9|10|11' }
+                                            { column: 'id_status_payment', value: '6' }
                                         ]
                                     },
                                     { 
@@ -490,14 +621,11 @@ function getTicketAprovalDocument() {
                                         api.columns().search('').draw(false);
                                         
                                         if (button === "btn-por-asignar") {
-                                            api.column(1).search('7|5', true, false, true).draw();
+                                            api.column(1).search('^7$', true, false, true).draw();
                                             api.column(11).visible(false);
-                                        } else if (button === "btn-recibidos") {
-                                            api.column(1).search('9|10|11', true, false, true).draw();
+                                        } else if (button === "btn-anticipos-aprobados") {
+                                            api.column(1).search('^6$', true, false, true).draw();
                                             api.column(11).visible(false);
-                                            api.column(12).visible(false);
-                                            api.column(10).visible(false);
-                                            api.column(9).visible(false);
                                         } else if (button === "btn-asignados") {
                                             api.search('').draw(false);
                                             api.column(11).visible(true);
@@ -547,10 +675,10 @@ function getTicketAprovalDocument() {
                                     // ✅ LIMPIAR FILTROS PERSONALIZADOS
                                     $.fn.dataTable.ext.search.pop();
                                     
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$|^5$' }];
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$' }];
                                     if (checkDataExistsById(searchTerms)) {
                                         api.columns().search('').draw(false);
-                                        api.column(1).search('^7$|^5$', true, false, true).draw();
+                                        api.column(1).search('^7$', true, false, true).draw();
                                         api.column(11).visible(false);
                                         setActiveButton("btn-por-asignar");
                                     } else {
@@ -558,27 +686,40 @@ function getTicketAprovalDocument() {
                                     }
                                 });
 
-                                $("#btn-recibidos").on("click", function () {
+                                $("#btn-anticipos-aprobados").on("click", function () {
                                     // ✅ LIMPIAR FILTROS PERSONALIZADOS
                                     $.fn.dataTable.ext.search.pop();
                                     
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^9$|^10$|^11$' }];
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^6$' }];
                                     if (checkDataExistsById(searchTerms)) {
                                         api.columns().search('').draw(false);
-                                        api.column(1).search('^9$|^10$|^11$', true, false, true).draw();
+                                        api.column(1).search('^6$', true, false, true).draw();
                                         api.column(11).visible(false);
-                                        api.column(12).visible(false);
-                                        api.column(10).visible(false);
-                                        api.column(9).visible(false);
-                                        setActiveButton("btn-recibidos");
+                                        setActiveButton("btn-anticipos-aprobados");
                                     } else {
                                         findFirstButtonWithData();
                                     }
                                 });
 
+                                // $("#btn-recibidos").on("click", function () {
+                                //     // ✅ LIMPIAR FILTROS PERSONALIZADOS
+                                //     $.fn.dataTable.ext.search.pop();
+                                //     
+                                //     const searchTerms = [{ column: 'id_status_payment', value: '^9$|^10$|^11$' }];
+                                //     if (checkDataExistsById(searchTerms)) {
+                                //         api.columns().search('').draw(false);
+                                //         api.column(1).search('^9$|^10$|^11$', true, false, true).draw();
+                                //         api.column(11).visible(false);
+                                //         api.column(12).visible(false);
+                                //         api.column(10).visible(false);
+                                //         api.column(9).visible(false);
+                                //         setActiveButton("btn-recibidos");
+                                //     } else {
+                                //         findFirstButtonWithData();
+                                //     }
+                                // });
+
                                 $("#btn-asignados").on("click", function () {
-                                    console.log('🔍 Filtrando por rechazados...');
-                                    
                                     // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
                                     api.columns().search('').draw(false);
                                     api.search('').draw(false);
@@ -607,6 +748,7 @@ function getTicketAprovalDocument() {
                                         const idPayment = parseInt(data[1]); // Columna 1: id_status_payment
                                         const idDomiciliacion = parseInt(data[2]); // Columna 2: id_status_domiciliacion
                                         
+                                        // Incluir: 12 (Exoneración Rechazada), 13 (Anticipo Rechazado), 14 (Envío Rechazado)
                                         const isPaymentRejected = [12, 13, 14].includes(idPayment);
                                         const isDomiciliacionRejected = idDomiciliacion === 7;
                                         
@@ -666,9 +808,44 @@ function getTicketAprovalDocument() {
                         $("#tabla-ticket tbody")
                             .off("click", "tr")
                             .on("click", "tr", function (e) {
-                                if ($(e.target).hasClass('truncated-cell') || $(e.target).hasClass('expanded-cell') || $(e.target).is('button') || $(e.target).is('svg') || $(e.target).is('path') || $(e.target).is('input[type="checkbox"]')) {
-                                    return;
+                                // Verificar si el clic fue en un botón, enlace o input
+                                const clickedElement = $(e.target);
+                                const isButton = clickedElement.is('button') || 
+                                                clickedElement.closest('button').length > 0 ||
+                                                clickedElement.is('a') || 
+                                                clickedElement.closest('a').length > 0 ||
+                                                clickedElement.is('input') || 
+                                                clickedElement.closest('input').length > 0 ||
+                                                clickedElement.is('svg') || 
+                                                clickedElement.closest('svg').length > 0 ||
+                                                clickedElement.is('path') || 
+                                                clickedElement.closest('path').length > 0 ||
+                                                clickedElement.hasClass('truncated-cell') ||
+                                                clickedElement.hasClass('expanded-cell');
+                                
+                                // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                                if (isButton) {
+                                    return; // No hacer nada, dejar que el botón maneje su propio evento
                                 }
+                                
+                                // Solo ocultar overlay si el clic fue directamente en la fila
+                                // 1. Matamos cualquier otro handler (por si acaso)
+                                e.stopPropagation();
+                                
+                                // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                                $('#loadingOverlay').removeClass('show').hide();
+                                
+                                // 3. Si el script usa opacity o visibility, también lo matamos
+                                $('#loadingOverlay').css({
+                                    'display': 'none',
+                                    'opacity': '0',
+                                    'visibility': 'hidden'
+                                });
+                                
+                                // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                                setTimeout(() => {
+                                    $('#loadingOverlay').hide();
+                                }, 50);
 
                                 const tr = $(this);
                                 const rowData = dataTableInstance.row(tr).data();
@@ -716,7 +893,8 @@ function getTicketAprovalDocument() {
                             const ticketId = $(this).data("id");
                             const nroTicket = $(this).data("nro-ticket");
                             const serialPos = $(this).data("serial-pos");
-                            const documentoRechazado = $(this).data("rechazado");
+                            const documentoRechazado = $(this).data("rechazado") === true || $(this).data("rechazado") === 'true';
+                            const idStatusPayment = $(this).data("id-status-payment");
                             
                             const envioValor = $(this).data("envio");
                             const exoValor = $(this).data("exoneracion");
@@ -741,7 +919,8 @@ function getTicketAprovalDocument() {
                             const VizualizarImage = document.getElementById('visualizarImagenModal');
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
                             VizualizarImage.setAttribute('data-serial-pos', serialPos);
-                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado);
+                            VizualizarImage.setAttribute('data-rechazado', documentoRechazado ? 'true' : 'false');
+                            VizualizarImage.setAttribute('data-id-status-payment', idStatusPayment || '');
                             const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
 
                             const EnvioInputModal = document.getElementById('imagenEnvio');
@@ -789,6 +968,7 @@ function getTicketAprovalDocument() {
                             } else if (pagoValor === 'Sí') {
                                 PagoInputModal.checked = true;
                             }
+
 
                             visualizarImagenModal.show();
                         });
@@ -879,7 +1059,6 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     const modalTicketIdSpan = document.getElementById('modalTicketId');
     const idTicketInput = document.getElementById('id_ticket');
     const documentFileInput = document.getElementById('documentFile');
-    const imagePreview = document.getElementById('imagePreview');
     const uploadMessage = document.getElementById('uploadMessage');
     const uploadFileBtn = document.getElementById('uploadFileBtn');
     const cerrarBoton = document.getElementById('CerrarBoton');
@@ -888,14 +1067,12 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     const nro_ticket = document.getElementById('nro_ticket');
 
     // Verificar que todos los elementos necesarios existan
-    if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput || 
-        !imagePreview || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
+    if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput  || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
         console.error('Elementos del modal no encontrados:', {
             modal: !!modal,
             modalTicketIdSpan: !!modalTicketIdSpan,
             idTicketInput: !!idTicketInput,
             documentFileInput: !!documentFileInput,
-            imagePreview: !!imagePreview,
             uploadMessage: !!uploadMessage,
             uploadFileBtn: !!uploadFileBtn,
             cerrarBoton: !!cerrarBoton,
@@ -945,7 +1122,7 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
 
     // Limpiar formulario anterior
     uploadForm.reset();
-    imagePreview.style.display = 'none';
+    /*imagePreview.style.display = 'none';*/
     uploadMessage.innerHTML = '';
     uploadMessage.classList.add('hidden');
 
@@ -963,6 +1140,29 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
             <p class="mb-0"><strong>Motivo de Rechazo:</strong> <span class="motivo-rechazo-highlight">${motivoRechazo || 'No especificado'}</span></p>
         </div>
     `;
+
+    if(documentType === 'convenio_firmado') {
+        const botonConvenio = document.getElementById('generateNotaEntregaBtn');
+        const botonEnvio = document.getElementById('generateNotaEntregaBtn2');
+        if(botonConvenio && botonEnvio) {
+            botonConvenio.style.display = 'block';
+            botonEnvio.style.display = 'none';
+        }
+    }else if(documentType === 'Envio') {
+        const botonConvenio = document.getElementById('generateNotaEntregaBtn');
+        const botonEnvio = document.getElementById('generateNotaEntregaBtn2');
+        if(botonConvenio && botonEnvio) {
+            botonConvenio.style.display = 'none';
+            botonEnvio.style.display = 'block';
+        }
+    }else {
+        const botonConvenio = document.getElementById('generateNotaEntregaBtn');
+        const botonEnvio = document.getElementById('generateNotaEntregaBtn2');
+        if(botonConvenio && botonEnvio) {
+            botonConvenio.style.display = 'none';
+            botonEnvio.style.display = 'none';
+        }
+    }
     
     // Insertar la información antes del formulario
     const existingInfo = uploadForm.querySelector('#CartWrong');
@@ -975,62 +1175,46 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     const bootstrapModal = new bootstrap.Modal(modal);
     bootstrapModal.show();
 
-    // Event listener para previsualización de imagen
-    const handleFileChange = function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            // Validar tipo de archivo
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
-            if (!allowedTypes.includes(file.type)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Tipo de archivo no permitido',
-                    text: 'Solo se permiten imágenes (JPG, PNG, GIF) o PDF.',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-                this.value = '';
-                imagePreview.style.display = 'none';
-                return;
-            }
-
-            // Validar tamaño del archivo (10MB máximo)
-            const maxSize = 10 * 1024 * 1024; // 10MB en bytes
-            if (file.size > maxSize) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Archivo demasiado grande',
-                    text: 'El archivo excede el tamaño máximo permitido de 10MB.',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-                this.value = '';
-                imagePreview.style.display = 'none';
-                return;
-            }
-
-            // Mostrar previsualización si es imagen
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // Si es PDF, ocultar previsualización
-                imagePreview.style.display = 'none';
-            }
-
-            // Habilitar botón de subida
-            uploadFileBtn.disabled = false;
-        } else {
-            imagePreview.style.display = 'none';
+    // Limpiar estados de validación al abrir el modal
+    documentFileInput.classList.remove("is-valid", "is-invalid");
+    if (uploadForm) {
+        uploadForm.classList.remove("was-validated");
+    }
+    
+    // Mostrar el mensaje informativo
+    const fileFormatInfo = document.getElementById("fileFormatInfo");
+    if (fileFormatInfo) {
+        fileFormatInfo.style.display = "block";
+        fileFormatInfo.style.visibility = "visible";
+    }
+    
+    // Deshabilitar el botón de subir al abrir el modal
             uploadFileBtn.disabled = true;
+    
+    // Restaurar visibilidad de los mensajes de feedback
+    if (documentFileInput && documentFileInput.parentElement) {
+        const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+        const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+        if (validFeedback) {
+            validFeedback.style.display = '';
+            validFeedback.style.visibility = '';
         }
-    };
+        if (invalidFeedback) {
+            invalidFeedback.style.display = '';
+            invalidFeedback.style.visibility = '';
+        }
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    const imagePreview = document.getElementById("imagePreview");
+    const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+    if (imagePreview) {
+        imagePreview.style.display = "none";
+        imagePreview.src = "#";
+    }
+    if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = "none";
+    }
 
     // Event listener para el botón de subida
     const handleUploadClick = function() {
@@ -1065,20 +1249,71 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     };
 
     // Agregar event listeners
-    documentFileInput.addEventListener('change', handleFileChange);
+    // Usar la función handleFileSelectForUpload para validación con Bootstrap
+    // Remover cualquier listener previo y agregar el nuevo
+    // Usar jQuery para asegurar que se ejecute correctamente
+    $(documentFileInput).off("change").on("change", function(e) {
+        // Usar la función global handleFileSelectForUpload si está disponible
+        if (typeof window.handleFileSelectForUpload !== 'undefined') {
+            window.handleFileSelectForUpload.call(this, e);
+        } else {
+            // Si no está disponible, esperar un poco y volver a intentar
+            setTimeout(() => {
+                if (typeof window.handleFileSelectForUpload !== 'undefined') {
+                    window.handleFileSelectForUpload.call(this, e);
+                } else {
+                    console.warn("handleFileSelectForUpload no está disponible");
+                }
+            }, 100);
+        }
+    });
     uploadFileBtn.addEventListener('click', handleUploadClick);
     cerrarBoton.addEventListener('click', handleCerrarClick);
 
     // Limpiar al cerrar el modal
     modal.addEventListener('hidden.bs.modal', function() {
-        // Remover event listeners
-        documentFileInput.removeEventListener('change', handleFileChange);
+        // Remover event listeners usando jQuery
+        $(documentFileInput).off("change");
         uploadFileBtn.removeEventListener('click', handleUploadClick);
         cerrarBoton.removeEventListener('click', handleCerrarClick);
         
-        // Limpiar formulario
+        // Limpiar formulario y estados de validación
         uploadForm.reset();
-        imagePreview.style.display = 'none';
+        documentFileInput.classList.remove("is-valid", "is-invalid");
+        documentFileInput.style.removeProperty("background-image");
+        documentFileInput.style.removeProperty("background-position");
+        documentFileInput.style.removeProperty("background-repeat");
+        documentFileInput.style.removeProperty("background-size");
+        documentFileInput.style.removeProperty("padding-right");
+        
+        if (uploadForm) {
+            uploadForm.classList.remove("was-validated");
+        }
+        
+        // Mostrar el mensaje informativo
+        const fileFormatInfo = document.getElementById("fileFormatInfo");
+        if (fileFormatInfo) {
+            fileFormatInfo.style.display = "block";
+            fileFormatInfo.style.visibility = "visible";
+        }
+        
+        // Deshabilitar el botón de subir
+        uploadFileBtn.disabled = true;
+        
+        // Restaurar visibilidad de los mensajes de feedback
+        if (documentFileInput && documentFileInput.parentElement) {
+            const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+            const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+            if (validFeedback) {
+                validFeedback.style.display = '';
+                validFeedback.style.visibility = '';
+            }
+            if (invalidFeedback) {
+                invalidFeedback.style.display = '';
+                invalidFeedback.style.visibility = '';
+            }
+        }
+        
         uploadMessage.innerHTML = '';
         uploadMessage.classList.add('hidden');
         
@@ -1173,7 +1408,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectedOption = document.querySelector('input[name="opcionImagen"]:checked').value;
         const ticketId = visualizarImagenModalElement.getAttribute('data-ticket-id');
         const serialPos = visualizarImagenModalElement.getAttribute('data-serial-pos');
-        const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado'); // AGREGAR ESTA LÍNEA
+        const documentoRechazado = visualizarImagenModalElement.getAttribute('data-rechazado') === 'true';
+        const idStatusPayment = parseInt(visualizarImagenModalElement.getAttribute('data-id-status-payment')) || 0;
 
         if (!selectedOption) {
             Swal.fire({
@@ -1186,6 +1422,9 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             return;
         }
+
+        const BotonRechazo = document.getElementById('RechazoDocumento');
+        BotonRechazo.style.display = documentoRechazado ? 'none' : 'block';
 
         // Llamar a la API usando XMLHttpRequest
         const xhr = new XMLHttpRequest();
@@ -1203,7 +1442,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const fileName = document.original_filename;
 
                         // Mostrar el documento en el modal de aprobación
-                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado);
+                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment);
                         getMotivos(selectedOption);
 
                         // Ocultar el modal de selección
@@ -1336,7 +1575,6 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                           try {
                             const responseEmail = JSON.parse(xhrEmail.responseText);
                             if (responseEmail.success) {
-                              console.log('Correo rechazo enviado:', responseEmail.message || 'OK');
                             } else {
                               console.error('Error correo rechazo:', responseEmail.message);
                             }
@@ -1488,16 +1726,71 @@ $(document).ready(function () {
       // Rellena el modal con los datos del ticket
       if ($modalTicketIdSpan.length) $modalTicketIdSpan.text(idTicket);
 
-      // Limpia campos del modal
-      if ($documentFileInput.length) $documentFileInput.val("");
+      // Limpiar campos del modal y estados de validación
+      const documentFileInput = document.getElementById("documentFile");
+      const uploadForm = document.getElementById("uploadForm");
+      const fileFormatInfo = document.getElementById("fileFormatInfo");
+      const uploadFileBtn = document.getElementById("uploadFileBtn");
+      
+      if (documentFileInput) {
+        documentFileInput.value = "";
+        documentFileInput.classList.remove("is-valid", "is-invalid");
+        // Limpiar estilos de background-image
+        documentFileInput.style.removeProperty("background-image");
+        documentFileInput.style.removeProperty("background-position");
+        documentFileInput.style.removeProperty("background-repeat");
+        documentFileInput.style.removeProperty("background-size");
+        documentFileInput.style.removeProperty("padding-right");
+      }
+      
+      if (uploadForm) {
+        uploadForm.classList.remove("was-validated");
+      }
+      
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
       if ($imagePreview.length) {
         $imagePreview.hide();
-        $imagePreview.attr("src", "#"); // Limpiar src de la imagen
+        $imagePreview.attr("src", "#");
       }
+      const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+      if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = "none";
+      }
+      
+      // Verificar que uploadMessage existe antes de usarlo
       if ($uploadMessage.length) {
         $uploadMessage.text("");
-        $uploadMessage.hide(); // Ocultar mensaje
+        $uploadMessage.hide();
       }
+      
+      // Mostrar el mensaje informativo
+      if (fileFormatInfo) {
+        fileFormatInfo.style.display = "block";
+        fileFormatInfo.style.visibility = "visible";
+      }
+      
+      // Deshabilitar el botón de subir al abrir el modal
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      
+      // Restaurar visibilidad de los mensajes de feedback
+      if (documentFileInput && documentFileInput.parentElement) {
+        const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+        const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+        if (validFeedback) {
+          validFeedback.style.display = '';
+          validFeedback.style.visibility = '';
+        }
+        if (invalidFeedback) {
+          invalidFeedback.style.display = '';
+          invalidFeedback.style.visibility = '';
+        }
+      }
+
+      // Configurar el listener para el input de archivo usando jQuery (más confiable)
+      // Remover cualquier listener previo y agregar el nuevo
+      $documentFileInput.off("change").on("change", handleFileSelectForUpload);
 
       // ABRIR EL MODAL EXPLICITAMENTE
       uploadDocumentModalInstance.show();
@@ -1508,57 +1801,394 @@ $(document).ready(function () {
     }
   });
 
-  // 4. Previsualización de la imagen seleccionada (ya estaba bien estructurado)
-  if ($documentFileInput.length) {
-    $documentFileInput.on("change", function () {
-      const file = this.files[0];
+  // 4. Función de validación de archivos (reemplaza la previsualización antigua)
+  // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+  // Hacer la función disponible globalmente para que pueda ser usada desde otras funciones
+  window.handleFileSelectForUpload = function(event) {
+    const input = event.target || this; // Compatible con jQuery y addEventListener
+    const file = input.files ? input.files[0] : null;
+    const imagePreview = document.getElementById("imagePreview");
+    const uploadMessage = document.getElementById("uploadMessage");
+    const uploadFileBtn = document.getElementById("uploadFileBtn");
+    const fileFormatInfo = document.getElementById("fileFormatInfo");
+    const uploadForm = document.getElementById("uploadForm");
 
-      if (file) {
-        if (file.type.startsWith("image/") || file.type === "application/pdf") {
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            if (file.type.startsWith("image/")) {
-              $imagePreview.attr("src", e.target.result);
-              $imagePreview.show();
-            } else {
-              $imagePreview.hide();
-              $imagePreview.attr("src", "#");
-              showMessage(
-                "Archivo PDF seleccionado. No se muestra previsualización.",
-                "info"
-              );
-            }
-          };
-          reader.readAsDataURL(file);
-          $uploadMessage.hide(); // Limpiar mensajes si el archivo es válido
-        } else {
-          $documentFileInput.val("");
-          $imagePreview.attr("src", "#");
-          showMessage(
-            "Tipo de archivo no permitido. Solo imágenes (JPG, PNG, GIF) o PDF.",
-            "error"
-          );
+    // Limpiar estados previos
+    input.classList.remove("is-valid", "is-invalid");
+    if (uploadForm) {
+      uploadForm.classList.remove("was-validated");
+    }
+    
+    // Restaurar visibilidad de los mensajes de feedback de Bootstrap
+    const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+    const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+    if (validFeedback) {
+      validFeedback.style.display = '';
+    }
+    if (invalidFeedback) {
+      invalidFeedback.style.display = '';
+    }
+    
+    // Mostrar el mensaje informativo cuando no hay validación (se ocultará después si hay archivo)
+    if (fileFormatInfo) {
+      fileFormatInfo.style.display = "block";
+      fileFormatInfo.style.visibility = "visible";
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    if (imagePreview) {
+      imagePreview.style.display = "none";
+      imagePreview.src = "#";
+    }
+    // Verificar que uploadMessage existe antes de usarlo
+    if (uploadMessage) {
+      uploadMessage.classList.add("hidden");
+      uploadMessage.textContent = "";
+    }
+
+    if (!file) {
+      // Si no hay archivo, deshabilitar el botón
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      return;
+    }
+
+    // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
+    const validExtensions = [".jpg", ".png", ".gif", ".pdf"];
+    const validMimeTypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"];
+    
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+    
+    // Validar por extensión (más confiable) - DEBE estar en la lista
+    const isValidExtension = validExtensions.includes(fileExtension);
+    
+    // Si hay MIME type, también debe ser válido
+    const hasMimeType = file.type && file.type.trim() !== "";
+    const isValidMimeType = hasMimeType ? validMimeTypes.includes(file.type) : true;
+    
+    // El archivo es válido SOLO si la extensión es válida
+    // Si no hay extensión válida, el archivo es inválido independientemente del MIME type
+    const isValid = isValidExtension && (isValidMimeType || !hasMimeType);
+
+    // Agregar clase was-validated al formulario para que Bootstrap muestre los mensajes
+    // Esto es necesario para que Bootstrap muestre los estilos de validación (borde rojo/verde e íconos)
+    if (uploadForm) {
+      uploadForm.classList.add("was-validated");
+    }
+
+    if (isValid) {
+      // ARCHIVO VÁLIDO
+      // Primero remover is-invalid para asegurar que no haya conflicto
+      input.classList.remove("is-invalid");
+      
+      // Remover el background-image rojo (ícono de X) que Bootstrap aplica con is-invalid
+      input.style.removeProperty("background-image");
+      input.style.removeProperty("background-position");
+      input.style.removeProperty("background-repeat");
+      input.style.removeProperty("background-size");
+      input.style.removeProperty("padding-right");
+      
+      // Limpiar estilos inline que puedan interferir
+      input.style.removeProperty("border-color");
+      input.style.removeProperty("box-shadow");
+      
+      // Luego agregar is-valid - Bootstrap aplicará automáticamente el ícono verde (checkmark)
+      input.classList.add("is-valid");
+      
+      // OCULTAR COMPLETAMENTE el mensaje inválido y su ícono rojo
+      if (invalidFeedback) {
+        invalidFeedback.style.setProperty("display", "none", "important");
+        invalidFeedback.style.setProperty("visibility", "hidden", "important");
+        invalidFeedback.style.setProperty("opacity", "0", "important");
+        invalidFeedback.style.setProperty("height", "0", "important");
+        invalidFeedback.style.setProperty("margin", "0", "important");
+        invalidFeedback.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para forzar la ocultación
+      if (typeof $ !== 'undefined') {
+        $('.invalid-feedback').hide();
+      }
+      
+      // MOSTRAR el mensaje válido y su ícono verde
+      if (validFeedback) {
+        validFeedback.style.setProperty("display", "block", "important");
+        validFeedback.style.setProperty("visibility", "visible", "important");
+        validFeedback.style.setProperty("opacity", "1", "important");
+        validFeedback.style.removeProperty("height");
+        validFeedback.style.removeProperty("margin");
+        validFeedback.style.removeProperty("padding");
+      }
+      // También usar jQuery para forzar la visualización
+      if (typeof $ !== 'undefined') {
+        $('.valid-feedback').show();
+      }
+      
+      // OCULTAR el mensaje informativo cuando hay validación activa (archivo válido)
+      if (fileFormatInfo) {
+        fileFormatInfo.style.setProperty("display", "none", "important");
+        fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+        fileFormatInfo.style.setProperty("opacity", "0", "important");
+        fileFormatInfo.style.setProperty("height", "0", "important");
+        fileFormatInfo.style.setProperty("margin", "0", "important");
+        fileFormatInfo.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para asegurar que se oculte
+      if (typeof $ !== 'undefined') {
+        $('#fileFormatInfo').hide();
+      }
+      
+      // Habilitar el botón de subir
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = false;
+      }
+      
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+      if (imagePreview) {
+        imagePreview.style.display = "none";
+        imagePreview.src = "#";
         }
       } else {
-        $imagePreview.hide();
-        $imagePreview.attr("src", "#");
-        $uploadMessage.hide();
+      // ARCHIVO INVÁLIDO
+      // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
+      input.classList.remove("is-valid");
+      
+      // Remover el background-image verde (ícono de checkmark) que Bootstrap aplica con is-valid
+      input.style.removeProperty("background-image");
+      input.style.removeProperty("background-position");
+      input.style.removeProperty("background-repeat");
+      input.style.removeProperty("background-size");
+      input.style.removeProperty("padding-right");
+      
+      // Remover cualquier estilo inline que pueda interferir
+      input.style.removeProperty("border-color");
+      input.style.removeProperty("box-shadow");
+      input.style.removeProperty("border");
+      
+      // SEGUNDO: Agregar is-invalid - Bootstrap aplicará automáticamente el borde rojo y el ícono rojo (X)
+      input.classList.add("is-invalid");
+      
+      // Asegurar que el formulario tenga was-validated (ya se agregó arriba, pero lo verificamos)
+      if (uploadForm && !uploadForm.classList.contains("was-validated")) {
+        uploadForm.classList.add("was-validated");
       }
-    });
+      
+      // Forzar el ícono rojo (X) y el borde rojo de Bootstrap
+      // Bootstrap usa background-image con un SVG para el ícono de error
+      // SVG del ícono de error de Bootstrap (X roja)
+      const invalidIconSvg = "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e\")";
+      
+      // Aplicar estilos para el ícono rojo inmediatamente
+      input.style.setProperty("background-image", invalidIconSvg, "important");
+      input.style.setProperty("background-repeat", "no-repeat", "important");
+      input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+      input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+      input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+      
+      // Forzar el borde rojo de Bootstrap usando CSS inline como respaldo
+      // Bootstrap usa border-color: #dc3545 para is-invalid
+      // También usar setTimeout para asegurar que se ejecute después del reflow del DOM
+      setTimeout(() => {
+        // Verificar y forzar que NO tenga is-valid (muy importante)
+        if (input.classList.contains("is-valid")) {
+          input.classList.remove("is-valid");
+        }
+        // Verificar y forzar la clase is-invalid si no está presente
+        if (!input.classList.contains("is-invalid")) {
+          input.classList.add("is-invalid");
+        }
+        
+        // Forzar nuevamente el ícono rojo
+        input.style.setProperty("background-image", invalidIconSvg, "important");
+        input.style.setProperty("background-repeat", "no-repeat", "important");
+        input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+        input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+        input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+        
+        // Aplicar borde rojo directamente si Bootstrap no lo hace
+        const computedStyle = window.getComputedStyle(input);
+        if (computedStyle.borderColor !== 'rgb(220, 53, 69)' && computedStyle.borderColor !== '#dc3545') {
+          input.style.setProperty("border-color", "#dc3545", "important");
+          input.style.setProperty("box-shadow", "0 0 0 0.2rem rgba(220, 53, 69, 0.25)", "important");
+        }
+      }, 50);
+      
+      // También ejecutar después de un pequeño delay adicional para asegurar
+      setTimeout(() => {
+        // Forzar nuevamente que NO tenga is-valid
+        input.classList.remove("is-valid");
+        // Forzar que SÍ tenga is-invalid
+        if (!input.classList.contains("is-invalid")) {
+          input.classList.add("is-invalid");
+        }
+        // Forzar nuevamente el ícono rojo
+        input.style.setProperty("background-image", invalidIconSvg, "important");
+        input.style.setProperty("background-repeat", "no-repeat", "important");
+        input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+        input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+        input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+      }, 100);
+      
+      // OCULTAR COMPLETAMENTE el mensaje válido y su ícono verde
+      if (validFeedback) {
+        validFeedback.style.setProperty("display", "none", "important");
+        validFeedback.style.setProperty("visibility", "hidden", "important");
+        validFeedback.style.setProperty("opacity", "0", "important");
+        validFeedback.style.setProperty("height", "0", "important");
+        validFeedback.style.setProperty("margin", "0", "important");
+        validFeedback.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para forzar la ocultación
+      if (typeof $ !== 'undefined') {
+        $('.valid-feedback').hide();
+      }
+      
+      // MOSTRAR el mensaje inválido y su ícono rojo
+      if (invalidFeedback) {
+        invalidFeedback.style.setProperty("display", "block", "important");
+        invalidFeedback.style.setProperty("visibility", "visible", "important");
+        invalidFeedback.style.setProperty("opacity", "1", "important");
+        invalidFeedback.style.removeProperty("height");
+        invalidFeedback.style.removeProperty("margin");
+        invalidFeedback.style.removeProperty("padding");
+      }
+      // También usar jQuery para forzar la visualización
+      if (typeof $ !== 'undefined') {
+        $('.invalid-feedback').show();
+      }
+      
+      // OCULTAR el mensaje informativo cuando hay validación activa (archivo inválido)
+      if (fileFormatInfo) {
+        fileFormatInfo.style.setProperty("display", "none", "important");
+        fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+        fileFormatInfo.style.setProperty("opacity", "0", "important");
+        fileFormatInfo.style.setProperty("height", "0", "important");
+        fileFormatInfo.style.setProperty("margin", "0", "important");
+        fileFormatInfo.style.setProperty("padding", "0", "important");
+      }
+      // También usar jQuery para asegurar que se oculte
+      if (typeof $ !== 'undefined') {
+        $('#fileFormatInfo').hide();
+      }
+      
+      // Deshabilitar el botón de subir
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+      if (imagePreview) {
+        imagePreview.style.display = "none";
+        imagePreview.src = "#";
+      }
+      
+      // Limpiar el input después de 6 segundos (aumentado de 3 a 6 segundos)
+      setTimeout(() => {
+        input.value = "";
+        input.classList.remove("is-invalid");
+        input.style.removeProperty("border-color");
+        input.style.removeProperty("box-shadow");
+        if (uploadForm) {
+          uploadForm.classList.remove("was-validated");
+        }
+        // Mostrar nuevamente el mensaje informativo
+        if (fileFormatInfo) {
+          fileFormatInfo.style.removeProperty("display");
+          fileFormatInfo.style.removeProperty("visibility");
+          fileFormatInfo.style.removeProperty("opacity");
+          fileFormatInfo.style.removeProperty("height");
+          fileFormatInfo.style.removeProperty("margin");
+          fileFormatInfo.style.removeProperty("padding");
+        }
+        // También usar jQuery para asegurar que se muestre
+        if (typeof $ !== 'undefined') {
+          $('#fileFormatInfo').show();
+        }
+        // Restaurar visibilidad de los mensajes de feedback
+        const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+        const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+        if (validFeedback) {
+          validFeedback.style.display = '';
+          validFeedback.style.visibility = '';
+        }
+        if (invalidFeedback) {
+          invalidFeedback.style.display = '';
+          invalidFeedback.style.visibility = '';
+        }
+      }, 6000); // Aumentado de 3000ms a 6000ms (6 segundos)
+    }
   }
 
   if ($uploadFileBtn.length) {
         $uploadFileBtn.on("click", function () {
-            const id_user = document.getElementById("userId").value;
+            const userIdElement = document.getElementById("userId");
+            if (!userIdElement) {
+                console.error("Elemento userId no encontrado");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo obtener el ID del usuario.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                });
+                return;
+            }
+            const id_user = userIdElement.value;
+            
             const documentFileInput = document.getElementById("documentFile");
+            if (!documentFileInput) {
+                console.error("Elemento documentFile no encontrado");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo obtener el input de archivo.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                });
+                return;
+            }
+            
             const uploadMessage = document.getElementById("uploadMessage");
             const file = documentFileInput.files[0];
-            const id_ticket = document.getElementById("id_ticket").value;
-            const documentType = document.getElementById("document_type").value;
+            
+            const idTicketElement = document.getElementById("id_ticket");
+            if (!idTicketElement) {
+                console.error("Elemento id_ticket no encontrado");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo obtener el ID del ticket.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                });
+                return;
+            }
+            const id_ticket = idTicketElement.value;
+            
+            const documentTypeElement = document.getElementById("document_type");
+            if (!documentTypeElement) {
+                console.error("Elemento document_type no encontrado");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo obtener el tipo de documento.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                });
+                return;
+            }
+            const documentType = documentTypeElement.value;
 
             // Clear previous messages and check for file
+            if (uploadMessage) {
             uploadMessage.classList.add("hidden");
             uploadMessage.textContent = "";
+            }
 
       if (!file) {
                 Swal.fire({
@@ -1665,15 +2295,67 @@ $(document).ready(function () {
   if ($uploadDocumentModalElement.length) {
     $uploadDocumentModalElement.on("hidden.bs.modal", function () {
       // Limpiar todo después de que el modal se oculta
+      const documentFileInput = document.getElementById("documentFile");
+      const uploadForm = document.getElementById("uploadForm");
+      const fileFormatInfo = document.getElementById("fileFormatInfo");
+      const uploadFileBtn = document.getElementById("uploadFileBtn");
+      
       if ($modalTicketIdSpan.length) $modalTicketIdSpan.text("");
-      if ($documentFileInput.length) $documentFileInput.val("");
+      
+      if (documentFileInput) {
+        documentFileInput.value = "";
+        documentFileInput.classList.remove("is-valid", "is-invalid");
+        // Limpiar estilos de background-image
+        documentFileInput.style.removeProperty("background-image");
+        documentFileInput.style.removeProperty("background-position");
+        documentFileInput.style.removeProperty("background-repeat");
+        documentFileInput.style.removeProperty("background-size");
+        documentFileInput.style.removeProperty("padding-right");
+      }
+      
+      if (uploadForm) {
+        uploadForm.classList.remove("was-validated");
+      }
+      
+      // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
       if ($imagePreview.length) {
         $imagePreview.hide();
         $imagePreview.attr("src", "#");
       }
+      const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+      if (imagePreviewContainer) {
+        imagePreviewContainer.style.display = "none";
+      }
+      
+      // Verificar que uploadMessage existe antes de usarlo
       if ($uploadMessage.length) {
         $uploadMessage.text("");
         $uploadMessage.hide();
+      }
+      
+      // Mostrar el mensaje informativo
+      if (fileFormatInfo) {
+        fileFormatInfo.style.display = "block";
+        fileFormatInfo.style.visibility = "visible";
+      }
+      
+      // Deshabilitar el botón de subir
+      if (uploadFileBtn) {
+        uploadFileBtn.disabled = true;
+      }
+      
+      // Restaurar visibilidad de los mensajes de feedback
+      if (documentFileInput && documentFileInput.parentElement) {
+        const validFeedback = documentFileInput.parentElement.querySelector('.valid-feedback');
+        const invalidFeedback = documentFileInput.parentElement.querySelector('.invalid-feedback');
+        if (validFeedback) {
+          validFeedback.style.display = '';
+          validFeedback.style.visibility = '';
+        }
+        if (invalidFeedback) {
+          invalidFeedback.style.display = '';
+          invalidFeedback.style.visibility = '';
+        }
       }
     });
   }
@@ -1688,7 +2370,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -1725,7 +2406,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
@@ -1808,7 +2489,7 @@ function formatTicketDetailsPanel(d) {
             </div>
         </div>
     `;
-}
+}*/
 
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
@@ -1871,16 +2552,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
             timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
         } else if (diffWeeks > 0) {
             const remainingDays = diffDays % 7;
-            timeText = `${diffWeeks}W ${remainingDays}D`;
+            timeText = `${diffWeeks}S ${remainingDays}D`;
         } else if (diffDays > 0) {
             const remainingHours = diffHours % 24;
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}Min`;
         } else if (diffHours > 0) {
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffHours}H ${remainingMinutes}M`;
+            timeText = `${diffHours}H ${remainingMinutes}Min`;
         } else if (diffMinutes > 0) {
-            timeText = `${diffMinutes}M`;
+            timeText = `${diffMinutes}Min`;
         } else {
             return null;
         }
@@ -1908,10 +2589,84 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
         success: function(response) {
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = `
-                    <div class="d-flex justify-content-end mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#17a2b8" class="bi bi-info-square-fill" viewBox="0 0 16 16" style="cursor: pointer;" data-toggle="collapse" data-target="#colorLegend_${ticketId}" aria-expanded="false" aria-controls="colorLegend_${ticketId}" title="Leyenda de Colores">
+                            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.93 4.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                        </svg>
                         <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
                         </button>
+                    </div>
+                    <div class="collapse mb-3" id="colorLegend_${ticketId}">
+                            <div class="alert alert-info" role="alert">
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #ffc107; color: #ffffff; min-width: 80px; padding: 6px 12px;">Amarillo</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestión actual</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #5d9cec; color: #ffffff; min-width: 80px; padding: 6px 12px;">Azul</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestiones anteriores</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #fd7e14; color: #ffffff; min-width: 80px; padding: 6px 12px;">Naranja</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Taller</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #28a745; color: #ffffff; min-width: 80px; padding: 6px 12px;">Verde</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Domiciliación</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TG:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Gestión Anterior</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TR:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Revisión Domiciliación</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TT:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración en Taller</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div style="text-align: center; margin-bottom: 12px;">
+                                        <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
+                            </div>
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Mes(es)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">S</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Semana(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">D</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Día(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #3b82f6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">H</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Hora(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #f59e0b; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">Min</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Minuto(s)</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px;">
+                                        <p style="color: #ffffff; font-size: 0.85em; font-style: italic; margin: 0;">
+                                            Ejemplo: <strong>1M 2S 3D 6H 11Min</strong> significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="accordion" id="ticketHistoryAccordion">
                 `;
@@ -1924,8 +2679,145 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 
                     let timeElapsed = null;
                     let timeBadge = '';
-
-                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                    
+                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
+                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
+                    
+                    // Verificar si hay cambio de domiciliación o taller para calcular TG/TR o TG/TT
+                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
+                    let durationFromPreviousText = '';
+                    let durationFromCreationText = '';
+                    let durationLabFromPreviousText = '';
+                    let durationLabFromTallerText = '';
+                    
+                    // Calcular tiempos para Domiciliación
+                    if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Desde la creación del ticket
+                        let ticketCreationDate = null;
+                        const lastHistoryItem = response.history[response.history.length - 1];
+                        if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                            ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                        } else {
+                            // Buscar el elemento con "Ticket Creado"
+                            for (let i = response.history.length - 1; i >= 0; i--) {
+                                const histItem = response.history[i];
+                                if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                                    ticketCreationDate = histItem.fecha_de_cambio;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (ticketCreationDate) {
+                            // Calcular duración desde la creación del ticket hasta el cambio actual
+                            const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                            if (duration) {
+                                durationFromCreationText = duration.text;
+                            }
+                        }
+                    }
+                    
+                    // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    const currentAccionForLab = cleanString(item.name_accion_ticket);
+                    const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+                    
+                    if (isEnElRosalForLab) {
+                        // Tiempo 1: Desde la gestión anterior (TG)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationLabFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+                        // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+                        let totalTallerMinutes = 0;
+                        for (let i = index + 1; i < response.history.length; i++) {
+                            const histItem = response.history[i];
+                            const nextHistItem = response.history[i - 1] || null;
+                            
+                            if (histItem && histItem.fecha_de_cambio && nextHistItem && nextHistItem.fecha_de_cambio) {
+                                const histStatusLab = cleanString(histItem.name_status_lab);
+                                const isReparacionStatus = histStatusLab && 
+                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                                     histStatusLab.toLowerCase().includes('reparado'));
+                                const isRecibidoEnTaller = histStatusLab && 
+                                    histStatusLab.toLowerCase().includes('recibido en taller');
+                                
+                                // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                                if (isReparacionStatus && !isRecibidoEnTaller) {
+                                    const duration = calculateTimeElapsed(histItem.fecha_de_cambio, nextHistItem.fecha_de_cambio);
+                                    if (duration && duration.minutes) {
+                                        totalTallerMinutes += duration.minutes;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Convertir el total de minutos a formato legible
+                        if (totalTallerMinutes > 0) {
+                            const totalHours = Math.floor(totalTallerMinutes / 60);
+                            const remainingMinutes = totalTallerMinutes % 60;
+                            const totalDays = Math.floor(totalHours / 24);
+                            const remainingHours = totalHours % 24;
+                            const totalWeeks = Math.floor(totalDays / 7);
+                            const remainingDaysAfterWeeks = totalDays % 7;
+                            const totalMonths = Math.floor(totalDays / 30.44);
+                            
+                            if (totalMonths > 0) {
+                                const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                                durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                            } else if (totalWeeks > 0) {
+                                durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                            } else if (totalDays > 0) {
+                                durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                            } else if (totalHours > 0) {
+                                durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                            } else {
+                                durationLabFromTallerText = `${remainingMinutes}Min`;
+                            }
+                        }
+                    }
+                    
+                    // Prioridad: Si la acción es "En el Rosal" (terminó la estadía en taller), mostrar TG y TT; si no, mostrar TG y TR si hay cambio de Domiciliación; si no, tiempo normal
+                    if (isEnElRosalForLab && (durationLabFromPreviousText || durationLabFromTallerText)) {
+                        let tgTtText = '';
+                        if (durationLabFromPreviousText && durationLabFromTallerText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}<br>TT: ${durationLabFromTallerText}`;
+                        } else if (durationLabFromPreviousText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}`;
+                        } else if (durationLabFromTallerText) {
+                            tgTtText = `TT: ${durationLabFromTallerText}`;
+                        }
+                        if (tgTtText) {
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #fd7e14 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tgTtText}</span>`;
+                        }
+                    } else if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Si hay cambio de domiciliación, mostrar TG y TR en el badge en formato vertical (uno arriba del otro)
+                        // Solo mostrar las líneas que tienen valores (no mostrar "N/A")
+                        let tdTrText = '';
+                        if (durationFromPreviousText && durationFromCreationText) {
+                            tdTrText = `TG: ${durationFromPreviousText}<br>TR: ${durationFromCreationText}`;
+                        } else if (durationFromPreviousText) {
+                            tdTrText = `TG: ${durationFromPreviousText}`;
+                        } else if (durationFromCreationText) {
+                            tdTrText = `TR: ${durationFromCreationText}`;
+                        }
+                        if (tdTrText) {
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #28a745 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tdTrText}</span>`;
+                        }
+                    } else if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        // Si no hay cambio de domiciliación ni taller, mostrar el tiempo normal
                         timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
                         if (timeElapsed) {
                             let badgeColor = 'success';
@@ -1945,12 +2837,9 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             else if (badgeColor === 'warning') backgroundColor = '#ffc107';
                             else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important; white-space: nowrap; overflow: visible;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
                         }
                     }
-                    
-                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
-                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
                     const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
                     const creationBadge = isCreation && item.fecha_de_cambio ? 
@@ -1960,9 +2849,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
                     const usuarioGestionChanged = getChange(item.usuario_gestion, prevItem.usuario_gestion);
                     const tecnicoChanged = getChange(item.full_name_tecnico_n2_history, prevItem.full_name_tecnico_n2_history);
-                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
-                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    // statusLabChanged y statusDomChanged ya están declarados arriba cuando se calculan TG/TT y TG/TR para el badge
                     const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    
+                    // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+                    // Nota: durationLabFromPreviousText y durationLabFromTallerText ya se calcularon arriba para el badge (solo cuando es "En el Rosal")
+                    
+                    // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+                    // Nota: durationFromPreviousText y durationFromCreationText ya se calcularon arriba para el badge
                     const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
                     const componentsChanged = getChange(item.components_list, prevItem.components_list);
                     const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
@@ -1972,6 +2868,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -1980,8 +2877,29 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    
+                    // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
+                    // La gestión actual ya es amarilla por defecto
+                    // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
+                    const currentStatusLabForColor = cleanString(item.name_status_lab);
+                    const isReparacionStatus = currentStatusLabForColor && 
+                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
+                         currentStatusLabForColor.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = currentStatusLabForColor && 
+                        currentStatusLabForColor.toLowerCase().includes('recibido en taller');
+                    
+                    if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
+                        headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
+                        textColor = "color: #ffffff;";
+                    }
+                    // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
+                    else if (statusDomChanged && !isLatest) {
+                        headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
+                        textColor = "color: #ffffff;";
+                    }
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
                     if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
@@ -1993,6 +2911,11 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
 
+                    // Calcular el padding derecho para evitar que el badge trunque el texto
+                    const hasTimeBadge = timeBadge && timeBadge.trim() !== '';
+                    const hasCreationBadge = creationBadge && creationBadge.trim() !== '';
+                    const buttonPaddingRight = (hasTimeBadge || hasCreationBadge) ? '120px' : '15px';
+
                     historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -2002,7 +2925,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
                                         aria-expanded="false" aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                        style="${textColor}; padding-right: ${buttonPaddingRight} !important;">
                                         ${buttonText}
                                     </button>
                                 </h2>
@@ -2050,10 +2973,26 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <th class="text-start">Estatus Taller:</th>
                                                     <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
+                                                ${isEnElRosalForLab ? `
+                                                    ${durationLabFromTallerText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Total Duración en Taller:</th>
+                                                            <td class="highlighted-change">${durationLabFromTallerText}</td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
                                                     <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
+                                                ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                                                    ${durationFromCreationText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
+                                                            <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
@@ -2062,6 +3001,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -2151,6 +3098,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
+    // ... (Mantener las funciones auxiliares: decodeHistorySafe, cleanString, parseCustomDate, calculateTimeElapsed, generateFileName)
     const decodeHistorySafe = (encoded) => {
         try {
             if (!encoded) return [];
@@ -2190,14 +3138,14 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             const remainingDays = Math.floor(diffDays % 30.44);
             text = `${diffMonths}M ${remainingDays}D`;
         } else if (diffWeeks > 0) {
-            text = `${diffWeeks}W ${diffDays % 7}D`;
+            text = `${diffWeeks}S ${diffDays % 7}D`;
         } else if (diffDays > 0) {
-            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}Min`;
         } else if (diffHours > 0) {
-            text = `${diffHours}H ${diffMinutes % 60}M`;
+            text = `${diffHours}H ${diffMinutes % 60}Min`;
         } else if (diffMinutes > 0) {
             // Mostrar minutos cuando es al menos 1 minuto
-            text = `${diffMinutes}M`;
+            text = `${diffMinutes}Min`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;
@@ -2207,25 +3155,117 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const history = decodeHistorySafe(historyEncoded);
 
-    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
         let fileName = `Historial_Ticket_${ticketNumber}`;
-        
         if (serial && serial.length >= 4) {
             const lastFourDigits = serial.slice(-4);
             fileName += `-${lastFourDigits}`;
         }
-        
         return `${fileName}.pdf`;
     };
 
     const fileName = generateFileName(currentTicketNroForImage, serialPos);
+
+    const getChange = (itemVal, prevVal) => {
+        const cleanItem = cleanString(itemVal);
+        const cleanPrev = cleanString(prevVal);
+        return cleanItem !== cleanPrev;
+    };
 
     let itemsHtml = '';
     history.forEach((item, index) => {
         const previous = history[index + 1] || null;
         const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
         const elapsedText = elapsed ? elapsed.text : 'N/A';
+        
+        // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+        let durationLabFromPreviousText = '';
+        let durationLabFromTallerText = '';
+        const currentAccionForLab = cleanString(item.name_accion_ticket);
+        const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+        
+        if (isEnElRosalForLab && previous) {
+            const statusLabChanged = getChange(item.name_status_lab, previous.name_status_lab);
+            if (statusLabChanged && cleanString(item.name_status_lab)) {
+                // Tiempo 1: Desde la gestión anterior
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationLabFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde "Recibido en Taller" hasta el cambio actual (suma de todas las gestiones de taller)
+                let fechaEntradaTaller = null;
+                for (let i = index + 1; i < history.length; i++) {
+                    const histItem = history[i];
+                    if (histItem && histItem.fecha_de_cambio) {
+                        const statusLab = cleanString(histItem.name_status_lab);
+                        if (statusLab && statusLab.toLowerCase().includes('recibido en taller') && !fechaEntradaTaller) {
+                            fechaEntradaTaller = histItem.fecha_de_cambio;
+                        }
+                    }
+                }
+                if (!fechaEntradaTaller) {
+                    for (let i = history.length - 1; i > index; i--) {
+                        const histItem = history[i];
+                        if (histItem && histItem.fecha_de_cambio) {
+                            const statusLab = cleanString(histItem.name_status_lab);
+                            if (statusLab && statusLab.toLowerCase().includes('recibido en taller')) {
+                                fechaEntradaTaller = histItem.fecha_de_cambio;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (fechaEntradaTaller) {
+                    const duration = calculateTimeElapsed(fechaEntradaTaller, item.fecha_de_cambio);
+                    if (duration) {
+                        durationLabFromTallerText = duration.text;
+                    }
+                }
+            }
+        }
+        
+        // Calcular tiempos para Domiciliación (solo cuando hay cambio)
+        let durationFromPreviousText = '';
+        let durationFromCreationText = '';
+        if (previous) {
+            const statusDomChanged = getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion);
+            if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde la creación del ticket
+                let ticketCreationDate = null;
+                const lastHistoryItem = history[history.length - 1];
+                if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                    ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                } else {
+                    // Buscar el elemento con "Ticket Creado"
+                    for (let i = history.length - 1; i >= 0; i--) {
+                        const histItem = history[i];
+                        if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                            ticketCreationDate = histItem.fecha_de_cambio;
+                            break;
+                        }
+                    }
+                }
+                
+                if (ticketCreationDate) {
+                    const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                    if (duration) {
+                        durationFromCreationText = duration.text;
+                    }
+                }
+            }
+        }
 
         itemsHtml += `
             <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -2247,9 +3287,20 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        ${(() => {
+                            const currentAccionForLab = cleanString(item.name_accion_ticket);
+                            const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+                            return isEnElRosalForLab && durationLabFromTallerText ? `
+                                <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Total Duración en Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${durationLabFromTallerText}</td></tr>
+                            ` : '';
+                        })()}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        ${previous && getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) && cleanString(item.name_status_domiciliacion) ? `
+                            ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
+                        ` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -2268,6 +3319,35 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         `;
     });
 
+    const legendHTML_Integrated = `
+        <div class="legend-integrated" style="margin: 10px 0; padding: 10px; background: #e0f2fe; border: 1px solid #93c5fd; border-radius: 6px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <p style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">
+                LEYENDA DE TIEMPO
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; font-size: 11px; font-weight: 500; flex-wrap: wrap;">
+                <span style="color: #7c3aed;">
+                    <strong style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">M</strong> Mes(es)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">S</strong> Semana(s)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">D</strong> Día(s)
+                </span>
+                <span style="color: #1e40af;">
+                    <strong style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">H</strong> Hora(s)
+                </span>
+                <span style="color: #9a3412;">
+                    <strong style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">Min</strong> Minuto(s)
+                </span>
+            </div>
+            <p style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+                *Ejemplo: **1M 2S 3D 6H 11Min** significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+            </p>
+        </div>
+    `;
+
+
     const printContent = `
         <!DOCTYPE html>
         <html lang="es">
@@ -2276,6 +3356,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${fileName}</title>
             <style>
+                /* ... (Mantener todos los estilos CSS anteriores, asegurando que la clase .legend-float NO exista para no confundir) ... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -2499,13 +3580,24 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     margin-top: 6px;
                 }
                 
+                /* Estilos para la leyenda integrada */
+                .legend-integrated {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #e0f2fe;
+                    border: 1px solid #93c5fd;
+                    border-radius: 6px;
+                    text-align: center;
+                    page-break-inside: avoid; /* Evita que la leyenda se rompa entre páginas */
+                }
+                
                 /* Optimizaciones para impresión */
                 @media print {
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    
+
                     body {
                         margin-top: 50px !important;
                         margin-bottom: 40px !important;
@@ -2626,7 +3718,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-            </div>
+                </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -2640,6 +3732,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <div class="info-value">${new Date().toLocaleString()}</div>
                     </div>
                 </div>
+                
+                ${legendHTML_Integrated}
 
                 <div class="content-wrapper">
                     <div class="history-section">
@@ -2687,12 +3781,12 @@ function showElapsedLegend(e) {
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">Una semana o más, o más de 2 días hábiles</span></div>
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">Un mes o más, o más de 5 días hábiles</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
+            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
         </div>`;
 
     Swal.fire({
-        title: 'Agenda de colores',
+        title: 'Leyenda',
         html: legendHtml,
         icon: 'info',
         confirmButtonText: 'Entendido',
@@ -2702,7 +3796,7 @@ function showElapsedLegend(e) {
     });
 }
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado) {
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0) {
     // Obtener elementos del modal de aprobación
     const imageApprovalModalElement = document.getElementById("imageApprovalModal");
     const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
@@ -2714,6 +3808,11 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     const closeImageApprovalModalBtn = document.getElementById("closeImageApprovalModalBtn");
     const currentSerialDisplay = document.getElementById("currentSerialDisplay");
     const approveTicketFromImageBtn = document.getElementById("approveTicketFromImage");
+    const rejectDocumentBtn = document.getElementById("RechazoDocumento");
+    const paymentValidationContainer = document.getElementById("paymentValidationContainer");
+    
+    // ✅ Verificar si el documento está aprobado (id_status_payment = 6)
+    const isDocumentApproved = idStatusPayment === 6;
 
     // LIMPIEZA COMPLETA Y FORZADA
     if (mediaViewerContainer) {
@@ -2750,8 +3849,8 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
     currentSerialDisplay.textContent = serialPos || 'Sin posición';
 
-    // Controlar la visibilidad del botón de aprobar
-    if (approveTicketFromImageBtn) {
+    // ✅ Controlar la visibilidad del botón de aprobar (solo si NO está aprobado)
+    if (approveTicketFromImageBtn && !isDocumentApproved) {
         const allowedTypes = ['Exoneracion', 'Anticipo'];
         const isRejected = documentoRechazado === 'Sí';
 
@@ -2770,7 +3869,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     if (pathSegments.length > 1) {
       cleanPath = pathSegments[1];
     }
-    return `http://localhost/Documentos/${cleanPath}`;
+    return `http://${HOST}/Documentos/${cleanPath}`;
   }
 
     // CONFIGURAR EL CONTENIDO CON MANEJO DE ERRORES
@@ -2797,7 +3896,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     pdfViewViewer.style.display = "block";
             pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;" title="PDF: ${fileName || 'documento'}"></iframe>`;
         }
-  } else {
+    } else {
         // Tipo de archivo no soportado
         if (ticketImagePreview) {
             ticketImagePreview.style.display = "none";
@@ -2815,7 +3914,52 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             `;
         }
     }
-
+    
+    // Si el documento es de tipo "Anticipo" (pago), obtener y mostrar los datos de pago
+    console.log('showApprovalModal - documentType:', documentType, 'ticketId:', ticketId, 'idStatusPayment:', idStatusPayment);
+    
+    // ✅ Si el documento está aprobado, ocultar validación de pago y botones de acción
+    if (isDocumentApproved) {
+        console.log('Documento aprobado (id_status_payment = 6), ocultando validación de pago y botones de acción');
+        if (paymentValidationContainer) {
+            paymentValidationContainer.style.display = 'none';
+        }
+        if (approveTicketFromImageBtn) {
+            approveTicketFromImageBtn.style.display = 'none';
+        }
+        if (rejectDocumentBtn) {
+            rejectDocumentBtn.style.display = 'none';
+        }
+    } else if (documentType === 'Anticipo') {
+        console.log('Es documento de Anticipo, cargando datos de pago...');
+        // El ticketId que viene aquí es el nro_ticket (se establece en el atributo data-ticket-id)
+        // Asegurarse de que sea el nro_ticket correcto
+        const nroTicketToUse = ticketId || currentTicketIdDisplay.textContent;
+        console.log('nroTicketToUse para consulta:', nroTicketToUse);
+        loadPaymentDataForEnvio(nroTicketToUse);
+        
+        // Mostrar botones de acción si no está aprobado
+        if (approveTicketFromImageBtn) {
+            approveTicketFromImageBtn.style.display = 'block';
+        }
+        if (rejectDocumentBtn) {
+            rejectDocumentBtn.style.display = documentoRechazado ? 'none' : 'block';
+        }
+    } else {
+        console.log('No es documento de Anticipo, ocultando contenedor de validación');
+        // Ocultar el contenedor de validación de pago si no es Anticipo
+        if (paymentValidationContainer) {
+            paymentValidationContainer.style.display = 'none';
+        }
+        // Mostrar botones de acción para otros tipos de documentos
+        if (approveTicketFromImageBtn) {
+            approveTicketFromImageBtn.style.display = 'block';
+        }
+        if (rejectDocumentBtn) {
+            rejectDocumentBtn.style.display = documentoRechazado ? 'none' : 'block';
+        }
+    }
+    
     // Mostrar el modal de aprobación
     const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
     
@@ -2829,6 +3973,9 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             imageApprovalModal.hide();
         });
     }
+    
+    // Agregar event listeners para los radio buttons de validación de pago
+    setupPaymentValidationListeners();
 
     imageApprovalModal.show();
 
@@ -2844,9 +3991,217 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             pdfViewViewer.style.display = "none";
             pdfViewViewer.innerHTML = "";
         }
+        
+        // Limpiar campos de validación de pago
+        const paymentValidationContainer = document.getElementById('paymentValidationContainer');
+        if (paymentValidationContainer) {
+            paymentValidationContainer.style.display = 'none';
+        }
+        
+        // Limpiar todos los campos y radio buttons
+        const paymentReferenceOriginal = document.getElementById('paymentReferenceOriginal');
+        const paymentDateOriginal = document.getElementById('paymentDateOriginal');
+        const paymentReferenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+        const paymentDateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+        
+        if (paymentReferenceOriginal) paymentReferenceOriginal.value = '';
+        if (paymentDateOriginal) paymentDateOriginal.value = '';
+        if (paymentReferenceCorrectOnly) paymentReferenceCorrectOnly.value = '';
+        if (paymentDateCorrectOnly) paymentDateCorrectOnly.value = '';
+        
+        // Desmarcar todos los radio buttons
+        const referenceCorrectYes = document.getElementById('referenceCorrectYes');
+        const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+        const dateCorrectYes = document.getElementById('dateCorrectYes');
+        const dateCorrectNo = document.getElementById('dateCorrectNo');
+        
+        if (referenceCorrectYes) referenceCorrectYes.checked = false;
+        if (referenceCorrectNo) referenceCorrectNo.checked = false;
+        if (dateCorrectYes) dateCorrectYes.checked = false;
+        if (dateCorrectNo) dateCorrectNo.checked = false;
+        
+        // Ocultar campos de corrección
+        const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+        const dateCorrectionField = document.getElementById('dateCorrectionField');
+        
+        if (referenceCorrectionField) referenceCorrectionField.style.display = 'none';
+        if (dateCorrectionField) dateCorrectionField.style.display = 'none';
+        
         imageApprovalModalElement.removeEventListener('hidden.bs.modal', cleanupHandler);
     };
     imageApprovalModalElement.addEventListener('hidden.bs.modal', cleanupHandler);
+}
+
+// Función para cargar los datos de pago cuando el documento es de tipo "Anticipo" (pago)
+function loadPaymentDataForEnvio(nroTicket) {
+    console.log('loadPaymentDataForEnvio llamado con nroTicket:', nroTicket);
+    
+    const paymentValidationContainer = document.getElementById('paymentValidationContainer');
+    const paymentReferenceOriginal = document.getElementById('paymentReferenceOriginal');
+    const paymentDateOriginal = document.getElementById('paymentDateOriginal');
+    
+    if (!paymentValidationContainer) {
+        console.error('paymentValidationContainer no encontrado');
+        return;
+    }
+    
+    if (!paymentReferenceOriginal) {
+        console.error('paymentReferenceOriginal no encontrado');
+        return;
+    }
+    
+    if (!paymentDateOriginal) {
+        console.error('paymentDateOriginal no encontrado');
+        return;
+    }
+    
+    // Mostrar el contenedor primero (aunque esté vacío) para que el usuario vea que se está cargando
+    paymentValidationContainer.style.display = 'block';
+    
+    // Mostrar mensaje de carga
+    paymentReferenceOriginal.value = 'Cargando...';
+    paymentDateOriginal.value = 'Cargando...';
+    
+    // Llamar a la API para obtener los datos de pago
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhr.onload = function() {
+        console.log('Respuesta de GetPaymentData:', xhr.status, xhr.responseText);
+        
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                console.log('Datos parseados:', data);
+                
+                // El repositorio devuelve un objeto, no un array
+                if (data.success && data.data && typeof data.data === 'object') {
+                    const paymentRecord = data.data;
+                    const paymentReference = paymentRecord.payment_reference || '';
+                    const paymentDate = paymentRecord.payment_date || '';
+                    
+                    console.log('paymentReference:', paymentReference);
+                    console.log('paymentDate:', paymentDate);
+                    
+                    // Formatear la fecha si existe
+                    let formattedDate = '';
+                    if (paymentDate) {
+                        // La fecha puede venir en formato timestamp o date
+                        const date = new Date(paymentDate);
+                        if (!isNaN(date.getTime())) {
+                            formattedDate = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+                        } else {
+                            formattedDate = paymentDate; // Si ya viene formateada
+                        }
+                    }
+                    
+                    // Mostrar los datos en los campos
+                    paymentReferenceOriginal.value = paymentReference || 'No disponible';
+                    paymentDateOriginal.value = formattedDate || 'No disponible';
+                    
+                    // Seleccionar "Sí" por defecto en ambos radio buttons
+                    const referenceCorrectYes = document.getElementById('referenceCorrectYes');
+                    const dateCorrectYes = document.getElementById('dateCorrectYes');
+                    const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+                    const dateCorrectNo = document.getElementById('dateCorrectNo');
+                    
+                    if (referenceCorrectYes) referenceCorrectYes.checked = true;
+                    if (referenceCorrectNo) referenceCorrectNo.checked = false;
+                    if (dateCorrectYes) dateCorrectYes.checked = true;
+                    if (dateCorrectNo) dateCorrectNo.checked = false;
+                    
+                    // Asegurar que los campos de corrección estén ocultos
+                    const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+                    const dateCorrectionField = document.getElementById('dateCorrectionField');
+                    if (referenceCorrectionField) referenceCorrectionField.style.display = 'none';
+                    if (dateCorrectionField) dateCorrectionField.style.display = 'none';
+                    
+                    // Limpiar los campos de corrección
+                    const paymentReferenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+                    const paymentDateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+                    if (paymentReferenceCorrectOnly) paymentReferenceCorrectOnly.value = '';
+                    if (paymentDateCorrectOnly) paymentDateCorrectOnly.value = '';
+                    
+                    // Mostrar el contenedor de validación
+                    paymentValidationContainer.style.display = 'block';
+                    console.log('Datos de pago cargados correctamente');
+                } else {
+                    // No hay datos de pago, pero mostrar el contenedor con mensaje
+                    paymentReferenceOriginal.value = 'No disponible';
+                    paymentDateOriginal.value = 'No disponible';
+                    paymentValidationContainer.style.display = 'block';
+                    console.warn('No se encontraron datos de pago para el ticket:', nroTicket);
+                }
+            } catch (error) {
+                console.error('Error al parsear la respuesta JSON:', error);
+                paymentReferenceOriginal.value = 'Error al cargar';
+                paymentDateOriginal.value = 'Error al cargar';
+                paymentValidationContainer.style.display = 'block';
+            }
+        } else {
+            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            paymentReferenceOriginal.value = 'Error al cargar';
+            paymentDateOriginal.value = 'Error al cargar';
+            paymentValidationContainer.style.display = 'block';
+        }
+    };
+    
+    xhr.onerror = function() {
+        console.error('Error de red al intentar cargar los datos de pago.');
+        paymentReferenceOriginal.value = 'Error de conexión';
+        paymentDateOriginal.value = 'Error de conexión';
+        paymentValidationContainer.style.display = 'block';
+    };
+    
+    const data = `nro_ticket=${encodeURIComponent(nroTicket)}`;
+    console.log('Enviando datos a GetPaymentData:', data);
+    xhr.send(data);
+}
+
+// Función para configurar los event listeners de los radio buttons de validación
+function setupPaymentValidationListeners() {
+    // Radio: ¿Nro de referencia correcto?
+    const referenceCorrectYes = document.getElementById('referenceCorrectYes');
+    const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+    const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+    
+    if (referenceCorrectYes && referenceCorrectNo && referenceCorrectionField) {
+        referenceCorrectYes.addEventListener('change', function() {
+            if (this.checked) {
+                referenceCorrectionField.style.display = 'none';
+                const refCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+                if (refCorrectOnly) refCorrectOnly.value = '';
+            }
+        });
+        
+        referenceCorrectNo.addEventListener('change', function() {
+            if (this.checked) {
+                referenceCorrectionField.style.display = 'block';
+            }
+        });
+    }
+    
+    // Radio: ¿Fecha de pago correcta?
+    const dateCorrectYes = document.getElementById('dateCorrectYes');
+    const dateCorrectNo = document.getElementById('dateCorrectNo');
+    const dateCorrectionField = document.getElementById('dateCorrectionField');
+    
+    if (dateCorrectYes && dateCorrectNo && dateCorrectionField) {
+        dateCorrectYes.addEventListener('change', function() {
+            if (this.checked) {
+                dateCorrectionField.style.display = 'none';
+                const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+                if (dateCorrectOnly) dateCorrectOnly.value = '';
+            }
+        });
+        
+        dateCorrectNo.addEventListener('change', function() {
+            if (this.checked) {
+                dateCorrectionField.style.display = 'block';
+            }
+        });
+    }
 }
 
 function getMotivos(documentType) {
@@ -3200,17 +4555,11 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Función para cerrar la ventana y recargar la página principal
 
                             function closeAndReload() {
-
-                                console.log('Cerrando ventana y recargando página principal...');
-
                                 if (window.opener) {
-
                                     window.opener.location.reload();
-
                                 }
 
                                 window.close();
-
                             }
 
                             
@@ -3218,11 +4567,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Detectar cuando se completa la impresión/guardado
 
                             window.addEventListener('afterprint', function() {
-
-                                console.log('Impresión completada - cerrando ventana');
-
                                 setTimeout(closeAndReload, 1000);
-
                             });
 
                             
@@ -3230,9 +4575,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             // Detectar cuando se pierde el foco (usuario interactúa con diálogo)
 
                             window.addEventListener('blur', function() {
-
-                                console.log('Foco perdido - verificando si se cerró');
-
                                 setTimeout(function() {
 
                                     if (document.hidden) {
@@ -3321,10 +4663,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (!reloadExecuted) {
                   reloadExecuted = true;
 
-                  console.log(
-                    "Recargando página después de guardar documento..."
-                  );
-
                   // Cerrar la ventana de impresión si aún está abierta
 
                   if (printWindow && !printWindow.closed) {
@@ -3350,19 +4688,10 @@ document.addEventListener("DOMContentLoaded", function () {
               checkInterval = setInterval(() => {
                 try {
                   if (printWindow.closed) {
-                    console.log(
-                      "Ventana cerrada detectada - ejecutando recarga"
-                    );
-
                     reloadPage();
                   }
                 } catch (e) {
                   // Si hay error accediendo a la ventana, asumir que se cerró
-
-                  console.log(
-                    "Error accediendo a ventana - asumiendo que se cerró"
-                  );
-
                   reloadPage();
                 }
               }, 500); // Verificar cada 500ms
@@ -3370,18 +4699,12 @@ document.addEventListener("DOMContentLoaded", function () {
               // Método alternativo: Detectar cuando se completa la impresión
 
               printWindow.addEventListener("afterprint", function () {
-                console.log("Evento afterprint detectado");
-
                 reloadPage();
               });
 
               // Método alternativo: Detectar cuando se pierde el foco
 
               printWindow.addEventListener("blur", function () {
-                console.log(
-                  "Evento blur detectado - usuario interactuando con diálogo"
-                );
-
                 // Esperar un poco y verificar si la ventana sigue abierta
 
                 setTimeout(() => {
@@ -3398,8 +4721,6 @@ document.addEventListener("DOMContentLoaded", function () {
               // Método de respaldo: Detectar cuando se cierra la ventana
 
               printWindow.addEventListener("beforeunload", function () {
-                console.log("Evento beforeunload detectado");
-
                 reloadPage();
               });
 
@@ -3408,8 +4729,6 @@ document.addEventListener("DOMContentLoaded", function () {
               setTimeout(() => {
                 if (checkInterval) {
                   clearInterval(checkInterval);
-
-                  console.log("Timeout alcanzado - limpiando intervalo");
                 }
               }, 60000);
             };
@@ -3426,8 +4745,6 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         } else if (result.dismiss === Swal.DismissReason.cancel) {
           // El usuario hizo clic en "Cerrar"
-
-          console.log("Modal cerrado por el usuario");
         }
       });
     });
@@ -3436,17 +4753,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Botón de cerrar
 
   const closeBtn = document.getElementById("closePaymentAgreementBtn");
-
   if (closeBtn) {
     closeBtn.addEventListener("click", function () {
       // Usar la instancia global o crear una nueva si no existe
-
-      if (!paymentAgreementModalInstance) {
-        paymentAgreementModalInstance = new bootstrap.Modal(
-          document.getElementById("paymentAgreementModal")
-        );
-      }
-
       paymentAgreementModalInstance.hide();
     });
   }
@@ -3495,7 +4804,6 @@ function getPaymentAgreementFormData() {
     correo: document.getElementById("pa_correo").value,
   };
 }
-
 
 function buildPaymentAgreementHtml(d, convenioNumero = null) {
   const safe = (s) => (s || "").toString();
@@ -5062,8 +6370,6 @@ function buildPaymentAgreementHtml(d, convenioNumero = null) {
               setTimeout(() => {
                 // Usar la instancia global o crear una nueva si no existe
 
-                let paymentAgreementModalInstance = null;
-
                 if (!paymentAgreementModalInstance) {
                   paymentAgreementModalInstance = new bootstrap.Modal(
                     document.getElementById("paymentAgreementModal")
@@ -5178,4 +6484,802 @@ function fillPaymentAgreementModal(d) {
   // document.getElementById('pa_banco').value = 'XXXX';
 
   // document.getElementById('pa_correo').value = 'domiciliación.intelipunto@inteligensa.com';
+}
+
+
+$(document).on('click', '#generateNotaEntregaBtn2', function () {
+    const ticketId = document.getElementById('id_ticket').value;
+    if (!ticketId) {
+        Swal.fire({ icon: 'warning', title: 'Ticket no disponible' });
+        return;
+    }
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/documents/GetDeliveryNoteData`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const res = JSON.parse(xhr.responseText);
+                if (!res || !res.success || !res.rows) {
+                    Swal.fire({ icon: 'warning', title: 'No se encontraron datos' });
+                    return;
+                }
+
+                const d = res.rows[0];
+                window.currentDeliveryData = d;
+                const serialPos = d.serialpos || d.serial_pos || '';
+                const lastFourSerialDigits = serialPos.slice(-4);
+                const notaNumero = `NE-${ticketId}-${lastFourSerialDigits}`;
+                const regDes = 'Caracas';
+
+                $('#htmlTemplateTicketId').val(ticketId);
+                $('#ne_fecha').val(d.fecha_actual || new Date().toLocaleDateString());
+                $('#ne_numero').val(notaNumero);
+                $('#ne_rif').val(d.coddocumento || '');
+                $('#ne_razon').val(d.razonsocial || '');
+                $('#ne_responsable').val(d.rlegal || '');
+                $('#ne_contacto').val(d.telf1 || 'Sin número de Contacto');
+                $('#ne_tipo_equipo').val(d.tipo_equipo || d.tipo_pos || 'POS');
+                $('#ne_modelo').val(d.modelo || d.desc_modelo || '');
+                $('#ne_serial').val(d.serialpos || d.serial_pos || '');
+                $('#ne_region_origen').val(d.estado_final || d.estado || '');
+                $('#ne_region_destino').val(regDes);
+                $('#ne_observaciones').val('');
+                $('#ne_componentes').val(d.componentes || 'Sin componentes');
+                
+                // ✅ AGREGAR ESTOS CAMPOS
+                $('#ne_banco').val(d.ibp || 'Sin banco');
+                $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
+
+                // 1. Obtiene la instancia del modal o la crea si no existe
+                const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
+                htmlModal.show();
+                
+                // 2. Adjunta el evento de clic al botón de cerrar
+                $('#closeHtmlTemplateBtn').on('click', function () {
+                     htmlModal.hide();
+                });
+
+            } catch (e) {
+                Swal.fire({ icon: 'error', title: 'Respuesta inválida del servidor' });
+            }
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error de red/servidor' });
+        }
+    };
+
+    const params = `action=GetDeliveryNoteData&id_ticket=${encodeURIComponent(ticketId)}`;
+    xhr.send(params);
+});
+
+// ✅ FUNCIÓN ACTUALIZADA
+$(document).on('click', '#previewHtmlTemplateBtn', function () {
+  const data = {
+    fecha: $('#ne_fecha').val(),
+    numero: $('#ne_numero').val(),
+    rif: $('#ne_rif').val(),
+    razon: $('#ne_razon').val(),
+    responsable: $('#ne_responsable').val(),
+    tipo_equipo: $('#ne_tipo_equipo').val(),
+    modelo: $('#ne_modelo').val(),
+    serial: $('#ne_serial').val(),
+    region_origen: $('#ne_region_origen').val(),
+    region_destino: $('#ne_region_destino').val(),
+    observaciones: $('#ne_observaciones').val(),
+    componentes: $('#ne_componentes').val(),
+    banco: $('#ne_banco').val(), // ✅ AGREGAR
+    proveedor: $('#ne_proveedor').val(), // ✅ AGREGAR
+    tecnico_responsable: window.currentDeliveryData?.full_name_tecnico_responsable || 'Sin técnico asignado'
+  };
+
+  const html = buildDeliveryNoteHtml(data);
+
+  const iframe = document.getElementById('htmlTemplatePreview');
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+});
+
+function buildDeliveryNoteHtml(d) {
+  const safe = (s) => (s || '').toString();
+  return `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Entrega y Envío de Equipo</title>
+      <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 11px;
+        line-height: 1.2;
+        color: #333;
+        background: #fff;
+        padding: 10px;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow-x: hidden;
+      }
+      
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        min-height: calc(100vh - 40px);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .header {
+        text-align: center;
+        margin-bottom: 12px;
+        padding: 8px 0;
+        border-bottom: 2px solid #2c5aa0;
+        position: relative;
+      }
+      
+      .header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #2c5aa0 0%, #4a90e2 50%, #2c5aa0 100%);
+      }
+      
+      .company-logo-img {
+        max-width: 120px;
+        max-height: 60px;
+        margin-bottom: 8px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      
+      .company-address {
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 8px;
+        line-height: 1.3;
+        text-align: center;
+        font-weight: 500;
+      }
+      
+      .document-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin: 4px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .document-subtitle {
+        font-size: 11px;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      .document-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      
+      .info-label {
+        font-size: 9px;
+        color: #666;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      
+      .info-value {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .content-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .section {
+        margin: 6px 0;
+        background: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border: 1px solid #e9ecef;
+      }
+      
+      .section-header {
+        background: linear-gradient(135deg, #2c5aa0 0%, #4a90e2 100%);
+        color: white;
+        padding: 6px 10px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+      
+      .section-content {
+        padding: 8px 10px;
+      }
+      
+      .two-columns {
+        display: flex;
+        gap: 15px;
+      }
+      
+      .column {
+        flex: 1;
+      }
+      
+      .column-title {
+        font-size: 11px;
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 8px;
+        text-align: center;
+        padding: 4px;
+        background: #f0f4f8;
+        border-radius: 3px;
+        border-left: 3px solid #2c5aa0;
+      }
+      
+      .field-row {
+        display: flex;
+        margin-bottom: 4px;
+        align-items: flex-start;
+      }
+      
+      .field-row:last-child {
+        margin-bottom: 0;
+      }
+      
+      .field-label {
+        font-weight: 600;
+        color: #555;
+        min-width: 110px;
+        margin-right: 8px;
+        font-size: 10px;
+        padding-top: 2px;
+      }
+      
+      .field-value {
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+        padding: 3px 8px;
+        background: #f8f9fa;
+        border-radius: 3px;
+        border-left: 2px solid #2c5aa0;
+        font-size: 10px;
+        min-height: 20px;
+        display: flex;
+        align-items: center;
+      }
+      
+      .field-value.observations {
+        background: #fff;
+        border: 1px solid #ddd;
+        min-height: 25px;
+        font-style: italic;
+        align-items: flex-start;
+        padding-top: 5px;
+      }
+      
+      .constancy {
+        background: #e8f4fd;
+        border: 1px solid #b3d9ff;
+        border-radius: 5px;
+        padding: 8px;
+        margin: 8px 0;
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.4;
+        color: #2c5aa0;
+        font-weight: 500;
+      }
+      
+      .signature-section {
+        margin-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+      }
+      
+      .signature-box {
+        flex: 1;
+        max-width: 280px;
+        text-align: center;
+        padding: 12px;
+        border: 1px dashed #ccc;
+        border-radius: 5px;
+        background: #fafafa;
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      
+      .signature-line {
+        border-top: 2px solid #333;
+        margin: 15px auto 8px auto;
+        width: 180px;
+        display: block;
+      }
+      
+      .signature-space {
+        height: 40px;
+        margin: 10px 0;
+      }
+      
+      .signature-label {
+        font-weight: bold;
+        color: #2c5aa0;
+        margin-bottom: 3px;
+        font-size: 10px;
+      }
+      
+      .signature-field {
+        color: #666;
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+      
+      /* ✅ ESTILOS DEL FOOTER ACTUALIZADOS */
+      .footer {
+        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid #ddd;
+        color: #666;
+        font-size: 8px;
+        line-height: 1.2;
+      }
+      
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+      }
+      
+      .footer-left {
+        flex: 1;
+        text-align: left;
+      }
+      
+      .footer-right {
+        flex: 1;
+        text-align: right;
+      }
+      
+      .footer-logo {
+        max-height: 25px;
+        max-width: 100px;
+      }
+      
+      .footer-rif {
+        font-size: 10px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      .footer-text {
+        text-align: center;
+        margin-top: 6px;
+      }
+      
+      /* Optimizaciones críticas para impresión */
+      @media print {
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        /* Mostrar header y footer personalizados solo en impresión */
+        .print-header,
+        .print-footer {
+          display: block !important;
+        }
+        
+        /* Ajustar el contenido para dar espacio al header/footer fijos */
+        body {
+          margin-top: 50px !important;
+          margin-bottom: 40px !important;
+        }
+        
+        html, body {
+          width: 100% !important;
+          height: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: visible !important;
+        }
+        
+        body {
+          font-size: 10px !important;
+          padding: 8px !important;
+        }
+        
+        .container {
+          max-width: 100% !important;
+          width: 100% !important;
+          min-height: auto !important;
+          height: auto !important;
+          page-break-inside: avoid;
+        }
+        
+        .section {
+          box-shadow: none !important;
+          border: 1px solid #ddd !important;
+          margin: 4px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .header {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+          page-break-after: avoid;
+        }
+        
+        .company-logo-img {
+          max-width: 100px !important;
+          max-height: 50px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .company-address {
+          font-size: 9px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .document-title {
+          font-size: 14px !important;
+        }
+        
+        .section-content {
+          padding: 6px 8px !important;
+        }
+        
+        .two-columns {
+          gap: 10px !important;
+        }
+        
+        .column-title {
+          font-size: 10px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .constancy {
+          padding: 6px !important;
+          margin: 6px 0 !important;
+          page-break-inside: avoid;
+        }
+        
+        .signature-section {
+          margin-top: 12px !important;
+          page-break-inside: avoid;
+          gap: 15px !important;
+        }
+        
+        .signature-box {
+          min-height: 70px !important;
+          padding: 10px !important;
+        }
+        
+        .signature-line {
+          width: 150px !important;
+          margin: 12px auto 6px auto !important;
+          display: block !important;
+        }
+        
+        .signature-space {
+          height: 30px !important;
+          margin: 8px 0 !important;
+        }
+        
+        /* ✅ ESTILOS DE IMPRESIÓN PARA FOOTER */
+        .footer {
+          margin-top: 6px !important;
+          padding-top: 4px !important;
+          page-break-before: avoid;
+        }
+        
+        .footer-content {
+          margin-bottom: 6px !important;
+          padding: 6px 0 !important;
+        }
+        
+        .footer-logo {
+          max-height: 20px !important;
+          max-width: 80px !important;
+        }
+        
+        .footer-rif {
+          font-size: 9px !important;
+        }
+        
+        .footer-text {
+          margin-top: 4px !important;
+        }
+        
+        .field-row {
+          margin-bottom: 3px !important;
+          page-break-inside: avoid;
+        }
+        
+        .document-info {
+          margin: 6px 0 !important;
+          padding: 6px !important;
+          page-break-after: avoid;
+        }
+        
+        .section-header {
+          padding: 4px 8px !important;
+          font-size: 10px !important;
+        }
+      }
+      
+      /* Configuración de página para impresión */
+      @page {
+        size: letter;
+        margin: 0.2in 0.5in;
+        padding: 0;
+        /* Ocultar header y footer del navegador */
+        @top-left { content: ""; }
+        @top-center { content: ""; }
+        @top-right { content: ""; }
+        @bottom-left { content: ""; }
+        @bottom-center { content: ""; }
+        @bottom-right { content: ""; }
+      }
+      
+      /* Header personalizado para impresión */
+      .print-header {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: white;
+        border-bottom: 1px solid #ddd;
+        z-index: 1000;
+        padding: 8px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+      }
+      
+      .print-header-logo {
+        max-height: 30px;
+        max-width: 80px;
+      }
+      
+      .print-header-rif {
+        font-size: 12px;
+        font-weight: bold;
+        color: #2c5aa0;
+      }
+      
+      /* Footer personalizado para impresión */
+      .print-footer {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: white;
+        border-top: 1px solid #ddd;
+        z-index: 1000;
+        padding: 5px 20px;
+        box-sizing: border-box;
+      }
+      
+      .print-footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+        font-size: 10px;
+        color: #666;
+      }
+      
+      /* Evitar cortes de página en elementos críticos */
+      .header,
+      .document-info,
+      .section,
+      .constancy,
+      .signature-section,
+      .footer {
+        page-break-inside: avoid;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header personalizado para impresión -->
+    <div class="print-header">
+      <div class="print-header-content">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="print-header-logo" onerror="this.style.display='none'">
+        <div class="print-header-rif">RIF: J-002916150</div>
+      </div>
+    </div>
+    
+    <!-- Footer personalizado para impresión -->
+    <div class="print-footer">
+      <div class="print-footer-content">
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="header">
+        <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="company-logo-img" onerror="this.style.display='none'">
+        <div class="company-address">
+          Urbanización El Rosal. Av. Francisco de Miranda<br>
+          Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
+        </div>
+        <div class="document-title">Nota de Entrega</div>
+        <div class="document-subtitle"></div>
+      </div>
+      
+      <div class="document-info">
+        <div class="info-item">
+          <div class="info-label">Fecha</div>
+          <div class="info-value">${safe(d.fecha)}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">N° de Nota</div>
+          <div class="info-value">${safe(d.numero)}</div>
+        </div>
+      </div>
+
+      <div class="content-wrapper">
+        <div class="section">
+          <div class="section-header">Datos del Cliente</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">R.I.F. / Identificación:</div>
+              <div class="field-value">${safe(d.rif)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Razón Social:</div>
+              <div class="field-value">${safe(d.razon)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Representante Legal:</div>
+              <div class="field-value">${safe(d.responsable)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Detalles del Equipo</div>
+          <div class="section-content">
+            <div class="two-columns">
+              <div class="column">
+                <div class="column-title">Información del Equipo</div>
+                <div class="field-row">
+                  <div class="field-label">Proveedor:</div>
+                  <div class="field-value">${safe(d.proveedor)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Modelo:</div>
+                  <div class="field-value">${safe(d.modelo)}</div>
+                </div>
+                <div class="field-row">
+                  <div class="field-label">Número de Serie:</div>
+                  <div class="field-value">${safe(d.serial)}</div>
+                </div>
+                 <div class="field-row">
+                  <div class="field-label">Banco:</div>
+                  <div class="field-value">${safe(d.banco)}</div>
+                </div>
+              </div>
+              
+              <div class="column">
+                <div class="column-title">Accesorios</div>
+                <div class="field-row">
+                  <div class="field-label">Periféricos:</div>
+                  <div class="field-value">${safe(d.componentes || 'Sin accesorios adicionales')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">Información del Envío</div>
+          <div class="section-content">
+            <div class="field-row">
+              <div class="field-label">Estado de Origen:</div>
+              <div class="field-value">${safe(d.region_origen)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Estado de Destino:</div>
+              <div class="field-value">${safe(d.region_destino)}</div>
+            </div>
+            <div class="field-row">
+              <div class="field-label">Observaciones:</div>
+              <div class="field-value observations">${safe(d.observaciones) || ''}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="signature-section">
+          <div class="signature-box">
+            <div class="signature-label">Recibe</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: _____________________</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+          
+          <div class="signature-box">
+            <div class="signature-label">Firma de Conformidad</div>
+            <div class="signature-space"></div>
+            <div class="signature-line"></div>
+            <div class="signature-field">Nombre: ${safe(d.tecnico_responsable)}</div>
+            <div class="signature-field">C.I.: _____________________</div>
+          </div>
+        </div>
+
+        <!-- ✅ FOOTER ACTUALIZADO CON LOGO Y RIF -->
+        <div class="footer">
+          <div class="footer-content">
+            <div class="footer-left">
+              <img src="app/public/img/Nota_Entrega/INTELIGENSA.PNG" alt="Logo Inteligensa" class="footer-logo" onerror="this.style.display='none'">
+            </div>
+            <div class="footer-right">
+              <div class="footer-rif">RIF: J-002916150</div>
+            </div>
+          </div>
+          <div class="footer-text">
+            <p>Documento válido como constancia oficial de entrega del equipo especificado.</p>
+            <p>Generado: ${new Date().toLocaleString('es-ES')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>`;
 }

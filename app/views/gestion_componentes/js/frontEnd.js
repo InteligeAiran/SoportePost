@@ -54,6 +54,8 @@ function SearchTicketsComponents() {
                         dataForDataTable.push([
                             data.id_ticket,
                             data.nro_ticket,
+                            data.rif || '',
+                            data.razonsocial_cliente || '',
                             data.serial_pos,
                             data.banco_ibp,
                             data.tipo_pos,
@@ -66,7 +68,7 @@ function SearchTicketsComponents() {
                     const headerRow = thead.insertRow();
                     
                     // Crear headers manualmente
-                    const headers = ['N°', 'N° Ticket', 'Serial POS', 'Banco', 'Tipo POS', 'Acciones'];
+                    const headers = ['N°', 'N° Ticket', 'RIF', 'Razón Social', 'Serial POS', 'Banco', 'Tipo POS', 'Acciones'];
                     headers.forEach(headerText => {
                         const th = document.createElement('th');
                         th.textContent = headerText;
@@ -88,6 +90,16 @@ function SearchTicketsComponents() {
                                     },
                                 },
                                 { title: "Nro Ticket" },
+                                { title: "RIF" },
+                                { 
+                                    title: "Razón Social",
+                                    render: function (data, type, row) {
+                                        if (type === "display") {
+                                            return `<span class="truncated-cell" data-full-text="${data || ''}">${data || ''}</span>`;
+                                        }
+                                        return data || '';
+                                    },
+                                },
                                 { title: "Serial POS" },
                                 {
                                     title: "Banco",
@@ -108,7 +120,7 @@ function SearchTicketsComponents() {
                                 "lengthMenu": "Mostrar _MENU_",
                                 "emptyTable": "No hay datos disponibles en la tabla",
                                 "zeroRecords": "No se encontraron resultados para la búsqueda",
-                                "info": "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+                                "info": "_TOTAL_ Registros",
                                 "infoEmpty": "No hay datos disponibles",
                                 "infoFiltered": " de _MAX_ Disponibles",
                                 "search": "Buscar:",
@@ -129,12 +141,6 @@ function SearchTicketsComponents() {
                             const idTicket = $(this).data('id');
                             const serialPos = $(this).data('serial');
                             const nroTicket = $(this).data('ticket');
-                            
-                            console.log('Ver componentes para:', {
-                                idTicket: idTicket,
-                                serialPos: serialPos,
-                                nroTicket: nroTicket
-                            });
                             
                             showComponentsModal(idTicket, serialPos, nroTicket);
                         });
@@ -159,7 +165,42 @@ function SearchTicketsComponents() {
 
                         $("#tabla-ticket tbody")
                             .off("click", "tr")
-                            .on("click", "tr", function () {
+                            .on("click", "tr", function (e) {
+                                // Verificar si el clic fue en un botón, enlace o input
+                                const clickedElement = $(e.target);
+                                const isButton = clickedElement.is('button') || 
+                                                clickedElement.closest('button').length > 0 ||
+                                                clickedElement.is('a') || 
+                                                clickedElement.closest('a').length > 0 ||
+                                                clickedElement.is('input') || 
+                                                clickedElement.closest('input').length > 0 ||
+                                                clickedElement.hasClass('truncated-cell') ||
+                                                clickedElement.hasClass('expanded-cell');
+                                
+                                // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                                if (isButton) {
+                                    return; // No hacer nada, dejar que el botón maneje su propio evento
+                                }
+                                
+                                // Solo ocultar overlay si el clic fue directamente en la fila
+                                // 1. Matamos cualquier otro handler (por si acaso)
+                                e.stopPropagation();
+                                
+                                // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                                $('#loadingOverlay').removeClass('show').hide();
+                                
+                                // 3. Si el script usa opacity o visibility, también lo matamos
+                                $('#loadingOverlay').css({
+                                    'display': 'none',
+                                    'opacity': '0',
+                                    'visibility': 'hidden'
+                                });
+                                
+                                // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                                setTimeout(() => {
+                                    $('#loadingOverlay').hide();
+                                }, 50);
+                            
                                 const tr = $(this);
                                 const rowData = dataTableInstance.row(tr).data();
 
@@ -288,8 +329,362 @@ function SearchTicketsComponents() {
     xhr.send(datos);
 }
 
+// Variables globales para la navegación del modal
+let allPosDataGlobal = [];
+let currentPosIndex = 0;
+let currentModalData = { idTicket: null, serialPos: null, nroTicket: null };
+
+// Función para formatear la lista de componentes, destacando los desmarcados
+function formatComponentsList(componentsString) {
+    if (!componentsString || componentsString === 'No disponible') {
+        return componentsString;
+    }
+    
+    // Dividir por comas y procesar cada componente
+    const components = componentsString.split(',').map(comp => comp.trim());
+    
+    return components.map(component => {
+        if (component.includes('(Desmarcado)')) {
+            // Componente desmarcado - aplicar estilo especial que combine con el fondo púrpura/azul
+            const cleanName = component.replace('(Desmarcado)', '').trim();
+            return `<span style="text-decoration: line-through; opacity: 0.6; color: rgba(255, 255, 255, 0.6);">${cleanName}</span> <span style="font-size: 0.85em; color: #FFE082; font-weight: bold; background: rgba(255, 224, 130, 0.2); padding: 2px 6px; border-radius: 4px; margin-left: 4px;">(Desmarcado)</span>`;
+        } else {
+            // Componente activo
+            return `<span style="color: white;">${component}</span>`;
+        }
+    }).join(', ');
+}
+
+// Función para calcular el número del módulo basado en módulos únicos del mismo POS
+function getModuleNumber(posData, allPosData) {
+    if (!posData || !allPosData || allPosData.length === 0) {
+        return 1;
+    }
+    
+    // Obtener la clave única del POS (id_ticket + serial_pos)
+    const currentPosKey = `${posData.id_ticket}_${posData.serial_pos}`;
+    
+    // Filtrar todos los registros del mismo POS
+    const samePosModules = allPosData.filter(p => 
+        `${p.id_ticket}_${p.serial_pos}` === currentPosKey
+    );
+    
+    // Obtener módulos únicos del mismo POS, ordenados por fecha
+    const uniqueModules = [];
+    const seenModules = new Set();
+    
+    // Ordenar por fecha para mantener el orden cronológico
+    const sortedModules = samePosModules.sort((a, b) => {
+        const dateA = new Date(a.component_insert_date || 0);
+        const dateB = new Date(b.component_insert_date || 0);
+        return dateA - dateB;
+    });
+    
+    // Agregar módulos únicos en orden
+    sortedModules.forEach(module => {
+        const moduleKey = module.modulo_insert || 'Sin Módulo';
+        if (!seenModules.has(moduleKey)) {
+            seenModules.add(moduleKey);
+            uniqueModules.push(moduleKey);
+        }
+    });
+    
+    // Encontrar el índice del módulo actual en la lista de módulos únicos
+    const currentModuleKey = posData.modulo_insert || 'Sin Módulo';
+    const moduleIndex = uniqueModules.indexOf(currentModuleKey);
+    
+    // Retornar el número del módulo (1-based)
+    return moduleIndex >= 0 ? moduleIndex + 1 : 1;
+}
+
+// Función para generar el HTML del contenido del POS
+function generatePosContentHtml(posData, currentIndex, totalPos) {
+    // Obtener la clave única del POS (id_ticket + serial_pos)
+    const currentPosKey = `${posData.id_ticket}_${posData.serial_pos}`;
+    
+    // Usar todos los registros completos si están disponibles, sino usar allPosDataGlobal
+    const allRecords = window.allPosDataGlobalFull || allPosDataGlobal;
+    
+    // Filtrar todos los módulos del mismo POS
+    const samePosModules = allRecords.filter(p => {
+        const recordKey = `${p.id_ticket}_${p.serial_pos}`;
+        return recordKey === currentPosKey;
+    });
+        
+    // Ordenar módulos por fecha de inserción (cronológicamente, del más antiguo al más reciente)
+    const sortedModules = samePosModules.sort((a, b) => {
+        // Parsear fechas en formato 'YYYY-MM-DD HH24:MI' o 'YYYY-MM-DD HH:MI'
+        const parseDate = (dateStr) => {
+            if (!dateStr) return new Date(0);
+            // El formato viene como 'YYYY-MM-DD HH24:MI' o 'YYYY-MM-DD HH:MI'
+            // Reemplazar espacios por 'T' para compatibilidad con ISO 8601
+            const isoDate = dateStr.replace(' ', 'T');
+            const date = new Date(isoDate);
+            return isNaN(date.getTime()) ? new Date(0) : date;
+        };
+        
+        const dateA = parseDate(a.component_insert_date);
+        const dateB = parseDate(b.component_insert_date);
+        return dateA - dateB; // Orden ascendente (más antiguo primero)
+    });
+    
+    // Generar HTML para cada módulo
+    let modulesHtml = '';
+    if (sortedModules.length === 0) {
+        modulesHtml = `
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se encontraron módulos para este POS.
+                </div>
+            </div>
+        `;
+    } else {
+        sortedModules.forEach((moduleData, index) => {
+            const moduleNumber = index + 1;
+            modulesHtml += `
+            <div class="col-12 ${index > 0 ? 'mt-3' : ''}">
+                <div class="pos-module-card">
+                    <div class="pos-module-header">
+                        <div class="pos-module-title">
+                            <i class="fas fa-layer-group me-2"></i>
+                            <span>${moduleData.modulo_insert || 'Módulo Sin Nombre'}</span>
+                        </div>
+                        <div class="pos-module-badge">
+                            <span class="badge pos-module-number">#${moduleNumber}</span>
+                        </div>
+                    </div>
+                    <div class="pos-module-body">
+                        <div class="pos-module-table">
+                            <div class="pos-module-row">
+                                <div class="pos-module-cell pos-module-cell-user">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-user me-2"></i>
+                                        <span>Usuario Responsable</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <span class="pos-module-value">${moduleData.full_name || 'No disponible'}</span>
+                                    </div>
+                                </div>
+                                <div class="pos-module-cell pos-module-cell-date">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-calendar me-2"></i>
+                                        <span>Fecha de Registro</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <span class="pos-module-value">${moduleData.component_insert_date || 'No disponible'}</span>
+                                    </div>
+                                </div>
+                                <div class="pos-module-cell pos-module-cell-region">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-map-marker-alt me-2"></i>
+                                        <span>Región Registro</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <span class="pos-module-value">${moduleData.name_region || 'No disponible'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pos-module-row pos-module-row-components">
+                                <div class="pos-module-cell pos-module-cell-full">
+                                    <div class="pos-module-cell-header">
+                                        <i class="fas fa-puzzle-piece me-2"></i>
+                                        <span>Periférico Asociados</span>
+                                    </div>
+                                    <div class="pos-module-cell-content">
+                                        <div class="pos-components-badge">
+                                            ${formatComponentsList(moduleData.aggregated_components_by_module || 'No disponible')}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        });
+    }
+    
+    return `
+        <!-- Información principal en grid responsivo -->
+        <div class="row g-3 mb-4">
+            <!-- Serial del POS -->
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="pos-card pos-card-info">
+                    <div class="pos-card-header">
+                        <i class="fas fa-barcode"></i>
+                        <span>Serial POS</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="pos-info-item">
+                            <span class="pos-value pos-serial">${posData.serial_pos || 'No disponible'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Banco -->
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="pos-card pos-card-success">
+                    <div class="pos-card-header">
+                        <i class="fas fa-university"></i>
+                        <span>Banco</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="pos-info-item">
+                            <span class="pos-value pos-bank">${posData.banco_ibp || 'No disponible'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipo de POS -->
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="pos-card pos-card-warning">
+                    <div class="pos-card-header">
+                        <i class="fas fa-cogs"></i>
+                        <span>Modelo</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="pos-info-item">
+                            <span class="pos-value pos-model">${posData.tipo_pos || 'No disponible'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Ticket -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="pos-card pos-card-primary">
+                    <div class="pos-card-header">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Información del Ticket</span>
+                    </div>
+                    <div class="pos-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="pos-info-item">
+                                    <label>N° Ticket</label>
+                                    <span class="pos-value">${posData.nro_ticket || 'No disponible'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="pos-info-item">
+                                    <label>ID Ticket</label>
+                                    <span class="pos-value">${posData.id_ticket || 'No disponible'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Componentes por Módulo -->
+        <div class="pos-modules-section">
+            <div class="pos-section-header">
+                <h5 class="pos-section-title">
+                    <i class="fas fa-puzzle-piece me-2"></i>
+                    Periférico por Gestión
+                </h5>
+                <div class="pos-section-line"></div>
+            </div>
+            
+            <div class="row g-3">
+                ${modulesHtml}
+            </div>
+        </div>
+    `;
+}
+
+// Función para actualizar el contenido del modal
+function updateModalContent() {
+    if (allPosDataGlobal.length === 0) {
+        return;
+    }
+    
+    const posData = allPosDataGlobal[currentPosIndex];
+    if (!posData) {
+        return;
+    }
+    
+    const contentContainer = document.querySelector('.pos-modal-content-container');
+    
+    if (contentContainer) {
+        contentContainer.innerHTML = generatePosContentHtml(posData, currentPosIndex, allPosDataGlobal.length);
+        // Hacer scroll al inicio del contenedor para que el usuario vea el cambio
+        contentContainer.scrollTop = 0;
+    }
+    
+    // Actualizar estado de las flechas
+    const prevArrows = document.querySelectorAll('.pos-nav-arrow.prev');
+    const nextArrows = document.querySelectorAll('.pos-nav-arrow.next');
+    
+    prevArrows.forEach(prevArrow => {
+        if (currentPosIndex === 0) {
+            prevArrow.disabled = true;
+            prevArrow.style.opacity = '0.4';
+            prevArrow.style.cursor = 'not-allowed';
+            prevArrow.style.pointerEvents = 'none';
+        } else {
+            prevArrow.disabled = false;
+            prevArrow.style.opacity = '1';
+            prevArrow.style.cursor = 'pointer';
+            prevArrow.style.pointerEvents = 'auto';
+        }
+    });
+    
+    nextArrows.forEach(nextArrow => {
+        if (currentPosIndex >= allPosDataGlobal.length - 1) {
+            nextArrow.disabled = true;
+            nextArrow.style.opacity = '0.4';
+            nextArrow.style.cursor = 'not-allowed';
+            nextArrow.style.pointerEvents = 'none';
+        } else {
+            nextArrow.disabled = false;
+            nextArrow.style.opacity = '1';
+            nextArrow.style.cursor = 'pointer';
+            nextArrow.style.pointerEvents = 'auto';
+        }
+    });
+    
+    // Actualizar contador en el header
+    const counter = document.querySelector('.pos-nav-counter');
+    if (counter) {
+        counter.textContent = `${currentPosIndex + 1} / ${allPosDataGlobal.length}`;
+    }
+    
+    // Actualizar contador en la parte inferior
+    const counterText = document.querySelector('.pos-nav-counter-text');
+    if (counterText) {
+        counterText.textContent = `${currentPosIndex + 1} / ${allPosDataGlobal.length}`;
+    }
+}
+
+// Función para navegar al siguiente POS
+function navigateToNextPos() {
+    if (currentPosIndex < allPosDataGlobal.length - 1) {
+        currentPosIndex++;
+        updateModalContent();
+    }
+}
+
+// Función para navegar al POS anterior
+function navigateToPrevPos() {
+    if (currentPosIndex > 0) {
+        currentPosIndex--;
+        updateModalContent();
+    }
+}
+
 // Función para mostrar el modal de componentes con datos reales
 function showComponentsModal(idTicket, serialPos, nroTicket) {
+    // Guardar datos actuales
+    currentModalData = { idTicket, serialPos, nroTicket };
+    
     // Mostrar loading
     Swal.fire({
         title: 'Cargando información del POS...',
@@ -302,9 +697,9 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
         }
     });
 
-    // Llamada AJAX para obtener la información del POS
+    // Llamada AJAX para obtener TODOS los POS con componentes
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPOSInfo`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetAllPOSInfo`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function() {
@@ -315,8 +710,70 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success && response.tickets && response.tickets.length > 0) {
-                    // CORRECCIÓN: Mostrar TODOS los registros, no solo el primero
-                    const allPosData = response.tickets; // Todos los registros
+                    // Guardar todos los registros (incluyendo todos los módulos)
+                    const allRecords = Array.isArray(response.tickets) ? response.tickets : [response.tickets];
+                    
+                    // Agrupar por ticket + serial para obtener POS únicos
+                    const uniquePosMap = new Map();
+                    allRecords.forEach(record => {
+                        const posKey = `${record.id_ticket}_${record.serial_pos}`;
+                        if (!uniquePosMap.has(posKey)) {
+                            // Guardar el primer registro de cada POS único (usaremos todos los registros en generatePosContentHtml)
+                            uniquePosMap.set(posKey, record);
+                        }
+                    });
+                    
+                    // Convertir el Map a array para mantener el orden
+                    allPosDataGlobal = Array.from(uniquePosMap.values());
+                    
+                    // Guardar todos los registros originales para usar en generatePosContentHtml
+                    window.allPosDataGlobalFull = allRecords;
+                    
+                    // Normalizar valores para búsqueda
+                    const normalizedSerialPos = String(serialPos || '').trim();
+                    const normalizedIdTicket = parseInt(idTicket || 0);
+                    const normalizedNroTicket = String(nroTicket || '').trim();
+                    
+                    // Buscar el índice del POS que coincide con el serial e id_ticket seleccionado
+                    // Priorizar coincidencia exacta con serial + id_ticket + nro_ticket
+                    let selectedIndex = -1;
+                    
+                    // Primero intentar coincidencia exacta con todos los campos
+                    if (normalizedNroTicket) {
+                        selectedIndex = allPosDataGlobal.findIndex(pos => {
+                            const posSerial = String(pos.serial_pos || '').trim();
+                            const posTicket = parseInt(pos.id_ticket || 0);
+                            const posNroTicket = String(pos.nro_ticket || '').trim();
+                            
+                            return posSerial === normalizedSerialPos && 
+                                   posTicket === normalizedIdTicket &&
+                                   posNroTicket === normalizedNroTicket;
+                        });
+                    }
+                    
+                    // Si no se encuentra, buscar solo por serial e id_ticket
+                    if (selectedIndex === -1) {
+                        selectedIndex = allPosDataGlobal.findIndex(pos => {
+                            const posSerial = String(pos.serial_pos || '').trim();
+                            const posTicket = parseInt(pos.id_ticket || 0);
+                            
+                            return posSerial === normalizedSerialPos && posTicket === normalizedIdTicket;
+                        });
+                    }
+                    
+                    // Si aún no se encuentra, buscar solo por serial
+                    if (selectedIndex === -1) {
+                        selectedIndex = allPosDataGlobal.findIndex(pos => {
+                            const posSerial = String(pos.serial_pos || '').trim();
+                            return posSerial === normalizedSerialPos;
+                        });
+                    }
+                    
+                    // Si se encuentra, empezar desde ese índice, sino desde el primero
+                    currentPosIndex = selectedIndex >= 0 ? selectedIndex : 0;
+                    
+                    // Obtener el POS inicial para mostrar (el seleccionado o el primero)
+                    const initialPosData = allPosDataGlobal[currentPosIndex];
                     
                     // Crear HTML para mostrar la información del POS
                     let posInfoHtml = `
@@ -349,158 +806,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 <div class="pos-stats">
                                     <span class="badge pos-badge-primary">
                                         <i class="fas fa-layer-group me-1"></i>
-                                        ${allPosData.length} Periférico${allPosData.length !== 1 ? 's' : ''} Registrado${allPosData.length !== 1 ? 's' : ''}
+                                        ${allPosDataGlobal.length} Periférico${allPosDataGlobal.length !== 1 ? 's' : ''} Registrado${allPosDataGlobal.length !== 1 ? 's' : ''}
+                                    </span>
+                                    <span class="badge pos-badge-primary ms-2 pos-nav-counter" style="background: rgba(255, 255, 255, 0.3);">
+                                        ${currentPosIndex + 1} / ${allPosDataGlobal.length}
                                     </span>
                                 </div>
                             </div>
                             
-                            <!-- Información principal en grid responsivo -->
-                            <div class="row g-3 mb-4">
-                                <!-- Serial del POS -->
-                                <div class="col-xl-4 col-lg-6 col-md-6">
-                                    <div class="pos-card pos-card-info">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-barcode"></i>
-                                            <span>Serial POS</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="pos-info-item">
-                                                <span class="pos-value pos-serial">${serialPos}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                        </div>
-
-                                <!-- Información del Banco -->
-                                <div class="col-xl-4 col-lg-6 col-md-6">
-                                    <div class="pos-card pos-card-success">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-university"></i>
-                                            <span>Banco</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="pos-info-item">
-                                                <span class="pos-value pos-bank">${allPosData[0].banco_ibp || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                                <!-- Tipo de POS -->
-                                <div class="col-xl-4 col-lg-6 col-md-6">
-                                    <div class="pos-card pos-card-warning">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-cogs"></i>
-                                            <span>Modelo</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="pos-info-item">
-                                                <span class="pos-value pos-model">${allPosData[0].tipo_pos || 'No disponible'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-
-                            <!-- Información del Ticket -->
-                            <div class="row mb-4">
-                                <div class="col-12">
-                                    <div class="pos-card pos-card-primary">
-                                        <div class="pos-card-header">
-                                            <i class="fas fa-ticket-alt"></i>
-                                            <span>Información del Ticket</span>
-                                        </div>
-                                        <div class="pos-card-body">
-                                            <div class="row">
-                                <div class="col-md-6">
-                                                    <div class="pos-info-item">
-                                                        <label>N° Ticket</label>
-                                                        <span class="pos-value">${nroTicket}</span>
-                                        </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="pos-info-item">
-                                                        <label>ID Ticket</label>
-                                                        <span class="pos-value">${idTicket}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Componentes por Módulo -->
-                            <div class="pos-modules-section">
-                                <div class="pos-section-header">
-                                    <h5 class="pos-section-title">
-                                        <i class="fas fa-puzzle-piece me-2"></i>
-                                        Periférico por Gestión
-                                    </h5>
-                                    <div class="pos-section-line"></div>
-                                </div>
-                                
-                                <div class="row g-3">
-                    `;
-
-                    // ITERAR TODOS LOS REGISTROS DE COMPONENTES
-                    allPosData.forEach((posData, index) => {
-                        posInfoHtml += `
-                                <div class="col-12">
-                                        <div class="pos-module-card">
-                                            <div class="pos-module-header">
-                                                <div class="pos-module-title">
-                                                <i class="fas fa-layer-group me-2"></i>
-                                                    <span>${posData.modulo_insert || 'Módulo Sin Nombre'}</span>
-                                        </div>
-                                                <div class="pos-module-badge">
-                                                    <span class="badge pos-module-number">#${index + 1}</span>
-                                                </div>
-                                                </div>
-                                            <div class="pos-module-body">
-                                                <div class="pos-module-table">
-                                                    <div class="pos-module-row">
-                                                        <div class="pos-module-cell pos-module-cell-user">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-user me-2"></i>
-                                                                <span>Usuario Responsable</span>
-                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <span class="pos-module-value">${posData.full_name || 'No disponible'}</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="pos-module-cell pos-module-cell-date">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-calendar me-2"></i>
-                                                                <span>Fecha de Registro</span>
-                                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <span class="pos-module-value">${posData.component_insert_date || 'No disponible'}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="pos-module-row pos-module-row-components">
-                                                        <div class="pos-module-cell pos-module-cell-full">
-                                                            <div class="pos-module-cell-header">
-                                                                <i class="fas fa-puzzle-piece me-2"></i>
-                                                                <span>Periférico Asociados</span>
-                                                            </div>
-                                                            <div class="pos-module-cell-content">
-                                                                <div class="pos-components-badge">
-                                                            ${posData.aggregated_components_by_module || 'No disponible'}
-                                                                </div>
-                                                            </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    posInfoHtml += `
-                                </div>
+                            <!-- Contenedor del contenido (se actualizará dinámicamente) -->
+                            <div class="pos-modal-content-container">
+                                ${generatePosContentHtml(initialPosData, currentPosIndex, allPosDataGlobal.length)}
                             </div>
 
                             <!-- Nota informativa empresarial -->
@@ -512,6 +828,17 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                         <p class="mb-0">Esta información se obtiene desde la base de datos de Soporte Post-Venta y muestra todos los registros de Periféricos registrados para este serial de POS, organizados por módulo de gestión técnica.</p>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Navegación con flechas en la parte inferior -->
+                            <div class="pos-navigation-footer">
+                                <button class="pos-nav-arrow prev" type="button" title="Anterior">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="pos-nav-counter-text">${currentPosIndex + 1} / ${allPosDataGlobal.length}</span>
+                                <button class="pos-nav-arrow next" type="button" title="Siguiente">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -594,6 +921,11 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             .pos-stats {
                                 position: relative;
                                 z-index: 1;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                flex-wrap: wrap;
+                                gap: 0.5rem;
                             }
 
                             .pos-badge-primary {
@@ -604,6 +936,72 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 font-weight: 500;
                                 backdrop-filter: blur(10px);
                                 border: 1px solid rgba(255, 255, 255, 0.3);
+                            }
+
+                            .pos-navigation-footer {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                gap: 1.5rem;
+                                margin-top: 2rem;
+                                padding: 1.5rem;
+                                background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                                border-radius: 12px;
+                                border: 1px solid #dee2e6;
+                            }
+
+                            .pos-nav-arrow {
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                                border: 2px solid rgba(102, 126, 234, 0.3) !important;
+                                border-radius: 50% !important;
+                                width: 50px !important;
+                                height: 50px !important;
+                                display: flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                                color: white !important;
+                                cursor: pointer !important;
+                                transition: all 0.3s ease !important;
+                                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+                                position: relative !important;
+                                z-index: 10 !important;
+                            }
+
+                            .pos-nav-arrow:hover:not(:disabled) {
+                                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+                                transform: scale(1.1) !important;
+                                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5) !important;
+                            }
+
+                            .pos-nav-arrow:active:not(:disabled) {
+                                transform: scale(0.95) !important;
+                            }
+
+                            .pos-nav-arrow:disabled {
+                                opacity: 0.4 !important;
+                                cursor: not-allowed !important;
+                                background: #6c757d !important;
+                            }
+
+                            .pos-nav-arrow i {
+                                font-size: 1.5rem !important;
+                                font-weight: bold !important;
+                            }
+
+                            .pos-nav-counter {
+                                background: rgba(255, 255, 255, 0.3) !important;
+                            }
+
+                            .pos-nav-counter-text {
+                                font-size: 1.1rem;
+                                font-weight: 600;
+                                color: #2c3e50;
+                                padding: 0.5rem 1.5rem;
+                                background: white;
+                                border-radius: 25px;
+                                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                                min-width: 80px;
+                                text-align: center;
                             }
 
                             .pos-card {
@@ -823,11 +1221,15 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                             }
 
                             .pos-module-cell-user {
-                                flex: 0 0 50%;
+                                flex: 0 0 33.33%;
                             }
 
                             .pos-module-cell-date {
-                                flex: 0 0 50%;
+                                flex: 0 0 33.33%;
+                            }
+
+                            .pos-module-cell-region {
+                                flex: 0 0 33.33%;
                             }
 
                             .pos-module-cell-full {
@@ -970,7 +1372,8 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 }
                                 
                                 .pos-module-cell-user,
-                                .pos-module-cell-date {
+                                .pos-module-cell-date,
+                                .pos-module-cell-region {
                                     flex: 1;
                                 }
                             }
@@ -1025,6 +1428,40 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
                                 modal.style.overflow = 'hidden';
                                 modal.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)';
                             }
+                            
+                            // Esperar un momento para que el DOM esté completamente renderizado
+                            setTimeout(() => {
+                                // Inicializar estado de las flechas
+                                updateModalContent();
+                                
+                                // Agregar event listeners a las flechas (puede haber múltiples instancias)
+                                const prevArrows = document.querySelectorAll('.pos-nav-arrow.prev');
+                                const nextArrows = document.querySelectorAll('.pos-nav-arrow.next');
+                                
+                                prevArrows.forEach((arrow) => {
+                                    // Remover listeners anteriores si existen
+                                    const newArrow = arrow.cloneNode(true);
+                                    arrow.parentNode.replaceChild(newArrow, arrow);
+                                    
+                                    newArrow.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        navigateToPrevPos();
+                                    });
+                                });
+                                
+                                nextArrows.forEach((arrow) => {
+                                    // Remover listeners anteriores si existen
+                                    const newArrow = arrow.cloneNode(true);
+                                    arrow.parentNode.replaceChild(newArrow, arrow);
+                                    
+                                    newArrow.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        navigateToNextPos();
+                                    });
+                                });
+                            }, 100);
                         }
                     });
 
@@ -1078,7 +1515,7 @@ function showComponentsModal(idTicket, serialPos, nroTicket) {
     };
 
     // Enviar la solicitud
-    const datos = `action=GetPOSInfo&serial=${encodeURIComponent(serialPos)}&id_ticket=${idTicket}`;
+    const datos = 'action=GetAllPOSInfo';
     xhr.send(datos);
 }
 
@@ -1093,7 +1530,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -1130,7 +1566,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
@@ -1218,7 +1654,8 @@ function formatTicketDetailsPanel(d) {
             </div>
         </div>
     `;
-}
+}*/
+
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
     const historyPanel = $("#ticket-history-content");
@@ -1280,16 +1717,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
             timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
         } else if (diffWeeks > 0) {
             const remainingDays = diffDays % 7;
-            timeText = `${diffWeeks}W ${remainingDays}D`;
+            timeText = `${diffWeeks}S ${remainingDays}D`;
         } else if (diffDays > 0) {
             const remainingHours = diffHours % 24;
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}Min`;
         } else if (diffHours > 0) {
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffHours}H ${remainingMinutes}M`;
+            timeText = `${diffHours}H ${remainingMinutes}Min`;
         } else if (diffMinutes > 0) {
-            timeText = `${diffMinutes}M`;
+            timeText = `${diffMinutes}Min`;
         } else {
             return null;
         }
@@ -1317,10 +1754,84 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
         success: function(response) {
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = `
-                    <div class="d-flex justify-content-end mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#17a2b8" class="bi bi-info-square-fill" viewBox="0 0 16 16" style="cursor: pointer;" data-toggle="collapse" data-target="#colorLegend_${ticketId}" aria-expanded="false" aria-controls="colorLegend_${ticketId}" title="Leyenda de Colores">
+                            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.93 4.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                        </svg>
                         <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
                         </button>
+                    </div>
+                    <div class="collapse mb-3" id="colorLegend_${ticketId}">
+                            <div class="alert alert-info" role="alert">
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #ffc107; color: #ffffff; min-width: 80px; padding: 6px 12px;">Amarillo</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestión actual</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #5d9cec; color: #ffffff; min-width: 80px; padding: 6px 12px;">Azul</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestiones anteriores</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #fd7e14; color: #ffffff; min-width: 80px; padding: 6px 12px;">Naranja</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Taller</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #28a745; color: #ffffff; min-width: 80px; padding: 6px 12px;">Verde</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Domiciliación</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TG:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Gestión Anterior</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TR:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Revisión Domiciliación</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TT:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración en Taller</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div style="text-align: center; margin-bottom: 12px;">
+                                        <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
+                            </div>
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Mes(es)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">S</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Semana(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">D</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Día(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #3b82f6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">H</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Hora(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #f59e0b; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">Min</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Minuto(s)</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px;">
+                                        <p style="color: #ffffff; font-size: 0.85em; font-style: italic; margin: 0;">
+                                            Ejemplo: <strong>1M 2S 3D 6H 11Min</strong> significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="accordion" id="ticketHistoryAccordion">
                 `;
@@ -1333,8 +1844,143 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 
                     let timeElapsed = null;
                     let timeBadge = '';
-
-                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                    
+                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
+                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
+                    
+                    // Verificar si hay cambio de domiciliación o taller para calcular TG/TR o TG/TT
+                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
+                    let durationFromPreviousText = '';
+                    let durationFromCreationText = '';
+                    let durationLabFromPreviousText = '';
+                    let durationLabFromTallerText = '';
+                    
+                    // Calcular tiempos para Domiciliación
+                    if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Desde la creación del ticket
+                        let ticketCreationDate = null;
+                        const lastHistoryItem = response.history[response.history.length - 1];
+                        if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                            ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                        } else {
+                            // Buscar el elemento con "Ticket Creado"
+                            for (let i = response.history.length - 1; i >= 0; i--) {
+                                const histItem = response.history[i];
+                                if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                                    ticketCreationDate = histItem.fecha_de_cambio;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (ticketCreationDate) {
+                            // Calcular duración desde la creación del ticket hasta el cambio actual
+                            const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                            if (duration) {
+                                durationFromCreationText = duration.text;
+                            }
+                        }
+                    }
+                    
+                    // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    const currentAccionForLab = cleanString(item.name_accion_ticket);
+                    const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+                    
+                    if (isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab)) {
+                        // Tiempo 1: Desde la gestión anterior (TG)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationLabFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+                        // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+                        let totalTallerMinutes = 0;
+                        for (let i = index + 1; i < response.history.length; i++) {
+                            const histItem = response.history[i];
+                            const nextHistItem = response.history[i - 1] || null;
+                            
+                            if (histItem && histItem.fecha_de_cambio && nextHistItem && nextHistItem.fecha_de_cambio) {
+                                const histStatusLab = cleanString(histItem.name_status_lab);
+                                const isReparacionStatus = histStatusLab && 
+                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                                     histStatusLab.toLowerCase().includes('reparado'));
+                                const isRecibidoEnTaller = histStatusLab && 
+                                    histStatusLab.toLowerCase().includes('recibido en taller');
+                                
+                                // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                                if (isReparacionStatus && !isRecibidoEnTaller) {
+                                    const duration = calculateTimeElapsed(histItem.fecha_de_cambio, nextHistItem.fecha_de_cambio);
+                                    if (duration && duration.minutes) {
+                                        totalTallerMinutes += duration.minutes;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Convertir el total de minutos a formato legible
+                        if (totalTallerMinutes > 0) {
+                            const totalHours = Math.floor(totalTallerMinutes / 60);
+                            const remainingMinutes = totalTallerMinutes % 60;
+                            const totalDays = Math.floor(totalHours / 24);
+                            const remainingHours = totalHours % 24;
+                            const totalWeeks = Math.floor(totalDays / 7);
+                            const remainingDaysAfterWeeks = totalDays % 7;
+                            const totalMonths = Math.floor(totalDays / 30.44);
+                            
+                            if (totalMonths > 0) {
+                                const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                                durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                            } else if (totalWeeks > 0) {
+                                durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                            } else if (totalDays > 0) {
+                                durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                            } else if (totalHours > 0) {
+                                durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                            } else {
+                                durationLabFromTallerText = `${remainingMinutes}Min`;
+                            }
+                        }
+                    }
+                    
+                    // Prioridad: Si la acción es "En el Rosal" (terminó la estadía en taller), mostrar TG y TT; si no, mostrar TG y TR si hay cambio de Domiciliación; si no, tiempo normal
+                    if (isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab) && (durationLabFromPreviousText || durationLabFromTallerText)) {
+                        let tgTtText = '';
+                        if (durationLabFromPreviousText && durationLabFromTallerText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}<br>TT: ${durationLabFromTallerText}`;
+                        } else if (durationLabFromPreviousText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}`;
+                        } else if (durationLabFromTallerText) {
+                            tgTtText = `TT: ${durationLabFromTallerText}`;
+                        }
+                        timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #fd7e14 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2;">${tgTtText}</span>`;
+                    } else if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Si hay cambio de domiciliación, mostrar TG y TR en el badge en formato vertical (uno arriba del otro)
+                        // Solo mostrar las líneas que tienen valores (no mostrar "N/A")
+                        let tdTrText = '';
+                        if (durationFromPreviousText && durationFromCreationText) {
+                            tdTrText = `TG: ${durationFromPreviousText}<br>TR: ${durationFromCreationText}`;
+                        } else if (durationFromPreviousText) {
+                            tdTrText = `TG: ${durationFromPreviousText}`;
+                        } else if (durationFromCreationText) {
+                            tdTrText = `TR: ${durationFromCreationText}`;
+                        }
+                        if (tdTrText) {
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #28a745 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tdTrText}</span>`;
+                        }
+                    } else if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        // Si no hay cambio de domiciliación ni taller, mostrar el tiempo normal
                         timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
                         if (timeElapsed) {
                             let badgeColor = 'success';
@@ -1354,12 +2000,9 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             else if (badgeColor === 'warning') backgroundColor = '#ffc107';
                             else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important; white-space: nowrap; overflow: visible;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
                         }
                     }
-                    
-                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
-                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
                     const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
                     const creationBadge = isCreation && item.fecha_de_cambio ? 
@@ -1369,9 +2012,17 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
                     const usuarioGestionChanged = getChange(item.usuario_gestion, prevItem.usuario_gestion);
                     const tecnicoChanged = getChange(item.full_name_tecnico_n2_history, prevItem.full_name_tecnico_n2_history);
-                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
-                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    // statusLabChanged y statusDomChanged ya están declarados arriba cuando se calculan TG/TT y TG/TR para el badge
                     const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    
+                    // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+                    // Nota: durationLabFromPreviousText y durationLabFromTallerText ya se calcularon arriba para el badge (solo cuando es "En el Rosal")
+                    // isEnElRosalForLab ya está declarado arriba
+                    
+                    // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+                    // Nota: durationFromPreviousText y durationFromCreationText ya se calcularon arriba para el badge
                     const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
                     const componentsChanged = getChange(item.components_list, prevItem.components_list);
                     const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
@@ -1381,6 +2032,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -1389,8 +2041,29 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    
+                    // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
+                    // La gestión actual ya es amarilla por defecto
+                    // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
+                    const currentStatusLabForColor = cleanString(item.name_status_lab);
+                    const isReparacionStatus = currentStatusLabForColor && 
+                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
+                         currentStatusLabForColor.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = currentStatusLabForColor && 
+                        currentStatusLabForColor.toLowerCase().includes('recibido en taller');
+                    
+                    if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
+                        headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
+                        textColor = "color: #ffffff;";
+                    }
+                    // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
+                    else if (statusDomChanged && !isLatest) {
+                        headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
+                        textColor = "color: #ffffff;";
+                    }
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
                     if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
@@ -1398,9 +2071,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     }
 
                     // Se define el texto del botón aquí con la condición ternaria
-                    const buttonText = isCreation
+                    let buttonText = isCreation
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
+
+                    // Calcular el padding derecho para evitar que el badge trunque el texto
+                    const hasTimeBadge = timeBadge && timeBadge.trim() !== '';
+                    const hasCreationBadge = creationBadge && creationBadge.trim() !== '';
+                    const buttonPaddingRight = (hasTimeBadge || hasCreationBadge) ? '120px' : '15px';
 
                     historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
@@ -1411,7 +2089,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
                                         aria-expanded="false" aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                        style="${textColor}; padding-right: ${buttonPaddingRight} !important;">
                                         ${buttonText}
                                     </button>
                                 </h2>
@@ -1459,10 +2137,26 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <th class="text-start">Estatus Taller:</th>
                                                     <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
+                                                ${isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab) ? `
+                                                    ${durationLabFromTallerText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Total Duración en Taller:</th>
+                                                            <td class="highlighted-change">${durationLabFromTallerText}</td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
                                                     <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
+                                                ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                                                    ${durationFromCreationText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
+                                                            <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
@@ -1471,6 +2165,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -1560,6 +2262,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
+    // ... (Mantener las funciones auxiliares: decodeHistorySafe, cleanString, parseCustomDate, calculateTimeElapsed, generateFileName)
     const decodeHistorySafe = (encoded) => {
         try {
             if (!encoded) return [];
@@ -1599,14 +2302,14 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             const remainingDays = Math.floor(diffDays % 30.44);
             text = `${diffMonths}M ${remainingDays}D`;
         } else if (diffWeeks > 0) {
-            text = `${diffWeeks}W ${diffDays % 7}D`;
+            text = `${diffWeeks}S ${diffDays % 7}D`;
         } else if (diffDays > 0) {
-            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}Min`;
         } else if (diffHours > 0) {
-            text = `${diffHours}H ${diffMinutes % 60}M`;
+            text = `${diffHours}H ${diffMinutes % 60}Min`;
         } else if (diffMinutes > 0) {
             // Mostrar minutos cuando es al menos 1 minuto
-            text = `${diffMinutes}M`;
+            text = `${diffMinutes}Min`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;
@@ -1616,25 +2319,131 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const history = decodeHistorySafe(historyEncoded);
 
-    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
         let fileName = `Historial_Ticket_${ticketNumber}`;
-        
         if (serial && serial.length >= 4) {
             const lastFourDigits = serial.slice(-4);
             fileName += `-${lastFourDigits}`;
         }
-        
         return `${fileName}.pdf`;
     };
 
     const fileName = generateFileName(currentTicketNroForImage, serialPos);
+
+    const getChange = (itemVal, prevVal) => {
+        const cleanItem = cleanString(itemVal);
+        const cleanPrev = cleanString(prevVal);
+        return cleanItem !== cleanPrev;
+    };
 
     let itemsHtml = '';
     history.forEach((item, index) => {
         const previous = history[index + 1] || null;
         const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
         const elapsedText = elapsed ? elapsed.text : 'N/A';
+        
+        // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+        // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+        let durationLabFromPreviousText = '';
+        let durationLabFromTallerText = '';
+        if (previous) {
+            const statusLabChanged = getChange(item.name_status_lab, previous.name_status_lab);
+            const currentAccion = cleanString(item.name_accion_ticket);
+            const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+            
+            if (isEnElRosal && statusLabChanged && cleanString(item.name_status_lab)) {
+                // Tiempo 1: Desde la gestión anterior
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationLabFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde "Recibido en Taller" hasta el cambio actual
+                let fechaEntradaTaller = null;
+                for (let i = index + 1; i < history.length; i++) {
+                    const histItem = history[i];
+                    if (histItem && histItem.fecha_de_cambio) {
+                        const statusLab = cleanString(histItem.name_status_lab);
+                        if (statusLab && statusLab.toLowerCase().includes('recibido en taller') && !fechaEntradaTaller) {
+                            fechaEntradaTaller = histItem.fecha_de_cambio;
+                        }
+                    }
+                }
+                
+                if (!fechaEntradaTaller) {
+                    for (let i = history.length - 1; i > index; i--) {
+                        const histItem = history[i];
+                        if (histItem && histItem.fecha_de_cambio) {
+                            const statusLab = cleanString(histItem.name_status_lab);
+                            if (statusLab && statusLab.toLowerCase().includes('recibido en taller')) {
+                                fechaEntradaTaller = histItem.fecha_de_cambio;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (fechaEntradaTaller) {
+                    const duration = calculateTimeElapsed(fechaEntradaTaller, item.fecha_de_cambio);
+                    if (duration) {
+                        durationLabFromTallerText = duration.text;
+                    }
+                }
+            }
+        }
+        
+        // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+        // Mostrar dos tiempos: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+        let statusDomDuration = '';
+        if (previous) {
+            const statusDomChanged = getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion);
+            if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                let durationFromPrevious = '';
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationFromPrevious = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde la creación del ticket
+                let ticketCreationDate = null;
+                const lastHistoryItem = history[history.length - 1];
+                if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                    ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                } else {
+                    // Buscar el elemento con "Ticket Creado"
+                    for (let i = history.length - 1; i >= 0; i--) {
+                        const histItem = history[i];
+                        if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                            ticketCreationDate = histItem.fecha_de_cambio;
+                            break;
+                        }
+                    }
+                }
+                
+                let durationFromCreation = '';
+                if (ticketCreationDate) {
+                    // Calcular duración desde la creación del ticket hasta el cambio actual
+                    const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                    if (duration) {
+                        durationFromCreation = duration.text;
+                    }
+                }
+                
+                // Construir el texto con ambos tiempos
+                if (durationFromPrevious && durationFromCreation) {
+                    statusDomDuration = ` <span style="color: #6c757d; font-size: 0.75em;">(<strong>Tiempo en este cambio:</strong> ${durationFromPrevious} | <strong>Tiempo total:</strong> ${durationFromCreation})</span>`;
+                } else if (durationFromPrevious) {
+                    statusDomDuration = ` <span style="color: #6c757d; font-size: 0.75em;">(<strong>Tiempo en este cambio:</strong> ${durationFromPrevious})</span>`;
+                } else if (durationFromCreation) {
+                    statusDomDuration = ` <span style="color: #6c757d; font-size: 0.75em;">(<strong>Tiempo total:</strong> ${durationFromCreation})</span>`;
+                }
+            }
+        }
 
         itemsHtml += `
             <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -1656,9 +2465,20 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        ${(() => {
+                            const currentAccion = cleanString(item.name_accion_ticket);
+                            const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+                            return isEnElRosal && durationLabFromTallerText ? `
+                                <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Total Duración en Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${durationLabFromTallerText}</td></tr>
+                            ` : '';
+                        })()}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        ${previous && getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) && cleanString(item.name_status_domiciliacion) ? `
+                            ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
+                        ` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -1677,6 +2497,35 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         `;
     });
 
+    const legendHTML_Integrated = `
+        <div class="legend-integrated" style="margin: 10px 0; padding: 10px; background: #e0f2fe; border: 1px solid #93c5fd; border-radius: 6px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <p style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">
+                LEYENDA DE TIEMPO
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; font-size: 11px; font-weight: 500; flex-wrap: wrap;">
+                <span style="color: #7c3aed;">
+                    <strong style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">M</strong> Mes(es)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">S</strong> Semana(s)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">D</strong> Día(s)
+                </span>
+                <span style="color: #1e40af;">
+                    <strong style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">H</strong> Hora(s)
+                </span>
+                <span style="color: #9a3412;">
+                    <strong style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">Min</strong> Minuto(s)
+                </span>
+            </div>
+            <p style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+                *Ejemplo: **1M 2S 3D 6H 11Min** significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+            </p>
+        </div>
+    `;
+
+
     const printContent = `
         <!DOCTYPE html>
         <html lang="es">
@@ -1685,6 +2534,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${fileName}</title>
             <style>
+                /* ... (Mantener todos los estilos CSS anteriores, asegurando que la clase .legend-float NO exista para no confundir) ... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -1908,13 +2758,24 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     margin-top: 6px;
                 }
                 
+                /* Estilos para la leyenda integrada */
+                .legend-integrated {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #e0f2fe;
+                    border: 1px solid #93c5fd;
+                    border-radius: 6px;
+                    text-align: center;
+                    page-break-inside: avoid; /* Evita que la leyenda se rompa entre páginas */
+                }
+                
                 /* Optimizaciones para impresión */
                 @media print {
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    
+
                     body {
                         margin-top: 50px !important;
                         margin-bottom: 40px !important;
@@ -2035,7 +2896,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-            </div>
+                </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -2049,6 +2910,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <div class="info-value">${new Date().toLocaleString()}</div>
                     </div>
                 </div>
+                
+                ${legendHTML_Integrated}
 
                 <div class="content-wrapper">
                     <div class="history-section">
@@ -2096,12 +2959,12 @@ function showElapsedLegend(e) {
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">Una semana o más, o más de 2 días hábiles</span></div>
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">Un mes o más, o más de 5 días hábiles</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
+            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
         </div>`;
 
     Swal.fire({
-        title: 'Agenda de colores',
+        title: 'Leyenda',
         html: legendHtml,
         icon: 'info',
         confirmButtonText: 'Entendido',

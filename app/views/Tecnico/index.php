@@ -24,6 +24,8 @@ function mi_navbar() {}
     <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <!-- User Role for JavaScript -->
+    <script> var currentUserRole = <?php echo $_SESSION['id_rol'] ?? 'guest'; ?>;</script>
     <style>
       
             #ticket-details-panel table td, table th {
@@ -662,35 +664,62 @@ function mi_navbar() {}
         <!--MODAL PARA SELECCIONAR TECNICO-->
 
         <!--MODAL PARA SUBIR EL DOCUMENTO DE ENVIO A DESTIN0-->
-            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: none;">
+            <div class="modal fade" id="uploadDocumentModal" tabindex="-1" aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-header bg-gradient-primary">
-                            <strong>
-                                <h5 class="modal-title text-lg font-semibold text-gray-800" id="uploadDocumentModalLabel">Subir
-                                    Documento para el Nro Ticket: <span id="modalTicketId"></span></h5>
-                                <input type="hidden" id="id_ticket"></input>
-                                <input type="hidden" id="type_document"></input>
-                            </strong>
+                        <div class="modal-header bg-gradient-primary text-white">
+                            <h5 class="modal-title" id="uploadDocumentModalLabel">
+                            Subir Documento para el Nro Ticket: <span id="modalTicketId" class="fw-bold"></span>
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
+
                         <div class="modal-body">
                             <form id="uploadForm">
+                                <!-- Campos ocultos -->
+                                <input type="hidden" id="id_ticket">
+                                <input type="hidden" id="type_document">
+
                                 <div class="mb-3">
-                                    <label for="documentFile" class="form-label text-gray-700">Seleccionar Archivo:</label>
-                                    <input class="form-control" type="file" id="documentFile" accept="image/*,application/pdf"
-                                        style="display:block">
-                                    <small class="text-gray-500">Solo imágenes (JPG, PNG, GIF) o PDF.</small>
+                                    <label for="documentFile" class="form-label text-gray-700 fw-semibold">
+                                        Seleccionar Archivo:
+                                    </label>
+                                    
+                                    <!-- Wrapper con position-relative para que Bootstrap muestre los mensajes de feedback -->
+                                    <div class="position-relative">
+                                        <input class="form-control" type="file" id="documentFile" accept="image/jpg, image/png, image/gif, application/pdf" required>
+
+                                        <!-- Mensajes de validación de Bootstrap -->
+                                        <div class="valid-feedback">
+                                            Formato correcto
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            Solo se permiten imágenes (JPG, PNG, GIF) o PDF
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mensaje informativo que se oculta cuando hay validación activa -->
+                                    <small id="fileFormatInfo" class="text-gray-500 d-block mt-1" style="transition: opacity 0.2s;">
+                                        Formatos permitidos: JPG, PNG, GIF o PDF
+                                    </small>
                                 </div>
-                                <div class="mb-3 text-center" style="max-height: 50vh; overflow-y: auto;">
-                                    <img id="imagePreview" class="img-fluid img-preview" src="#" alt="Previsualización de Imagen" style="display: none;">
+
+                                <!-- Previsualización DESACTIVADA POR MOTIVOS DE SEGURIDAD -->
+                                <!-- La previsualización ha sido desactivada para prevenir posibles inyecciones de código -->
+                                <div id="imagePreviewContainer" class="text-center" style="display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; width: 0 !important; overflow: hidden !important; max-height: 0 !important; padding: 0 !important; margin: 0 !important;">
+                                    <img id="imagePreview" class="img-fluid rounded shadow-sm" src="#" alt="Previsualización" style="display: none !important; visibility: hidden !important; opacity: 0 !important; max-height: 0 !important; height: 0 !important; width: 0 !important;">
                                 </div>
-                                <div id="uploadMessage" class="message-box hidden"></div>
                             </form>
                         </div>
+
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" id="CerrarBoton" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="uploadFileBtn">Subir</button>
-                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">Generar Nota de Entrega</button>
+                            <button type="button" class="btn btn-warning" id="generateNotaEntregaBtn">
+                            Generar Nota de Entrega
+                            </button>
+                            <button type="button" class="btn btn-primary" id="uploadFileBtn" disabled>
+                            Subir Archivo
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -759,7 +788,10 @@ function mi_navbar() {}
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="alert bg-gradient-primary text-white" role="alert">
-                                            <i class="bi bi-info-circle me-2"></i>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.08-.41.2-.083c-.274-.223-.306-.35-.24-.555zm.405-3.567A.245.245 0 0 1 8 4.775V4.2a.24.24 0 0 1 .237-.245zm-.49-.122a.5.5 0 1 0-.97.124.5.5 0 0 0 .97-.124z"/>
+                                            </svg>
                                             Selecciona los componentes que deseas cargar para este dispositivo.
                                         </div>
                                     </div>
@@ -784,7 +816,36 @@ function mi_navbar() {}
                                     </div>
                                 </div>
                                 
-                                <div class="row mt-3">
+                                <div class="row">
+                                    <div class="col-12" class="bg-gradient-primary">
+                                        <div class="alert bg-gradient-primary text-white" role="alert">
+                                            <div style="margin-left: 3%;">
+                                                <small class="d-flex align-items-center mb-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-info-circle" viewBox="0 0 16 16">
+                                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.08-.41.2-.083c-.274-.223-.306-.35-.24-.555zm.405-3.567A.245.245 0 0 1 8 4.775V4.2a.24.24 0 0 1 .237-.245zm-.49-.122a.5.5 0 1 0-.97.124.5.5 0 0 0 .97-.124z"/>
+                                                    </svg><span style="color: white;"><strong>Leyenda de Estados:</strong></span>
+                                                </small>
+                                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                                    <span style="background: #faebd7" class="badge text-dark">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #0dcaf0; border-radius: 2px;"></span>
+                                                        Marcado
+                                                    </span>
+                                                    <span class="badge bg-secondary opacity-75">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #6c757d; border-radius: 2px;"></span>
+                                                        Desmarcado
+                                                    </span>
+                                                    <span class="badge bg-light text-dark border">
+                                                        <span class="d-inline-block me-1" style="width: 12px; height: 12px; background-color: #ffffff; border: 1px solid #dee2e6; border-radius: 2px;"></span>
+                                                        Sin marcar
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-2">
                                     <div class="col-12">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
@@ -798,7 +859,7 @@ function mi_navbar() {}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" id="BotonCerrarModal">
@@ -911,6 +972,8 @@ function mi_navbar() {}
         <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
         <!-- Bootstrap core JavaScript-->
         <!--JQUERY-->
+
+        <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>

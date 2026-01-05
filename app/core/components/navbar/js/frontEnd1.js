@@ -19,7 +19,7 @@ function getIconSvgForName(name) {
       break;
     case "Administración":
       iconSvg =
-        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-stack me-2" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>';
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-check me-2" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.62.62 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/></svg>';
       break;
     case "Configuración":
       iconSvg =
@@ -76,6 +76,12 @@ function getIconSvgForName(name) {
     break;
     case "Documentos":
       iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-archive-fill me-2" viewBox="0 0 16 16"><path d="M12.643 15C13.979 15 15 13.845 15 12.5V5H1v7.5C1 13.845 2.021 15 3.357 15zM5.5 7h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1 0-1M.8 1a.8.8 0 0 0-.8.8V3a.8.8 0 0 0 .8.8h14.4A.8.8 0 0 0 16 3V1.8a.8.8 0 0 0-.8-.8z"/></svg>'
+    break;
+    case "Presupuesto":
+      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-text-fill me-2" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zm0-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zm0-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1z"/></svg>'
+    break;
+    case "Pagos":
+      iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-credit-card-2-front-fill me-2" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm0 3a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm3 0a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/></svg>'
     break;
     case "Periférico POS":
       iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-seam-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M15.528 2.973a.75.75 0 0 1 .472.696v8.662a.75.75 0 0 1-.472.696l-7.25 2.9a.75.75 0 0 1-.557 0l-7.25-2.9A.75.75 0 0 1 0 12.331V3.669a.75.75 0 0 1 .471-.696L7.443.184l.01-.003.268-.108a.75.75 0 0 1 .558 0l.269.108.01.003zM10.404 2 4.25 4.461 1.846 3.5 1 3.839v.4l6.5 2.6v7.922l.5.2.5-.2V6.84l6.5-2.6v-.4l-.846-.339L8 5.961 5.596 5l6.154-2.461z"/></svg>';
@@ -152,10 +158,8 @@ function setupCustomDropdown(toggleElement, menuElement, moduleId = null) {
       moduleId &&
       menuElement.dataset.submodulesLoaded !== "true"
     ) {
-      //console.log(`🎯 CLICK EN DROPDOWN - Iniciando carga de submódulos para módulo ID: ${moduleId}`);
       loadSubmodulesForModule(moduleId, menuElement);
     } else if (menuElement.dataset.submodulesLoaded === "true") {
-      //console.log(`🎯 CLICK EN DROPDOWN - Submódulos ya cargados para módulo ID: ${moduleId}`);
     }
 
     // Asegura que los menús padres permanezcan abiertos y activos (o se abran si estaban cerrados)
@@ -337,11 +341,9 @@ function buildDropdownMenu(items, parentAnchorId, itemType) {
 function loadSubmodulesForModule(moduleId, targetUlElement) {
   // Verifica si los submódulos ya fueron cargados para evitar peticiones redundantes
   if (targetUlElement.dataset.submodulesLoaded === "true") {
-    //console.log(`🔄 Submódulos para el módulo ${moduleId} ya cargados.`);
     return;
   }
 
- // console.log(`🔍 SOLICITANDO SUBMÓDULOS para módulo ID: ${moduleId}`);
   targetUlElement.innerHTML =
     '<div class="p-2 text-white-50">Cargando submódulos...</div>';
 
@@ -356,7 +358,6 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
-       // console.log(`📡 Respuesta recibida para módulo ${moduleId}:`, response);
 
         // AQUÍ ESTÁ EL CAMBIO CLAVE: Usa 'response.submodules' en lugar de 'response.sub_modules'
         if (response.success && Array.isArray(response.submodules)) {
@@ -364,25 +365,20 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
           targetUlElement.innerHTML = ""; // Limpia el mensaje de carga
           if (response.submodules.length === 0) {
             // <-- Y AQUÍ
-            //console.log(`📭 No hay submódulos disponibles para módulo ${moduleId}`);
             targetUlElement.innerHTML =
               '<div class="p-2 text-white-50">No hay submódulos disponibles.</div>';
           } else {
-            //console.log(`📋 Cargando ${response.submodules.length} submódulos para módulo ${moduleId}:`);
             // Construye los submódulos y sus posibles sub-submódulos
             response.submodules.forEach((sub_module, index) => {
               // <-- Y AQUÍ
-              //console.log(`  📦 Submódulo ${index + 1}: "${sub_module.desc_submodulo || sub_module.name_sub_module || 'Sin nombre'}" (ID: ${sub_module.id_submodulo || sub_module.id_sub_module || 'N/A'})`);
               const li = buildMenuItem(sub_module, "submodule");
               targetUlElement.appendChild(li);
-              //console.log(`  ✅ Submódulo "${sub_module.desc_submodulo || sub_module.name_sub_module || 'Sin nombre'}" - LISTO`);
 
               // Si este submódulo tiene sub-submódulos, inicializa su dropdown
               if (
                 sub_module.subsub_modules &&
                 sub_module.subsub_modules.length > 0
               ) {
-                //console.log(`    🔗 Submódulo tiene ${sub_module.subsub_modules.length} sub-submódulos`);
                 const subSubUl = buildDropdownMenu(
                   sub_module.subsub_modules,
                   li.querySelector("a").id,
@@ -393,7 +389,6 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
                 setupCustomDropdown(li.querySelector("a"), subSubUl);
               }
             });
-            //console.log(`🎉 TODOS LOS SUBMÓDULOS cargados para módulo ${moduleId}`);
           }
           targetUlElement.dataset.submodulesLoaded = "true"; // Marca como cargado
         } else {
@@ -465,7 +460,6 @@ function loadSubmodulesForModule(moduleId, targetUlElement) {
   const datos = `action=getSubmodulesForModule&id_module=${encodeURIComponent(
     moduleId
   )}`;
-  //console.log(`📤 Enviando petición para módulo ${moduleId}:`, datos);
   xhr.send(datos);
 }
 
@@ -535,59 +529,8 @@ async function loadFullNavbar(options = {}) {
             body: body,
         });
 
-        if (!response.ok) {
-            throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        updateLoadingProgress(40, 'Procesando módulos...');
-
-        if (data.success && Array.isArray(data.modules)) {
-            const modulesData = data.modules.filter(module => module.activo === "t");
-            const totalModules = modulesData.length;
-            
-            updateLoadingProgress(50, `Cargando ${totalModules} módulos...`);
-
-            // Cargar módulos secuencialmente con delay
-            //console.log(`🚀 INICIANDO CARGA SECUENCIAL DE ${totalModules} MÓDULOS`);
-            for (let index = 0; index < modulesData.length; index++) {
-                const module = modulesData[index];
-                const progressIncrement = 30 / totalModules; // 30% del progreso total para módulos
-                const currentProgress = 50 + (index * progressIncrement);
-                
-                //console.log(`📦 Cargando módulo ${index + 1}/${totalModules}: "${module.desc_modulo}" (ID: ${module.idmodulo})`);
-                updateLoadingProgress(Math.round(currentProgress), `Cargando módulo: ${module.desc_modulo}...`);
-                
-                // Crear el módulo
-                const mainLi = buildMenuItem(module, "module");
-                const mainAnchor = mainLi.querySelector("a");
-                const subUl = document.createElement("ul");
-                subUl.className = "dropdown-menu";
-                subUl.setAttribute("aria-labelledby", mainAnchor.id);
-                subUl.setAttribute("data-submodules-loaded", "false");
-                subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>';
-                mainLi.appendChild(subUl);
-
-                setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
-                navbarNav.appendChild(mainLi);
-
-                //console.log(`✅ Módulo "${module.desc_modulo}" - LISTO`);
-
-                // Agregar separador HR si no es el último módulo
-                if (index < modulesData.length - 1) {
-                    const hr = document.createElement("hr");
-                    hr.className = "horizontal dark my-3";
-                    navbarNav.appendChild(hr);
-                }
-
-                // Delay entre módulos para no sobrecargar el servidor
-                if (index < modulesData.length - 1) {
-                   // console.log(`⏳ Esperando 200ms antes del siguiente módulo...`);
-                    await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
-                }
-            }
-            //console.log(`🎉 TODOS LOS MÓDULOS CARGADOS SECUENCIALMENTE`);
-
+        // Función auxiliar para agregar el botón "Cerrar Sesión"
+        const addLogoutButton = () => {
             updateLoadingProgress(85, 'Agregando opciones finales...');
 
             // Agregar "Cerrar Sesión" al final
@@ -610,6 +553,93 @@ async function loadFullNavbar(options = {}) {
             logoutAnchor.appendChild(logoutText);
             logoutLi.appendChild(logoutAnchor);
             navbarNav.appendChild(logoutLi);
+        };
+
+        // Intentar parsear la respuesta JSON
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            // Si no se puede parsear, lanzar error
+            if (!response.ok) {
+                throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
+            }
+            throw new Error("Error al procesar la respuesta del servidor.");
+        }
+
+        updateLoadingProgress(40, 'Procesando módulos...');
+
+        // Verificar si el usuario no tiene módulos asignados (404 o success: false)
+        if ((!response.ok && response.status === 404) || (data && !data.success && data.message)) {
+            if (data.message && data.message.includes("No hay módulos disponibles")) {
+                updateLoadingProgress(100, 'Finalizando...');
+                setTimeout(() => {
+                    hideLoadingOverlay();
+                }, 1000);
+                
+                // Agregar el botón "Cerrar Sesión" incluso sin módulos
+                addLogoutButton();
+                
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({
+                        title: "Sin módulos asignados",
+                        text: "No tiene módulos asignados. Por favor, contacte al administrador del sistema.",
+                        icon: "info",
+                        confirmButtonText: "OK",
+                        color: "black",
+                    });
+                }
+                return;
+            }
+        }
+
+        if (!response.ok) {
+            throw new Error(`Error al obtener módulos: ${response.status} ${response.statusText}`);
+        }
+
+        if (data.success && Array.isArray(data.modules)) {
+            const modulesData = data.modules.filter(module => module.activo === "t");
+            const totalModules = modulesData.length;
+            
+            updateLoadingProgress(50, `Cargando ${totalModules} módulos...`);
+
+            // Cargar módulos secuencialmente con delay
+            for (let index = 0; index < modulesData.length; index++) {
+                const module = modulesData[index];
+                const progressIncrement = 30 / totalModules; // 30% del progreso total para módulos
+                const currentProgress = 50 + (index * progressIncrement);
+                
+                updateLoadingProgress(Math.round(currentProgress), `Cargando módulo: ${module.desc_modulo}...`);
+                
+                // Crear el módulo
+                const mainLi = buildMenuItem(module, "module");
+                const mainAnchor = mainLi.querySelector("a");
+                const subUl = document.createElement("ul");
+                subUl.className = "dropdown-menu";
+                subUl.setAttribute("aria-labelledby", mainAnchor.id);
+                subUl.setAttribute("data-submodules-loaded", "false");
+                subUl.innerHTML = '<div class="p-2 text-white-50">Cargando...</div>';
+                mainLi.appendChild(subUl);
+
+                setupCustomDropdown(mainAnchor, subUl, module.idmodulo);
+                navbarNav.appendChild(mainLi);
+
+
+                // Agregar separador HR si no es el último módulo
+                if (index < modulesData.length - 1) {
+                    const hr = document.createElement("hr");
+                    hr.className = "horizontal dark my-3";
+                    navbarNav.appendChild(hr);
+                }
+
+                // Delay entre módulos para no sobrecargar el servidor
+                if (index < modulesData.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+                }
+            }
+
+            // Agregar "Cerrar Sesión" al final cuando hay módulos
+            addLogoutButton();
 
             updateLoadingProgress(95, 'Finalizando configuración...');
 
@@ -630,6 +660,9 @@ async function loadFullNavbar(options = {}) {
                 hideLoadingOverlay();
             }, 1000);
             
+            // Agregar el botón "Cerrar Sesión" incluso en caso de error
+            addLogoutButton();
+            
             if (typeof Swal !== "undefined") {
                 Swal.fire({
                     title: "Error",
@@ -646,6 +679,27 @@ async function loadFullNavbar(options = {}) {
         setTimeout(() => {
             hideLoadingOverlay();
         }, 1000);
+        
+        // Agregar el botón "Cerrar Sesión" incluso en caso de error de red
+        const logoutLi = document.createElement("li");
+        logoutLi.className = "nav-item";
+        const logoutAnchor = document.createElement("a");
+        logoutAnchor.className = "nav-link";
+        logoutAnchor.id = "cerrar-session-link";
+        logoutAnchor.href = "cerrar_session";
+
+        const logoutIcon = getIconSvgForName("Cerrar Sesión");
+        const logoutText = document.createElement("h6");
+        logoutText.className = "nav-link-text ms-3";
+        logoutText.textContent = "Cerrar Sesión";
+        logoutText.style.color = "white";
+        logoutText.style.margin = "11%";
+        logoutText.style.paddingLeft = ".5rem";
+
+        logoutAnchor.innerHTML = logoutIcon;
+        logoutAnchor.appendChild(logoutText);
+        logoutLi.appendChild(logoutAnchor);
+        navbarNav.appendChild(logoutLi);
         
         const errorMessage = error.message.includes("HTTP")
             ? `Error de conexión con el servidor: ${error.message}`
@@ -788,7 +842,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const navbar = document.getElementById("sidenav-main");
 
     if (!userId) {
-      console.log("Usuario no autenticado (ID de usuario no encontrado).");
       if (navbar) navbar.style.display = "block";
       return;
     }
@@ -848,24 +901,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Carga la barra de navegación principal cuando el DOM esté completamente cargado
 document.addEventListener("DOMContentLoaded", async () => {
-  //console.log(`🌟 INICIANDO SISTEMA DE CARGA SECUENCIAL DE MÓDULOS`);
-  
-  // Mostrar overlay de carga
-  showLoadingOverlay();
-  //console.log(`📱 Modal de carga mostrado`);
   
   // Iniciar progreso automático
   startLoadingProgress();
-  //console.log(`⚡ Progreso automático iniciado`);
   
   // Cargar navbar secuencialmente
-// console.log(`🚀 Iniciando carga de navbar...`);
   await loadFullNavbar();
-  //console.log(`✅ Carga de navbar completada`);
   
   // Detener progreso automático
   stopLoadingProgress();
- // console.log(`🏁 Sistema de carga secuencial FINALIZADO`);
 });
 
 // Function to build menu items (main modules or submodules)
@@ -931,7 +975,6 @@ function buildMenuItem(itemData, type) {
     // textSpan.style.marginLeft = '0.5rem';
 
     // --- Debugging helper (remove after testing) ---
-    // console.log(`Submodule created: ${itemName}`, anchor);
     // anchor.style.backgroundColor = 'yellow'; // To see where the element is
     // textSpan.style.color = 'red'; // To force text color
     // --- End Debugging helper ---
@@ -944,11 +987,9 @@ function buildMenuItem(itemData, type) {
 // Function to load submodules for a specific module ID
 function loadSubmodulesForModule(moduleId, menuElement) {
   if (menuElement.dataset.submodulesLoaded === "true") {
-    //console.log(`Submódulos para el módulo ${moduleId} ya cargados.`);
     return; // Already loaded, do nothing
   }
 
-  //console.log(`Cargando submódulos para el módulo ID: ${moduleId}`);
   menuElement.innerHTML =
     '<div class="p-2 text-white-50">Cargando submódulos...</div>'; // Loading feedback
 
@@ -976,7 +1017,6 @@ function loadSubmodulesForModule(moduleId, menuElement) {
     if (xhrSubmodules.status === 200) {
       try {
         const response = JSON.parse(xhrSubmodules.responseText);
-        //console.log(`Respuesta de submódulos para ${moduleId}:`, response);
 
         if (response.success && Array.isArray(response.submodules)) {
           menuElement.innerHTML = ""; // Clear loading message
@@ -992,7 +1032,6 @@ function loadSubmodulesForModule(moduleId, menuElement) {
                 const li = buildMenuItem(submodule, "submodule");
                 menuElement.appendChild(li);
               } else {
-                //console.log(`Submódulo ${submodule.desc_submodulo} (ID: ${submodule.id_submodulo}) está inactivo y no se mostrará.`);
               }
             });
           }
@@ -1259,7 +1298,6 @@ function updateLoadingProgress(progress, status) {
         statusElement.textContent = status;
     }
     
-   // console.log(`📊 PROGRESO: ${progress}% - ${status}`);
     
     loadingProgress = progress;
     loadingStatus = status;

@@ -11,6 +11,7 @@ let currentSerial;
 let currentDocument;
 let currentDomiciliacion
 let currentEstado;
+let currentIdFailure;
 
 let url_envio;
 let url_exoneracion;
@@ -86,7 +87,6 @@ function getTicketData() {
   // Read nro_ticket from URL query parameters
   const urlParams = new URLSearchParams(window.location.search);
   const nroTicket = urlParams.get('nro_ticket');
-  console.log('nroTicket extraído de la URL:', nroTicket);
 
   // Limpiar DataTable si ya está inicializado
   if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
@@ -287,7 +287,8 @@ function getTicketData() {
                   data-pago-file="${ticket.pdf_pago_filename || ""}"
                   data-convenio-file="${ticket.pdf_convenio_filename || ""}"
                   data-zoom-file="${ticket.pdf_zoom_filename || ""}"
-                  data-estado-cliente="${ticket.nombre_estado_cliente}">
+                  data-estado-cliente="${ticket.nombre_estado_cliente}"
+                  data-id-failure="${ticket.id_failure || ""}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
               </button>`;
           }
@@ -302,11 +303,13 @@ function getTicketData() {
               </button>`;
           }
 
-          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller") {
+          // Mostrar botón "Enviar a Taller" solo si el usuario es SuperAdmin (1) o Coordinador (4)
+          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller" && (currentUserRole === 1 || currentUserRole === 4)) {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-wrench-custom"
                   data-bs-toggle="tooltip" data-bs-placement="top"
                   title="Enviar a Taller"
+                  data-rechazado="${ticket.has_rejected_document}"
                   data-ticket-id="${ticket.id_ticket}"
                   data-nro_ticket="${ticket.nro_ticket}"
                   data-id_document="${ticket.id_status_payment}"
@@ -316,7 +319,8 @@ function getTicketData() {
                   data-url_exo="${ticket.img_exoneracion_url || ''}"
                   data-url_pago="${ticket.pdf_pago_url || ''}"
                   data-url_convenio="${ticket.pdf_convenio_url || ''}"
-                  data-estado="${ticket.nombre_estado_cliente}">
+                  data-estado="${ticket.nombre_estado_cliente}"
+                  data-id-failure="${ticket.id_failure || ''}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16"><path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/></svg>
               </button>`;
           }
@@ -364,7 +368,7 @@ function getTicketData() {
           ],
           language: {
             lengthMenu: "Mostrar _MENU_",
-            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            info: "_TOTAL_ Registros",
             infoFiltered: " de _MAX_ Disponibles",
             search: "Buscar:",
             loadingRecords: "Cargando...",
@@ -535,7 +539,42 @@ function getTicketData() {
 
             $("#tabla-ticket tbody")
               .off("click", "tr")
-              .on("click", "tr", function () {
+              .on("click", "tr", function (e) {
+                // Verificar si el clic fue en un botón, enlace o input
+                const clickedElement = $(e.target);
+                const isButton = clickedElement.is('button') || 
+                                clickedElement.closest('button').length > 0 ||
+                                clickedElement.is('a') || 
+                                clickedElement.closest('a').length > 0 ||
+                                clickedElement.is('input') || 
+                                clickedElement.closest('input').length > 0 ||
+                                clickedElement.hasClass('truncated-cell') ||
+                                clickedElement.hasClass('expanded-cell');
+                
+                // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                if (isButton) {
+                    return; // No hacer nada, dejar que el botón maneje su propio evento
+                }
+                
+                // Solo ocultar overlay si el clic fue directamente en la fila
+                // 1. Matamos cualquier otro handler (por si acaso)
+                e.stopPropagation();
+                
+                // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                $('#loadingOverlay').removeClass('show').hide();
+                
+                // 3. Si el script usa opacity o visibility, también lo matamos
+                $('#loadingOverlay').css({
+                    'display': 'none',
+                    'opacity': '0',
+                    'visibility': 'hidden'
+                });
+                
+                // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                setTimeout(() => {
+                    $('#loadingOverlay').hide();
+                }, 50);
+                
                 const tr = $(this);
                 const rowData = dataTableInstance.row(tr).data();
                 if (!rowData) return;
@@ -638,6 +677,40 @@ function getTicketData() {
                 const pdfConvenioUrl = $(this).data("url_convenio") || "";
                 const serialPos = $(this).data("serial_pos") || "No disponible";
                 const estado = $(this).data("estado");
+                const rechazado = $(this).data("rechazado");
+                const idFailure = $(this).data("id-failure") ? parseInt($(this).data("id-failure")) : null;
+
+                if (rechazado === true || rechazado === "t") {
+                  Swal.fire({
+                    icon: 'warning',
+                    iconColor: '#ff9800',
+                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Advertencia!</span>',
+                    html: `
+                      <div style="text-align: left; padding: 10px 0;">
+                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                          El ticket <strong style="color: #003594;">#${nroTicket}</strong> tiene <strong style="color: #dc3545;">documentos rechazados</strong>.
+                        </p>
+                        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                            <strong>⚠️ Acción requerida:</strong><br>
+                            Por favor, verifique los documentos antes de enviarlo a taller o cargue uno nuevo para su pronta revisión.
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                    width: '600px',
+                    padding: '2em',
+                    customClass: {
+                      popup: 'swal2-popup-custom',
+                      title: 'swal2-title-custom',
+                      htmlContainer: 'swal2-html-container-custom'
+                    }
+                  });
+                  return;
+                }
 
                 currentTicketId = ticketId;
                 currentnroTicket = nroTicket;
@@ -645,6 +718,7 @@ function getTicketData() {
                 currentDocument = id_document;
                 currentDomiciliacion = id_domiciliacion;
                 currentEstado = estado;
+                currentIdFailure = idFailure;
 
                 url_envio = pdfZoomUrl;
                 url_exoneracion = imgExoneracionUrl;
@@ -661,6 +735,10 @@ function getTicketData() {
             $("#ButtonSendToTaller").off("click").on("click", function () {
               const id_document = currentDocument;
               const id_domiciliacion = currentDomiciliacion;
+              const idFailure = currentIdFailure;
+              const isActualizacionSoftware = idFailure === 9;
+              const isSinLlavesDukpt = idFailure === 12;
+              const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
 
@@ -677,35 +755,56 @@ function getTicketData() {
                 return;
               }
 
-              if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
-                showButton = true;
-              } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
-                showButton = true;
-              } else if (id_document === 10 && isEstadoSinEnvio && (url_pago === "" || url_exoneracion === "")) {
-                showButton = true;
-              } else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
-                showButton = true;
-              } else if (id_document === 6 && !isEstadoSinEnvio && url_envio == "" && url_pago != "") {
-                showButton = true;
-              } else if (id_document === 4 && !isEstadoSinEnvio && url_envio == "" && url_exoneracion != "") {
-                showButton = true;
-              } else if (id_document === 6 && url_pago == "") {
-                showButton = true;
-              } else if (id_document === 4 && url_exoneracion == "") {
-                showButton = true;
+              // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
+              // Solo requiere documento de Envío, no anticipo ni exoneración
+              if (isFallaSinPago) {
+                if (url_envio === "" || url_envio === null || url_envio === undefined) {
+                  Swal.fire({
+                    icon: 'warning',
+                    title: '¡Advertencia!',
+                    text: 'Antes de enviar el equipo al taller, debe cargar el documento de envío.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                  });
+                  return;
+                }
+                // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
+              } else {
+                // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9 y id_failure != 12)
+                if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
+                  showButton = true;
+                } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
+                  showButton = true;
+                } else if (id_document === 10 && isEstadoSinEnvio && (url_pago === "" || url_exoneracion === "")) {
+                  showButton = true;
+                } else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
+                  showButton = true;
+                } else if (id_document === 6 && !isEstadoSinEnvio && url_envio == "" && url_pago != "") {
+                  showButton = true;
+                } else if (id_document === 4 && !isEstadoSinEnvio && url_envio == "" && url_exoneracion != "") {
+                  showButton = true;
+                } else if (id_document === 6 && url_pago == "") {
+                  showButton = true;
+                } else if (id_document === 4 && url_exoneracion == "") {
+                  showButton = true;
+                }
+
+                if (showButton) {
+                  Swal.fire({
+                    icon: 'warning',
+                    title: '¡Advertencia!',
+                    text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                  });
+                  return;
+                }
               }
 
-              if (showButton) {
-                Swal.fire({
-                  icon: 'warning',
-                  title: '¡Advertencia!',
-                  text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
-                  confirmButtonText: 'Ok',
-                  confirmButtonColor: '#003594',
-                  color: 'black',
-                });
-                return;
-              } else if (id_document == 5 || id_document == 7) {
+              // Validaciones adicionales que aplican a todos los casos
+              if (id_document == 5 || id_document == 7) {
                 Swal.fire({
                   icon: 'warning',
                   title: '¡Advertencia!',
@@ -719,7 +818,7 @@ function getTicketData() {
                 Swal.fire({
                   icon: 'warning',
                   title: '¡Advertencia!',
-                  text: 'Tiene que revisar la domiciliación del cliente.',
+                  text: 'Debe revisar la domiciliación del cliente.',
                   confirmButtonText: 'Ok',
                   confirmButtonColor: '#003594',
                   color: 'black',
@@ -761,6 +860,11 @@ function getTicketData() {
             $("#close-button").off("click").on("click", function () {
               if (staticBackdropModalInstance) {
                 staticBackdropModalInstance.hide();
+                setTimeout(() => {
+                  if (actionSelectionModalInstance) {
+                    actionSelectionModalInstance.show();
+                  }
+                }, 300);
               }
             });
 
@@ -778,7 +882,7 @@ function getTicketData() {
                 Swal.fire({
                   icon: 'warning',
                   title: '¡Advertencia!',
-                  text: 'Antes de Devolver el equipo al Rosal, debe cargar al menos el ZOOM de envio.',
+                  text: 'Antes de Devolver el equipo al Rosal, debe cargar al menos el Documento de Envio.',
                   confirmButtonText: 'Ok',
                   confirmButtonColor: '#003594',
                   color: 'black',
@@ -797,6 +901,11 @@ function getTicketData() {
               $("#BttonCloseModalDevolucion").off("click").on("click", function () {
                 if (modaldevolucion) {
                   modaldevolucion.hide();
+                  setTimeout(() => {
+                    if (actionSelectionModalInstance) {
+                      actionSelectionModalInstance.show();
+                    }
+                  }, 300);
                 }
               });
 
@@ -843,7 +952,7 @@ function getTicketData() {
           ],
           language: {
             lengthMenu: "Mostrar _MENU_ Registros",
-            info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+            info: "_TOTAL_ Registros",
             infoFiltered: " de _MAX_ Disponibles",
             search: "Buscar:",
             loadingRecords: "Cargando...",
@@ -931,7 +1040,7 @@ function getTicketData() {
                 <p class="text-muted mb-0">No hay tickets asociado al Técnico para mostrar en este momento.</p>
               </div>
             </div>`,
-          info: "(_PAGE_/_PAGES_) _TOTAL_ Registros",
+          info: "_TOTAL_ Registros",
           infoFiltered: " de _MAX_ Disponibles",
           search: "Buscar:",
           loadingRecords: "Cargando...",
@@ -999,6 +1108,10 @@ function getTicketData() {
     const ZoomFile_name = $(this).data('zoom-file');
     const ConvenioFile_name = $(this).data('convenio-file');
     const estado_cliente = $(this).data('estado-cliente');
+    const idFailure = $(this).data('id-failure') ? parseInt($(this).data('id-failure')) : null;
+    const isActualizacionSoftware = idFailure === 9;
+    const isSinLlavesDukpt = idFailure === 12;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');
@@ -1039,27 +1152,33 @@ function getTicketData() {
         // Solo envío disponible
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Pago
-                </button>
-            `;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
+                modalButtonsHTML = `
+                    <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Exoneración
+                    </button>
+                    <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Pago
+                    </button>
+                `;
+            }
         } else {
             // Estados con envío - mostrar botón de envío
             modalButtonsHTML = `
                 <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                     Ver Documento de Envio
-                </button>
+                </button>`;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
+                modalButtonsHTML += `
                 <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
                 </button>
                 <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                     Cargar Documento de Pago
-                </button>
-            `;
+                </button>`;
+            }
         }
     } else if (imgExoneracionUrl) {
         // Solo exoneración disponible (sin envío)
@@ -1083,6 +1202,8 @@ function getTicketData() {
         }
     } else if (pdfPagoUrl) {
         // Solo pago disponible (sin envío)
+        // IMPORTANTE: Si hay pago pero NO hay envío, SIEMPRE mostrar el botón de envío
+        // porque el envío es obligatorio (excepto en estados sin envío)
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
             modalButtonsHTML = `
@@ -1091,12 +1212,13 @@ function getTicketData() {
                 </button>
             `;
         } else {
-            // Estados con envío - mostrar botón de envío
+            // Estados con envío - SIEMPRE mostrar botón de envío si falta el documento
+            // El envío es obligatorio, independientemente del status
             modalButtonsHTML = `
                 <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                     Ver Documento de Pago
                 </button>
-                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
+                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                     Cargar Documento de Envio
                 </button>
             `;
@@ -1105,27 +1227,33 @@ function getTicketData() {
         // Ningún documento disponible
         if (debeOcultarEnvio) {
             // Estados sin envío - NO mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
-                    Cargar Documento de Pago
-                </button>
-            `;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
+                modalButtonsHTML = `
+                    <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Exoneración
+                    </button>
+                    <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                        Cargar Documento de Pago
+                    </button>
+                `;
+            }
         } else {
             // Estados con envío - mostrar botón de envío
             modalButtonsHTML = `
                 <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Envio">
                     Cargar Documento de Envio
-                </button>
+                </button>`;
+            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+            if (!isFallaSinPago) {
+                modalButtonsHTML += `
                 <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
                 </button>
                 <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" data-ticket-id="${ticketId}" data-status-payment="${statusPayment}" data-document-type="Anticipo">
                     Cargar Documento de Pago
-                </button>
-            `;
+                </button>`;
+            }
         }
     }
 
@@ -1288,14 +1416,40 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     }
 
     uploadForm[0].reset();
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
     $('#imagePreview').attr('src', '#').hide();
+    $('#imagePreviewContainer').hide();
     $('#uploadMessage').removeClass('alert-success alert-danger').addClass('hidden').text('');
     $('#uploadDocumentModal .modal-title h5').html(`Subir Documento para Ticket: <span id="modalTicketId">${ticketId}</span>`);
+    
+    // Limpiar clases de validación del input y formulario
+    const documentFileInput = document.getElementById('documentFile');
+    const uploadFormElement = document.getElementById('uploadForm');
+    if (documentFileInput) {
+      documentFileInput.classList.remove('is-valid', 'is-invalid');
+    }
+    if (uploadFormElement) {
+      uploadFormElement.classList.remove('was-validated');
+    }
+    
+    // Mostrar el mensaje informativo
+    $('#fileFormatInfo').show();
+    
+    // Deshabilitar el botón de subir al abrir el modal
+    $('#uploadFileBtn').prop('disabled', true);
         
     $('#uploadForm').data('document-type', documentType);
     $('#uploadForm').data('nro_ticket', nro_ticket);
     $('#uploadForm').data('file-name', fileName);
     $('#uploadForm').data('ticket-id', ticketId);
+
+    // Configurar el listener para el input de archivo
+    if (documentFileInput) {
+      // Remover listener previo para evitar duplicados
+      documentFileInput.removeEventListener('change', handleFileSelectForUpload);
+      // Añadir el listener
+      documentFileInput.addEventListener('change', handleFileSelectForUpload);
+    }
 
     setTimeout(() => {
       uploadDocumentModal.show();
@@ -2367,7 +2521,7 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
         }
 
         // Construir la URL completa
-        return `http://localhost/Documentos/${cleanPath}`;
+        return `http://${HOST}/Documentos/${cleanPath}`;
     }
 
     // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
@@ -2440,16 +2594,9 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     }
 }
 
-// 5. Previsualización de la imagen
-$('#documentFile').on('change', function(event) {
-  const [file] = event.target.files;
-  const preview = $('#imagePreview');
-  if (file) {
-    preview.attr('src', URL.createObjectURL(file)).show();
-  } else {
-    preview.hide();
- }
-});
+// 5. Previsualización de la imagen - MANEJADA EN handleFileSelectForUpload
+// Este handler fue removido para evitar conflictos con la validación
+// La previsualización ahora se maneja en handleFileSelectForUpload junto con la validación
 
 // 6. Manejador de eventos para el botón de "Subir" dentro del modal de subida
 $(document).on('click', '#uploadFileBtn', function() {
@@ -2626,10 +2773,36 @@ function openUploadModal(ticketId, documentType) {
 
     // Limpiar el formulario y mensajes previos
     documentFileInput.value = ""; // Limpiar el input file
+    documentFileInput.classList.remove("is-valid", "is-invalid"); // Limpiar clases de validación
+    
+    const uploadForm = document.getElementById("uploadForm");
+    if (uploadForm) {
+      uploadForm.classList.remove("was-validated"); // Limpiar clase de validación del formulario
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
     imagePreview.style.display = "none"; // Ocultar previsualización
     imagePreview.src = "#"; // Restablecer la fuente de la imagen
+    const imagePreviewContainer = document.getElementById("imagePreviewContainer");
+    if (imagePreviewContainer) {
+      imagePreviewContainer.style.display = "none";
+    }
+    // Verificar que uploadMessage existe antes de usarlo
+    if (uploadMessage) {
     uploadMessage.classList.add("hidden"); // Ocultar mensaje
     uploadMessage.textContent = ""; // Limpiar texto del mensaje
+    }
+    
+    // Mostrar el mensaje informativo
+    const fileFormatInfo = document.getElementById("fileFormatInfo");
+    if (fileFormatInfo) {
+      fileFormatInfo.style.display = "block";
+    }
+    
+    // Deshabilitar el botón de subir al abrir el modal
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = true;
+    }
 
     // Establecer el ID del ticket en el modal
     modalTicketIdSpan.textContent = ticketId;
@@ -2657,50 +2830,354 @@ function openUploadModal(ticketId, documentType) {
 }
 
 function handleFileSelectForUpload(event) {
-  const file = event.target.files[0];
+  const input = event.target;
+  const file = input.files[0];
   const imagePreview = document.getElementById("imagePreview");
   const uploadMessage = document.getElementById("uploadMessage");
+  const uploadFileBtn = document.getElementById("uploadFileBtn");
+  const fileFormatInfo = document.getElementById("fileFormatInfo");
+  const uploadForm = document.getElementById("uploadForm");
 
+  // Limpiar estados previos
+  input.classList.remove("is-valid", "is-invalid");
+  if (uploadForm) {
+    uploadForm.classList.remove("was-validated");
+  }
+  
+  // Restaurar visibilidad de los mensajes de feedback de Bootstrap
+  const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+  const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+  if (validFeedback) {
+    validFeedback.style.display = '';
+  }
+  if (invalidFeedback) {
+    invalidFeedback.style.display = '';
+  }
+  
+  // Mostrar el mensaje informativo cuando no hay validación (se ocultará después si hay archivo)
+  if (fileFormatInfo) {
+    fileFormatInfo.style.display = "block";
+    fileFormatInfo.style.visibility = "visible";
+  }
+  
+  // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+  if (imagePreview) {
   imagePreview.style.display = "none";
+    imagePreview.src = "#";
+  }
+  // Verificar que uploadMessage existe antes de usarlo
+  if (uploadMessage) {
   uploadMessage.classList.add("hidden");
   uploadMessage.textContent = "";
+  }
 
-  if (file) {
-    const fileType = file.type;
-    if (fileType.startsWith("image/") || fileType === "application/pdf") {
-      if (fileType.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          imagePreview.src = e.target.result;
-          imagePreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-      } else if (fileType === "application/pdf") {
-        // Para PDFs, no hay previsualización de imagen directa
+  if (!file) {
+    // Si no hay archivo, deshabilitar el botón
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = true;
+    }
+    return;
+  }
+
+  // Validar tipo de archivo - verificar la extensión (más confiable que MIME type)
+  const validExtensions = [".jpg", ".png", ".gif", ".pdf"];
+  const validMimeTypes = ["image/jpeg", "image/png", "image/gif", "application/pdf"];
+  
+  const fileName = file.name.toLowerCase();
+  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+  
+  console.log("Archivo seleccionado:", fileName, "Extensión:", fileExtension, "MIME type:", file.type);
+  // Validar por extensión (más confiable) - DEBE estar en la lista
+  const isValidExtension = validExtensions.includes(fileExtension);
+  
+  // Si hay MIME type, también debe ser válido
+  const hasMimeType = file.type && file.type.trim() !== "";
+  const isValidMimeType = hasMimeType ? validMimeTypes.includes(file.type) : true;
+  
+  // El archivo es válido SOLO si la extensión es válida
+  // Si no hay extensión válida, el archivo es inválido independientemente del MIME type
+  const isValid = isValidExtension && (isValidMimeType || !hasMimeType);
+
+  // Agregar clase was-validated al formulario para que Bootstrap muestre los mensajes
+  // Esto es necesario para que Bootstrap muestre los estilos de validación (borde rojo/verde e íconos)
+  if (uploadForm) {
+    uploadForm.classList.add("was-validated");
+  }
+
+  if (isValid) {
+    // ARCHIVO VÁLIDO
+    // Primero remover is-invalid para asegurar que no haya conflicto
+    input.classList.remove("is-invalid");
+    
+    // Remover el background-image rojo (ícono de X) que Bootstrap aplica con is-invalid
+    input.style.removeProperty("background-image");
+    input.style.removeProperty("background-position");
+    input.style.removeProperty("background-repeat");
+    input.style.removeProperty("background-size");
+    input.style.removeProperty("padding-right");
+    
+    // Limpiar estilos inline que puedan interferir
+    input.style.removeProperty("border-color");
+    input.style.removeProperty("box-shadow");
+    
+    // Luego agregar is-valid - Bootstrap aplicará automáticamente el ícono verde (checkmark)
+    input.classList.add("is-valid");
+    
+    // OCULTAR COMPLETAMENTE el mensaje inválido y su ícono rojo
+    const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+    if (invalidFeedback) {
+      invalidFeedback.style.setProperty("display", "none", "important");
+      invalidFeedback.style.setProperty("visibility", "hidden", "important");
+      invalidFeedback.style.setProperty("opacity", "0", "important");
+      invalidFeedback.style.setProperty("height", "0", "important");
+      invalidFeedback.style.setProperty("margin", "0", "important");
+      invalidFeedback.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para forzar la ocultación
+    if (typeof $ !== 'undefined') {
+      $('.invalid-feedback').hide();
+    }
+    
+    // MOSTRAR el mensaje válido y su ícono verde
+    const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+    if (validFeedback) {
+      validFeedback.style.setProperty("display", "block", "important");
+      validFeedback.style.setProperty("visibility", "visible", "important");
+      validFeedback.style.setProperty("opacity", "1", "important");
+      validFeedback.style.removeProperty("height");
+      validFeedback.style.removeProperty("margin");
+      validFeedback.style.removeProperty("padding");
+    }
+    // También usar jQuery para forzar la visualización
+    if (typeof $ !== 'undefined') {
+      $('.valid-feedback').show();
+    }
+    
+    // OCULTAR el mensaje informativo cuando hay validación activa (archivo válido)
+    if (fileFormatInfo) {
+      fileFormatInfo.style.setProperty("display", "none", "important");
+      fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+      fileFormatInfo.style.setProperty("opacity", "0", "important");
+      fileFormatInfo.style.setProperty("height", "0", "important");
+      fileFormatInfo.style.setProperty("margin", "0", "important");
+      fileFormatInfo.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para asegurar que se oculte
+    if (typeof $ !== 'undefined') {
+      $('#fileFormatInfo').hide();
+    }
+    
+    // Habilitar el botón de subir
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = false;
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    if (imagePreview) {
         imagePreview.style.display = "none";
-        uploadMessage.textContent =
-          "PDF seleccionado. No se muestra previsualización.";
-        uploadMessage.classList.remove("hidden");
+      imagePreview.src = "#";
       }
     } else {
-      uploadMessage.textContent =
-        "Tipo de archivo no permitido. Seleccione una imagen o un PDF.";
-      uploadMessage.classList.remove("hidden");
-      event.target.value = ""; // Limpiar el input file
-      imagePreview.style.display = "none";
+    // ARCHIVO INVÁLIDO
+    // PRIMERO: Asegurarse de que NO tenga is-valid (esto es crítico para ocultar el ícono verde)
+    input.classList.remove("is-valid");
+    
+    // Remover el background-image verde (ícono de checkmark) que Bootstrap aplica con is-valid
+    input.style.removeProperty("background-image");
+    input.style.removeProperty("background-position");
+    input.style.removeProperty("background-repeat");
+    input.style.removeProperty("background-size");
+    input.style.removeProperty("padding-right");
+    
+    // Remover cualquier estilo inline que pueda interferir
+    input.style.removeProperty("border-color");
+    input.style.removeProperty("box-shadow");
+    input.style.removeProperty("border");
+    
+    // SEGUNDO: Agregar is-invalid - Bootstrap aplicará automáticamente el borde rojo y el ícono rojo (X)
+    input.classList.add("is-invalid");
+    
+    // Asegurar que el formulario tenga was-validated (ya se agregó arriba, pero lo verificamos)
+    if (uploadForm && !uploadForm.classList.contains("was-validated")) {
+      uploadForm.classList.add("was-validated");
     }
+    
+    // Forzar el ícono rojo (X) y el borde rojo de Bootstrap
+    // Bootstrap usa background-image con un SVG para el ícono de error
+    // SVG del ícono de error de Bootstrap (X roja)
+    const invalidIconSvg = "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e\")";
+    
+    // Aplicar estilos para el ícono rojo inmediatamente
+    input.style.setProperty("background-image", invalidIconSvg, "important");
+    input.style.setProperty("background-repeat", "no-repeat", "important");
+    input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+    input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+    input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+    
+    // Forzar el borde rojo de Bootstrap usando CSS inline como respaldo
+    // Bootstrap usa border-color: #dc3545 para is-invalid
+    // También usar setTimeout para asegurar que se ejecute después del reflow del DOM
+    setTimeout(() => {
+      // Verificar y forzar que NO tenga is-valid (muy importante)
+      if (input.classList.contains("is-valid")) {
+        input.classList.remove("is-valid");
+      }
+      // Verificar y forzar la clase is-invalid si no está presente
+      if (!input.classList.contains("is-invalid")) {
+        input.classList.add("is-invalid");
+      }
+      
+      // Forzar nuevamente el ícono rojo
+      input.style.setProperty("background-image", invalidIconSvg, "important");
+      input.style.setProperty("background-repeat", "no-repeat", "important");
+      input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+      input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+      input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+      
+      // Aplicar borde rojo directamente si Bootstrap no lo hace
+      const computedStyle = window.getComputedStyle(input);
+      if (computedStyle.borderColor !== 'rgb(220, 53, 69)' && computedStyle.borderColor !== '#dc3545') {
+        input.style.setProperty("border-color", "#dc3545", "important");
+        input.style.setProperty("box-shadow", "0 0 0 0.2rem rgba(220, 53, 69, 0.25)", "important");
+      }
+    }, 50);
+    
+    // También ejecutar después de un pequeño delay adicional para asegurar
+    setTimeout(() => {
+      // Forzar nuevamente que NO tenga is-valid
+      input.classList.remove("is-valid");
+      // Forzar que SÍ tenga is-invalid
+      if (!input.classList.contains("is-invalid")) {
+        input.classList.add("is-invalid");
+      }
+      // Forzar nuevamente el ícono rojo
+      input.style.setProperty("background-image", invalidIconSvg, "important");
+      input.style.setProperty("background-repeat", "no-repeat", "important");
+      input.style.setProperty("background-position", "right calc(0.375em + 0.1875rem) center", "important");
+      input.style.setProperty("background-size", "calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)", "important");
+      input.style.setProperty("padding-right", "calc(1.5em + 0.75rem)", "important");
+    }, 100);
+    
+    // OCULTAR COMPLETAMENTE el mensaje válido y su ícono verde
+    const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+    if (validFeedback) {
+      validFeedback.style.setProperty("display", "none", "important");
+      validFeedback.style.setProperty("visibility", "hidden", "important");
+      validFeedback.style.setProperty("opacity", "0", "important");
+      validFeedback.style.setProperty("height", "0", "important");
+      validFeedback.style.setProperty("margin", "0", "important");
+      validFeedback.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para forzar la ocultación
+    if (typeof $ !== 'undefined') {
+      $('.valid-feedback').hide();
+    }
+    
+    // MOSTRAR el mensaje inválido y su ícono rojo
+    const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+    if (invalidFeedback) {
+      invalidFeedback.style.setProperty("display", "block", "important");
+      invalidFeedback.style.setProperty("visibility", "visible", "important");
+      invalidFeedback.style.setProperty("opacity", "1", "important");
+      invalidFeedback.style.removeProperty("height");
+      invalidFeedback.style.removeProperty("margin");
+      invalidFeedback.style.removeProperty("padding");
+    }
+    // También usar jQuery para forzar la visualización
+    if (typeof $ !== 'undefined') {
+      $('.invalid-feedback').show();
+    }
+    
+    // OCULTAR el mensaje informativo cuando hay validación activa (archivo inválido)
+    if (fileFormatInfo) {
+      fileFormatInfo.style.setProperty("display", "none", "important");
+      fileFormatInfo.style.setProperty("visibility", "hidden", "important");
+      fileFormatInfo.style.setProperty("opacity", "0", "important");
+      fileFormatInfo.style.setProperty("height", "0", "important");
+      fileFormatInfo.style.setProperty("margin", "0", "important");
+      fileFormatInfo.style.setProperty("padding", "0", "important");
+    }
+    // También usar jQuery para asegurar que se oculte
+    if (typeof $ !== 'undefined') {
+      $('#fileFormatInfo').hide();
+    }
+    
+    // Deshabilitar el botón de subir
+    if (uploadFileBtn) {
+      uploadFileBtn.disabled = true;
+    }
+    
+    // PREVISUALIZACIÓN DESACTIVADA POR MOTIVOS DE SEGURIDAD
+    if (imagePreview) {
+      imagePreview.style.display = "none";
+      imagePreview.src = "#";
+    }
+    
+    // Limpiar el input después de 6 segundos (aumentado de 3 a 6 segundos)
+    setTimeout(() => {
+      input.value = "";
+      input.classList.remove("is-invalid");
+      input.style.borderColor = "";
+      input.style.boxShadow = "";
+      if (uploadForm) {
+        uploadForm.classList.remove("was-validated");
+      }
+      // Mostrar nuevamente el mensaje informativo
+      if (fileFormatInfo) {
+        fileFormatInfo.style.removeProperty("display");
+        fileFormatInfo.style.removeProperty("visibility");
+        fileFormatInfo.style.removeProperty("opacity");
+        fileFormatInfo.style.removeProperty("height");
+        fileFormatInfo.style.removeProperty("margin");
+        fileFormatInfo.style.removeProperty("padding");
+      }
+      // También usar jQuery para asegurar que se muestre
+      if (typeof $ !== 'undefined') {
+        $('#fileFormatInfo').show();
+      }
+      // Restaurar visibilidad de los mensajes de feedback
+      const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+      const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+      if (validFeedback) {
+        validFeedback.style.display = '';
+        validFeedback.style.visibility = '';
+      }
+      if (invalidFeedback) {
+        invalidFeedback.style.display = '';
+        invalidFeedback.style.visibility = '';
+      }
+    }, 6000); // Aumentado de 3000ms a 6000ms (6 segundos)
   }
 }
 
 async function handleUploadButtonClick(ticketId, documentType, uploadModalBootstrap, ticketNumber) {
-    const id_user = document.getElementById("userId").value;
+    const id_user = document.getElementById("userId");
+    if (!id_user) {
+        console.error("Elemento userId no encontrado");
+        return;
+    }
+    
     const documentFileInput = document.getElementById("documentFile");
+    if (!documentFileInput) {
+        console.error("Elemento documentFile no encontrado");
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo encontrar el campo de archivo.',
+            confirmButtonText: 'Ok',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+    
     const uploadMessage = document.getElementById("uploadMessage");
-    const file = documentFileInput.files[0];
-
-    // Clear previous messages and check for file
+    // El elemento uploadMessage puede no existir, así que verificamos antes de usarlo
+    if (uploadMessage) {
     uploadMessage.classList.add("hidden");
     uploadMessage.textContent = "";
+    }
+    
+    const file = documentFileInput.files[0];
 
     if (!file) {
         Swal.fire({
@@ -2723,7 +3200,7 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
     
     // 2. Append the file object directly. Do NOT use encodeURIComponent().
     formData.append("document_file", file); 
-    formData.append("id_user", id_user);
+    formData.append("id_user", id_user.value);
 
     const xhr = new XMLHttpRequest();
     const url = `${ENDPOINT_BASE}${APP_PATH}api/reportes/uploadDocumentTec`;
@@ -2788,7 +3265,6 @@ function downloadImageModal(serial) {
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
         const response = JSON.parse(xhr.responseText);
-        //console.log(response);
         if (response.success) {
           const srcImagen = response.rutaImagen;
           const claseImagen = response.claseImagen; // Obtener la clase CSS
@@ -2825,7 +3301,7 @@ function downloadImageModal(serial) {
   xhr.send(datos);
 }
 
-function formatTicketDetailsPanel(d) {
+/*function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket
   // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
 
@@ -2895,7 +3371,7 @@ function formatTicketDetailsPanel(d) {
                              <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket}" data-serial-pos = ${d.serial_pos}>
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = ${d.id_ticket || ""}" data-serial-pos = ${d.serial_pos || ""}>
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>    
@@ -2913,7 +3389,7 @@ function formatTicketDetailsPanel(d) {
             </div>
         </div>
     `;
-}
+}*/
 
 // Función para cargar y mostrar el historial de tickets.// Función para cargar el historial de un ticket
 function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
@@ -2976,16 +3452,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
             timeText = `${diffMonths}M ${Math.floor(remainingDays)}D`;
         } else if (diffWeeks > 0) {
             const remainingDays = diffDays % 7;
-            timeText = `${diffWeeks}W ${remainingDays}D`;
+            timeText = `${diffWeeks}S ${remainingDays}D`;
         } else if (diffDays > 0) {
             const remainingHours = diffHours % 24;
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}M`;
+            timeText = `${diffDays}D ${remainingHours}H ${remainingMinutes}Min`;
         } else if (diffHours > 0) {
             const remainingMinutes = diffMinutes % 60;
-            timeText = `${diffHours}H ${remainingMinutes}M`;
+            timeText = `${diffHours}H ${remainingMinutes}Min`;
         } else if (diffMinutes > 0) {
-            timeText = `${diffMinutes}M`;
+            timeText = `${diffMinutes}Min`;
         } else {
             return null;
         }
@@ -3013,10 +3489,84 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
         success: function(response) {
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = `
-                    <div class="d-flex justify-content-end mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#17a2b8" class="bi bi-info-square-fill" viewBox="0 0 16 16" style="cursor: pointer;" data-toggle="collapse" data-target="#colorLegend_${ticketId}" aria-expanded="false" aria-controls="colorLegend_${ticketId}" title="Leyenda de Colores">
+                            <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.93 4.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                        </svg>
                         <button class="btn btn-secondary" onclick="printHistory('${ticketId}', '${encodeURIComponent(JSON.stringify(response.history))}', '${currentTicketNroForImage}', '${serialPos}')">
                             <i class="fas fa-print"></i> Imprimir Historial
                         </button>
+                    </div>
+                    <div class="collapse mb-3" id="colorLegend_${ticketId}">
+                            <div class="alert alert-info" role="alert">
+                                <div class="d-flex flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #ffc107; color: #ffffff; min-width: 80px; padding: 6px 12px;">Amarillo</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestión actual</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #5d9cec; color: #ffffff; min-width: 80px; padding: 6px 12px;">Azul</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Gestiones anteriores</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #fd7e14; color: #ffffff; min-width: 80px; padding: 6px 12px;">Naranja</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Taller</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge me-2" style="background-color: #28a745; color: #ffffff; min-width: 80px; padding: 6px 12px;">Verde</span>
+                                        <span style="color: #ffffff; font-weight: 600;">Cambio de Estatus Domiciliación</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div class="d-flex flex-wrap gap-3">
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TG:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Gestión Anterior</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TR:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración Revisión Domiciliación</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-right: 8px;">TT:</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Tiempo Duración en Taller</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top border-light">
+                                    <div style="text-align: center; margin-bottom: 12px;">
+                                        <h5 style="color: #ffffff; font-weight: 700; font-size: 1.1em; margin-bottom: 10px;">LEYENDA DE TIEMPO</h5>
+                            </div>
+                                    <div class="d-flex flex-wrap gap-3 justify-content-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #8b5cf6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">M</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Mes(es)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">S</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Semana(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #10b981; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">D</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Día(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #3b82f6; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">H</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Hora(s)</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2" style="background-color: #f59e0b; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: 700;">Min</span>
+                                            <span style="color: #ffffff; font-weight: 600;">Minuto(s)</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: center; margin-top: 10px;">
+                                        <p style="color: #ffffff; font-size: 0.85em; font-style: italic; margin: 0;">
+                                            Ejemplo: <strong>1M 2S 3D 6H 11Min</strong> significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="accordion" id="ticketHistoryAccordion">
                 `;
@@ -3029,8 +3579,143 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 
                     let timeElapsed = null;
                     let timeBadge = '';
-
-                    if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                    
+                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
+                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
+                    
+                    // Verificar si hay cambio de domiciliación o taller para calcular TG/TR o TG/TT
+                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
+                    let durationFromPreviousText = '';
+                    let durationFromCreationText = '';
+                    let durationLabFromPreviousText = '';
+                    let durationLabFromTallerText = '';
+                    
+                    // Calcular tiempos para Domiciliación
+                    if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Desde la creación del ticket
+                        let ticketCreationDate = null;
+                        const lastHistoryItem = response.history[response.history.length - 1];
+                        if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                            ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                        } else {
+                            // Buscar el elemento con "Ticket Creado"
+                            for (let i = response.history.length - 1; i >= 0; i--) {
+                                const histItem = response.history[i];
+                                if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                                    ticketCreationDate = histItem.fecha_de_cambio;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (ticketCreationDate) {
+                            // Calcular duración desde la creación del ticket hasta el cambio actual
+                            const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                            if (duration) {
+                                durationFromCreationText = duration.text;
+                            }
+                        }
+                    }
+                    
+                    // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
+                    const currentAccionForLab = cleanString(item.name_accion_ticket);
+                    const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
+                    
+                    if (isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab)) {
+                        // Tiempo 1: Desde la gestión anterior (TG)
+                        if (prevItem && prevItem.fecha_de_cambio) {
+                            const elapsedFromPrevious = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
+                            if (elapsedFromPrevious) {
+                                durationLabFromPreviousText = elapsedFromPrevious.text;
+                            }
+                        }
+                        
+                        // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
+                        // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
+                        let totalTallerMinutes = 0;
+                        for (let i = index + 1; i < response.history.length; i++) {
+                            const histItem = response.history[i];
+                            const nextHistItem = response.history[i - 1] || null;
+                            
+                            if (histItem && histItem.fecha_de_cambio && nextHistItem && nextHistItem.fecha_de_cambio) {
+                                const histStatusLab = cleanString(histItem.name_status_lab);
+                                const isReparacionStatus = histStatusLab && 
+                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
+                                     histStatusLab.toLowerCase().includes('reparado'));
+                                const isRecibidoEnTaller = histStatusLab && 
+                                    histStatusLab.toLowerCase().includes('recibido en taller');
+                                
+                                // Si es una gestión naranja (taller con reparación), sumar su tiempo
+                                if (isReparacionStatus && !isRecibidoEnTaller) {
+                                    const duration = calculateTimeElapsed(histItem.fecha_de_cambio, nextHistItem.fecha_de_cambio);
+                                    if (duration && duration.minutes) {
+                                        totalTallerMinutes += duration.minutes;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Convertir el total de minutos a formato legible
+                        if (totalTallerMinutes > 0) {
+                            const totalHours = Math.floor(totalTallerMinutes / 60);
+                            const remainingMinutes = totalTallerMinutes % 60;
+                            const totalDays = Math.floor(totalHours / 24);
+                            const remainingHours = totalHours % 24;
+                            const totalWeeks = Math.floor(totalDays / 7);
+                            const remainingDaysAfterWeeks = totalDays % 7;
+                            const totalMonths = Math.floor(totalDays / 30.44);
+                            
+                            if (totalMonths > 0) {
+                                const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
+                                durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
+                            } else if (totalWeeks > 0) {
+                                durationLabFromTallerText = `${totalWeeks}S ${remainingDaysAfterWeeks}D`;
+                            } else if (totalDays > 0) {
+                                durationLabFromTallerText = `${totalDays}D ${remainingHours}H ${remainingMinutes}Min`;
+                            } else if (totalHours > 0) {
+                                durationLabFromTallerText = `${totalHours}H ${remainingMinutes}Min`;
+                            } else {
+                                durationLabFromTallerText = `${remainingMinutes}Min`;
+                            }
+                        }
+                    }
+                    
+                    // Prioridad: Si la acción es "En el Rosal" (terminó la estadía en taller), mostrar TG y TT; si no, mostrar TG y TR si hay cambio de Domiciliación; si no, tiempo normal
+                    if (isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab) && (durationLabFromPreviousText || durationLabFromTallerText)) {
+                        let tgTtText = '';
+                        if (durationLabFromPreviousText && durationLabFromTallerText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}<br>TT: ${durationLabFromTallerText}`;
+                        } else if (durationLabFromPreviousText) {
+                            tgTtText = `TG: ${durationLabFromPreviousText}`;
+                        } else if (durationLabFromTallerText) {
+                            tgTtText = `TT: ${durationLabFromTallerText}`;
+                        }
+                        timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #fd7e14 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2;">${tgTtText}</span>`;
+                    } else if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                        // Si hay cambio de domiciliación, mostrar TG y TR en el badge en formato vertical (uno arriba del otro)
+                        // Solo mostrar las líneas que tienen valores (no mostrar "N/A")
+                        let tdTrText = '';
+                        if (durationFromPreviousText && durationFromCreationText) {
+                            tdTrText = `TG: ${durationFromPreviousText}<br>TR: ${durationFromCreationText}`;
+                        } else if (durationFromPreviousText) {
+                            tdTrText = `TG: ${durationFromPreviousText}`;
+                        } else if (durationFromCreationText) {
+                            tdTrText = `TR: ${durationFromCreationText}`;
+                        }
+                        if (tdTrText) {
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; background-color: #28a745 !important; color: white !important; white-space: normal; overflow: visible; line-height: 1.2; text-align: center; display: inline-block; min-width: 80px;">${tdTrText}</span>`;
+                        }
+                    } else if (prevItem.fecha_de_cambio && item.fecha_de_cambio) {
+                        // Si no hay cambio de domiciliación ni taller, mostrar el tiempo normal
                         timeElapsed = calculateTimeElapsed(prevItem.fecha_de_cambio, item.fecha_de_cambio);
                         if (timeElapsed) {
                             let badgeColor = 'success';
@@ -3050,12 +3735,9 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             else if (badgeColor === 'warning') backgroundColor = '#ffc107';
                             else if (badgeColor === 'danger') backgroundColor = '#dc3545';
 
-                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
+                            timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important; white-space: nowrap; overflow: visible;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
                         }
                     }
-                    
-                    const cleanString = (str) => str && str.replace(/\s/g, ' ').trim() || null;
-                    const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
                     const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
                     const creationBadge = isCreation && item.fecha_de_cambio ? 
@@ -3065,9 +3747,16 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const coordChanged = getChange(item.full_name_coordinador, prevItem.full_name_coordinador);
                     const usuarioGestionChanged = getChange(item.usuario_gestion, prevItem.usuario_gestion);
                     const tecnicoChanged = getChange(item.full_name_tecnico_n2_history, prevItem.full_name_tecnico_n2_history);
-                    const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
-                    const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
+                    // statusLabChanged y statusDomChanged ya están declarados arriba cuando se calculan TG/TT y TG/TR para el badge
                     const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
+                    
+                    // Calcular duración del estatus de Taller (solo cuando hay cambio)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+                    // Nota: durationLabFromPreviousText y durationLabFromTallerText ya se calcularon arriba para el badge
+                    
+                    // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+                    // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+                    // Nota: durationFromPreviousText y durationFromCreationText ya se calcularon arriba para el badge
                     const estatusTicketChanged = getChange(item.name_status_ticket, prevItem.name_status_ticket);
                     const componentsChanged = getChange(item.components_list, prevItem.components_list);
                     const motivoRechazoChanged = getChange(item.name_motivo_rechazo, prevItem.name_motivo_rechazo);
@@ -3077,6 +3766,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const envioDestinoChanged = getChange(item.envio_destino, prevItem.envio_destino);
 
                     const showComponents = cleanString(item.name_accion_ticket) === 'Actualización de Componentes' && cleanString(item.components_list);
+                    const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
                     const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
@@ -3085,8 +3775,29 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
-                    const headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
-                    const textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
+                    let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
+                    let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
+                    
+                    // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
+                    // La gestión actual ya es amarilla por defecto
+                    // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
+                    const currentStatusLabForColor = cleanString(item.name_status_lab);
+                    const isReparacionStatus = currentStatusLabForColor && 
+                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
+                         currentStatusLabForColor.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = currentStatusLabForColor && 
+                        currentStatusLabForColor.toLowerCase().includes('recibido en taller');
+                    
+                    if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
+                        headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
+                        textColor = "color: #ffffff;";
+                    }
+                    // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
+                    else if (statusDomChanged && !isLatest) {
+                        headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
+                        textColor = "color: #ffffff;";
+                    }
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
                     if (cleanString(item.name_accion_ticket) === "Enviado a taller" || cleanString(item.name_accion_ticket) === "En Taller") {
@@ -3098,6 +3809,11 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
 
+                    // Calcular el padding derecho para evitar que el badge trunque el texto
+                    const hasTimeBadge = timeBadge && timeBadge.trim() !== '';
+                    const hasCreationBadge = creationBadge && creationBadge.trim() !== '';
+                    const buttonPaddingRight = (hasTimeBadge || hasCreationBadge) ? '120px' : '15px';
+
                     historyHtml += `
                         <div class="card mb-3 custom-history-card position-relative">
                             <div class="card-header p-0" id="${headingId}" style="${headerStyle}">
@@ -3107,7 +3823,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                     <button class="btn btn-link w-100 text-left py-2 px-3" type="button"
                                         data-toggle="collapse" data-target="#${collapseId}"
                                         aria-expanded="false" aria-controls="${collapseId}"
-                                        style="${textColor}">
+                                        style="${textColor}; padding-right: ${buttonPaddingRight} !important;">
                                         ${buttonText}
                                     </button>
                                 </h2>
@@ -3155,10 +3871,26 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <th class="text-start">Estatus Taller:</th>
                                                     <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
                                                 </tr>
+                                                ${isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab) ? `
+                                                    ${durationLabFromTallerText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Total Duración en Taller:</th>
+                                                            <td class="highlighted-change">${durationLabFromTallerText}</td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Domiciliación:</th>
                                                     <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
                                                 </tr>
+                                                ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                                                    ${durationFromCreationText ? `
+                                                        <tr>
+                                                            <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
+                                                            <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
+                                                        </tr>
+                                                    ` : ''}
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Estatus Pago:</th>
                                                     <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
@@ -3167,6 +3899,14 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
                                                         <td class="${shouldHighlightComponents ? "highlighted-change" : ""}">${cleanString(item.components_list)}</td>
+                                                    </tr>
+                                                ` : ''}
+                                                ${showComponentsChanges ? `
+                                                    <tr>
+                                                        <th class="text-start">Cambios en Periféricos:</th>
+                                                        <td class="highlighted-change" style="color: #dc3545;">
+                                                            ${cleanString(item.components_changes)}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
@@ -3256,6 +3996,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
 }
 
 function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serialPos = '') {
+    // ... (Mantener las funciones auxiliares: decodeHistorySafe, cleanString, parseCustomDate, calculateTimeElapsed, generateFileName)
     const decodeHistorySafe = (encoded) => {
         try {
             if (!encoded) return [];
@@ -3295,14 +4036,14 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             const remainingDays = Math.floor(diffDays % 30.44);
             text = `${diffMonths}M ${remainingDays}D`;
         } else if (diffWeeks > 0) {
-            text = `${diffWeeks}W ${diffDays % 7}D`;
+            text = `${diffWeeks}S ${diffDays % 7}D`;
         } else if (diffDays > 0) {
-            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}M`;
+            text = `${diffDays}D ${diffHours % 24}H ${diffMinutes % 60}Min`;
         } else if (diffHours > 0) {
-            text = `${diffHours}H ${diffMinutes % 60}M`;
+            text = `${diffHours}H ${diffMinutes % 60}Min`;
         } else if (diffMinutes > 0) {
             // Mostrar minutos cuando es al menos 1 minuto
-            text = `${diffMinutes}M`;
+            text = `${diffMinutes}Min`;
         } else {
             // Si es menos de 1 minuto, mostrar N/A según requerimiento de impresión
             text = `N/A`;
@@ -3312,25 +4053,118 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 
     const history = decodeHistorySafe(historyEncoded);
 
-    // Generar nombre del archivo con formato: nro_ticket-last4digits_serial.pdf
     const generateFileName = (ticketNumber, serial) => {
         let fileName = `Historial_Ticket_${ticketNumber}`;
-        
         if (serial && serial.length >= 4) {
             const lastFourDigits = serial.slice(-4);
             fileName += `-${lastFourDigits}`;
         }
-        
         return `${fileName}.pdf`;
     };
 
     const fileName = generateFileName(currentTicketNroForImage, serialPos);
+
+    const getChange = (itemVal, prevVal) => {
+        const cleanItem = cleanString(itemVal);
+        const cleanPrev = cleanString(prevVal);
+        return cleanItem !== cleanPrev;
+    };
 
     let itemsHtml = '';
     history.forEach((item, index) => {
         const previous = history[index + 1] || null;
         const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
         const elapsedText = elapsed ? elapsed.text : 'N/A';
+        
+        // Calcular duración del estatus de Taller (solo cuando hay cambio)
+        // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
+        let durationLabFromPreviousText = '';
+        let durationLabFromTallerText = '';
+        if (previous) {
+            const statusLabChanged = getChange(item.name_status_lab, previous.name_status_lab);
+            if (statusLabChanged && cleanString(item.name_status_lab)) {
+                // Tiempo 1: Desde la gestión anterior
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationLabFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde "Recibido en Taller" hasta el cambio actual
+                let fechaEntradaTaller = null;
+                for (let i = index + 1; i < history.length; i++) {
+                    const histItem = history[i];
+                    if (histItem && histItem.fecha_de_cambio) {
+                        const statusLab = cleanString(histItem.name_status_lab);
+                        if (statusLab && statusLab.toLowerCase().includes('recibido en taller') && !fechaEntradaTaller) {
+                            fechaEntradaTaller = histItem.fecha_de_cambio;
+                        }
+                    }
+                }
+                
+                if (!fechaEntradaTaller) {
+                    for (let i = history.length - 1; i > index; i--) {
+                        const histItem = history[i];
+                        if (histItem && histItem.fecha_de_cambio) {
+                            const statusLab = cleanString(histItem.name_status_lab);
+                            if (statusLab && statusLab.toLowerCase().includes('recibido en taller')) {
+                                fechaEntradaTaller = histItem.fecha_de_cambio;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (fechaEntradaTaller) {
+                    const duration = calculateTimeElapsed(fechaEntradaTaller, item.fecha_de_cambio);
+                    if (duration) {
+                        durationLabFromTallerText = duration.text;
+                    }
+                }
+            }
+        }
+        
+        // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
+        // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
+        let durationFromPreviousText = '';
+        let durationFromCreationText = '';
+        if (previous) {
+            const statusDomChanged = getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion);
+            if (statusDomChanged && cleanString(item.name_status_domiciliacion)) {
+                // Tiempo 1: Desde la gestión anterior (ya calculado como elapsed)
+                if (previous && previous.fecha_de_cambio) {
+                    const elapsedFromPrevious = calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio);
+                    if (elapsedFromPrevious) {
+                        durationFromPreviousText = elapsedFromPrevious.text;
+                    }
+                }
+                
+                // Tiempo 2: Desde la creación del ticket
+                let ticketCreationDate = null;
+                const lastHistoryItem = history[history.length - 1];
+                if (lastHistoryItem && lastHistoryItem.fecha_de_cambio) {
+                    ticketCreationDate = lastHistoryItem.fecha_de_cambio;
+                } else {
+                    // Buscar el elemento con "Ticket Creado"
+                    for (let i = history.length - 1; i >= 0; i--) {
+                        const histItem = history[i];
+                        if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
+                            ticketCreationDate = histItem.fecha_de_cambio;
+                            break;
+                        }
+                    }
+                }
+                
+                if (ticketCreationDate) {
+                    // Calcular duración desde la creación del ticket hasta el cambio actual
+                    const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
+                    if (duration) {
+                        durationFromCreationText = duration.text;
+                    }
+                }
+            }
+        }
 
         itemsHtml += `
             <div style="border: 1px solid #ddd; border-radius: 8px; margin: 15px 0; padding: 0; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -3352,9 +4186,20 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Rol en Gestión</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_gestion) || 'N/A'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
+                        ${(() => {
+                            const currentAccion = cleanString(item.name_accion_ticket);
+                            const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+                            return isEnElRosal && durationLabFromTallerText ? `
+                                <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Total Duración en Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${durationLabFromTallerText}</td></tr>
+                            ` : '';
+                        })()}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
+                        ${previous && getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) && cleanString(item.name_status_domiciliacion) ? `
+                            ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
+                        ` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
+                        ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
                         ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
@@ -3373,6 +4218,35 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         `;
     });
 
+    const legendHTML_Integrated = `
+        <div class="legend-integrated" style="margin: 10px 0; padding: 10px; background: #e0f2fe; border: 1px solid #93c5fd; border-radius: 6px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <p style="font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 8px;">
+                LEYENDA DE TIEMPO
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; font-size: 11px; font-weight: 500; flex-wrap: wrap;">
+                <span style="color: #7c3aed;">
+                    <strong style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">M</strong> Mes(es)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">S</strong> Semana(s)
+                </span>
+                <span style="color: #059669;">
+                    <strong style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">D</strong> Día(s)
+                </span>
+                <span style="color: #1e40af;">
+                    <strong style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">H</strong> Hora(s)
+                </span>
+                <span style="color: #9a3412;">
+                    <strong style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; margin-right: 4px;">Min</strong> Minuto(s)
+                </span>
+            </div>
+            <p style="font-size: 10px; color: #6b7280; margin-top: 8px;">
+                *Ejemplo: **1M 2S 3D 6H 11Min** significa 1 mes, 2 semanas, 3 días, 6 horas y 11 minutos.
+            </p>
+        </div>
+    `;
+
+
     const printContent = `
         <!DOCTYPE html>
         <html lang="es">
@@ -3381,6 +4255,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>${fileName}</title>
             <style>
+                /* ... (Mantener todos los estilos CSS anteriores, asegurando que la clase .legend-float NO exista para no confundir) ... */
                 * {
                     margin: 0;
                     padding: 0;
@@ -3604,13 +4479,24 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     margin-top: 6px;
                 }
                 
+                /* Estilos para la leyenda integrada */
+                .legend-integrated {
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #e0f2fe;
+                    border: 1px solid #93c5fd;
+                    border-radius: 6px;
+                    text-align: center;
+                    page-break-inside: avoid; /* Evita que la leyenda se rompa entre páginas */
+                }
+                
                 /* Optimizaciones para impresión */
                 @media print {
                     * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
-                    
+
                     body {
                         margin-top: 50px !important;
                         margin-bottom: 40px !important;
@@ -3731,7 +4617,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     <div class="company-address">
                         Urbanización El Rosal. Av. Francisco de Miranda<br>
                         Edif. Centro Sudamérica PH-A Caracas. Edo. Miranda
-            </div>
+                </div>
                     <div class="document-title">Historial del Ticket</div>
                 </div>
                 
@@ -3745,6 +4631,8 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <div class="info-value">${new Date().toLocaleString()}</div>
                     </div>
                 </div>
+                
+                ${legendHTML_Integrated}
 
                 <div class="content-wrapper">
                     <div class="history-section">
@@ -3792,12 +4680,12 @@ function showElapsedLegend(e) {
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">Una semana o más, o más de 2 días hábiles</span></div>
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">Un mes o más, o más de 5 días hábiles</span></div>
+            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
+            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
         </div>`;
 
     Swal.fire({
-        title: 'Agenda de colores',
+        title: 'Leyenda',
         html: legendHtml,
         icon: 'info',
         confirmButtonText: 'Entendido',
@@ -4067,6 +4955,34 @@ modalComponentesEl.addEventListener('show.bs.modal', function () {
   contadorComponentes.textContent = '0';
 });
 
+// --- UTILIDADES DE UI Y ESTADO ---
+
+/**
+ * Actualiza el color de la fila basado en el estado del checkbox y su estado inicial.
+ * @param {HTMLInputElement} checkbox - El checkbox que disparó el evento.
+*/
+
+// Función para actualizar los colores de la fila según el estado del checkbox
+function actualizarColoresFila(checkbox) {
+    const row = checkbox.closest('tr');
+    if (!row) return;
+    
+    const isChecked = checkbox.checked;
+    const initialState = checkbox.getAttribute('data-initial-checked') === 'true';
+    
+    // Remover todas las clases de color
+    row.classList.remove('table-info', 'table-secondary', 'opacity-75');
+    
+    if (isChecked) {
+        // Si está marcado, mostrar en azul
+        row.classList.add('table-info');
+    } else if (initialState) {
+        // Si estaba marcado inicialmente y ahora está desmarcado, mostrar opaco
+        row.classList.add('table-secondary', 'opacity-75');
+    }
+    // Si no estaba marcado inicialmente y sigue sin marcar, no agregar clase (estado normal)
+}
+
 // Función para actualizar el contador de componentes seleccionados
 function actualizarContador() {
   // Solo cuenta los checkboxes que están checked y que NO están deshabilitados
@@ -4089,21 +5005,77 @@ function actualizarContador() {
 // Función para limpiar la selección de componentes
 function limpiarSeleccion() {
   // Solo desmarca los checkboxes que NO están deshabilitados
-  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-  checkboxes.forEach(cb => cb.checked = false);
+  const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"].component-checkbox:not([disabled])');
+  checkboxes.forEach(cb => {
+    cb.checked = false;
+    actualizarColoresFila(cb);
+  });
     
   document.getElementById('selectAllComponents').checked = false;
-  contadorComponentes.textContent = '0';
+  actualizarContador();
 }
 
-// CORRECCIÓN PRINCIPAL: Se modificó la función para que reciba los componentes seleccionados
-function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos) {
+/**
+ * Envía los componentes seleccionados y deseleccionados al servidor para su guardado.
+ * @param {string|number} ticketId 
+ * @param {Array<number>} selectedComponents - IDs de componentes marcados o que siguen marcados.
+ * @param {Array<number>} deselectedComponents - IDs de componentes que fueron desmarcados.
+ * @param {string} serialPos - Número de serie del POS.
+ * * NOTA: Asume que 'ENDPOINT_BASE', 'APP_PATH', 'Swal', 'modalComponentes' están definidos globalmente.
+ */
+function guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos) {
     const id_user = document.getElementById('id_user').value;
     const modulo = "Gestión Técnico";
     
+    // 1. Validaciones y Limpieza de datos
+    const ticketIdClean = String(ticketId).trim().replace(/['"]/g, '');
+    const ticketIdNum = parseInt(ticketIdClean);
+    const serialPosClean = serialPos ? serialPos.trim() : '';
+    const idUserClean = id_user ? id_user.trim() : '';
+
+    if (isNaN(ticketIdNum) || ticketIdNum <= 0) {
+        Swal.fire({
+            title: 'Error de Datos',
+            text: 'El ID del ticket no es válido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
+    
+    if (!serialPosClean) {
+        Swal.fire({
+            title: 'Error de Datos',
+            text: 'El serial del POS es requerido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
+    
+    if (!idUserClean) {
+        Swal.fire({
+            title: 'Error de Usuario',
+            text: 'El ID de usuario es requerido.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
+        return;
+    }
+    
+    // Preparar objeto con componentes marcados y desmarcados
+    const componentsData = {
+        selected: selectedComponents || [],
+        deselected: deselectedComponents || []
+    };
+    
+    // 2. Configuración de la petición AJAX
     const xhr = new XMLHttpRequest();
+    // Uso correcto de template literals para la URL
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    // 3. Manejo de la respuesta
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
@@ -4112,7 +5084,8 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 if (response.success) {
                     Swal.fire({
                         title: '¡Éxito!',
-                        html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> han sido guardados correctamente.`,
+                        // Uso correcto de template literals para el HTML
+                        html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPosClean}</span> han sido guardados correctamente.`,
                         icon: 'success',
                         confirmButtonText: 'Aceptar',
                         color: 'black',
@@ -4133,7 +5106,7 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                     });
                 }
             } catch (error) {
-              Swal.fire({
+                Swal.fire({
                     title: 'Error',
                     text: 'Error al procesar la respuesta del servidor.',
                     icon: 'error',
@@ -4141,25 +5114,32 @@ function guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos
                 });
             }
         } else {
-          Swal.fire({
-            title: 'Error del Servidor',
-            text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-          });
+            // Uso correcto de template literals
+            Swal.fire({
+                title: 'Error del Servidor',
+                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
         }
     };
+
     xhr.onerror = function() {
-      Swal.fire({
-        title: 'Error de Red',
-        text: 'No se pudo conectar con el servidor.',
-        icon: 'error',
-        confirmButtonText: 'Aceptar'
-      });
+        Swal.fire({
+            title: 'Error de Red',
+            text: 'No se pudo conectar con el servidor.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar'
+        });
     };
-  const dataToSend = `action=SaveComponents&ticketId=${ticketId}&serialPos=${serialPos}&selectedComponents=${encodeURIComponent(JSON.stringify(selectedComponents))}&id_user=${encodeURIComponent(id_user)}&modulo=${encodeURIComponent(modulo)}`;
-  xhr.send(dataToSend);
+    
+    // 4. Preparación de los datos a enviar y envío
+    const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
+    
+    xhr.send(dataToSend);
 }
+
+// --- FUNCIONES AUXILIARES DE CONTEXTO (Ajustar según tu entorno) ---
 
 // Función para obtener el ticket ID (ajusta según tu estructura)
 function obtenerTicketId() {
@@ -4175,16 +5155,40 @@ function obtenerRegionName() {
   return 'Sin región asignada';
 }
 
-// FUNCIÓN PRINCIPAL PARA CARGAR Y MOSTRAR EL MODAL
+/**
+ * Carga los componentes de un ticket desde el servidor, maneja la respuesta y muestra el modal.
+ * * NOTA: Asume que 'tbodyComponentes', 'modalComponentes', 'ENDPOINT_BASE', 'APP_PATH', 
+ * y 'actualizarContador' están definidos y son accesibles globalmente o en el scope.
+ * * @param {string|number} ticketId - ID del ticket a consultar.
+ * @param {string} regionName - Nombre de la región (actualmente no utilizado dentro de la función).
+ * @param {string} serialPos - Número de serie del POS.
+ */
 function showSelectComponentsModal(ticketId, regionName, serialPos) {
+    // 1. Validación de ticketId
+    const ticketIdNum = parseInt(ticketId);
+
+    if (!ticketId || isNaN(ticketIdNum) || ticketIdNum <= 0) {
+        Swal.fire({
+            title: 'Error',
+            text: 'El ID del ticket no es válido o está vacío.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+    
     const xhr = new XMLHttpRequest();
 
-    // Limpia el contenido previo y muestra un mensaje de carga
+    // 2. Mostrar estado de carga (Uso correcto de template literals)
     tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
     
+    // Uso correcto de template literals para la URL y Data
     const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
-    const dataToSendString = `action=GetComponents&ticketId=${ticketId}`;
-
+    const dataToSendString = `action=GetComponents&ticketId=${ticketIdNum}`; // Usamos la variable numérica validada
+    
+    // 3. Configuración y envío de la petición AJAX
     xhr.open('POST', apiUrl, true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
@@ -4198,20 +5202,43 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     let componentsHtml = '';
                     
                     if (components.length > 0) {
+                        const initialState = {};
+                        
                         components.forEach(comp => {
-                            // Ahora verificamos si `comp.is_selected` es 't' para marcar y deshabilitar
-                            const isChecked = comp.is_selected === 't' ? 'checked' : '';
-                            const isDisabled = comp.is_selected === 't' ? 'disabled' : '';
+                            // Limpieza de valores booleanos de PostgreSQL ('t'/'f')
+                            const addValue = comp.add === true || comp.add === 't';
+                            const deselectedValue = comp.add === false || comp.add === 'f';
+                            
+                            // Lógica de estado inicial (true = marcado, false/null = no marcado)
+                            const isChecked = addValue;
+                            
+                            // Determinar clase CSS según el estado de la base de datos
+                            let rowClass = '';
+                            if (isChecked) {
+                                rowClass = 'table-info'; // Azul para marcado (add = true)
+                            } else if (deselectedValue) {
+                                rowClass = 'table-secondary opacity-75'; // Opaco para desmarcado (add = false)
+                            }
+                            // Si 'add' es null o 'falsy', no se agrega clase (estado normal)
+                            
+                            // Guardar estado inicial para la comparación de cambios
+                            initialState[comp.id_component] = isChecked;
                             
                             componentsHtml += `
-                                <tr>
-                                  <td>
-                                    <input type="checkbox" class="form-check-input" value="${comp.id_component}" ${isChecked} ${isDisabled}>
+                                <tr class="${rowClass}" data-component-id="${comp.id_component}" data-initial-state="${isChecked}">
+                                    <td>
+                                        <input type="checkbox" class="form-check-input component-checkbox" 
+                                               value="${comp.id_component}" 
+                                               data-initial-checked="${isChecked}"
+                                               ${isChecked ? 'checked' : ''}>
                                     </td>
-                                  <td>${comp.name_component}</td>
+                                    <td>${comp.name_component}</td>
                                 </tr>
                             `;
                         });
+                        
+                        // Guardar estado inicial en el tbody para comparar cambios al guardar
+                        tbodyComponentes.setAttribute('data-initial-state', JSON.stringify(initialState));
                         
                         document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
                         document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
@@ -4221,14 +5248,16 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                     }
                     
                     tbodyComponentes.innerHTML = componentsHtml;
+                    
+                    // Título del Modal (Uso correcto de template literals)
                     document.getElementById('modalComponentesLabel').innerHTML = `
                         <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
-                    // Finalmente, muestra el modal de Bootstrap
+                    // Mostrar el modal
                     modalComponentes.show();
 
-                    // Llama a actualizar contador después de cargar los componentes
+                    // Actualizar contador
                     actualizarContador();
 
                 } else {
@@ -4238,6 +5267,7 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                 Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
             }
         } else {
+            // Manejo de error del servidor (Uso correcto de template literals)
             Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
         }
     };
@@ -4245,131 +5275,162 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
     xhr.onerror = function() {
         Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
     };  
-  xhr.send(dataToSendString);
+    
+    xhr.send(dataToSendString);
 }
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
+// --- INICIALIZACIÓN Y LISTENERS DEL DOM ---
+
+// Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 document.addEventListener('DOMContentLoaded', function () {
+    // Definición de variables clave (debe estar en el scope donde se usan)
+    // Se asume que 'tbodyComponentes' y 'modalComponentes' están definidas
+    // Si no están definidas globalmente, deben definirse aquí:
+    /*
+    const tbodyComponentes = document.getElementById('tbodyComponentes');
     const modalComponentesEl = document.getElementById('modalComponentes');
     const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+    */
 
-    // Escucha el evento `click` en el documento y usa delegación.
+    // Asumiendo que 'modalComponentesEl' y 'modalComponentes' existen/son accesibles
+    const modalComponentesEl = document.getElementById('modalComponentes');
+    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+    const tbodyComponentes = document.getElementById('tbodyComponentes');
+
+
+    // Escucha el evento click en el documento y usa delegación.
     document.addEventListener('click', function (e) {
-        // Verifica si el clic proviene del botón con el ID 'hiperbinComponents'
+        
+        // 1. Botón para abrir el modal ('hiperbinComponents')
         if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
             const botonClicado = e.target.closest('#hiperbinComponents');
             if (botonClicado) {
-                // Llama a la función que abre el modal, pasándole el botón como argumento
-                abrirModalComponentes(botonClicado);
+                // Nota: La función 'abrirModalComponentes' no está definida aquí, 
+                // se reemplazó por showSelectComponentsModal, pero mantendré el nombre original
+                // si la función existe en otra parte, o la reemplazo con la lógica de carga:
+                
+                // Opción 1: Reemplazar con la lógica de carga si la data está en el botón
+                // const ticketId = botonClicado.dataset.ticketId;
+                // const serialPos = botonClicado.dataset.serialPos;
+                // showSelectComponentsModal(ticketId, obtenerRegionName(), serialPos); 
+                
+                // Opción 2: Si 'abrirModalComponentes' es el punto de entrada
+                abrirModalComponentes(botonClicado); // Asumiendo que esta función existe.
             }
         }
 
-        // Event listener para el botón "Limpiar Selección" (usando delegación)
+        // 2. Botón "Limpiar Selección"
         if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
             limpiarSeleccion();
         }
 
-        // Event listener para el botón "Guardar Componentes"
+        // 3. Botón "Guardar Componentes"
         if (e.target && e.target.id === 'btnGuardarComponentes') {
             const ticketId = e.target.dataset.ticketId;
             const serialPos = e.target.dataset.serialPos;
 
-            // --- INICIO DE LA LÓGICA AGREGADA ---
-            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]');
-            const allDisabledAndChecked = Array.from(allCheckboxes).every(cb => cb.checked && cb.disabled);
-
-            if (allCheckboxes.length > 0 && allDisabledAndChecked) {
-                Swal.fire({
-                    title: '¡Información!',
-                    html: `Todos los Periféricos del Pos <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> ya están registrados.`,
-                    icon: 'info',
-                    confirmButtonText: 'Aceptar',
-                    color: 'black',
-                    confirmButtonColor: '#003594'
-                });
-                return; // Detiene la ejecución para no intentar guardar
-            }
-            // --- FIN DE LA LÓGICA AGREGADA ---
-
-            const checkboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:checked:not([disabled])');
-            const selectedComponents = Array.from(checkboxes).map(cb => cb.value);
-
-            if (selectedComponents.length === 0) {
-                Swal.fire({
-                    title: 'Atención',
-                    text: 'Debes seleccionar al menos un componente nuevo para guardar.',
-                    icon: 'warning',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#003594',
-                });
-                return;
-            }
-            guardarComponentesSeleccionados(ticketId, selectedComponents, serialPos);
+            // Obtener todos los checkboxes y determinar cambios
+            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"].component-checkbox');
+            const selectedComponents = [];
+            const deselectedComponents = [];
+            
+            // Obtener estado inicial guardado
+            const initialStateJson = tbodyComponentes.getAttribute('data-initial-state');
+            const initialState = initialStateJson ? JSON.parse(initialStateJson) : {};
+            
+            allCheckboxes.forEach(checkbox => {
+                const compId = parseInt(checkbox.value);
+                const isCurrentlyChecked = checkbox.checked;
+                const wasInitiallyChecked = initialState[compId] === true;
+                
+                // Lógica de envío: Solo enviar componentes que CAMBIARON de estado
+                // Esto evita duplicaciones y procesamiento innecesario
+                
+                // 1. Componentes que cambiaron de desmarcado a marcado (nuevos)
+                if (isCurrentlyChecked && !wasInitiallyChecked) {
+                    selectedComponents.push(compId);
+                } 
+                
+                // 2. Componentes que cambiaron de marcado a desmarcado
+                // Solo enviar a desmarcar si estaba originalmente marcado (TRUE)
+                if (!isCurrentlyChecked && wasInitiallyChecked) {
+                    deselectedComponents.push(compId);
+                } 
+                // Si el estado no cambió (marcado sigue marcado, o desmarcado sigue desmarcado),
+                // no se envía al backend para evitar procesamiento innecesario
+            });
+            
+            // Enviar cambios (puede haber solo marcados, solo desmarcados, o ambos)
+            guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos);
         }
 
-        // Event listener para el botón de cerrar el modal
+        // 4. Botón de cerrar el modal
         if (e.target && e.target.id === 'BotonCerrarModal') {
             modalComponentes.hide();
         }
 
-        // Event listener para el checkbox "Seleccionar Todos"
+        // 5. Checkbox "Seleccionar Todos"
         if (e.target && e.target.id === 'selectAllComponents') {
             const isChecked = e.target.checked;
             const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
             
             enabledCheckboxes.forEach(checkbox => {
                 checkbox.checked = isChecked;
+                // Aplicar el color de fila después de cambiar el estado
+                actualizarColoresFila(checkbox);
             });
             
             actualizarContador();
         }
 
-        // Event listener para checkboxes individuales de componentes
+        // 6. Checkboxes individuales de componentes
         if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
             actualizarContador();
+            actualizarColoresFila(e.target);
         }
     });
 });
 
 function abrirModalComponentes(boton) {
     const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
-    const ticketId = boton.dataset.idTicket;
-    const serialPos = boton.dataset.serialPos;
+    
+    // Obtener los valores de los atributos data
+    // Intentar obtener de diferentes formas por compatibilidad
+    const ticketId = boton.dataset.idTicket || boton.getAttribute('data-id-ticket') || boton.getAttribute('data-idTicket');
+    const serialPos = boton.dataset.serialPos || boton.getAttribute('data-serial-pos') || boton.getAttribute('data-serialPos');
+
+    // Validar ticketId
+    if (!ticketId || ticketId === 'undefined' || ticketId === 'null' || ticketId === '' || ticketId === '0') {
+        console.error('Error: ticketId no válido', { ticketId, boton: boton });
+        Swal.fire({
+            title: 'Atención',
+            text: 'No se pudo obtener el ID del ticket. Por favor, verifique que el ticket esté seleccionado correctamente.',
+            icon: 'warning',
+            confirmButtonText: 'Ok',
+            color: 'black',
+            confirmButtonColor: '#003594',
+        });
+        return;
+    }
+
+    // Validar serialPos (puede ser opcional pero es mejor tenerlo)
+    if (!serialPos || serialPos === 'undefined' || serialPos === 'null') {
+        console.warn('Advertencia: serialPos no disponible', { serialPos, ticketId });
+        // No bloqueamos la ejecución si serialPos está vacío, pero lo notificamos
+    }
 
     const regionName = obtenerRegionName();
-
-    if (!ticketId) {
-        Swal.fire({
-            title: 'Atención',
-            text: 'No se pudo obtener el ID del ticket.',
-            icon: 'warning',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594',
-        });
-        return;
-    }
-
-    if (!serialPos) {
-        Swal.fire({
-            title: 'Atención',
-            text: 'No hay serial disponible para este ticket.',
-            icon: 'warning',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594',
-        });
-        return;
-    }
 
     if(modalCerrarComponnets){
       modalCerrarComponnets.addEventListener('click', function() {
         modalComponentes.hide();
       });
     }
-    showSelectComponentsModal(ticketId, regionName, serialPos);
+    
+    // Llamar a la función con el ticketId validado
+    showSelectComponentsModal(ticketId, regionName, serialPos || '');
 }
 
 function getTicketStatusVisual(statusTicket, accionTicket) {

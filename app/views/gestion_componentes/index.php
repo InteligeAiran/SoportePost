@@ -356,6 +356,7 @@ function mi_navbar() {}
     </main>
 
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
 
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
     <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
