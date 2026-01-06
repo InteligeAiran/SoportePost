@@ -1031,28 +1031,6 @@ function updateTicketStatusInTaller(ticketId) {
   xhr.send(dataToSendString);
 }
 
-function showElapsedLegend(e) {
-    try { if (e && e.stopPropagation) e.stopPropagation(); } catch (_) {}
-    const legendHtml = `
-        <div style="font-size: 0.95rem; text-align: left;">
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
-        </div>`;
-
-    Swal.fire({
-        title: 'Leyenda',
-        html: legendHtml,
-        icon: 'info',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#003594',
-        color: 'black',
-        width: 520,
-    });
-}
-
  const changeStatusModal = document.getElementById("changeStatusModal");
   // Estas variables son cruciales porque son accesibles para changeStatusTicket
   const estatusActualInput = changeStatusModal
@@ -2588,65 +2566,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
-function getTicketStatusVisual(statusTicket, accionTicket) {
-  let statusClass = '';
-  let statusText = '';
-  let statusIcon = '';
-  
-  if (statusTicket === 'Abierto' || 
-      accionTicket === 'Asignado al Coordinador' ||
-      accionTicket === 'Pendiente por revisar domiciliacion') {
-    statusClass = 'status-open';
-    statusText = 'ABIERTO';
-    statusIcon = '🟢';
-  } else if (statusTicket === 'En proceso' || 
-             accionTicket === 'Asignado al Técnico' || 
-             accionTicket === 'Recibido por el Técnico' ||
-             accionTicket === 'Enviado a taller' ||
-             accionTicket === 'En Taller' ||
-             accionTicket === 'En espera de Confirmar Devolución') {
-    statusClass = 'status-process';
-    statusText = 'EN PROCESO';
-    statusIcon = '🟡';
-  } else if (statusTicket === 'Cerrado' || 
-             accionTicket === 'Entregado a Cliente') {
-    statusClass = 'status-closed';
-    statusText = 'CERRADO';
-    statusIcon = '🔴';
-  }
-  
-  return { statusClass, statusText, statusIcon };
-}
-
-// Función para mostrar el indicador de estado
-function showTicketStatusIndicator(statusTicket, accionTicket) {
-  const container = document.getElementById('ticket-status-indicator-container');
-  if (!container) return;
-  
-  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicket, accionTicket);
-  
-  container.innerHTML = `
-    <div class="ticket-status-indicator ${statusClass}">
-      <div class="status-content">
-        <span class="status-icon">${statusIcon}</span>
-        <span class="status-text">${statusText}</span>
-      </div>
-    </div>
-  `;
-}
-
-// Función para ocultar el indicador
-function hideTicketStatusIndicator() {
-  const container = document.getElementById('ticket-status-indicator-container');
-  if (container) {
-    container.innerHTML = '';
-  }
-}
-
-// Cuando se selecciona un ticket específico
-function onTicketSelect(ticketData) {
-  showTicketStatusIndicator(ticketData.name_status_ticket, ticketData.name_accion_ticket);
-  // ... resto de tu código para mostrar detalles del ticket ...
-}
-

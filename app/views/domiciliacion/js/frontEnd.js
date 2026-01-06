@@ -1982,44 +1982,6 @@ function showUploadDocumentModal(ticketId = null, nroTicket = null, currentStatu
   uploadDocumentModalInstance.show();
 }
 
-function showElapsedLegend(e) {
-  try {
-    if (e && e.stopPropagation) e.stopPropagation();
-  } catch (_) {}
-
-  const legendHtml = `
-
-        <div style="font-size: 0.95rem; text-align: left;">
-
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
-
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#6f42c1; color:#fff; min-width:64px;">Morado</span><span class="ml-2">Entre 1 y 8 horas</span></div>
-
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#fd7e14; color:#fff; min-width:64px;">Naranja</span><span class="ml-2">Más de 8 horas o al menos 1 día</span></div>
-
-            <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#ffc107; color:#212529; min-width:64px;">Amarillo</span><span class="ml-2">1 semana o más (1S+), o más de 2 días hábiles</span></div>
-
-            <div class="d-flex align-items-center"><span class="badge" style="background-color:#dc3545; color:#fff; min-width:64px;">Rojo</span><span class="ml-2">1 mes o más (1M+), o más de 5 días hábiles</span></div>
-
-        </div>`;
-
-  Swal.fire({
-    title: "Leyenda",
-
-    html: legendHtml,
-
-    icon: "info",
-
-    confirmButtonText: "Entendido",
-
-    confirmButtonColor: "#003594",
-
-    color: "black",
-
-    width: 520,
-  });
-}
-
 $(document).ready(function () {
   const changeStatusDomiciliacionModalElement = document.getElementById(
     "changeStatusDomiciliacionModal"
