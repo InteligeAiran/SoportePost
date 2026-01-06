@@ -31,6 +31,15 @@ function mi_navbar() {}
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
 
     <style>
+        #tabla-ticket tbody tr.table-active {
+            background-color: #CCE5FF !important;
+            /* Un gris claro para el resaltado */
+            color: #333;
+            /* Color de texto para que sea legible sobre el gris */
+            border: 1px solid #ccc;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
         div.dataTables_wrapper div.dataTables_length label {
             font-weight: bold;
             /* Ejemplo: Texto en negrita */

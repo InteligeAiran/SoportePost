@@ -861,7 +861,6 @@ function mi_navbar() {}
         <script src="<?php echo APP; ?>app/public/img/dashboard/js/argon-dashboard.min.js?v=2.1.0"></script>
 
         <!-- Datatable otro sistema-->
-
         <script src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
         <script src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
         <script src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
