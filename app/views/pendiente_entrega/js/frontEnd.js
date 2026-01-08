@@ -1050,7 +1050,7 @@ function getTicketDataFinaljs() {
 
                       }
                       else {
-                          const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
+                          const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "" || currentStatusLab === "Gestión Comercial (Irreparable)") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
                           
                           if (commonConditions && isDocumentMissing) {
                               actionButton = `<button type="button" id="openModalButton" class="btn btn-primary btn-sm upload-document-btn" title = "Subir Documento"
@@ -1082,6 +1082,7 @@ function getTicketDataFinaljs() {
                                                   data-nro-ticket="${nroTicket}"
                                                   data-pdf-presupuesto="${pdfPathEscaped}"
                                                   data-id-failure="${idFailure || ''}"
+                                                  data-status-lab="${currentStatusLab || ''}"
                                                   data-is-actualizacion-software="${isFallaSinPago ? 'true' : 'false'}">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
                                                     <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
@@ -1104,7 +1105,11 @@ function getTicketDataFinaljs() {
                       
                       // Agregar botón de presupuesto solo si cumple las condiciones
                       let presupuestoButton = '';
-                      if (shouldShowPresupuestoButton) {
+                      // VERIFICACIÓN ADICIONAL: No mostrar si el estatus es "Gestión Comercial (Irreparable)"
+                      const isIrreparable = (row.name_status_lab === "Gestión Comercial (Irreparable)" || row.status_taller === "Gestión Comercial (Irreparable)");
+
+                      if (shouldShowPresupuestoButton && !isIrreparable) {
+
                           presupuestoButton = `<button type="button" class="btn generate-presupuesto-btn" 
                               data-id-ticket="${idTicket}"
                               data-serial-pos="${serialPos}"
@@ -1127,8 +1132,9 @@ function getTicketDataFinaljs() {
                       
                       // Agregar botón para cargar PDF del presupuesto (solo si no existe)
                       // NO mostrar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
+                      // TAMPOCO mostrar si es "Gestión Comercial (Irreparable)"
                       let uploadPresupuestoPDFButton = '';
-                      if (!hasPresupuestoPDF && !isFallaSinPago) {
+                      if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable) {
                           // Botón para cargar PDF
                           uploadPresupuestoPDFButton = `<button type="button" class="btn btn-info btn-sm upload-presupuesto-pdf-btn" title="Cargar PDF Presupuesto"
                               data-id-ticket="${idTicket}"
@@ -2057,7 +2063,11 @@ function getTicketDataFinaljs() {
                     
                     // Validación: Si no hay PDF del presupuesto Y NO es "Actualización de Software" ni "Sin Llaves/Dukpt Vacío", mostrar alerta y detener
                     // Para "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12), no se requiere presupuesto
-                    if (!hasPresupuestoPDF && !isFallaSinPago) {
+                    // TAMPOCO se requiere si el estatus es "Gestión Comercial (Irreparable)"
+                    const statusLab = $(this).data("status-lab");
+                    const isIrreparable = (statusLab === "Gestión Comercial (Irreparable)");
+
+                    if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable) {
                         Swal.fire({
                             title: 'Documento de Presupuesto Requerido',
                             html: `

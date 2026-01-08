@@ -109,7 +109,7 @@ function getTicketData() {
     function findFirstButtonWithData(api) {
         const searchTerms = [
             { button: "btn-por-asignar", column: 9, term: "^Recibido en Taller$", status: "En proceso", action: "Recibido en Taller" },
-            { button: "btn-asignados", column: 8, term: "^Enviado a taller$", status: "En proceso", action: ["En proceso de Reparación", "Reparado", "Pendiente por repuesto"] },
+            { button: "btn-asignados", column: 8, term: "^Enviado a taller$", status: "En proceso", action: ["En proceso de Reparación", "Reparado", "Pendiente por repuesto", "Gestión Comercial (Irreparable)"] },
             { button: "btn-recibidos", column: 8, term: "^En espera confirmación carga de llaves$", status: "En proceso", action: "En espera confirmación carga de llaves" },
             { button: "btn-devuelto", column: 8, term: "^En el Rosal$", status: "En proceso", action: "En el Rosal" }
         ];
@@ -134,7 +134,7 @@ function getTicketData() {
                         api.column('Enviar_AlRosal:name').visible(true);
                         api.column(11).visible(false);
                         api.column(10).visible(false);
-                        api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw();
+                        api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
                         showTicketStatusIndicator(status, action);
                     } else if (button === "btn-recibidos") {
                         api.column('carga_de_llave:name').visible(false);
@@ -179,7 +179,7 @@ function getTicketData() {
                     api.column('Enviar_AlRosal:name').visible(true);
                     api.column(11).visible(false);
                     api.column(10).visible(false);
-                    api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw();
+                    api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
                     showTicketStatusIndicator(status, action);
                 } else if (button === "btn-recibidos") {
                     api.column('carga_de_llave:name').visible(false);
@@ -333,8 +333,8 @@ function getTicketData() {
 
                                 let buttonsHtml = "";
                                 if (currentStatus === "Reparado") {
-                                    buttonsHtml += `<button class="btn btn-warning btn-sm" disabled>Reparado</button>`;
-                                } else if (currentStatus === "Irreparable") {
+                                    buttonsHtml += `<button class="btn btn-warning btn-sm" disabled style = "background-color: #00FF00;">Reparado</button>`;
+                                } else if (currentStatus === "Gestión Comercial (Irreparable)") {
                                     buttonsHtml += `<button class="btn btn-danger btn-sm" disabled>Irreparable</button>`;
                                 } else if (currentStatus === "Recibido en Taller" || confirmTaller === "f") {
                                     buttonsHtml += `
@@ -393,7 +393,7 @@ function getTicketData() {
                             visible: true,
                             className: "dt-body-center",
                             render: function (data, type, row) {
-                                if (row.name_status_lab === "Reparado") {
+                                if (row.name_status_lab === "Reparado" || row.name_status_lab === "Gestión Comercial (Irreparable)") {
                                     const hasSendKeyDate = row.date_sendkey && String(row.date_sendkey).trim() !== "";
                                     const dataSent = hasSendKeyDate ? 'true' : 'false';
                                     return `<button class="btn btn-info btn-sm load-key-button" 
@@ -401,7 +401,8 @@ function getTicketData() {
                                             data-id-ticket="${row.id_ticket}" 
                                             data-nro-ticket="${row.nro_ticket}" 
                                             data-has-send-key-date="${dataSent}"
-                                            data-serial-pos="${row.serial_pos}">
+                                            data-serial-pos="${row.serial_pos}"
+                                            data-status-lab="${row.name_status_lab}">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
                                                 <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5"/>
                                             </svg>
@@ -498,7 +499,7 @@ function getTicketData() {
                                 $("#btn-asignados").on("click", function () {
                                     clearFilters(api);
                                     api.column(8).search("^Enviado a taller$", true, false).draw();
-                                    api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto", true, false).draw();
+                                    api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
                                     const rowCount = api.rows({ filter: 'applied' }).count();
                                     if (rowCount === 0) return findFirstButtonWithData(api);
                                     api.column('carga_de_llave:name').visible(true);
@@ -506,7 +507,7 @@ function getTicketData() {
                                     api.column(11).visible(false);
                                     api.column(10).visible(false);
                                     setActiveButton("btn-asignados");
-                                    showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto']);
+                                    showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto', 'Gestión Comercial (Irreparable)']);
                                     applyNroTicketSearch(api);
                                 });
 
@@ -556,6 +557,14 @@ function getTicketData() {
                                     const nroTicket = $(this).data("nro-ticket");
                                     const hasSendKeyDate = $(this).data("has-send-key-date");
                                     const serialPos = $(this).data("serial-pos");
+                                    const statusLab = $(this).data("status-lab");
+
+                                    if (statusLab === 'Gestión Comercial (Irreparable)') {
+                                         $("#modalTicketNroSendKey").text(nroTicket);
+                                         $("#modalHiddenTicketIdSendKey").val(ticketId);
+                                         sendTicketToRosal(ticketId, nroTicket, true, serialPos);
+                                         return; 
+                                    }
 
                                     if (hasSendKeyDate !== true) {
                                         const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
