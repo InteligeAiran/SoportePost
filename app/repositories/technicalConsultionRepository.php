@@ -54,6 +54,24 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetTicketByNro($nro_ticket){
+        // Lógica para obtener todos los usuarios
+        $result = $this->model->GetTicketByNro($nro_ticket);
+        if ($result) {
+            //var_dump($result);  
+            $ticketData = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticketData[] = $agente;
+                //var_dump($agente);
+            }
+             return $ticketData;
+        } else {
+            return null;
+        }
+    }
+
     public function SearchRazonData($razonsocial){
         // Lógica para obtener todos los usuarios
         $result = $this->model->SearchRazonData($razonsocial);
