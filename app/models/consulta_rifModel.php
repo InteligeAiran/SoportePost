@@ -7177,13 +7177,15 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
-    public function GetTicketByNro($nro_ticket){
+    public function GetTicketByNro($nro_ticket, $idusers = null, $tipousers = null){
         try
             {
             $db_conn = $this->db->getConnection();
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $idusers = is_numeric($idusers) ? (int)$idusers : 0;
+            $tipousers = is_numeric($tipousers) ? (int)$tipousers : 0;
 
-            $sql = "SELECT * FROM public.getticketsbynro_ticket(" . $escaped_nro_ticket . ")";
+            $sql = "SELECT * FROM public.getticketsbynro_ticket(" . $escaped_nro_ticket . ", " . $idusers . ", " . $tipousers . ")";
             $result = Model::getResult($sql, $this->db);
 
             if ($result === false) {

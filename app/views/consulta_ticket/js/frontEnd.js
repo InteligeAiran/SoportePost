@@ -890,6 +890,7 @@ function SendTicket() {
               downl_send_to_rosal: "Enviado a Rosal",
               downl_send_fromrosal: "Enviado desde Rosal a destino",
               date_send_lab: "Fecha Envío Lab",
+              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
               date_sendkey: "Fecha Envío Llaves",
@@ -1257,7 +1258,10 @@ function SendTicket() {
     }
   };
 
-  const datos = `action=GetTicketByNro&nro_ticket=${encodeURIComponent(nroTicket)}`;
+  const id_user = document.getElementById('id_user').value;
+  const idtipouser = document.getElementById('idtipouser').value;
+
+  const datos = `action=GetTicketByNro&nro_ticket=${encodeURIComponent(nroTicket)}&id_user=${encodeURIComponent(id_user)}&idtipouser=${encodeURIComponent(idtipouser)}`;
   xhr.send(datos);
 }
 
@@ -1398,6 +1402,7 @@ function SendRegions() {
               downl_send_to_rosal: "Enviado a Rosal",
               downl_send_fromrosal: "Enviado desde Rosal a destino",
               date_send_lab: "Fecha Envío Lab",
+              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
               date_sendkey: "Fecha Envío Llaves",
@@ -1811,6 +1816,7 @@ function SendRif() {
               downl_send_to_rosal: "Enviado a Rosal",
               downl_send_fromrosal: "Enviado desde Rosal a destino",
               date_send_lab: "Fecha Envío Lab",
+              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
               date_sendkey: "Fecha Envío Llaves",
@@ -2410,6 +2416,7 @@ function SendSerial() {
               downl_send_fromrosal: "Enviado desde Rosal a destino",
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
+              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
               name_status_domiciliacion: "Estatus Domiciliación",
               date_sendkey: "Fecha Envío Llaves",
               date_receivekey: "Fecha Recepción Llaves",
@@ -3026,6 +3033,7 @@ function SendStatus() {
                 downl_send_to_rosal: "Enviado a Rosal",
                 downl_send_fromrosal: "Enviado desde Rosal a destino",
                 date_send_lab: "Fecha Envío Lab",
+                name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
                 date_send_torosal_fromlab: "Fecha Envío a rosal",
                 name_status_domiciliacion: "Estatus Domiciliación",
                 date_sendkey: "Fecha Envío Llaves",
@@ -3547,6 +3555,7 @@ function SendRango() {
               downl_payment: "Pago Anticipo",
               downl_send_to_rosal: "Enviado a Rosal",
               downl_send_fromrosal: "Enviado desde Rosal a destino",
+              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
               date_send_lab: "Fecha Envío Lab",
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
@@ -4340,6 +4349,7 @@ function SendBancos() {
               downl_send_to_rosal: "Enviado a Rosal",
               downl_send_fromrosal: "Enviado desde Rosal a destino",
               date_send_lab: "Fecha Envío Lab",
+              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
               date_send_torosal_fromlab: "Fecha Envío a rosal",
               name_status_domiciliacion: "Estatus Domiciliación",
               date_sendkey: "Fecha Envío Llaves",

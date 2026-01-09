@@ -54,9 +54,9 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function GetTicketByNro($nro_ticket){
+   public function GetTicketByNro($nro_ticket, $idusers = null, $tipousers = null){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketByNro($nro_ticket);
+        $result = $this->model->GetTicketByNro($nro_ticket, $idusers, $tipousers);
         if ($result) {
             //var_dump($result);  
             $ticketData = [];
