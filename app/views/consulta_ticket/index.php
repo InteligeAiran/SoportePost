@@ -428,6 +428,7 @@ require 'app/footer.php';
                                     <option value="4">Region</option>
                                     <option value="5">Estatus</option>
                                     <option value="6">Bancos</option>
+                                    <option value="7">Nro de Ticket</option>
                                 </select>
                               </div>
                               <br>
@@ -486,6 +487,11 @@ require 'app/footer.php';
                 <select id="SelectBancos" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example" style="display: none; width: 203px; max-width: 200px; padding: 0.5rem 0.75rem; font-size: 1rem; height: auto">
                 </select>
                 <button type="button" class="btn btn-primary" onclick="SendBancos()" id="buscarBancos" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
+            </div>
+
+            <div id="SelectTicketInput" class="d-flex align-items-center" style="margin-top: -2%; margin-left: 14%;">
+                 <input type="text" class="form-control me-2" id="ticketInput" placeholder="Nro de Ticket" style="display: none;" maxlength="10">
+                 <button type="button" class="btn btn-primary" onclick="SendTicket()" id="buscarTicket" style="display: none; margin-top: 4px; margin-left: 13px;">Buscar</button>
             </div>
 
         </div>

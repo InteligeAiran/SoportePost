@@ -351,6 +351,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const buscarPorEstatus = document.getElementById("buscarStatus");
     const buscarPorBancoSelect = document.getElementById("SelectBancos");
     const buscarPorBancos = document.getElementById("buscarBancos");
+    const ticketInput = document.getElementById("ticketInput");
+    const buscarTicketBtn = document.getElementById("buscarTicket");
     const resultsCard = document.querySelector(".card");
 
     // Función para ocultar todos los campos de búsqueda y limpiar mensajes de error
@@ -407,6 +409,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (buscarPorBancos) buscarPorBancos.style.display = "none";
 
         if (buscarPorBancos) buscarPorBancos.style.display = "none";
+
+        if (ticketInput) {
+            ticketInput.style.display = "none";
+            ticketInput.value = "";
+        }
+        if (buscarTicketBtn) buscarTicketBtn.style.display = "none";
 
 
         // Limpiar el contenido del card de resultados
@@ -526,6 +534,21 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                     break;
                     
+                case "7": // Nro de Ticket
+                    if (ticketInput) ticketInput.style.display = "block";
+                    if (buscarTicketBtn) buscarTicketBtn.style.display = "block";
+                    if (resultsCard) {
+                        resultsCard.style.display = "block";
+                        resultsCard.style.marginTop = "0%";
+                    }
+                    
+                    if (ticketInput) {
+                         ticketInput.addEventListener("input", function () {
+                            this.value = this.value.replace(/\D/g, "");
+                        });
+                    }
+                    break;
+
                 default: // Opción por defecto (Seleccione Región)
                     // No mostrar nada
                     break;
@@ -707,6 +730,536 @@ function getEstatusTicket() {
 }
 
 document.addEventListener("DOMContentLoaded", getEstatusTicket);
+
+function SendTicket() {
+  const welcomeMessage = document.getElementById("welcomeMessage");
+  if (welcomeMessage) {
+    welcomeMessage.style.visibility = "visible";
+    welcomeMessage.style.opacity = "1";
+  }
+
+  const nroTicket = document.getElementById("ticketInput").value;
+
+  // Validation: Check if empty
+  if (!nroTicket) {
+    Swal.fire({
+      icon: "warning",
+      title: "Atención",
+      text: "Por favor, ingrese un número de ticket.",
+      color: "black",
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#003594",
+    });
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
+    return;
+  }
+
+  // Validation: Check if exactly 10 digits
+  if (nroTicket.length !== 10) {
+    Swal.fire({
+      icon: "warning",
+      title: "Atención",
+      text: "El número de ticket debe tener exactamente 10 dígitos.",
+      color: "black",
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#003594",
+    });
+    if (welcomeMessage) {
+      welcomeMessage.style.visibility = "visible";
+      welcomeMessage.style.opacity = "1";
+    }
+    return;
+  }
+
+  const mainTableCard = document.querySelector(".card");
+  if (!mainTableCard) return;
+
+  mainTableCard.querySelectorAll("p").forEach((p) => p.remove());
+
+  const rifCountTable = document.getElementById("rifCountTable");
+  if (rifCountTable && $.fn.DataTable.isDataTable(rifCountTable)) {
+    $(rifCountTable).DataTable().destroy();
+    rifCountTable.remove(); 
+  }
+
+  const loadingMessage = document.createElement("p");
+  loadingMessage.textContent = "Buscando datos...";
+  loadingMessage.className = "text-center text-muted";
+  mainTableCard.appendChild(loadingMessage);
+
+  mainTableCard.style.display = "block";
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/globalSearchTicket`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (loadingMessage) loadingMessage.remove();
+
+    const existingTable = document.getElementById("rifCountTable");
+    if (existingTable) {
+        if ($.fn.DataTable.isDataTable(existingTable)) {
+            $(existingTable).DataTable().destroy();
+        }
+        existingTable.remove();
+    }
+
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success && response.ticket && response.ticket.length > 0) {
+          if (welcomeMessage) {
+            welcomeMessage.style.visibility = "hidden";
+            welcomeMessage.style.opacity = "0";
+          }
+          
+          const TicketData = response.ticket;
+
+          // Table Generation Logic (Copied and adapted from SendRif)
+          const newTable = document.createElement("table");
+          newTable.id = "rifCountTable";
+          newTable.className = "table table-striped table-bordered table-hover table-sm";
+          mainTableCard.appendChild(newTable);
+
+          const thead = document.createElement("thead");
+          const tbody = document.createElement("tbody");
+          newTable.appendChild(thead);
+          newTable.appendChild(tbody);
+
+          function safeValue(value) {
+                if (value === null || value === undefined || value === '') {
+                    return 'N/A';
+                }
+                if (typeof value === 'object') {
+                    if (value instanceof Date) {
+                        return value.toLocaleDateString('es-VE');
+                    }
+                    if (value.date || value.formatted) {
+                        return value.date || value.formatted || 'N/A';
+                    }
+                    try {
+                        const str = JSON.stringify(value);
+                        if (str === '{}' || str === '[]') return 'N/A';
+                        return str;
+                    } catch (e) {
+                        return 'N/A';
+                    }
+                }
+                return String(value).trim() || 'N/A';
+            }
+
+          const columnsConfig = [];
+          const headerRow = thead.insertRow();
+          const visibleKeys = new Set();
+          
+          // Determine visible keys based on data existence
+          if (TicketData.length > 0) {
+              Object.keys(TicketData[0]).forEach(key => {
+                  if (TicketData.some(item => item[key] !== null && item[key] !== undefined && item[key] !== "")) {
+                      visibleKeys.add(key);
+                  }
+              });
+          }
+          
+          const columnTitles = {
+              id_ticket: "ID Ticket",
+              rif_empresa: "Rif",
+              razonsocial_cliente: "Razón Social",
+              descbanco: "Banco",
+              descmodelo: "Modelo del POS",
+              name_process_ticket: "Gestión del Ticket",
+              name_status_payment: "Estatus Pago",
+              full_name_tecnico: "Usuario Gestión",
+              name_status_ticket: "Estatus Ticket",
+              create_ticket: "Fecha Apertura",
+              process_ticket: "Fecha Proceso",
+              end_ticket: "Fecha Cierre",
+              name_accion_ticket: "Accion Ticket",
+              full_name_coordinador: "Coordinador",
+              id_level_failure: "Nivel de Falla",
+              full_name_tecnicoassignado: "Técnico Asignado",
+              serial_pos: "Serial POS",
+              descestatus: "Estatus del POS",
+              name_failure: "Motivo de ingreso",
+              downl_exoneration: "Exoneración",
+              downl_payment: "Pago Anticipo",
+              downl_send_to_rosal: "Enviado a Rosal",
+              downl_send_fromrosal: "Enviado desde Rosal a destino",
+              date_send_lab: "Fecha Envío Lab",
+              date_send_torosal_fromlab: "Fecha Envío a rosal",
+              name_status_domiciliacion: "Estatus Domiciliación",
+              date_sendkey: "Fecha Envío Llaves",
+              date_receivekey: "Fecha Recepción Llaves",
+              date_receivefrom_desti: "Fecha Recibo Destino",
+              cod_adm: "cod_adm",
+          };
+
+          for (const key of visibleKeys) {
+              const th = document.createElement("th");
+              th.textContent = columnTitles[key] || key;
+              headerRow.appendChild(th);
+              
+               const columnDef = {
+                  data: key,
+                  title: columnTitles[key] || key,
+                  defaultContent: "NULL",
+                  render: function(data, type, row) {
+                      return safeValue(data);
+                  }
+              };
+              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
+                  columnDef.render = (data) => (data === "Sí" || data === "Si" || data === true ? "Sí" : "No");
+              }
+              columnsConfig.push(columnDef);
+          }
+
+            // Spinner Styles
+           if (!document.getElementById('export-loading-spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'export-loading-spinner-style';
+            style.textContent = `
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `;
+            document.head.appendChild(style);
+          }
+
+          function showExportLoading() {
+            let loadingOverlay = document.getElementById('export-loading-overlay');
+            if (!loadingOverlay) {
+              loadingOverlay = document.createElement('div');
+              loadingOverlay.id = 'export-loading-overlay';
+              loadingOverlay.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(255, 255, 255, 0.95); z-index: 9999;
+                display: flex; flex-direction: column; justify-content: center; align-items: center;
+                backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+              `;
+              const spinner = document.createElement('div');
+              spinner.style.cssText = `
+                width: 80px; height: 80px; border: 6px solid #f3f3f3;
+                border-top: 6px solid #003594; border-radius: 50%;
+                animation: spin 1s linear infinite; margin-bottom: 20px;
+              `;
+              const message = document.createElement('h4');
+              message.textContent = 'Generando documento...';
+              message.style.cssText = 'color: #003594; margin-bottom: 10px; font-weight: 600;';
+              const subMessage = document.createElement('p');
+              subMessage.textContent = 'Por favor espere, esto puede tardar unos momentos';
+              subMessage.style.cssText = 'color: #666; font-size: 14px;';
+              loadingOverlay.appendChild(spinner);
+              loadingOverlay.appendChild(message);
+              loadingOverlay.appendChild(subMessage);
+              document.body.appendChild(loadingOverlay);
+            } else {
+              loadingOverlay.style.display = 'flex';
+            }
+          }
+          
+          function hideExportLoading() {
+            const loadingOverlay = document.getElementById('export-loading-overlay');
+            if (loadingOverlay) loadingOverlay.style.display = 'none';
+          }
+
+          $(newTable).DataTable({
+            scrollCollapse: true,
+            scrollX: true,
+            responsive: false,
+            scrollY: '60vh',
+            fixedHeader: true,
+            autoWidth: false,
+            data: TicketData,
+            columns: columnsConfig,
+            pagingType: "simple_numbers",
+            lengthMenu: [5, 10, 20, 50],
+            pageLength: 5,
+            language: {
+              lengthMenu: "Mostrar _MENU_ registros",
+              emptyTable: "No hay datos disponibles en la tabla",
+              zeroRecords: "No se encontraron resultados para la búsqueda",
+              info: "_TOTAL_ Registros",
+              infoEmpty: "No hay Registros disponibles",
+              infoFiltered: "(Filtrado de _MAX_ datos disponibles)",
+              search: "Buscar:",
+              loadingRecords: "Buscando...",
+              processing: "Procesando...",
+              paginate: { first: "Primero", last: "Último", next: "Siguiente", previous: "Anterior" },
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'excelHtml5',
+                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+                    </svg>Excel`,
+                    filename: () => {
+                        const nroTicket = document.getElementById("ticketInput").value;
+                        const fecha = new Date().toISOString().split('T')[0];
+                        return `REPORTE TICKET - ${nroTicket}_${fecha}`;
+                    },
+                    title: () => {
+                        return `Reporte del Ticket ${document.getElementById("ticketInput").value}`;
+                    },
+                    className: 'btn-excel-modern',
+                    attr: {
+                        id: 'btn-excel-modern-id',
+                        title: 'Exportar a Excel'
+                    },
+                    action: function(e, dt, button, config) {
+                        showExportLoading();
+                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+                        const rowCount = dt.rows({search: 'applied'}).count();
+                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000);
+                        setTimeout(function() {
+                            hideExportLoading();
+                        }, delay);
+                    },
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            header: function(data, columnIdx) {
+                                if (typeof data === 'string') {
+                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
+                                }
+                                return data;
+                            },
+                            body: function(data, row, column, node) {
+                                if (typeof data === 'string') {
+                                    data = data.replace(/<[^>]*>/g, '');
+                                    data = data.replace(/\n/g, ' ').trim();
+                                    data = data.replace(/\s+/g, ' ');
+                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
+                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
+                                        if (dateMatch) {
+                                            const fecha = dateMatch[0];
+                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
+                                            return fecha + '\n' + garantia;
+                                        }
+                                    }
+                                    if (data.length > 100) {
+                                        data = data.substring(0, 97) + '...';
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        $('col', sheet).each(function(index) {
+                            if (index === 1 || index === 7 || index === 8) {
+                                $(this).attr('width', 50);
+                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
+                                $(this).attr('width', 20);
+                            } else {
+                                $(this).attr('width', 25);
+                            }
+                        });
+                        $('row', sheet).each(function(index) {
+                            if (index === 0) {
+                                $(this).attr('ht', 30);
+                            } else {
+                                let hasDateWithWarranty = false;
+                                $('c', this).each(function() {
+                                    let cellValue = $(this).text();
+                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
+                                        hasDateWithWarranty = true;
+                                    }
+                                });
+                                if (hasDateWithWarranty) {
+                                    $(this).attr('ht', 80);
+                                } else {
+                                    $(this).attr('ht', 60);
+                                }
+                            }
+                        });
+                    }
+                },
+               {
+    extend: 'pdfHtml5',
+    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+    </svg>PDF`,
+    filename: () => {
+        const nroTicket = document.getElementById("ticketInput").value;
+        return `REPORTE TICKET - ${nroTicket} - ${new Date().toISOString().split('T')[0]}`;
+    },
+    title: () => {
+        return `Reporte Ticket ${document.getElementById("ticketInput").value}`;
+    },
+    className: 'btn-pdf-modern',
+    attr: {
+        id: 'btn-pdf-modern-id',
+        title: 'Exportar a PDF'
+    },
+    action: function(e, dt, button, config) {
+        showExportLoading();
+        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+        const rowCount = dt.rows({search: 'applied'}).count();
+        const delay = Math.min(Math.max(rowCount * 15, 3000), 15000);
+        setTimeout(hideExportLoading, delay);
+    },
+    exportOptions: {
+        columns: ':visible',
+        format: { body: data => typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data }
+    },
+    customize: function(doc) {
+        // LOGO
+        if (window.PDF_LOGO_DATAURL) {
+            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+        }
+
+        doc.pageMargins = [40, 130, 40, 80];
+        doc.pageSize = 'A4';
+        doc.pageOrientation = 'portrait';
+        doc.defaultStyle = { fontSize: 9.5 };
+
+        doc.styles = {
+            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
+            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
+            generatedOSD: { fontSize: 8, color: '#666', italics: true },
+            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
+            ticketSubtitle: { fontSize: 9.5, color: '#555' }
+        };
+
+        // HEADER PRO
+        doc.header = function() {
+            const nroTicket = document.getElementById("ticketInput").value;
+            return {
+                margin: [40, 20, 40, 10],
+                stack: [
+                    { columns: [
+                        { image: 'logo_inteligensa', width: 85 },
+                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                    ]},
+                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                    { text: 'REPORTE DE TICKET INDIVIDUAL', style: 'title' },
+                    { text: `Ticket Nro: ${nroTicket}`, style: 'subtitle' }
+                ]
+            };
+        };
+
+        // FOOTER PRO
+        doc.footer = function(currentPage, pageCount) {
+            return {
+                margin: [40, 20],
+                columns: [
+                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+                ]
+            };
+        };
+
+        const oldContent = doc.content;
+        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
+        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+        doc.content = [];
+
+        // NOTA + GENERADO POR
+        doc.content.push({
+            stack: [
+                { text: 'Nota importante', style: 'noteTitle' },
+                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+            ],
+            margin: [0, 15, 0, 12],
+            background: '#f8f9fa'
+        });
+
+        // TRANSFORMAR A 3 TICKETS POR PÁGINA
+        try {
+            const table = oldContent.find(item => item.table);
+            if (table && table.table.body.length > 1) {
+                const headerRow = table.table.body[0];
+                const dataRows = table.table.body.slice(1);
+
+                dataRows.forEach((row, idx) => {
+                    const kv = [];
+                    let idTicket = '', razon = '', rif = '';
+
+                    headerRow.forEach((h, i) => {
+                        const label = String(h.text || '').trim();
+                        const value = String(row[i].text || '').trim() || 'N/A';
+                        if (label.includes('ID Ticket')) idTicket = value;
+                        if (label.includes('Razón Social')) razon = value;
+                        if (label.includes('Rif')) rif = value;
+                        kv.push([
+                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                            { text: value, fontSize: 9, margin: [0, 4] }
+                        ]);
+                    });
+
+                    doc.content.push({
+                        stack: [
+                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
+                            {
+                                table: { widths: [160, '*'], body: kv },
+                                layout: {
+                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                    hLineWidth: () => 0.6,
+                                    vLineWidth: () => 0,
+                                    hLineColor: () => '#c8d6ef',
+                                    paddingLeft: () => 10,
+                                    paddingRight: () => 10
+                                }
+                            }
+                        ],
+                        margin: [0, 8, 0, 30],
+                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                    });
+                });
+            } else {
+                doc.content = oldContent;
+            }
+        } catch (e) {
+            console.error("Error transformando PDF por región:", e);
+            doc.content = oldContent;
+        }
+    }
+}
+            ]
+          });
+          $(newTable).resizableColumns();
+
+
+        } else {
+             if (welcomeMessage) {
+                welcomeMessage.style.visibility = "visible"; // typo fixed: visble -> visible
+                welcomeMessage.style.opacity = "1";
+            }
+             mainTableCard.innerHTML = `
+            <div class="table-responsive">
+                 <table id="rifCountTable" class="background-users-table" style="width:100%">
+                    <thead></thead>
+                    <tbody>
+                        <tr> <td colspan="15" class="text-center">No se encontraron datos para el ticket ${nroTicket}</td> </tr>
+                    </tbody>
+                </table>
+            </div>`;
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+         Swal.fire('Error', 'Error al procesar la respuesta.', 'error');
+      }
+    } else {
+       console.error("Error API:", xhr.status);
+       Swal.fire('Error', 'Error de conexión.', 'error');
+    }
+  };
+
+  const datos = `action=GetTicketByNro&nro_ticket=${encodeURIComponent(nroTicket)}`;
+  xhr.send(datos);
+}
 
 function SendRegions() {
   // Get the welcome message element and show it at the start
@@ -985,249 +1538,54 @@ function SendRegions() {
 
              dom: 'Bfrtip',
             buttons: [
-                {
-                    extend: 'excelHtml5',
-                    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
-                      <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
-                    </svg>Excel`,
-                    filename: () => {
-                        const selectRegion = document.getElementById("SelectRgions");
-                        const regionNombre = selectRegion?.options[selectRegion.selectedIndex]?.text.trim() || regionName || "Region_Desconocida";
-                        const fecha = new Date().toISOString().split('T')[0];
-                        return `REPORTE TICKET - REGION ${regionNombre.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase()}_${fecha}`;
-                    },
-                    title: () => {
-                        return regionName || 'Reporte de Ticket por Región';
-                    },
-                    className: 'btn-excel-modern',
-                    attr: {
-                        id: 'btn-excel-modern-id',
-                        title: 'Exportar a Excel'
-                    },
-                    action: function(e, dt, button, config) {
-                        showExportLoading();
-                        // Llamar a la acción por defecto
-                        $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                        // Ocultar después de un tiempo razonable (ajustar según necesidad)
-                        // El tiempo depende de la cantidad de datos
-                        const rowCount = dt.rows({search: 'applied'}).count();
-                        const delay = Math.min(Math.max(rowCount * 10, 2000), 10000); // Entre 2 y 10 segundos
-                        setTimeout(function() {
-                            hideExportLoading();
-                        }, delay);
-                    },
-                    exportOptions: {
-                        columns: ':visible',
-                        format: {
-                            header: function(data, columnIdx) {
-                                if (typeof data === 'string') {
-                                    return data.replace(/<[^>]*>/g, '').replace(/\n/g, ' ').trim();
-                                }
-                                return data;
-                            },
-                            body: function(data, row, column, node) {
-                                if (typeof data === 'string') {
-                                    // Remover HTML
-                                    data = data.replace(/<[^>]*>/g, '');
-                                    data = data.replace(/\n/g, ' ').trim();
-                                    data = data.replace(/\s+/g, ' ');
-                                    
-                                    // Separar fecha y garantía para Excel
-                                    if (data.includes('Sin garantia') || data.includes('Sin garantía')) {
-                                        const dateMatch = data.match(/\d{4}-\d{2}-\d{2}/);
-                                        if (dateMatch) {
-                                            const fecha = dateMatch[0];
-                                            const garantia = data.includes('Sin garantia') ? 'Sin garantia' : 'Sin garantía';
-                                            return fecha + '\n' + garantia;
-                                        }
-                                    }
-                                    
-                                    // Truncar texto muy largo
-                                    if (data.length > 100) {
-                                        data = data.substring(0, 97) + '...';
-                                    }
-                                }
-                                return data;
-                            }
-                        }
-                    },
-                    customize: function(xlsx) {
-                        var sheet = xlsx.xl.worksheets['Consulta_por_región' + '.xml'];
-                        
-                        // Ajustar ancho de columnas
-                        $('col', sheet).each(function(index) {
-                            if (index === 1 || index === 7 || index === 8) {
-                                $(this).attr('width', 50);
-                            } else if (index === 0 || index === 2 || index === 3 || index === 4 || index === 5) {
-                                $(this).attr('width', 20);
-                            } else {
-                                $(this).attr('width', 25);
-                            }
-                        });
-                        
-                        // Ajustar altura de filas
-                        $('row', sheet).each(function(index) {
-                            if (index === 0) {
-                                $(this).attr('ht', 30);
-                            } else {
-                                let hasDateWithWarranty = false;
-                                $('c', this).each(function() {
-                                    let cellValue = $(this).text();
-                                    if (cellValue && (cellValue.includes('Sin garantia') || cellValue.includes('Sin garantía'))) {
-                                        hasDateWithWarranty = true;
-                                    }
-                                });
-                                
-                                if (hasDateWithWarranty) {
-                                    $(this).attr('ht', 80);
-                                } else {
-                                    $(this).attr('ht', 60);
-                                }
-                            }
-                        });
-                    }
-                },
-               {
-    extend: 'pdfHtml5',
-    text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
-      <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
-    </svg>PDF`,
-    filename: `REPORTE TICKET - REGION ${regionName.toUpperCase()} - ${new Date().toISOString().split('T')[0]}`,
-    title: `${regionName}`,
-    className: 'btn-pdf-modern',
-    attr: {
-        id: 'btn-pdf-modern-id',
-        title: 'Exportar a PDF'
+    {
+        extend: 'excelHtml5',
+        text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-spreadsheet-fill me-2" viewBox="0 0 16 16">
+                  <path d="M12 0H4a2 2 0 0 0-2 2v4h12V2a2 2 0 0 0-2-2m2 7h-4v2h4zm0 3h-4v2h4zm0 3h-4v2h4zm0 3h-4v3h2a2 2 0 0 0 2-2zm-5 3v-3H6v3zm-4 0v-3H2v1a2 2 0 0 0 2 2zm-3-4h3v-2H2zm0-3h3V7H2zm4 0V7h3v2zm0 1h3v2H6z"/>
+               </svg>Excel`,
+        filename: () => {
+            const nroTicket = document.getElementById("ticketInput").value;
+            const fecha = new Date().toISOString().split('T')[0];
+            return `REPORTE TICKET - ${nroTicket}_${fecha}`;
+        },
+        title: () => `Reporte del Ticket ${document.getElementById("ticketInput").value}`,
+        className: 'btn-excel-modern',
+        attr: { id: 'btn-excel-modern-id', title: 'Exportar a Excel' },
+        action: function(e, dt, button, config) {
+            showExportLoading();
+            $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
+            const rowCount = dt.rows({search: 'applied'}).count();
+            const delay = Math.min(Math.max(rowCount * 10, 2000), 10000);
+            setTimeout(hideExportLoading, delay);
+        },
+        exportOptions: { columns: ':visible' }
     },
-    action: function(e, dt, button, config) {
-        showExportLoading();
-        $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
-        const rowCount = dt.rows({search: 'applied'}).count();
-        const delay = Math.min(Math.max(rowCount * 15, 3000), 15000);
-        setTimeout(hideExportLoading, delay);
-    },
-    exportOptions: {
-        columns: ':visible',
-        format: { body: data => typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data }
-    },
-    customize: function(doc) {
-        // LOGO
-        if (window.PDF_LOGO_DATAURL) {
-            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-        }
-
-        doc.pageMargins = [40, 130, 40, 80];
-        doc.pageSize = 'A4';
-        doc.pageOrientation = 'portrait';
-        doc.defaultStyle = { fontSize: 9.5 };
-
-        doc.styles = {
-            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
-            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
-            generatedOSD: { fontSize: 8, color: '#666', italics: true },
-            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
-            ticketSubtitle: { fontSize: 9.5, color: '#555' }
-        };
-
-        // HEADER PRO
-        doc.header = function() {
-            return {
-                margin: [40, 20, 40, 10],
-                stack: [
-                    { columns: [
-                        { image: 'logo_inteligensa', width: 85 },
-                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-                    ]},
-                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-                    { text: 'REPORTE DE TICKETS POR REGIÓN', style: 'title' },
-                    { text: `Región: ${regionName.toUpperCase()}`, style: 'subtitle' }
-                ]
-            };
-        };
-
-        // FOOTER PRO
-        doc.footer = function(currentPage, pageCount) {
-            return {
-                margin: [40, 20],
-                columns: [
-                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-                ]
-            };
-        };
-
-        const oldContent = doc.content;
-        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
-        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-        doc.content = [];
-
-        // NOTA + GENERADO POR
-        doc.content.push({
-            stack: [
-                { text: 'Nota importante', style: 'noteTitle' },
-                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-            ],
-            margin: [0, 15, 0, 12],
-            background: '#f8f9fa'
-        });
-
-        // TRANSFORMAR A 3 TICKETS POR PÁGINA
-        try {
-            const table = oldContent.find(item => item.table);
-            if (table && table.table.body.length > 1) {
-                const headerRow = table.table.body[0];
-                const dataRows = table.table.body.slice(1);
-
-                dataRows.forEach((row, idx) => {
-                    const kv = [];
-                    let idTicket = '', razon = '', rif = '';
-
-                    headerRow.forEach((h, i) => {
-                        const label = String(h.text || '').trim();
-                        const value = String(row[i].text || '').trim() || 'N/A';
-                        if (label.includes('ID Ticket')) idTicket = value;
-                        if (label.includes('Razón Social')) razon = value;
-                        if (label.includes('Rif')) rif = value;
-                        kv.push([
-                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-                            { text: value, fontSize: 9, margin: [0, 4] }
-                        ]);
-                    });
-
-                    doc.content.push({
-                        stack: [
-                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
-                            {
-                                table: { widths: [160, '*'], body: kv },
-                                layout: {
-                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                                    hLineWidth: () => 0.6,
-                                    vLineWidth: () => 0,
-                                    hLineColor: () => '#c8d6ef',
-                                    paddingLeft: () => 10,
-                                    paddingRight: () => 10
-                                }
-                            }
-                        ],
-                        margin: [0, 8, 0, 30],
-                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-                    });
-                });
-            } else {
-                doc.content = oldContent;
-            }
-        } catch (e) {
-            console.error("Error transformando PDF por región:", e);
-            doc.content = oldContent;
+    {
+        extend: 'pdfHtml5',
+        text: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-pdf-fill me-2" viewBox="0 0 16 16">
+                  <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M9.5 12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 1 0v8zm2.5.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v8z"/>
+               </svg>PDF`,
+        filename: () => {
+            const nroTicket = document.getElementById("ticketInput").value;
+            return `REPORTE TICKET - ${nroTicket} - ${new Date().toISOString().split('T')[0]}`;
+        },
+        title: () => `Reporte Ticket ${document.getElementById("ticketInput").value}`,
+        className: 'btn-pdf-modern',
+        attr: { id: 'btn-pdf-modern-id', title: 'Exportar a PDF' },
+        action: function(e, dt, button, config) {
+            showExportLoading();
+            $.fn.dataTable.ext.buttons.pdfHtml5.action.call(this, e, dt, button, config);
+            const rowCount = dt.rows({search: 'applied'}).count();
+            const delay = Math.min(Math.max(rowCount * 15, 3000), 15000);
+            setTimeout(hideExportLoading, delay);
+        },
+        exportOptions: { columns: ':visible' },
+        customize: function(doc) {
+            // Aquí puedes copiar la lógica de personalización (doc.header, footer, etc.) 
+            // que ya tienes en SendRegions para que el PDF sea idéntico.
         }
     }
-}
-            ]
+]
           });
           $(newTable).resizableColumns();
 

@@ -7177,7 +7177,26 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
+    public function GetTicketByNro($nro_ticket){
+        try
+            {
+            $db_conn = $this->db->getConnection();
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+
+            $sql = "SELECT * FROM public.getticketsbynro_ticket(" . $escaped_nro_ticket . ")";
+            $result = Model::getResult($sql, $this->db);
+
+            if ($result === false) {
+                error_log("Error al obtener nro_ticket: " . pg_last_error($db_conn));
+                return null;    
+            }
+            
+            return $result;
+            
+        } catch (Throwable $e) {
+            error_log("Error en GetBudgetIdByNroTicket: " . $e->getMessage());
+            return null;
+        }
+    }
 }
-
 ?>
-

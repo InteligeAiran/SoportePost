@@ -298,6 +298,10 @@ class Consulta extends Controller
                     $this->handleapprovedocument();
                     break;
 
+                case 'globalSearchTicket':
+                    $this->handleglobalSearchTicket();
+                    break;
+
                 case 'getEstatusTicket':
                     $this->handleGetEstatusTicket();
                     break;
@@ -3597,6 +3601,28 @@ HTML;
         </body>
 </html>
 HTML;
+    }
+
+    public function handleglobalSearchTicket(){
+        $repository = new technicalConsultionRepository();
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket no proporcionado.'], 400);
+            return;
+        }
+            
+        $result = $repository->GetTicketByNro($nro_ticket);
+
+        if ($result) {
+            // Ensure $result is an array suitable for JSON encoding
+            // Assuming GetTicketByNro returns a resource or unexpected format, process it here.
+            // Assuming GetTicketByNro returns an associated array or list of tickets.
+            $this->response(['success' => true, 'ticket' => $result]);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontraron tickets']);
+        }
+      
     }
 }
 ?>
