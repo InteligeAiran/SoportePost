@@ -731,6 +731,391 @@ function getEstatusTicket() {
 
 document.addEventListener("DOMContentLoaded", getEstatusTicket);
 
+// ==========================================
+// HELPERS GLOBALES PARA DATATABLES
+// ==========================================
+
+/**
+ * Convierte un valor a string seguro para mostrar
+ */
+function safeValue(value) {
+    if (value === null || value === undefined || value === '') {
+        return 'N/A';
+    }
+    if (typeof value === 'object') {
+        if (value instanceof Date) {
+            return value.toLocaleDateString('es-VE');
+        }
+        if (value.date || value.formatted) {
+            return value.date || value.formatted || 'N/A';
+        }
+        try {
+            const str = JSON.stringify(value);
+            if (str === '{}' || str === '[]') return 'N/A';
+            return str;
+        } catch (e) {
+            return 'N/A';
+        }
+    }
+    return String(value).trim() || 'N/A';
+}
+
+/**
+ * Genera la configuración de columnas y headers para DataTables
+ * @param {Set|Array} visibleKeys - Claves de datos visibles
+ * @returns {Object} { columnsConfig, columnTitles }
+ */
+function getTicketColumnsConfig(visibleKeys) {
+    const columnTitles = {
+        id_ticket: "ID Ticket",
+        rif_empresa: "Rif",
+        razonsocial_cliente: "Razón Social",
+        descbanco: "Banco",
+        descmodelo: "Modelo del POS",
+        name_process_ticket: "Gestión del Ticket",
+        name_status_payment: "Estatus Pago",
+        full_name_tecnico: "Usuario Gestión",
+        name_status_ticket: "Estatus Ticket",
+        create_ticket: "Fecha Apertura",
+        process_ticket: "Fecha Proceso",
+        end_ticket: "Fecha Cierre",
+        name_accion_ticket: "Accion Ticket",
+        full_name_coordinador: "Coordinador",
+        id_level_failure: "Nivel de Falla",
+        full_name_tecnicoassignado: "Técnico Asignado",
+        serial_pos: "Serial POS",
+        descestatus: "Estatus del POS",
+        name_failure: "Motivo de ingreso",
+        downl_exoneration: "Exoneración",
+        downl_payment: "Pago Anticipo",
+        downl_send_to_rosal: "Enviado a Rosal",
+        downl_send_fromrosal: "Enviado desde Rosal a destino",
+        date_send_lab: "Fecha Envío Lab",
+        name_status_lab: "Estatus Taller",
+        date_send_torosal_fromlab: "Fecha Envío a rosal",
+        name_status_domiciliacion: "Estatus Domiciliación",
+        date_sendkey: "Fecha Envío Llaves",
+        date_receivekey: "Fecha Recepción Llaves",
+        date_receivefrom_desti: "Fecha Recibo Destino",
+        cod_adm: "cod_adm",
+    };
+
+    const columnsConfig = [];
+    const usedTitles = {}; // Para retornar solo los títulos usados si se necesita
+
+    for (const key of visibleKeys) {
+        // Se puede usar columnTitles externamente si se necesita recrear headers manualmente
+        if (columnTitles[key]) {
+            usedTitles[key] = columnTitles[key];
+        }
+
+        const columnDef = {
+            data: key,
+            title: columnTitles[key] || key,
+            defaultContent: "NULL",
+            render: function(data, type, row) {
+                return safeValue(data);
+            }
+        };
+
+        if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
+            columnDef.render = (data) => (data === "Sí" || data === "Si" || data === true ? "Sí" : "No");
+        } else if (["name_status_lab", "name_status_domiciliacion"].includes(key)) {
+            columnDef.render = function(data, type, row) {
+                const text = safeValue(data);
+                const style = getTicketStatusStyle(text);
+                if (style) {
+                    return `<span style="color: ${style.color}; font-weight: ${style.bold ? 'bold' : 'normal'};">${text}</span>`;
+                }
+                return text;
+            };
+        }
+
+
+        columnsConfig.push(columnDef);
+    }
+
+
+    return { columnsConfig, columnTitles };
+}
+
+/**
+ * Retorna el estilo (color) para un estatus dado.
+ * Centraliza la lógica de colores para HTML y PDF.
+ */
+function getTicketStatusStyle(statusText) {
+    if (!statusText) return null;
+    statusText = String(statusText);
+
+    if (statusText.includes("Gestión Comercial (Irreparable)")) {
+        return { color: 'red', bold: true };
+    }
+    if (statusText === "Gestión Comercial - Espera Respuesta Cliente") {
+        return { color: '#fd7e14', bold: true }; // Naranja
+    }
+    if (statusText === "Deudor - Desafiliado con deuda") {
+        return { color: 'red', bold: true };
+    }
+    if (statusText === "Deudor - Convenio Firmado") {
+        return { color: '#ffc107', bold: true }; // Amarillo
+    }
+    return null; // Sin estilo especial
+}
+
+/**
+ * Retorna el contenido de la leyenda para PDF (formato pdfmake).
+ */
+function getPDFLegendContent() {
+    return {
+        table: {
+            widths: ['*'],
+            body: [
+                [
+                    {
+                        fillColor: '#e7f3ff',
+                        borderColor: '#b6d4fe',
+                        border: [true, true, true, true],
+                        stack: [
+                            { text: 'LEYENDA DE ESTATUS', fontSize: 10, bold: true, color: '#0d6efd', alignment: 'center', margin: [0, 5, 0, 5] },
+                            {
+                                table: {
+                                    widths: ['*', '*', '*'],
+                                    body: [
+                                        [
+                                            { 
+                                                text: 'Cierre de Proceso', 
+                                                style: 'legendBadge', 
+                                                color: '#d32f2f', 
+                                                fillColor: '#ffebee',
+                                                borderColor: '#d32f2f',
+                                                border: [true, true, true, true]
+                                            },
+                                            { 
+                                                text: 'En Espera', 
+                                                style: 'legendBadge', 
+                                                color: '#ef6c00', 
+                                                fillColor: '#fff3e0',
+                                                borderColor: '#ef6c00',
+                                                border: [true, true, true, true]
+                                            },
+                                            { 
+                                                text: 'En Proceso', 
+                                                style: 'legendBadge', 
+                                                color: '#fbc02d', 
+                                                fillColor: '#fffde7',
+                                                borderColor: '#fbc02d',
+                                                border: [true, true, true, true]
+                                            }
+                                        ]
+                                    ]
+                                },
+                                layout: {
+                                    hLineWidth: function(i, node) { return 1; },
+                                    vLineWidth: function(i, node) { return 1; },
+                                    hLineColor: function(i, node) { 
+                                        return node.table.body[0][i] ? node.table.body[0][i].borderColor : 'white'; 
+                                    },
+                                    vLineColor: function(i, node) { 
+                                         return node.table.body[0][i] ? node.table.body[0][i].borderColor : 'white'; 
+                                    },
+                                    paddingLeft: function(i) { return 6; },
+                                    paddingRight: function(i) { return 6; },
+                                    paddingTop: function(i) { return 4; },
+                                    paddingBottom: function(i) { return 4; }
+                                },
+                                margin: [10, 0, 10, 5]
+                            }
+                        ]
+                    }
+                ]
+            ]
+        },
+        layout: {
+            // Layout del contenedor externo (borde azul)
+            hLineWidth: function(i, node) { return 1; },
+            vLineWidth: function(i, node) { return 1; },
+            hLineColor: function(i, node) { return '#b6d4fe'; },
+            vLineColor: function(i, node) { return '#b6d4fe'; },
+            paddingLeft: function(i) { return 0; },
+            paddingRight: function(i) { return 0; },
+            paddingTop: function(i) { return 0; },
+            paddingBottom: function(i) { return 0; }
+        },
+        margin: [0, 0, 0, 15]
+    };
+}
+
+/**
+ * Retorna el HTML de la leyenda para mostrarse en pantalla.
+ */
+function getHTMLLegendContent() {
+    return `
+        <div class="mt-2 mb-3 p-3 border rounded" style="background-color: #e7f3ff; border: 1px solid #b6d4fe !important;">
+            <h6 class="text-center mb-3" style="font-weight: 700; color: #0d6efd; text-transform: uppercase;">Leyenda de Estatus</h6>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <span class="badge d-flex align-items-center justify-content-center p-2 me-2 mb-2" 
+                      style="color: #dc3545; background-color: #ffe6e6; border: 1px solid #dc3545; font-size: 0.85rem; font-weight: 600;">
+                    CIERRE DE PROCESO
+                </span>
+                <span class="badge d-flex align-items-center justify-content-center p-2 me-2 mb-2" 
+                      style="color: #fd7e14; background-color: #fff3cd; border: 1px solid #fd7e14; font-size: 0.85rem; font-weight: 600;">
+                    EN ESPERA
+                </span>
+                <span class="badge d-flex align-items-center justify-content-center p-2 mb-2" 
+                      style="color: #ffc107; background-color: #fff9db; border: 1px solid #ffc107; font-size: 0.85rem; font-weight: 600;">
+                    EN PROCESO
+                </span>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Función MAESTRA para personalizar el PDF.
+ * Aplica header, footer, leyenda, y colores de estatus.
+ */
+function customizeTicketPDF(doc, reportTitle, reportSubtitle) {
+    // 1. LOGO
+    if (window.PDF_LOGO_DATAURL) {
+        doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+    }
+
+    // 2. CONFIGURACIÓN BÁSICA
+    doc.pageMargins = [40, 140, 40, 80]; // Margen superior aumentado para header + leyenda
+    doc.pageSize = 'A4';
+    doc.pageOrientation = 'portrait';
+    doc.defaultStyle = { fontSize: 9.5 };
+
+    // 3. ESTILOS
+    doc.styles = {
+        title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
+        subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
+        noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
+        noteText: { fontSize: 9.2, italics: true, color: '#424242' },
+        generatedOSD: { fontSize: 8, color: '#666', italics: true },
+        ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
+        ticketSubtitle: { fontSize: 9.5, color: '#555' },
+        legendBadge: { fontSize: 8, bold: true, alignment: 'center' }
+    };
+
+    // 4. HEADER
+    doc.header = function() {
+        return {
+            margin: [40, 20, 40, 10],
+            stack: [
+                { columns: [
+                    { image: 'logo_inteligensa', width: 85 },
+                    { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
+                ]},
+                { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
+                { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
+                { text: reportTitle, style: 'title' },
+                { text: reportSubtitle, style: 'subtitle' }
+            ]
+        };
+    };
+
+    // 5. FOOTER
+    doc.footer = function(currentPage, pageCount) {
+        return {
+            margin: [40, 20],
+            columns: [
+                { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
+                { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
+            ]
+        };
+    };
+
+    // 6. MODIFICACIÓN DEL CONTENIDO (Leyenda + Nota + Tickets)
+    const oldContent = doc.content;
+    const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
+    const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
+    
+    doc.content = [];
+
+    // A. INSERTAR LEYENDA (Antes de la tabla/tickets)
+    doc.content.push(getPDFLegendContent());
+
+    // B. INSERTAR NOTA + GENERADO POR
+    doc.content.push({
+        stack: [
+            { text: 'Nota importante', style: 'noteTitle' },
+            { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
+            { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
+        ],
+        margin: [0, 5, 0, 12],
+        background: '#f8f9fa'
+    });
+
+    // C. TRANSFORMAR CONTENIDO (3 Tickets por página)
+    try {
+        const table = oldContent.find(item => item.table);
+        if (table && table.table.body.length > 1) {
+            const headerRow = table.table.body[0];
+            const dataRows = table.table.body.slice(1);
+
+            dataRows.forEach((row, idx) => {
+                const kv = [];
+                let idTicket = '', razon = '', rif = '', serialPOS = '';
+
+                headerRow.forEach((h, i) => {
+                    const label = (String(h.text || '')).replace(/<[^>]*>/g, '').trim();
+                    const value = (String(row[i].text || '')).replace(/<[^>]*>/g, '').trim() || 'N/A';
+                    
+                    // Extraer datos clave para el encabezado del ticket
+                    if (label.includes('ID Ticket')) idTicket = value;
+                    if (label.includes('Razón Social')) razon = value;
+                    if (label.includes('Rif')) rif = value;
+                    if (label.includes('Serial POS') || label.includes('serial_pos')) serialPOS = value;
+
+                    // APLICAR COLORES A LOS VALORES SEGÚN ESTATUS
+                    let valueObj = { text: value, fontSize: 9, margin: [0, 4] };
+                    
+                    // Lógica de colores basada en el valor texto
+                    const style = getTicketStatusStyle(value);
+                    if (style) {
+                        valueObj.color = style.color;
+                        valueObj.bold = style.bold;
+                    }
+
+                    kv.push([
+                        { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
+                        valueObj
+                    ]);
+                });
+
+                doc.content.push({
+                    stack: [
+                        { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
+                        { text: `${razon}${rif ? ' • RIF: ' + rif : ''}${serialPOS ? ' • Serial: ' + serialPOS : ''}`, style: 'ticketSubtitle' },
+                        {
+                            table: { widths: [160, '*'], body: kv },
+                            layout: {
+                                fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
+                                hLineWidth: () => 0.6,
+                                vLineWidth: () => 0,
+                                hLineColor: () => '#c8d6ef',
+                                paddingLeft: () => 10,
+                                paddingRight: () => 10
+                            }
+                        }
+                    ],
+                    margin: [0, 8, 0, 30],
+                    pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
+                });
+            });
+        } else {
+            // Si no hay tabla o es una estructura diferente, mantener contenido original
+            doc.content = doc.content.concat(oldContent);
+        }
+    } catch (e) {
+        console.error("Error transformando PDF:", e);
+        doc.content = doc.content.concat(oldContent); // Fallback
+    }
+}
+
+
+// Función principal para enviar el ticket
 function SendTicket() {
   const welcomeMessage = document.getElementById("welcomeMessage");
   if (welcomeMessage) {
@@ -824,35 +1209,19 @@ function SendTicket() {
           newTable.id = "rifCountTable";
           newTable.className = "table table-striped table-bordered table-hover table-sm";
           mainTableCard.appendChild(newTable);
+          // INSERTAR LEYENDA
+          const legendContainer = document.createElement("div");
+          legendContainer.innerHTML = getHTMLLegendContent();
+          mainTableCard.appendChild(legendContainer);
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
           newTable.appendChild(thead);
           newTable.appendChild(tbody);
 
-          function safeValue(value) {
-                if (value === null || value === undefined || value === '') {
-                    return 'N/A';
-                }
-                if (typeof value === 'object') {
-                    if (value instanceof Date) {
-                        return value.toLocaleDateString('es-VE');
-                    }
-                    if (value.date || value.formatted) {
-                        return value.date || value.formatted || 'N/A';
-                    }
-                    try {
-                        const str = JSON.stringify(value);
-                        if (str === '{}' || str === '[]') return 'N/A';
-                        return str;
-                    } catch (e) {
-                        return 'N/A';
-                    }
-                }
-                return String(value).trim() || 'N/A';
-            }
 
-          const columnsConfig = [];
+
+
           const headerRow = thead.insertRow();
           const visibleKeys = new Set();
           
@@ -865,58 +1234,17 @@ function SendTicket() {
               });
           }
           
-          const columnTitles = {
-              id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              date_send_lab: "Fecha Envío Lab",
-              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-              cod_adm: "cod_adm",
-          };
 
+          // Obtener configuración de columnas centralizada
+          const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
+
+          // Generar headers
           for (const key of visibleKeys) {
               const th = document.createElement("th");
               th.textContent = columnTitles[key] || key;
               headerRow.appendChild(th);
-              
-               const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "NULL",
-                  render: function(data, type, row) {
-                      return safeValue(data);
-                  }
-              };
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" || data === "Si" || data === true ? "Sí" : "No");
-              }
-              columnsConfig.push(columnDef);
           }
+
 
             // Spinner Styles
            if (!document.getElementById('export-loading-spinner-style')) {
@@ -1111,121 +1439,8 @@ function SendTicket() {
         format: { body: data => typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data }
     },
     customize: function(doc) {
-        // LOGO
-        if (window.PDF_LOGO_DATAURL) {
-            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-        }
-
-        doc.pageMargins = [40, 130, 40, 80];
-        doc.pageSize = 'A4';
-        doc.pageOrientation = 'portrait';
-        doc.defaultStyle = { fontSize: 9.5 };
-
-        doc.styles = {
-            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
-            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
-            generatedOSD: { fontSize: 8, color: '#666', italics: true },
-            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
-            ticketSubtitle: { fontSize: 9.5, color: '#555' }
-        };
-
-        // HEADER PRO
-        doc.header = function() {
-            const nroTicket = document.getElementById("ticketInput").value;
-            return {
-                margin: [40, 20, 40, 10],
-                stack: [
-                    { columns: [
-                        { image: 'logo_inteligensa', width: 85 },
-                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-                    ]},
-                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-                    { text: 'REPORTE DE TICKET INDIVIDUAL', style: 'title' },
-                    { text: `Ticket Nro: ${nroTicket}`, style: 'subtitle' }
-                ]
-            };
-        };
-
-        // FOOTER PRO
-        doc.footer = function(currentPage, pageCount) {
-            return {
-                margin: [40, 20],
-                columns: [
-                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-                ]
-            };
-        };
-
-        const oldContent = doc.content;
-        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
-        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-        doc.content = [];
-
-        // NOTA + GENERADO POR
-        doc.content.push({
-            stack: [
-                { text: 'Nota importante', style: 'noteTitle' },
-                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-            ],
-            margin: [0, 15, 0, 12],
-            background: '#f8f9fa'
-        });
-
-        // TRANSFORMAR A 3 TICKETS POR PÁGINA
-        try {
-            const table = oldContent.find(item => item.table);
-            if (table && table.table.body.length > 1) {
-                const headerRow = table.table.body[0];
-                const dataRows = table.table.body.slice(1);
-
-                dataRows.forEach((row, idx) => {
-                    const kv = [];
-                    let idTicket = '', razon = '', rif = '';
-
-                    headerRow.forEach((h, i) => {
-                        const label = String(h.text || '').trim();
-                        const value = String(row[i].text || '').trim() || 'N/A';
-                        if (label.includes('ID Ticket')) idTicket = value;
-                        if (label.includes('Razón Social')) razon = value;
-                        if (label.includes('Rif')) rif = value;
-                        kv.push([
-                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-                            { text: value, fontSize: 9, margin: [0, 4] }
-                        ]);
-                    });
-
-                    doc.content.push({
-                        stack: [
-                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
-                            {
-                                table: { widths: [160, '*'], body: kv },
-                                layout: {
-                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                                    hLineWidth: () => 0.6,
-                                    vLineWidth: () => 0,
-                                    hLineColor: () => '#c8d6ef',
-                                    paddingLeft: () => 10,
-                                    paddingRight: () => 10
-                                }
-                            }
-                        ],
-                        margin: [0, 8, 0, 30],
-                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-                    });
-                });
-            } else {
-                doc.content = oldContent;
-            }
-        } catch (e) {
-            console.error("Error transformando PDF por región:", e);
-            doc.content = oldContent;
-        }
+        const nroTicket = document.getElementById("ticketInput").value;
+        customizeTicketPDF(doc, "REPORTE DE TICKET INDIVIDUAL", `Ticket Nro: ${nroTicket}`);
     }
 }
             ]
@@ -1360,6 +1575,10 @@ function SendRegions() {
           newTable.id = "rifCountTable";
           newTable.className = "table table-striped table-bordered table-hover table-sm";
           mainTableCard.appendChild(newTable);
+          // INSERTAR LEYENDA
+          const legendContainer = document.createElement("div");
+          legendContainer.innerHTML = getHTMLLegendContent();
+          mainTableCard.appendChild(legendContainer);
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
@@ -1367,7 +1586,7 @@ function SendRegions() {
           newTable.appendChild(tbody);
 
           // Lógica para crear las columnas y el thead
-          const columnsConfig = [];
+
           const headerRow = thead.insertRow();
           const visibleKeys = new Set();
           
@@ -1377,54 +1596,17 @@ function SendRegions() {
               }
           });
           
-          const columnTitles = {
-              id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              date_send_lab: "Fecha Envío Lab",
-              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-          };
 
+          // Obtener configuración de columnas centralizada
+          const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
+
+          // Generar headers
           for (const key of visibleKeys) {
               const th = document.createElement("th");
               th.textContent = columnTitles[key] || key;
               headerRow.appendChild(th);
-              
-              const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "",
-              };
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-              }
-              columnsConfig.push(columnDef);
           }
+
 
           // Agregar animación CSS para el spinner si no existe
           if (!document.getElementById('export-loading-spinner-style')) {
@@ -1586,8 +1768,9 @@ function SendRegions() {
         },
         exportOptions: { columns: ':visible' },
         customize: function(doc) {
-            // Aquí puedes copiar la lógica de personalización (doc.header, footer, etc.) 
-            // que ya tienes en SendRegions para que el PDF sea idéntico.
+            const selectElement = document.getElementById("SelectRgions");
+            const regionName = selectElement.options[selectElement.selectedIndex].text;
+            customizeTicketPDF(doc, "REPORTE DE TICKET POR REGIÓN", `Región: ${regionName}`);
         }
     }
 ]
@@ -1748,39 +1931,17 @@ function SendRif() {
           newTable.id = "rifCountTable";
           newTable.className = "table table-striped table-bordered table-hover table-sm";
           razonCountTableCard.appendChild(newTable);
+          // INSERTAR LEYENDA
+          const legendContainer = document.createElement("div");
+          legendContainer.innerHTML = getHTMLLegendContent();
+          razonCountTableCard.appendChild(legendContainer);
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
           newTable.appendChild(thead);
           newTable.appendChild(tbody);
 
-          function safeValue(value) {
-                if (value === null || value === undefined || value === '') {
-                    return 'N/A';
-                }
-                if (typeof value === 'object') {
-                    // Si es un objeto Date
-                    if (value instanceof Date) {
-                        return value.toLocaleDateString('es-VE');
-                    }
-                    // Si tiene una propiedad que sea string (como en Laravel Carbon)
-                    if (value.date || value.timezone || value.formatted) {
-                        return value.date || value.formatted || 'N/A';
-                    }
-                    // Si es un objeto plano, intenta convertirlo
-                    try {
-                        const str = JSON.stringify(value);
-                        if (str === '{}' || str === '[]') return 'N/A';
-                        return str;
-                    } catch (e) {
-                        return 'N/A';
-                    }
-                }
-                return String(value).trim() || 'N/A';
-            }
-
           // Lógica para crear las columnas y el thead
-          const columnsConfig = [];
           const headerRow = thead.insertRow();
           const visibleKeys = new Set();
           
@@ -1790,61 +1951,16 @@ function SendRif() {
               }
           });
           
-          const columnTitles = {
-              // ... Tus títulos de columna
-              id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              date_send_lab: "Fecha Envío Lab",
-              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-              cod_adm: "cod_adm",
-          };
+            // Obtener configuración de columnas centralizada
+            const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
 
-          for (const key of visibleKeys) {
-              const th = document.createElement("th");
-              th.textContent = columnTitles[key] || key;
-              headerRow.appendChild(th);
-              
-               const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "NULL",
-                  render: function(data, type, row) {
-                      return safeValue(data);
-                  }
-              };
+            // Generar headers
+            for (const key of visibleKeys) {
+                const th = document.createElement("th");
+                th.textContent = columnTitles[key] || key;
+                headerRow.appendChild(th);
+            }
 
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-              }
-
-              columnsConfig.push(columnDef);
-          }
 
           // Función para crear y mostrar el overlay de carga
             function showExportLoading() {
@@ -2070,123 +2186,12 @@ function SendRif() {
         }
     },
     customize: function(doc) {
-        // LOGO
-        if (window.PDF_LOGO_DATAURL) {
-            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-        }
-
-        doc.pageMargins = [40, 130, 40, 80];
-        doc.pageSize = 'A4';
-        doc.pageOrientation = 'portrait';
-        doc.defaultStyle = { fontSize: 9.5 };
-
-        doc.styles = {
-            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
-            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
-            generatedOSD: { fontSize: 8, color: '#666', italics: true },
-            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
-            ticketSubtitle: { fontSize: 9.5, color: '#555' }
-        };
-
-        // HEADER PRO
-        doc.header = function() {
-            const rif = document.getElementById('rifInput')?.value?.trim().toUpperCase() || 'DESCONOCIDO';
-            return {
-                margin: [40, 20, 40, 10],
-                stack: [
-                    { columns: [
-                        { image: 'logo_inteligensa', width: 85 },
-                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-                    ]},
-                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-                    { text: 'REPORTE DE TICKET POR RIF', style: 'title' },
-                    { text: `RIF: ${rif}`, style: 'subtitle' }
-                ]
-            };
-        };
-
-        // FOOTER PRO
-        doc.footer = function(currentPage, pageCount) {
-            return {
-                margin: [40, 20],
-                columns: [
-                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-                ]
-            };
-        };
-
-        const oldContent = doc.content;
-        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
-        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-        doc.content = [];
-
-        // NOTA + GENERADO POR
-        doc.content.push({
-            stack: [
-                { text: 'Nota importante', style: 'noteTitle' },
-                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-            ],
-            margin: [0, 15, 0, 12],
-            background: '#f8f9fa'
-        });
-
-        // TRANSFORMAR A 3 TICKETS POR PÁGINA
-        try {
-            const table = oldContent.find(item => item.table);
-            if (table && table.table.body.length > 1) {
-                const headerRow = table.table.body[0];
-                const dataRows = table.table.body.slice(1);
-
-                dataRows.forEach((row, idx) => {
-                    const kv = [];
-                    let idTicket = '', razon = '', rif = '', serialPOS = '';
-
-                    headerRow.forEach((h, i) => {
-                        const label = String(h.text || '').trim();
-                        const value = String(row[i].text || '').trim() || 'N/A';
-                        if (label.includes('ID Ticket')) idTicket = value;
-                        if (label.includes('Razón Social')) razon = value;
-                        if (label.includes('Rif')) rif = value;
-                        if (label.includes('Serial POS') || label.includes('serial_pos')) serialPOS = value;
-                        kv.push([
-                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-                            { text: value, fontSize: 9, margin: [0, 4] }
-                        ]);
-                    });
-
-                    doc.content.push({
-                        stack: [
-                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}${serialPOS ? ' • Serial: ' + serialPOS : ''}`, style: 'ticketSubtitle' },
-                            {
-                                table: { widths: [160, '*'], body: kv },
-                                layout: {
-                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                                    hLineWidth: () => 0.6,
-                                    vLineWidth: () => 0,
-                                    hLineColor: () => '#c8d6ef',
-                                    paddingLeft: () => 10,
-                                    paddingRight: () => 10
-                                }
-                            }
-                        ],
-                        margin: [0, 8, 0, 30],
-                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-                    });
-                });
-            } else {
-                doc.content = oldContent;
-            }
-        } catch (e) {
-            console.error("Error transformando PDF por RIF:", e);
-            doc.content = oldContent;
-        }
+        const tipoRif = document.getElementById('rifTipo')?.value?.toUpperCase() || 'V';
+        const numeroRif = document.getElementById('rifInput')?.value?.trim() || '';
+        const rifCompleto = numeroRif ? `${tipoRif}${numeroRif}` : 'SIN_RIF';
+        customizeTicketPDF(doc, "REPORTE DE TICKET POR RIF", `RIF: ${rifCompleto}`);
     }
+
 }
             ]
           });
@@ -2345,104 +2350,38 @@ function SendSerial() {
           newTable.id = "rifCountTable";
           newTable.className = "table table-striped table-bordered table-hover table-sm";
           razonCountTableCard.appendChild(newTable);
+          // INSERTAR LEYENDA
+          const legendContainer = document.createElement("div");
+          legendContainer.innerHTML = getHTMLLegendContent();
+          razonCountTableCard.appendChild(legendContainer);
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
           newTable.appendChild(thead);
           newTable.appendChild(tbody);
 
+
             // Lógica para crear las columnas y el thead
-            // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
-            function safeValue(value) {
-                if (value === null || value === undefined || value === '') {
-                    return 'N/A';
+            const headerRow = thead.insertRow();
+            const visibleKeys = new Set();
+            
+            Object.keys(TicketData[0]).forEach(key => {
+                if (TicketData.some(item => item[key] !== null && item[key] !== undefined && item[key] !== "")) {
+                    visibleKeys.add(key);
                 }
-                if (typeof value === 'object') {
-                    // Si es un objeto Date
-                    if (value instanceof Date) {
-                        return value.toLocaleDateString('es-VE');
-                    }
-                    // Si tiene una propiedad que sea string (como en Laravel Carbon)
-                    if (value.date || value.timezone || value.formatted) {
-                        return value.date || value.formatted || 'N/A';
-                    }
-                    // Si es un objeto plano, intenta convertirlo
-                    try {
-                        const str = JSON.stringify(value);
-                        if (str === '{}' || str === '[]') return 'N/A';
-                        return str;
-                    } catch (e) {
-                        return 'N/A';
-                    }
-                }
-                return String(value).trim() || 'N/A';
+            });
+
+            // Obtener configuración de columnas centralizada
+            const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
+
+
+            // Generar headers
+            for (const key of visibleKeys) {
+                const th = document.createElement("th");
+                th.textContent = columnTitles[key] || key;
+                headerRow.appendChild(th);
             }
 
-          // Lógica para crear las columnas y el thead
-          const columnsConfig = [];
-          const headerRow = thead.insertRow();
-          const visibleKeys = new Set();
-          
-          Object.keys(TicketData[0]).forEach(key => {
-              if (TicketData.some(item => item[key] !== null && item[key] !== undefined && item[key] !== "")) {
-                  visibleKeys.add(key);
-              }
-          });
-
-          const columnTitles = {
-              // ... Tus títulos de columna
-              id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              date_send_lab: "Fecha Envío Lab",
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-              cod_adm: "cod_adm",
-          };
-
-          for (const key of visibleKeys) {
-              const th = document.createElement("th");
-              th.textContent = columnTitles[key] || key;
-              headerRow.appendChild(th);
-              
-              const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "NULL",
-                  render: function(data, type, row) {
-                      return safeValue(data);
-                  }
-              };
-
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-              }
-              columnsConfig.push(columnDef);
-          }
 
           // Agregar animación CSS para el spinner si no existe
           if (!document.getElementById('export-loading-spinner-style')) {
@@ -2687,123 +2626,10 @@ function SendSerial() {
         format: { body: data => (typeof data === 'string' ? data.replace(/<[^>]*>/g, '').trim() : data) }
     },
     customize: function(doc) {
-        // LOGO
-        if (window.PDF_LOGO_DATAURL) {
-            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-        }
-
-        doc.pageMargins = [40, 130, 40, 80];
-        doc.pageSize = 'A4';
-        doc.pageOrientation = 'portrait';
-        doc.defaultStyle = { fontSize: 9.5 };
-
-        doc.styles = {
-            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
-            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
-            generatedOSD: { fontSize: 8, color: '#666', italics: true },
-            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
-            ticketSubtitle: { fontSize: 9.5, color: '#555' }
-        };
-
-        // HEADER PRO
-        doc.header = function() {
-            const serial = document.getElementById('serialInput')?.value?.trim().toUpperCase() || 'DESCONOCIDO';
-            return {
-                margin: [40, 20, 40, 10],
-                stack: [
-                    { columns: [
-                        { image: 'logo_inteligensa', width: 85 },
-                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-                    ]},
-                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-                    { text: 'REPORTE DE TICKET POR SERIAL', style: 'title' },
-                    { text: `Serial: ${serial}`, style: 'subtitle' }
-                ]
-            };
-        };
-
-        // FOOTER PRO
-        doc.footer = function(currentPage, pageCount) {
-            return {
-                margin: [40, 20],
-                columns: [
-                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-                ]
-            };
-        };
-
-        const oldContent = doc.content;
-        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
-        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-        doc.content = [];
-
-        // NOTA + GENERADO POR
-        doc.content.push({
-            stack: [
-                { text: 'Nota importante', style: 'noteTitle' },
-                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-            ],
-            margin: [0, 15, 0, 12],
-            background: '#f8f9fa'
-        });
-
-        // TRANSFORMAR A 3 TICKETS POR PÁGINA
-        try {
-            const table = oldContent.find(item => item.table);
-            if (table && table.table.body.length > 1) {
-                const headerRow = table.table.body[0];
-                const dataRows = table.table.body.slice(1);
-
-                dataRows.forEach((row, idx) => {
-                    const kv = [];
-                    let idTicket = '', razon = '', rif = '', serialPOS = '';
-
-                    headerRow.forEach((h, i) => {
-                        const label = String(h.text || '').trim();
-                        const value = String(row[i].text || '').trim() || 'N/A';
-                        if (label.includes('ID Ticket')) idTicket = value;
-                        if (label.includes('Razón Social')) razon = value;
-                        if (label.includes('Rif')) rif = value;
-                        if (label.includes('Serial POS') || label.includes('serial_pos')) serialPOS = value;
-                        kv.push([
-                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-                            { text: value, fontSize: 9, margin: [0, 4] }
-                        ]);
-                    });
-
-                    doc.content.push({
-                        stack: [
-                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}${serialPOS ? ' • Serial: ' + serialPOS : ''}`, style: 'ticketSubtitle' },
-                            {
-                                table: { widths: [160, '*'], body: kv },
-                                layout: {
-                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                                    hLineWidth: () => 0.6,
-                                    vLineWidth: () => 0,
-                                    hLineColor: () => '#c8d6ef',
-                                    paddingLeft: () => 10,
-                                    paddingRight: () => 10
-                                }
-                            }
-                        ],
-                        margin: [0, 8, 0, 30],
-                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-                    });
-                });
-            } else {
-                doc.content = oldContent;
-            }
-        } catch (e) {
-            console.error("Error transformando PDF por serial:", e);
-            doc.content = oldContent;
-        }
+        const serial = document.getElementById('serialInput')?.value?.trim().toUpperCase() || 'SIN_SERIAL';
+        customizeTicketPDF(doc, "REPORTE DE TICKET POR SERIAL", `Serial: ${serial}`);
     }
+
 }
             ]
           });
@@ -2963,6 +2789,10 @@ function SendStatus() {
             newTable.id = "rifCountTable";
             newTable.className = "table table-striped table-bordered table-hover table-sm";
             razonCountTableCard.appendChild(newTable);
+            // INSERTAR LEYENDA
+            const legendContainer = document.createElement("div");
+            legendContainer.innerHTML = getHTMLLegendContent();
+            razonCountTableCard.appendChild(legendContainer);
 
             const thead = document.createElement("thead");
             const tbody = document.createElement("tbody");
@@ -2970,34 +2800,9 @@ function SendStatus() {
             newTable.appendChild(tbody);
 
               // Lógica para crear las columnas y el thead
-            // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
-            function safeValue(value) {
-                if (value === null || value === undefined || value === '') {
-                    return 'N/A';
-                }
-                if (typeof value === 'object') {
-                    // Si es un objeto Date
-                    if (value instanceof Date) {
-                        return value.toLocaleDateString('es-VE');
-                    }
-                    // Si tiene una propiedad que sea string (como en Laravel Carbon)
-                    if (value.date || value.timezone || value.formatted) {
-                        return value.date || value.formatted || 'N/A';
-                    }
-                    // Si es un objeto plano, intenta convertirlo
-                    try {
-                        const str = JSON.stringify(value);
-                        if (str === '{}' || str === '[]') return 'N/A';
-                        return str;
-                    } catch (e) {
-                        return 'N/A';
-                    }
-                }
-                return String(value).trim() || 'N/A';
-            }
+
 
             // Lógica para crear las columnas y el thead
-            const columnsConfig = [];
             const headerRow = thead.insertRow();
             const visibleKeys = new Set();
             
@@ -3007,59 +2812,17 @@ function SendStatus() {
                 }
             });
 
-            const columnTitles = {
-                // ... Tus títulos de columna
-                id_ticket: "ID Ticket",
-                rif_empresa: "Rif",
-                razonsocial_cliente: "Razón Social",
-                descbanco: "Banco",
-                descmodelo: "Modelo del POS",
-                name_process_ticket: "Gestión del Ticket",
-                name_status_payment: "Estatus Pago",
-                full_name_tecnico: "Usuario Gestión",
-                name_status_ticket: "Estatus Ticket",
-                create_ticket: "Fecha Apertura",
-                process_ticket: "Fecha Proceso",
-                end_ticket: "Fecha Cierre",
-                name_accion_ticket: "Accion Ticket",
-                full_name_coordinador: "Coordinador",
-                id_level_failure: "Nivel de Falla",
-                full_name_tecnicoassignado: "Técnico Asignado",
-                serial_pos: "Serial POS",
-                descestatus: "Estatus del POS",
-                name_failure: "Motivo de ingreso",
-                downl_exoneration: "Exoneración",
-                downl_payment: "Pago Anticipo",
-                downl_send_to_rosal: "Enviado a Rosal",
-                downl_send_fromrosal: "Enviado desde Rosal a destino",
-                date_send_lab: "Fecha Envío Lab",
-                name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-                date_send_torosal_fromlab: "Fecha Envío a rosal",
-                name_status_domiciliacion: "Estatus Domiciliación",
-                date_sendkey: "Fecha Envío Llaves",
-                date_receivekey: "Fecha Recepción Llaves",
-                date_receivefrom_desti: "Fecha Recibo Destino",
-            };
+            // Obtener configuración de columnas centralizada
+            const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
 
+
+            // Generar headers
             for (const key of visibleKeys) {
                 const th = document.createElement("th");
                 th.textContent = columnTitles[key] || key;
                 headerRow.appendChild(th);
-                
-                const columnDef = {
-                  data: key,
-                  title: columnTitles[key] || key,
-                  defaultContent: "NULL",
-                  render: function(data, type, row) {
-                      return safeValue(data);
-                  }
-              };
-
-                if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                    columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-                }
-                columnsConfig.push(columnDef);
             }
+
 
             // Agregar animación CSS para el spinner si no existe
             if (!document.getElementById('export-loading-spinner-style')) {
@@ -3238,112 +3001,9 @@ function SendStatus() {
         format: { body: data => safeValue(data) }
     },
     customize: function(doc) {
-        if (window.PDF_LOGO_DATAURL) {
-            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-        }
-
-        doc.pageMargins = [40, 130, 40, 80];
-        doc.pageSize = 'A4';
-        doc.defaultStyle = { fontSize: 9.5 };
-
-        doc.styles = {
-            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-            subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f' },
-            noteText: { fontSize: 9.2, italics: true, color: '#424242' },
-            generatedOSD: { fontSize: 8, color: '#666', italics: true },
-            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c' },
-            ticketSubtitle: { fontSize: 9.5, color: '#555' }
-        };
-
-        doc.header = function() {
-            return {
-                margin: [40, 20, 40, 10],
-                stack: [
-                    { columns: [
-                        { image: 'logo_inteligensa', width: 85 },
-                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-                    ]},
-                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-                    { text: 'REPORTE DE TICKETS POR ESTATUS', style: 'title' },
-                    { text: `Estatus: ${EstatusName.toUpperCase()}`, style: 'subtitle' }
-                ]
-            };
-        };
-
-        doc.footer = function(currentPage, pageCount) {
-            return {
-                margin: [40, 20],
-                columns: [
-                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-                ]
-            };
-        };
-
-        const oldContent = doc.content;
-        const full_name = document.getElementById('Full_name')?.value || 'USUARIO';
-        const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-        doc.content = [];
-
-        doc.content.push({
-            stack: [
-                { text: 'Nota importante', style: 'noteTitle' },
-                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-                { text: `Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-            ],
-            margin: [0, 15, 0, 12],
-            background: '#f8f9fa'
-        });
-
-        try {
-            const table = oldContent.find(item => item.table);
-            if (table && table.table.body.length > 1) {
-                const headerRow = table.table.body[0];
-                const dataRows = table.table.body.slice(1);
-                dataRows.forEach((row, idx) => {
-                    const kv = [];
-                    let idTicket = '', razon = '', rif = '';
-                    headerRow.forEach((h, i) => {
-                        const label = String(h.text || '').trim();
-                        const value = String(row[i].text || '').trim() || 'N/A';
-                        if (label.includes('ID Ticket')) idTicket = value;
-                        if (label.includes('Razón Social')) razon = value;
-                        if (label.includes('Rif')) rif = value;
-                        kv.push([
-                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-                            { text: value, fontSize: 9, margin: [0, 4] }
-                        ]);
-                    });
-
-                    doc.content.push({
-                        stack: [
-                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
-                            {
-                                table: { widths: [160, '*'], body: kv },
-                                layout: {
-                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                                    hLineWidth: () => 0.6,
-                                    vLineWidth: () => 0,
-                                    hLineColor: () => '#c8d6ef',
-                                    paddingLeft: () => 10,
-                                    paddingRight: () => 10
-                                }
-                            }
-                        ],
-                        margin: [0, 8, 0, 30],
-                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-                    });
-                });
-            } else {
-                doc.content = oldContent;
-            }
-        } catch (e) {
-            console.error("Error transformando PDF por estatus:", e);
-            doc.content = oldContent;
-        }
+        const selectStatus = document.getElementById("SelectStatus");
+        const estatusNombre = selectStatus?.options[selectStatus.selectedIndex]?.text.trim() || "Estatus_Desconocido";
+        customizeTicketPDF(doc, "REPORTE DE TICKETS POR ESTATUS", `Estatus: ${estatusNombre.toUpperCase()}`);
     }
 }
               ]
@@ -3487,40 +3147,19 @@ function SendRango() {
           rifCountTable.id = "rifCountTable";
           rifCountTable.className = "table table-striped table-bordered table-hover table-sm";
           razonCountTableCard.appendChild(rifCountTable);
+          // INSERTAR LEYENDA
+          const legendContainer = document.createElement("div");
+          legendContainer.innerHTML = getHTMLLegendContent();
+          razonCountTableCard.appendChild(legendContainer);
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
           rifCountTable.appendChild(thead);
           rifCountTable.appendChild(tbody);
 
-          // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
-          function safeValue(value) {
-              if (value === null || value === undefined || value === '') {
-                  return 'N/A';
-              }
-              if (typeof value === 'object') {
-                  // Si es un objeto Date
-                  if (value instanceof Date) {
-                      return value.toLocaleDateString('es-VE');
-                  }
-                  // Si tiene una propiedad que sea string (como en Laravel Carbon)
-                  if (value.date || value.timezone || value.formatted) {
-                      return value.date || value.formatted || 'N/A';
-                  }
-                  // Si es un objeto plano, intenta convertirlo
-                  try {
-                      const str = JSON.stringify(value);
-                      if (str === '{}' || str === '[]') return 'N/A';
-                      return str;
-                  } catch (e) {
-                      return 'N/A';
-                  }
-              }
-              return String(value).trim() || 'N/A';
-          }
+
 
           // Lógica para crear las columnas y el thead
-          const columnsConfig = [];
           const headerRow = thead.insertRow();
           const visibleKeys = new Set();
           
@@ -3530,59 +3169,17 @@ function SendRango() {
               }
           });
 
-          const columnTitles = {
-              // ... Tus títulos de columna
-               id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-              date_send_lab: "Fecha Envío Lab",
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-          };
+          // Obtener configuración de columnas centralizada
+          const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
 
+
+          // Generar headers
           for (const key of visibleKeys) {
               const th = document.createElement("th");
               th.textContent = columnTitles[key] || key;
               headerRow.appendChild(th);
-              
-              const columnDef = {
-                data: key,
-                title: columnTitles[key] || key,
-                defaultContent: "NULL",
-                render: function(data, type, row) {
-                    return safeValue(data);
-                }
-            };
-
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-              }
-              columnsConfig.push(columnDef);
           }
+
 
           // Agregar animación CSS para el spinner si no existe
           if (!document.getElementById('export-loading-spinner-style')) {
@@ -3957,115 +3554,9 @@ function SendRango() {
         format: { body: (data) => safeValue(data) }
     },
     customize: function(doc) {
-        if (window.PDF_LOGO_DATAURL) {
-            doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
-        }
-
-        doc.pageMargins = [40, 130, 40, 80];
-        doc.pageSize = 'A4';
-        doc.pageOrientation = 'portrait';
-
-        doc.defaultStyle = { fontSize: 9.5 };
-        doc.styles = {
-            title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-            noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f', margin: [0, 0, 0, 4] },
-            noteText: { fontSize: 9.2, italics: true, color: '#424242', margin: [0, 0, 0, 6] },
-            generatedOSD: { fontSize: 8, color: '#666', italics: true },
-            ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 8, 0, 6] },
-            ticketSubtitle: { fontSize: 9.5, color: '#555', margin: [0, 0, 0, 8] }
-        };
-
-        doc.header = function() {
-            return {
-                margin: [40, 20, 40, 10],
-                stack: [
-                    { columns: [
-                        { image: 'logo_inteligensa', width: 85 },
-                        { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-                    ]},
-                    { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-                    { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-                    { text: 'REPORTE DE TICKETS POR RANGO DE FECHA', style: 'title' }
-                ]
-            };
-        };
-
-        doc.footer = function(currentPage, pageCount) {
-            return {
-                margin: [40, 20],
-                columns: [
-                    { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-                    { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-                ]
-            };
-        };
-
-        const oldContent = doc.content;
-        const full_name = document.getElementById('Full_name')?.value || 'USUARIO DESCONOCIDO';
-        doc.content = [];
-
-        doc.content.push({
-            stack: [
-                { text: 'Nota importante', style: 'noteTitle' },
-                { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-                { text: `Documento Generado por: ${full_name} - ${new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' })}`, style: 'generatedOSD' }
-            ],
-            alignment: 'left',
-            margin: [0, 15, 0, 12],
-            background: '#f8f9fa',
-            fillColor: '#f8f9fa'
-        });
-
-        try {
-            const table = oldContent.find(item => item.table);
-            if (table && table.table.body.length > 1) {
-                const headerRow = table.table.body[0];
-                const dataRows = table.table.body.slice(1);
-
-                dataRows.forEach((row, idx) => {
-                    const kv = [];
-                    let idTicket = '', razon = '', rif = '';
-
-                    headerRow.forEach((h, i) => {
-                        const label = String(h.text || '').trim();
-                        const value = String(row[i].text || '').trim() || 'N/A';
-                        if (label.includes('ID Ticket')) idTicket = value;
-                        if (label.includes('Razón Social')) razon = value;
-                        if (label.includes('Rif')) rif = value;
-
-                        kv.push([
-                            { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-                            { text: value, fontSize: 9, margin: [0, 4] }
-                        ]);
-                    });
-
-                    doc.content.push({
-                        stack: [
-                            { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-                            { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
-                            {
-                                table: { widths: [160, '*'], body: kv },
-                                layout: {
-                                    fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                                    hLineWidth: () => 0.6,
-                                    vLineWidth: () => 0,
-                                    hLineColor: () => '#c8d6ef',
-                                    paddingLeft: () => 10,
-                                    paddingRight: () => 10
-                                }
-                            }
-                        ],
-                        margin: [0, 8, 0, 30],
-                        pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-                    });
-                });
-            } else {
-                doc.content = oldContent;
-            }
-        } catch (e) {
-            console.error("Error transformando:", e);
-            doc.content = oldContent;
-        }
+        const ini = document.getElementById('date-ini')?.value || 'FechaIni';
+        const fin = document.getElementById('date-end')?.value || 'FechaFin';
+        customizeTicketPDF(doc, "REPORTE DE TICKETS POR RANGO DE FECHA", `Rango: ${ini} al ${fin}`);
     }
 }
             ]
@@ -4280,6 +3771,10 @@ function SendBancos() {
           newTable.id = "rifCountTable";
           newTable.className = "table table-striped table-bordered table-hover table-sm";
           razonCountTableCard.appendChild(newTable);
+          // INSERTAR LEYENDA
+          const legendContainer = document.createElement("div");
+          legendContainer.innerHTML = getHTMLLegendContent();
+          razonCountTableCard.appendChild(legendContainer);
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
@@ -4287,33 +3782,6 @@ function SendBancos() {
           newTable.appendChild(tbody);
 
           // Lógica para crear las columnas y el thead
-           // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
-          function safeValue(value) {
-              if (value === null || value === undefined || value === '') {
-                  return 'N/A';
-              }
-              if (typeof value === 'object') {
-                  // Si es un objeto Date
-                  if (value instanceof Date) {
-                      return value.toLocaleDateString('es-VE');
-                  }
-                  // Si tiene una propiedad que sea string (como en Laravel Carbon)
-                  if (value.date || value.timezone || value.formatted) {
-                      return value.date || value.formatted || 'N/A';
-                  }
-                  // Si es un objeto plano, intenta convertirlo
-                  try {
-                      const str = JSON.stringify(value);
-                      if (str === '{}' || str === '[]') return 'N/A';
-                      return str;
-                  } catch (e) {
-                      return 'N/A';
-                  }
-              }
-              return String(value).trim() || 'N/A';
-          }
-
-          const columnsConfig = [];
           const headerRow = thead.insertRow();
           const visibleKeys = new Set();
           
@@ -4323,59 +3791,16 @@ function SendBancos() {
               }
           });
 
-          const columnTitles = {
-              // ... Tus títulos de columna
-              id_ticket: "ID Ticket",
-              rif_empresa: "Rif",
-              razonsocial_cliente: "Razón Social",
-              descbanco: "Banco",
-              descmodelo: "Modelo del POS",
-              name_process_ticket: "Gestión del Ticket",
-              name_status_payment: "Estatus Pago",
-              full_name_tecnico: "Usuario Gestión",
-              name_status_ticket: "Estatus Ticket",
-              create_ticket: "Fecha Apertura",
-              process_ticket: "Fecha Proceso",
-              end_ticket: "Fecha Cierre",
-              name_accion_ticket: "Accion Ticket",
-              full_name_coordinador: "Coordinador",
-              id_level_failure: "Nivel de Falla",
-              full_name_tecnicoassignado: "Técnico Asignado",
-              serial_pos: "Serial POS",
-              descestatus: "Estatus del POS",
-              name_failure: "Motivo de ingreso",
-              downl_exoneration: "Exoneración",
-              downl_payment: "Pago Anticipo",
-              downl_send_to_rosal: "Enviado a Rosal",
-              downl_send_fromrosal: "Enviado desde Rosal a destino",
-              date_send_lab: "Fecha Envío Lab",
-              name_status_lab: "Estatus Taller", // ✅ Esta línea cambia el nombre en la cabecera, Excel y PDF
-              date_send_torosal_fromlab: "Fecha Envío a rosal",
-              name_status_domiciliacion: "Estatus Domiciliación",
-              date_sendkey: "Fecha Envío Llaves",
-              date_receivekey: "Fecha Recepción Llaves",
-              date_receivefrom_desti: "Fecha Recibo Destino",
-          };
+          // Obtener configuración de columnas centralizada
+          const { columnsConfig, columnTitles } = getTicketColumnsConfig(visibleKeys);
 
+          // Generar headers
           for (const key of visibleKeys) {
               const th = document.createElement("th");
               th.textContent = columnTitles[key] || key;
               headerRow.appendChild(th);
-              
-             const columnDef = {
-                data: key,
-                title: columnTitles[key] || key,
-                defaultContent: "NULL",
-                render: function(data, type, row) {
-                    return safeValue(data);
-                }
-            };
-
-              if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
-                  columnDef.render = (data) => (data === "Sí" ? "Sí" : "No");
-              }
-              columnsConfig.push(columnDef);
           }
+
 
           // Agregar animación CSS para el spinner si no existe
           if (!document.getElementById('export-loading-spinner-style')) {
@@ -4613,125 +4038,9 @@ function SendBancos() {
     columns: ':visible',
     format: { body: (data) => safeValue(data) }
   },
-  customize: function(doc) {
-    // LOGO
-    if (window.PDF_LOGO_DATAURL) {
-      doc.images = { logo_inteligensa: window.PDF_LOGO_DATAURL };
+    customize: function(doc) {
+        customizeTicketPDF(doc, "REPORTE DE TICKETS POR ENTIDAD BANCARIA", `Banco: ${bancoNombre.toUpperCase()}`);
     }
-
-    // CONFIGURACIÓN EJECUTIVA
-    doc.pageMargins = [40, 130, 40, 80];
-    doc.pageSize = 'A4';
-    doc.defaultStyle = { fontSize: 9.5 };
-    doc.styles = {
-      title: { fontSize: 16, bold: true, color: '#1f4e8c', alignment: 'center', margin: [0, 0, 0, 25] },
-      subtitle: { fontSize: 12, bold: true, color: '#003594', alignment: 'center', margin: [0, 5, 0, 15] },
-      noteTitle: { fontSize: 10.5, bold: true, color: '#d32f2f', margin: [0, 0, 0, 4] },
-      noteText: { fontSize: 9.2, italics: true, color: '#424242', margin: [0, 0, 0, 6] },
-      generatedOSD: { fontSize: 8, color: '#666', italics: true },
-      ticketTitle: { fontSize: 13, bold: true, color: '#1f4e8c', margin: [0, 8, 0, 6] },
-      ticketSubtitle: { fontSize: 9.5, color: '#555', margin: [0, 0, 0, 8] }
-    };
-
-    // HEADER PROFESIONAL
-    doc.header = function() {
-      return {
-        margin: [40, 20, 40, 10],
-        stack: [
-          {
-            columns: [
-              { image: 'logo_inteligensa', width: 85 },
-              { text: 'RIF: J-00291615-0', alignment: 'right', bold: true, color: '#1f4e8c', fontSize: 10.5 }
-            ]
-          },
-          { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 515, y2: 8, lineWidth: 1.3, lineColor: '#003594' }] },
-          { text: 'Urbanización El Rosal. Av. Francisco de Miranda\nEdif. Centro Sudamérica PH-A Caracas. Edo. Miranda', alignment: 'center', fontSize: 8.5, color: '#555', margin: [0, 8, 0, 8] },
-          { text: 'REPORTE DE TICKETS POR ENTIDAD BANCARIA', style: 'title' },
-          { text: `Banco: ${bancoNombre.toUpperCase()}`, style: 'subtitle' }
-        ]
-      };
-    };
-
-    // FOOTER
-    doc.footer = function(currentPage, pageCount) {
-      return {
-        margin: [40, 20],
-        columns: [
-          { image: 'logo_inteligensa', width: 55, opacity: 0.7 },
-          { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 8.5, color: '#666' }
-        ]
-      };
-    };
-
-    // NOTA + TRANSFORMACIÓN A BLOQUES VERTICALES (3 POR PÁGINA)
-    const oldContent = doc.content;
-    const full_name = document.getElementById('Full_name')?.value || 'USUARIO DESCONOCIDO';
-    const fechaGen = new Date().toLocaleString('es-VE', { timeZone: 'America/Caracas' });
-    doc.content = [];
-
-    doc.content.push({
-      stack: [
-        { text: 'Nota importante', style: 'noteTitle' },
-        { text: 'Los campos que aparecen como "N/A" indican que no existe información disponible para ese dato.', style: 'noteText' },
-        { text: `Documento Generado por: ${full_name} - ${fechaGen}`, style: 'generatedOSD' }
-      ],
-      alignment: 'left',
-      margin: [0, 15, 0, 12],
-      background: '#f8f9fa',
-      fillColor: '#f8f9fa'
-    });
-
-    try {
-      const table = oldContent.find(item => item.table);
-      if (table && table.table.body.length > 1) {
-        const headerRow = table.table.body[0];
-        const dataRows = table.table.body.slice(1);
-
-        dataRows.forEach((row, idx) => {
-          const kv = [];
-          let idTicket = '', razon = '', rif = '';
-
-          headerRow.forEach((h, i) => {
-            const label = String(h.text || '').trim();
-            const value = String(row[i].text || '').trim() || 'N/A';
-            if (label.includes('ID Ticket')) idTicket = value;
-            if (label.includes('Razón Social')) razon = value;
-            if (label.includes('Rif')) rif = value;
-
-            kv.push([
-              { text: label, bold: true, color: '#1f4e8c', fontSize: 9, margin: [8, 4] },
-              { text: value, fontSize: 9, margin: [0, 4] }
-            ]);
-          });
-
-          doc.content.push({
-            stack: [
-              { text: `Ticket ${idTicket || (idx + 1)}`, style: 'ticketTitle' },
-              { text: `${razon}${rif ? ' • RIF: ' + rif : ''}`, style: 'ticketSubtitle' },
-              {
-                table: { widths: [160, '*'], body: kv },
-                layout: {
-                  fillColor: i => i % 2 === 0 ? '#f8f9fa' : '#ffffff',
-                  hLineWidth: () => 0.6,
-                  vLineWidth: () => 0,
-                  hLineColor: () => '#c8d6ef',
-                  paddingLeft: () => 10,
-                  paddingRight: () => 10
-                }
-              }
-            ],
-            margin: [0, 8, 0, 30],
-            pageBreak: idx > 0 && idx % 3 === 0 ? 'before' : undefined
-          });
-        });
-      } else {
-        doc.content = oldContent;
-      }
-    } catch (e) {
-      console.error("Error transformando PDF:", e);
-      doc.content = oldContent;
-    }
-  }
 }
             ]
           });
