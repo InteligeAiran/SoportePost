@@ -794,6 +794,7 @@ function getTicketColumnsConfig(visibleKeys) {
         name_status_lab: "Estatus Taller",
         date_send_torosal_fromlab: "Fecha Envío a rosal",
         name_status_domiciliacion: "Estatus Domiciliación",
+        has_pending_budget: "Presupuesto",
         date_sendkey: "Fecha Envío Llaves",
         date_receivekey: "Fecha Recepción Llaves",
         date_receivefrom_desti: "Fecha Recibo Destino",
@@ -818,7 +819,15 @@ function getTicketColumnsConfig(visibleKeys) {
             }
         };
 
-        if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
+        if (key === "has_pending_budget") {
+            columnDef.render = function(data, type, row) {
+                // Check multiple truthy values that Postgres/PHP might return
+                if (data === true || data === 't' || data === 'true' || data === 1) {
+                    return '<span class="badge bg-danger text-white rounded-pill px-3" style="font-size: 0.85em; box-shadow: 0 2px 4px rgba(220,53,69,0.3);">Pendiente</span>';
+                }
+                return '<span class="badge bg-success text-white rounded-pill px-3" style="font-size: 0.85em; opacity: 0.8;">Al día</span>';
+            };
+        } else if (["downl_exoneration", "downl_payment", "downl_send_to_rosal", "downl_send_fromrosal"].includes(key)) {
             columnDef.render = (data) => (data === "Sí" || data === "Si" || data === true ? "Sí" : "No");
         } else if (["name_status_lab", "name_status_domiciliacion"].includes(key)) {
             columnDef.render = function(data, type, row) {
@@ -1163,6 +1172,7 @@ function SendTicket() {
   if (!mainTableCard) return;
 
   mainTableCard.querySelectorAll("p").forEach((p) => p.remove());
+  mainTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
   const rifCountTable = document.getElementById("rifCountTable");
   if (rifCountTable && $.fn.DataTable.isDataTable(rifCountTable)) {
@@ -1211,6 +1221,7 @@ function SendTicket() {
           mainTableCard.appendChild(newTable);
           // INSERTAR LEYENDA
           const legendContainer = document.createElement("div");
+          legendContainer.className = "status-legend-container";
           legendContainer.innerHTML = getHTMLLegendContent();
           mainTableCard.appendChild(legendContainer);
 
@@ -1304,6 +1315,13 @@ function SendTicket() {
             fixedHeader: true,
             autoWidth: false,
             data: TicketData,
+            createdRow: function(row, data, dataIndex) {
+                // Highlight row if pending budget
+                if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                     $(row).css('background-color', '#fff5f5'); // Light red background
+                     $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                }
+            },
             columns: columnsConfig,
             pagingType: "simple_numbers",
             lengthMenu: [5, 10, 20, 50],
@@ -1522,6 +1540,7 @@ function SendRegions() {
   
   // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
   mainTableCard.querySelectorAll("p").forEach((p) => p.remove());
+  mainTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
   // Lógica para destruir DataTables y limpiar la tabla de forma segura
   const rifCountTable = document.getElementById("rifCountTable");
@@ -1577,6 +1596,7 @@ function SendRegions() {
           mainTableCard.appendChild(newTable);
           // INSERTAR LEYENDA
           const legendContainer = document.createElement("div");
+          legendContainer.className = "status-legend-container";
           legendContainer.innerHTML = getHTMLLegendContent();
           mainTableCard.appendChild(legendContainer);
 
@@ -1701,6 +1721,13 @@ function SendRegions() {
             fixedHeader: true, // Fijar el encabezado
             autoWidth: false, // Deshabilitar autoWidth para mejor control
             data: TicketData,
+            createdRow: function(row, data, dataIndex) {
+                // Highlight row if pending budget
+                if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                     $(row).css('background-color', '#fff5f5'); // Light red background
+                     $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                }
+            },
             columns: columnsConfig,
             pagingType: "simple_numbers",
             lengthMenu: [5, 10, 20, 50], // Opciones del length menu
@@ -1877,6 +1904,7 @@ function SendRif() {
   
   // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
   razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+  razonCountTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
   // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
   // Destruye la instancia de DataTables si ya existe
@@ -1933,6 +1961,7 @@ function SendRif() {
           razonCountTableCard.appendChild(newTable);
           // INSERTAR LEYENDA
           const legendContainer = document.createElement("div");
+          legendContainer.className = "status-legend-container";
           legendContainer.innerHTML = getHTMLLegendContent();
           razonCountTableCard.appendChild(legendContainer);
 
@@ -2032,6 +2061,13 @@ function SendRif() {
           $(newTable).DataTable({
             responsive: false,
             data: TicketData,
+            createdRow: function(row, data, dataIndex) {
+                // Highlight row if pending budget
+                if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                     $(row).css('background-color', '#fff5f5'); // Light red background
+                     $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                }
+            },
             columns: columnsConfig,
             pagingType: "simple_numbers",
               buttons: [{
@@ -2296,6 +2332,7 @@ function SendSerial() {
   
   // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
   razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+  razonCountTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
   // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
   // Destruye la instancia de DataTables si ya existe
@@ -2352,6 +2389,7 @@ function SendSerial() {
           razonCountTableCard.appendChild(newTable);
           // INSERTAR LEYENDA
           const legendContainer = document.createElement("div");
+          legendContainer.className = "status-legend-container";
           legendContainer.innerHTML = getHTMLLegendContent();
           razonCountTableCard.appendChild(legendContainer);
 
@@ -2466,6 +2504,13 @@ function SendSerial() {
           $(newTable).DataTable({
             responsive: false,
             data: TicketData,
+            createdRow: function(row, data, dataIndex) {
+                // Highlight row if pending budget
+                if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                     $(row).css('background-color', '#fff5f5'); // Light red background
+                     $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                }
+            },
             columns: columnsConfig,
             buttons: [{
               extend: "excelHtml5",
@@ -2735,6 +2780,7 @@ function SendStatus() {
     
     // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
     razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+    razonCountTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
     // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
     // Destruye la instancia de DataTables si ya existe
@@ -2791,6 +2837,7 @@ function SendStatus() {
             razonCountTableCard.appendChild(newTable);
             // INSERTAR LEYENDA
             const legendContainer = document.createElement("div");
+            legendContainer.className = "status-legend-container";
             legendContainer.innerHTML = getHTMLLegendContent();
             razonCountTableCard.appendChild(legendContainer);
 
@@ -2906,7 +2953,15 @@ function SendStatus() {
             // Inicialización de DataTables
             $(newTable).DataTable({
               responsive: false,
+
               data: TicketData,
+              createdRow: function(row, data, dataIndex) {
+                 // Highlight row if pending budget
+                 if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                      $(row).css('background-color', '#fff5f5'); // Light red background
+                      $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                 }
+              },
               columns: columnsConfig,
               buttons: [{
                 extend: "excelHtml5",
@@ -3128,6 +3183,7 @@ function SendRango() {
   xhr.onload = function () {
     // Limpia los mensajes de error previos
     razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+    razonCountTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
     if (xhr.status >= 200 && xhr.status < 300) {
       try {
@@ -3149,6 +3205,7 @@ function SendRango() {
           razonCountTableCard.appendChild(rifCountTable);
           // INSERTAR LEYENDA
           const legendContainer = document.createElement("div");
+          legendContainer.className = "status-legend-container";
           legendContainer.innerHTML = getHTMLLegendContent();
           razonCountTableCard.appendChild(legendContainer);
 
@@ -3274,6 +3331,13 @@ function SendRango() {
             fixedHeader: true,
             autoWidth: false,
             data: TicketData,
+            createdRow: function(row, data, dataIndex) {
+                // Highlight row if pending budget
+                if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                     $(row).css('background-color', '#fff5f5'); // Light red background
+                     $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                }
+            },
             columns: columnsConfig,
             pagingType: "simple_numbers",
             lengthMenu: [5],
@@ -3712,7 +3776,9 @@ function SendBancos() {
   }
   
   // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
+  // Limpiar cualquier mensaje de error o "no data" previo del contenedor principal
   razonCountTableCard.querySelectorAll("p").forEach((p) => p.remove());
+  razonCountTableCard.querySelectorAll(".status-legend-container").forEach((el) => el.remove());
 
   // **Lógica para destruir DataTables y limpiar la tabla de forma segura**
   // Destruye la instancia de DataTables si ya existe
@@ -3773,8 +3839,10 @@ function SendBancos() {
           razonCountTableCard.appendChild(newTable);
           // INSERTAR LEYENDA
           const legendContainer = document.createElement("div");
+          legendContainer.className = "status-legend-container";
           legendContainer.innerHTML = getHTMLLegendContent();
           razonCountTableCard.appendChild(legendContainer);
+
 
           const thead = document.createElement("thead");
           const tbody = document.createElement("tbody");
@@ -3885,6 +3953,13 @@ function SendBancos() {
           $(newTable).DataTable({
             responsive: false,
             data: TicketData,
+            createdRow: function(row, data, dataIndex) {
+                // Highlight row if pending budget
+                if (data.has_pending_budget === true || data.has_pending_budget === 't' || data.has_pending_budget === 'true' || data.has_pending_budget === 1) {
+                     $(row).css('background-color', '#fff5f5'); // Light red background
+                     $(row).find('td').eq(0).css('border-left', '5px solid #dc3545'); // Red left border
+                }
+            },
             columns: columnsConfig,
             buttons: [{
               extend: "excelHtml5",
