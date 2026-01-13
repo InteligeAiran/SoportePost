@@ -537,6 +537,102 @@ function getTicketAprovalDocument() {
                             initComplete: function (settings, json) {
                                 const api = this.api();
 
+                                const id_area = document.getElementById('id_area').value;
+                                const id_rol = document.getElementById('id_rol').value;
+
+                                let buttonsHtml = '';
+
+                                // Lógica de visualización de filtros según Area y Rol
+                                if (id_rol == 1) {
+                                    // Super Admin: Ver TODOS los filtros
+                                     buttonsHtml += `
+                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-anticipos-aprobados" class="btn btn-secondary me-2" title="Anticipos Aprobados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Anticipos Rechazados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Exoneraciones Pendientes por Revisión"> 
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-aprobado_exoneracion" class="btn btn-secondary me-2" title="Exoneraciones Aprobadas">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-rechazado_exoneracion" class="btn btn-secondary me-2" title="Exoneraciones Rechazadas">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                        </svg>
+                                    </button>
+                                    `;
+                                } else if (id_area == 2 && id_rol == 5) {
+                                    // Filtros de Anticipos
+                                    buttonsHtml += `
+                                    <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-anticipos-aprobados" class="btn btn-secondary me-2" title="Anticipos Aprobados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-asignados" class="btn btn-secondary me-2" title="Anticipos Rechazados">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                        </svg>
+                                    </button>
+                                    `;
+                                } else if (id_area == 3 && id_rol == 5) {
+                                    // Filtros de Exoneración (Restaurados)
+                                      buttonsHtml += `
+                                    <button id="btn-recibidos" class="btn btn-secondary me-2" title="Exoneraciones Pendientes"> <!-- Título asumido, ajustar si es necesario -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-aprobado_exoneracion" class="btn btn-secondary me-2" title="Exoneraciones Aprobadas">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                        </svg>
+                                    </button>
+
+                                    <button id="btn-rechazado_exoneracion" class="btn btn-secondary me-2" title="Exoneraciones Rechazadas">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
+                                        </svg>
+                                    </button>
+                                    `;
+                                } else {
+                                    // Default behavior: Show Anticipos (or maybe nothing? Staying safe and showing Anticipos as fallback or if user matches neither but has access)
+                                    // For now, let's show Anticipos as default to avoid empty UI for other roles, or hide everything if strict?
+                                    // User requirement was specific "Display... ONLY when".
+                                    // So for others, buttonsHtml will be empty.
+                                    // However, to avoid confusion if I misconfigured roles, I will leave it empty.
+                                }
+
+                                /*
                                 const buttonsHtml = `
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -556,12 +652,24 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                 `;
+                                */
+
                                 $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
                                 function setActiveButton(activeButtonId) {
-                                    $("#btn-por-asignar").removeClass("btn-primary").addClass("btn-secondary");
-                                    $("#btn-anticipos-aprobados").removeClass("btn-primary").addClass("btn-secondary");
-                                    $("#btn-asignados").removeClass("btn-primary").addClass("btn-secondary");
+                                    const allButtons = [
+                                        "#btn-por-asignar", 
+                                        "#btn-anticipos-aprobados", 
+                                        "#btn-asignados",
+                                        "#btn-recibidos",
+                                        "#btn-aprobado_exoneracion",
+                                        "#btn-rechazado_exoneracion"
+                                    ];
+
+                                    allButtons.forEach(btnId => {
+                                        $(btnId).removeClass("btn-primary").addClass("btn-secondary");
+                                    });
+
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
@@ -607,15 +715,30 @@ function getTicketAprovalDocument() {
                                     { 
                                         button: "btn-asignados", 
                                         searchTerms: [
-                                            { column: 'id_status_payment', value: '12|13|14' },
-                                            { column: 'id_status_domiciliacion', value: '7' }
+                                            { column: 'id_status_payment', value: '13' }
                                         ]
+                                    },
+                                    // Nuevas configuraciones para Exoneración
+                                    {
+                                        button: "btn-recibidos",
+                                        searchTerms: [ { column: '(id_status_payment)', value: '5' } ]
+                                    },
+                                    {
+                                        button: "btn-aprobado_exoneracion",
+                                        searchTerms: [ { column: 'id_status_payment', value: '4' } ]
+                                    },
+                                    {
+                                        button: "btn-rechazado_exoneracion",
+                                        searchTerms: [ { column: 'id_status_payment', value: '12' } ]
                                     }
                                 ];
 
                                 for (let i = 0; i < searchConfigs.length; i++) {
                                     const { button, searchTerms } = searchConfigs[i];
                                     
+                                    // Verificar si el botón existe en el DOM (importante por roles)
+                                    if ($(`#${button}`).length === 0) continue;
+
                                     if (checkDataExistsById(searchTerms)) {
                                         // Si hay datos, aplicar la búsqueda y activar el botón
                                         api.columns().search('').draw(false);
@@ -626,6 +749,15 @@ function getTicketAprovalDocument() {
                                         } else if (button === "btn-anticipos-aprobados") {
                                             api.column(1).search('^6$', true, false, true).draw();
                                             api.column(11).visible(false);
+                                        } else if (button === "btn-recibidos") {
+                                            api.column(1).search('^5$', true, false, true).draw();
+                                            api.column(11).visible(false);
+                                        } else if (button === "btn-aprobado_exoneracion") {
+                                            api.column(1).search('^4$', true, false, true).draw();
+                                            api.column(11).visible(false);
+                                        } else if (button === "btn-rechazado_exoneracion") {
+                                            api.column(1).search('^12$', true, false, true).draw();
+                                            api.column(11).visible(true);
                                         } else if (button === "btn-asignados") {
                                             api.search('').draw(false);
                                             api.column(11).visible(true);
@@ -657,7 +789,7 @@ function getTicketAprovalDocument() {
                                 // Si no hay datos en ningún botón, mostrar un mensaje
                                 api.columns().search('').draw(false);
                                 api.column(1).search("NO_DATA_FOUND").draw();
-                                setActiveButton("btn-por-asignar");
+                                // setActiveButton("btn-por-asignar"); // Mejor no forzar activo si no hay nada
 
                                 const tbody = document.querySelector("#tabla-ticket tbody");
                                 if (tbody) {
@@ -701,23 +833,62 @@ function getTicketAprovalDocument() {
                                     }
                                 });
 
-                                // $("#btn-recibidos").on("click", function () {
-                                //     // ✅ LIMPIAR FILTROS PERSONALIZADOS
-                                //     $.fn.dataTable.ext.search.pop();
-                                //     
-                                //     const searchTerms = [{ column: 'id_status_payment', value: '^9$|^10$|^11$' }];
-                                //     if (checkDataExistsById(searchTerms)) {
-                                //         api.columns().search('').draw(false);
-                                //         api.column(1).search('^9$|^10$|^11$', true, false, true).draw();
-                                //         api.column(11).visible(false);
-                                //         api.column(12).visible(false);
-                                //         api.column(10).visible(false);
-                                //         api.column(9).visible(false);
-                                //         setActiveButton("btn-recibidos");
-                                //     } else {
-                                //         findFirstButtonWithData();
-                                //     }
-                                // });
+                                // ✅ EVENT LISTENER PARA EXONERACIONES PENDIENTES (btn-recibidos)
+                                $("#btn-recibidos").on("click", function () {
+                                    $.fn.dataTable.ext.search.pop(); // Limpiar
+                                    
+                                    // Status: 5 (Exoneracion Pendiente por Revision)
+                                    const searchTerms = [{ column: '(id_status_payment)', value: '5' }];
+                                    if (checkDataExistsById(searchTerms)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(1).search('^5$', true, false, true).draw();
+                                        
+                                        // Ocultar columnas irrelevantes
+                                        api.column(11).visible(false); 
+                                        
+                                        setActiveButton("btn-recibidos");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
+
+                                // ✅ EVENT LISTENER PARA EXONERACIONES APROBADAS (btn-aprobado_exoneracion)
+                                $("#btn-aprobado_exoneracion").on("click", function () {
+                                    $.fn.dataTable.ext.search.pop(); // Limpiar
+                                    
+                                    // Status: 4 (Exoneración Aprobada)
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^4$' }];
+                                    if (checkDataExistsById(searchTerms)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(1).search('^4$', true, false, true).draw();
+                                        
+                                        api.column(11).visible(false);
+                                        
+                                        setActiveButton("btn-aprobado_exoneracion");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
+
+                                // ✅ EVENT LISTENER PARA EXONERACIONES RECHAZADAS (btn-rechazado_exoneracion)
+                                $("#btn-rechazado_exoneracion").on("click", function () {
+                                    $.fn.dataTable.ext.search.pop(); // Limpiar
+                                    
+                                    // Status: 12 (Exoneración Rechazada)
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^12$' }];
+                                    
+                                    if (checkDataExistsById(searchTerms)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(1).search('^12$', true, false, true).draw();
+                                        
+                                        api.column(11).visible(true); // Mostrar motivo de rechazo
+                                        
+                                        setActiveButton("btn-rechazado_exoneracion");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
+                                });
+
 
                                 $("#btn-asignados").on("click", function () {
                                     // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
@@ -737,28 +908,33 @@ function getTicketAprovalDocument() {
                                     // ✅ USAR FILTRO PERSONALIZADO DE DATATABLE PARA OR LÓGICO
                                     // Limpiar filtros personalizados anteriores
                                     $.fn.dataTable.ext.search.pop();
-                                    
-                                    // Agregar filtro personalizado para rechazados
-                                    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                                        // Solo aplicar este filtro en nuestra tabla
-                                        if (settings.nTable.id !== 'tabla-ticket') {
-                                            return true;
-                                        }
+
+                                    // Status: 13 (Documento de Anticipo Rechazado) ONLY
+                                    const searchTerms = [
+                                        { column: 'id_status_payment', value: '13' }
+                                    ];
+
+                                    if (checkDataExistsById(searchTerms)) {
+                                        // Agregar filtro personalizado para rechazados (Simplificado solo para 13)
+                                        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                                            // Solo aplicar este filtro en nuestra tabla
+                                            if (settings.nTable.id !== 'tabla-ticket') {
+                                                return true;
+                                            }
                                         
                                         const idPayment = parseInt(data[1]); // Columna 1: id_status_payment
-                                        const idDomiciliacion = parseInt(data[2]); // Columna 2: id_status_domiciliacion
                                         
-                                        // Incluir: 12 (Exoneración Rechazada), 13 (Anticipo Rechazado), 14 (Envío Rechazado)
-                                        const isPaymentRejected = [12, 13, 14].includes(idPayment);
-                                        const isDomiciliacionRejected = idDomiciliacion === 7;
-                                        
-                                        return isPaymentRejected || isDomiciliacionRejected;
+                                        // SOLO: 13 (Anticipo Rechazado).
+                                        return idPayment === 13;
                                     });
                                     
                                     // ✅ APLICAR EL FILTRO PERSONALIZADO
                                     api.draw();
                                     
                                     setActiveButton("btn-asignados");
+                                    } else {
+                                        findFirstButtonWithData();
+                                    }
                                 });
                             },
                         });
