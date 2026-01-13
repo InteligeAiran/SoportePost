@@ -625,6 +625,79 @@ function mi_navbar() {}
             cursor: pointer;
             padding: 10px 20px;
         }
+    /* ==========================================================================
+       ESTILOS PARA BOTONES DE EXONERACIÓN (NUEVOS)
+       ========================================================================== */
+    
+    /* 1. Dimensiones Compartidas (igual que los otros botones) */
+    #btn-recibidos,
+    #btn-aprobado_exoneracion,
+    #btn-rechazado_exoneracion {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        font-size: 13px;
+        color: #ffffff;
+        transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* 2. Estado INACTIVO (Gris #A0A0A0 - Igual que los originales) */
+    #btn-recibidos.btn-secondary,
+    #btn-aprobado_exoneracion.btn-secondary,
+    #btn-rechazado_exoneracion.btn-secondary {
+        background-color: #A0A0A0;
+        border-color: #A0A0A0;
+        color: #ffffff;
+    }
+
+    #btn-recibidos.btn-secondary:hover,
+    #btn-aprobado_exoneracion.btn-secondary:hover,
+    #btn-rechazado_exoneracion.btn-secondary:hover {
+        background-color: #B0B0B0;
+        border-color: #B0B0B0;
+        box-shadow: 0 0 0 0.25rem rgba(160, 160, 160, 0.25);
+    }
+
+    /* 3. Estado ACTIVO (Colores Específicos) */
+
+    /* PENDIENTE (Azul Info/Cyan - Igual que Por Asignar) */
+    #btn-recibidos.btn-primary {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+
+    #btn-recibidos.btn-primary:hover,
+    #btn-recibidos.btn-primary:focus {
+        background-color: #138496;
+        border-color: #117a8b;
+        box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.25);
+    }
+
+    /* APROBADO (Morado - Nuevo estilo solicitado) */
+    #btn-aprobado_exoneracion.btn-primary {
+        background-color: #8E44AD; /* Wisteria */
+        border-color: #8E44AD;
+    }
+
+    #btn-aprobado_exoneracion.btn-primary:hover,
+    #btn-aprobado_exoneracion.btn-primary:focus {
+        background-color: #9B59B6;
+        border-color: #9B59B6;
+        box-shadow: 0 0 0 0.25rem rgba(142, 68, 173, 0.25);
+    }
+
+    /* RECHAZADO (Rojo - Igual que Asignados/Rechazados de Anticipo) */
+    #btn-rechazado_exoneracion.btn-primary {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    #btn-rechazado_exoneracion.btn-primary:hover,
+    #btn-rechazado_exoneracion.btn-primary:focus {
+        background-color: #c82333;
+        border-color: #bd2130;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+
     </style>
     </head>
 
@@ -1164,6 +1237,9 @@ function mi_navbar() {}
         <!--END CONFIRMACION MOTIVO DE RECHAZO -->
 
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
+    <input type="hidden" id="id_area" value="<?php echo $_SESSION['id_area'] ?? ''; ?>">
+    <input type="hidden" id="id_rol" value="<?php echo $_SESSION['id_rol'] ?? ''; ?>">
+
         
         <script async defer src="https://buttons.github.io/buttons.js"></script>
 
