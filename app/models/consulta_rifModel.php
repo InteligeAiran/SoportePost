@@ -3480,25 +3480,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
                 if ($result) {
                     
-                    // Check current status before updating. Only set to 5 if it's NOT 4 (Gestión Comercial (Irreparable))
-                    // If it is 4, we want to KEEP it as 4.
-                    $check_status_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . $id_ticket;
-                    $current_status_query = pg_query($this->db->getConnection(), $check_status_sql);
+                    // NO LONGER FORCING STATUS CHANGE - Preserve the status set in the workshop view
+                    // The id_status_lab should remain as it was set by the user in the taller module
                     
-                    $should_update_status = true;
-                    if ($current_status_query && pg_num_rows($current_status_query) > 0) {
-                        $current_status_row = pg_fetch_assoc($current_status_query);
-                        $current_status_id = $current_status_row['id_status_lab'];
-                         if ($current_status_id == 4) { // 4 is Gestión Comercial (Irreparable)
-                             $should_update_status = false;
-                         }
-                    }
-
-                    if ($should_update_status) {
-                        $sql_status_lab_update = "UPDATE tickets_status_lab SET id_status_lab = 5 WHERE id_ticket = ". $id_ticket. ";";
-                        Model::getResult($sql_status_lab_update, $this->db);
-                    }
-
                     
                     
                     $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
