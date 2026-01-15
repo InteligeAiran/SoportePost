@@ -2927,23 +2927,51 @@ class Consulta extends Controller
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
                 // Actualizar el presupuesto con la ruta del PDF usando nro_ticket
-                $success = $repository->UpdatePresupuestoPDFPathByNroTicket($nro_ticket, $filePathForDatabase);
-                
-                if ($success) {
-                    $this->response([
-                        'success' => true,
-                        'message' => 'PDF del presupuesto subido y registrado exitosamente.',
-                        'nro_ticket' => $nro_ticket,
-                        'original_filename' => $originalFileName,
-                        'stored_filename' => $uniqueFileName,
-                        'file_path' => $filePathForDatabase,
-                        'file_size_bytes' => $fileSize
-                    ], 200);
-                } else {
-                    // Si hubo error en la DB, borrar el archivo
-                    unlink($uploadPath);
-                    $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos.'], 500);
-                }
+                // 1. Obtener id_ticket (MOVIDO ARRIBA)
+                    $ticketDetails = $repository->getTicketDetailsByNroTicket($nro_ticket);
+                    
+                    $id_ticket_db = null;
+                    if ($ticketDetails && isset($ticketDetails['id_ticket'])) {
+                        $id_ticket_db = $ticketDetails['id_ticket'];
+                    } elseif ($ticketDetails && isset($ticketDetails[0]) && isset($ticketDetails[0]['id_ticket'])) {
+                         $id_ticket_db = $ticketDetails[0]['id_ticket'];
+                    }
+
+                    $resAdjunto = false;
+                    if ($id_ticket_db) {
+                        $fileInfo = [
+                            'original_filename' => $originalFileName,
+                            'stored_filename' => $uniqueFileName,
+                            'file_path' => $filePathForDatabase,
+                            'mime_type' => 'application/pdf',
+                            'file_size_bytes' => $fileSize,
+                            'document_type' => 'presupuesto'
+                        ];
+
+                        // GUARDAR SOLAMENTE EN ARCHIVOS_ADJUNTOS (Pedido por el usuario)
+                        $resAdjunto = $repository->saveArchivoAdjunto($id_ticket_db, $nro_ticket, $id_user, $fileInfo);
+                        if (!$resAdjunto) {
+                             error_log("Error: No se pudo registrar el PDF en archivos_adjuntos. Ticket: $nro_ticket");
+                        }
+                    } else {
+                         error_log("Error: No se pudo obtener id_ticket para guardar adjunto. Ticket: $nro_ticket");
+                    }
+
+                    if ($resAdjunto) {
+                        $this->response([
+                            'success' => true,
+                            'message' => 'PDF del presupuesto subido y registrado exitosamente.',
+                            'nro_ticket' => $nro_ticket,
+                            'original_filename' => $originalFileName,
+                            'stored_filename' => $uniqueFileName,
+                            'file_path' => $filePathForDatabase,
+                            'file_size_bytes' => $fileSize
+                        ], 200);
+                    } else {
+                        // Si no se pudo guardar en archivos_adjuntos, consideramos que falló y borramos el archivo
+                        unlink($uploadPath);
+                        $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos (archivos_adjuntos).'], 500);
+                    }
             } catch (\Exception $e) {
                 unlink($uploadPath);
                 $this->response(['success' => false, 'message' => 'Error interno al guardar el PDF: ' . $e->getMessage()], 500);
