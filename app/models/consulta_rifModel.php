@@ -1163,7 +1163,7 @@ class consulta_rifModel extends Model
 
         try {
 
-            $sql = "SELECT * FROM GetDataTicketByIdAccion(" . $id_user . ")";
+            $sql = "SELECT * FROM getdataticketpagos(" . $id_user . ")";
 
             $result = Model::getResult($sql, $this->db);
 
@@ -6708,7 +6708,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $db_conn = $this->db->getConnection();
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
             
-            $sql = "SELECT serial_pos, nro_ticket FROM tickets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1;";
+            $sql = "SELECT id_ticket, serial_pos, nro_ticket FROM tickets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1;";
             
             $result = $this->db->pgquery($sql);
             

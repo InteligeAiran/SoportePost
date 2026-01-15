@@ -236,7 +236,7 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
     const labelEnvioDestino = radioEnvioDestino ? radioEnvioDestino.nextElementSibling : null;
     const labelPresupuesto = radioPresupuesto ? radioPresupuesto.nextElementSibling : null;
     const btnVisualizarDocumento = document.getElementById("btnVisualizarDocumento");
-    const btnVolverSeleccion = document.getElementById("btnVolverSeleccion");
+
     const imageViewPreview = document.getElementById("imageViewPreview");
     const pdfViewViewer = document.getElementById("pdfViewViewer");
     const messageContainer = document.getElementById("viewDocumentMessage");
@@ -399,17 +399,7 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
             };
         }
 
-        // Event listener para el botón "Volver a Selección"
-        if (btnVolverSeleccion) {
-            btnVolverSeleccion.onclick = function() {
-                documentSelectionContainer.style.display = "block";
-                documentViewArea.style.display = "none";
-                // Mostrar botón de visualizar cuando se vuelve a la selección
-                if (btnVisualizarDocumento) {
-                    btnVisualizarDocumento.style.display = "block";
-                }
-            };
-        }
+
 
         // Event listener para el botón de cerrar - Limpiar listeners anteriores
         if (BotonCerrarModal) {
@@ -676,20 +666,26 @@ function closeUploadModalAndClean() {
 
             if (documentType === 'image') {
                 if (typeof window.showViewModal === 'function') {
-                    window.showViewModal(idTicket, nroTicket, documentUrl, null, fileName, false, ''); // PASAR fileName AQUÍ
+                    const hasPresupuesto = openViewBtn.dataset.presupuesto === 'true' || openViewBtn.dataset.presupuesto === 'Si'; // Asumiendo que viene en dataset
+                    const presupuestoPath = openViewBtn.dataset.presupuestoPath || '';
+                    window.showViewModal(idTicket, nroTicket, documentUrl, null, fileName, hasPresupuesto, presupuestoPath); // PASAR fileName AQUÍ
                 } else {
                     console.error('showViewModal no está definida');
                 }
             } else if (documentType === 'pdf') {
                 if (typeof window.showViewModal === 'function') {
-                    window.showViewModal(idTicket, nroTicket, null, documentUrl, fileName, false, ''); // PASAR fileName AQUÍ
+                    const hasPresupuesto = openViewBtn.dataset.presupuesto === 'true' || openViewBtn.dataset.presupuesto === 'Si';
+                    const presupuestoPath = openViewBtn.dataset.presupuestoPath || '';
+                    window.showViewModal(idTicket, nroTicket, null, documentUrl, fileName, hasPresupuesto, presupuestoPath); // PASAR fileName AQUÍ
                 } else {
                     console.error('showViewModal no está definida');
                 }
             } else {
                 console.warn("Tipo de documento no especificado para la visualización.");
                 if (typeof window.showViewModal === 'function') {
-                    window.showViewModal(idTicket, nroTicket, null, null, fileName, false, ''); // Abre el modal sin contenido
+                    const hasPresupuesto = openViewBtn.dataset.presupuesto === 'true' || openViewBtn.dataset.presupuesto === 'Si';
+                     const presupuestoPath = openViewBtn.dataset.presupuestoPath || '';
+                    window.showViewModal(idTicket, nroTicket, null, null, fileName, hasPresupuesto, presupuestoPath); // Abre el modal sin contenido
                 } else {
                     console.error('showViewModal no está definida');
                 }
@@ -1005,6 +1001,15 @@ function getTicketDataFinaljs() {
                       const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
                       const nombre_estado_cliente = (row.nombre_estado_cliente || "").trim();
                       
+                      // Identificar fallas especiales (id_failure = 9: Actualización de Software, id_failure = 12: Sin Llaves/Dukpt Vacío)
+                      const idFailure = row.id_failure ? parseInt(row.id_failure) : null;
+                      const isActualizacionSoftware = idFailure === 9;
+                      const isSinLlavesDukpt = idFailure === 12;
+                      const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+
+                      // Identificar si es región central
+                      const isCentralRegion = (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas");
+                      
                       const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
                       const isDocumentMissing = !hasEnvioDestinoDocument || hasEnvioDestinoDocument === null || hasEnvioDestinoDocument === '';
 
@@ -1050,7 +1055,14 @@ function getTicketDataFinaljs() {
 
                       }
                       else {
-                          const commonConditions = ((currentStatusLab === "Reparado" || currentStatusLab === "" || currentStatusLab === "Gestión Comercial (Irreparable)") && !(nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" ||  nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas"));
+                          // Condiciones comunes para el flujo de envío a región:
+                          // 1. NO es región central
+                          // 2. Estatus taller es Reparado, vacío, o Irreparable
+                          // 3. O es una falla especial (9/12) que ya tiene llaves cargadas
+                          const isReparadoOrSimilar = (currentStatusLab === "Reparado" || currentStatusLab === "" || currentStatusLab === "Gestión Comercial (Irreparable)");
+                          const isLlavesCargadas = (name_accion_ticket === "Llaves Cargadas");
+                          
+                          const commonConditions = (!isCentralRegion && (isReparadoOrSimilar || (isFallaSinPago && isLlavesCargadas)));
                           
                           if (commonConditions && isDocumentMissing) {
                               actionButton = `<button type="button" id="openModalButton" class="btn btn-primary btn-sm upload-document-btn" title = "Subir Documento"
@@ -1068,12 +1080,6 @@ function getTicketDataFinaljs() {
                               // Obtener el PDF del presupuesto para agregarlo como atributo data
                               const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
                               const pdfPathEscaped = pdfPathPresupuesto ? pdfPathPresupuesto.replace(/"/g, '&quot;') : '';
-                              
-                              // Obtener id_failure para validar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-                              const idFailure = row.id_failure ? parseInt(row.id_failure) : null;
-                              const isActualizacionSoftware = idFailure === 9;
-                              const isSinLlavesDukpt = idFailure === 12;
-                              const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
                               
                               actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
                                                   data-id-ticket="${idTicket}"
@@ -1097,10 +1103,6 @@ function getTicketDataFinaljs() {
                       // 2. O si HAY datos en budgets Y el id_status_ticket NO es 2 ("En proceso")
                       // NO mostrar botón si: hay presupuesto Y está en proceso
                       // NO mostrar botón si: id_failure = 9 ("Actualización de Software") o id_failure = 12 ("Sin Llaves/Dukpt Vacío")
-                      const idFailure = row.id_failure ? parseInt(row.id_failure) : null;
-                      const isActualizacionSoftware = idFailure === 9;
-                      const isSinLlavesDukpt = idFailure === 12;
-                      const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
                       const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago;
                       
                       // Agregar botón de presupuesto solo si cumple las condiciones
@@ -8308,34 +8310,7 @@ function savePaymentPendienteEntrega() {
                             popup: 'animate__animated animate__fadeOutUp'
                         }
                     }).then(() => {
-                        // Cerrar el modal de agregar datos de pago
-                        const modalElement = document.getElementById("modalAgregarDatosPago");
-                        if (modalElement) {
-                            const modal = bootstrap.Modal.getInstance(modalElement);
-                            if (modal) {
-                                modal.hide();
-                            }
-                        }
-                        
-                        // Recargar los datos de pago y abrir el modal de presupuesto
-                        if (nroTicketPago && nroTicketPago.value) {
-                            // Obtener id_failure desde la tabla si es necesario
-                            const table = $('#ticketsTable').DataTable();
-                            let idFailure = null;
-                            
-                            if (table) {
-                                table.rows().every(function() {
-                                    const rowData = this.data();
-                                    if (rowData && rowData.nro_ticket === nroTicketPago.value) {
-                                        idFailure = rowData.id_failure || null;
-                                        return false;
-                                    }
-                                });
-                            }
-                            
-                            // Abrir el modal de presupuesto con los datos actualizados
-                            openPresupuestoModal(nroTicketPago.value, idFailure);
-                        }
+                        window.location.reload();
                     });
                 } else {
                     Swal.fire({
