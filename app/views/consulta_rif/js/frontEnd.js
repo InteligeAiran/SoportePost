@@ -1329,14 +1329,21 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       if (checkExoneracion) checkExoneracion.style.display = "none";
       if (checkAnticipo) checkAnticipo.style.display = "none";
       if (checkEnvio) checkEnvio.style.display = "block";
+      if (botonExoneracion) botonExoneracion.style.display = "none";
+      if (botonAnticipo) botonAnticipo.style.display = "none";
       
       return 3;
     } else {
       resultadoElemento.textContent = "Sin Garantía Por Reingreso";
       resultadoElemento.style.color = "";
+      const checkExoneracion = document.getElementById("checkExoneracionContainer");
+      const checkAnticipo = document.getElementById("checkAnticipoContainer");
+      const checkEnvio = document.getElementById("checkEnvioContainer");
       if (checkExoneracion) checkExoneracion.style.display = "block";
       if (checkAnticipo) checkAnticipo.style.display = "block";
       if (checkEnvio) checkEnvio.style.display = "block";
+      if (botonExoneracion) botonExoneracion.style.display = "inline-block";
+      if (botonAnticipo) botonAnticipo.style.display = "inline-block";
       return null;
     }
   }
@@ -1361,23 +1368,22 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       resultadoElemento.textContent = "Garantía por Instalación aplica";
       resultadoElemento.style.color = "red";
       
+      const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+      const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
+      
+      if (checkExoneracionContainer) checkExoneracionContainer.style.display = "none";
+      if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none";
       if (botonExoneracion) botonExoneracion.style.display = "none";
       if (botonAnticipo) botonAnticipo.style.display = "none";
-      
-      const checkExoneracion = document.getElementById("checkExoneracion");
-      const checkExoneracionLabel = document.getElementById("checkExoneracionLabel");
-      const checkAnticipo = document.getElementById("checkAnticipo");
-      const checkAnticipoLabel = document.getElementById("checkAnticipoLabel");
-      
-      if (checkExoneracion) checkExoneracion.style.display = "none";
-      if (checkExoneracionLabel) checkExoneracionLabel.style.display = "none";
-      if (checkAnticipo) checkAnticipo.style.display = "none";
-      if (checkAnticipoLabel) checkAnticipoLabel.style.display = "none";
       
       return 1;
     } else {
       resultadoElemento.textContent = "Sin Garantía de Instalación";
       resultadoElemento.style.color = "";
+      const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+      const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
+      if (checkExoneracionContainer) checkExoneracionContainer.style.display = "block";
+      if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block";
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
       if (botonAnticipo) botonAnticipo.style.display = "inline-block";
       return null;

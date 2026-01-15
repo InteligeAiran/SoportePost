@@ -425,8 +425,9 @@ function getTicketDataCoordinator() {
 
 
             // BOTON AGREGAR PAGO COMPLETO PRESUPUESTO
-            // Solo mostrar si tiene presupuesto cargado
-            if (data.presupuesto === 'Si' || data.presupuesto === 'Sí') {
+            // Solo mostrar si tiene presupuesto cargado y NO es garantía (id_status_payment 1 o 3)
+            const idStatusPayment = data.id_status_payment ? parseInt(data.id_status_payment) : null;
+            if ((data.presupuesto === 'Si' || data.presupuesto === 'Sí') && idStatusPayment !== 1 && idStatusPayment !== 3) {
               actionButtonsHtml += `
                   <button type="button" id="btnPaymentBudget" class="btn generate-presupuesto-btn" 
                     data-ticket-id="${data.id_ticket}" 

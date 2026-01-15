@@ -1018,7 +1018,9 @@ function getTicketDataFinaljs() {
                                        (row.id_budget && row.id_budget !== null && row.id_budget !== '') ||
                                        (row.pdf_path_presupuesto && row.pdf_path_presupuesto.trim() !== '');
                       const idStatusTicket = row.id_status_ticket ? parseInt(row.id_status_ticket) : null;
+                      const idStatusPayment = row.id_status_payment ? parseInt(row.id_status_payment) : null;
                       const isEnProceso = idStatusTicket === 2;
+                      const isGarantia = idStatusPayment === 1 || idStatusPayment === 3;
 
                       let actionButton = '';
 
@@ -1089,6 +1091,7 @@ function getTicketDataFinaljs() {
                                                   data-pdf-presupuesto="${pdfPathEscaped}"
                                                   data-id-failure="${idFailure || ''}"
                                                   data-status-lab="${currentStatusLab || ''}"
+                                                  data-id-status-payment="${idStatusPayment || ''}"
                                                   data-is-actualizacion-software="${isFallaSinPago ? 'true' : 'false'}">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
                                                     <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
@@ -1103,7 +1106,7 @@ function getTicketDataFinaljs() {
                       // 2. O si HAY datos en budgets Y el id_status_ticket NO es 2 ("En proceso")
                       // NO mostrar botón si: hay presupuesto Y está en proceso
                       // NO mostrar botón si: id_failure = 9 ("Actualización de Software") o id_failure = 12 ("Sin Llaves/Dukpt Vacío")
-                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago;
+                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago && !isGarantia;
                       
                       // Agregar botón de presupuesto solo si cumple las condiciones
                       let presupuestoButton = '';
@@ -1136,7 +1139,7 @@ function getTicketDataFinaljs() {
                       // NO mostrar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
                       // TAMPOCO mostrar si es "Gestión Comercial (Irreparable)"
                       let uploadPresupuestoPDFButton = '';
-                      if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable) {
+                      if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable && !isGarantia) {
                           // Botón para cargar PDF
                           uploadPresupuestoPDFButton = `<button type="button" class="btn btn-info btn-sm upload-presupuesto-pdf-btn" title="Cargar PDF Presupuesto"
                               data-id-ticket="${idTicket}"
@@ -2058,6 +2061,9 @@ function getTicketDataFinaljs() {
                     const isActualizacionSoftware = idFailure === 9;
                     const isSinLlavesDukpt = idFailure === 12;
                     const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+
+                    const idStatusPayment = $(this).data("id-status-payment") ? parseInt($(this).data("id-status-payment")) : null;
+                    const isGarantia = idStatusPayment === 1 || idStatusPayment === 3;
                     
                     // Obtener el PDF del presupuesto directamente del atributo data del botón
                     const pdfPathPresupuesto = $(this).data("pdf-presupuesto") || '';
@@ -2069,7 +2075,7 @@ function getTicketDataFinaljs() {
                     const statusLab = $(this).data("status-lab");
                     const isIrreparable = (statusLab === "Gestión Comercial (Irreparable)");
 
-                    if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable) {
+                    if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable && !isGarantia) {
                         Swal.fire({
                             title: 'Documento de Presupuesto Requerido',
                             html: `
