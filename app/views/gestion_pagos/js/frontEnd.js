@@ -1808,8 +1808,8 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
         });
     });
 
-// Crea una instancia del modal de confirmación de rechazo (si no lo has hecho ya)
-const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'));
+    // Crea una instancia del modal de confirmación de rechazo (si no lo has hecho ya)
+    const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'));
 
       // 5. Botón Ver Presupuesto (Directo) - Nuevo Requerimiento
     const btnVerPresupuesto = document.getElementById("btnVerPresupuestoModal");
@@ -1823,11 +1823,12 @@ const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modal
                  return;
              }
 
-             // Configurar globales para el visualizador
+             // Configurar globales para el visualizador (necesario para showViewModal)
              currentTicketNroForImage = currentTicketNro;
              currentTicketIdForImage = currentTicketId;
 
              // Fetch directo del documento tipo 'presupuesto'
+             // Reutilizamos la lógica de GetDocumentByType
              fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1836,10 +1837,10 @@ const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modal
              .then(response => response.json())
              .then(data => {
                   if (data.success) {
-                       const docData = data.document;
-                       const filePath = docData.file_path;
-                       const mimeType = docData.mime_type;
-                       const fileName = docData.original_filename;
+                       const document = data.document;
+                       const filePath = document.file_path;
+                       const mimeType = document.mime_type;
+                       const fileName = document.original_filename;
                        
                        if (mimeType.startsWith('image/')) {
                             showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName, false);
@@ -1848,7 +1849,6 @@ const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modal
                        } else {
                             Swal.fire("Aviso", "Tipo de documento no soportado para visualización directa.", "warning");
                        }
-
                   } else {
                        Swal.fire({
                             icon: 'warning',
@@ -2270,21 +2270,11 @@ function loadExchangeRateToday(fecha = null) {
                  console.log("Exchange Rate set to:", exchangeRate); // DEBUG
                  if (tasaDisplayValue) tasaDisplayValue.textContent = "Bs. " + tasa.toFixed(2);
                  
-                  // TRIGGER UPDATE IF MODAL OPEN
-                  // Recalculate amounts based on the new rate
-                  // Recalculate amounts based on the new rate
-                  const monedaSelect = document.getElementById("moneda");
-                  // If we have a budget loaded, the USD amount is the fixed reference (from budget).
-                  // So we must recalculate Bs based on the fixed USD amount.
-                  if (currentBudgetAmount !== null) {
-                      calculateUsdToBs();
-                  } else if (monedaSelect) {
-                      if (monedaSelect.value === "usd") {
-                          calculateUsdToBs();
-                      } else {
-                          calculateBsToUsd();
-                      }
-                  }
+                 // TRIGGER UPDATE IF MODAL OPEN
+                 if (currentBudgetAmount !== null) { // Only if we have a budget loaded
+                     console.log("Triggering handleCurrencyChange from loadExchangeRateToday");
+                     handleCurrencyChange(); 
+                 }
                }
             }
             if (fechaTasaDisplay) {
@@ -2722,13 +2712,13 @@ function initializeDocumentNameGenerator() {
         referenciaInput.addEventListener("input", function() {
             const refValue = this.value.trim();
             if (refValue) {
-                const today = new Date();
-                const dateStr = today.getFullYear().toString() +
-                                (today.getMonth() + 1).toString().padStart(2, '0') +
-                                today.getDate().toString().padStart(2, '0');
-                // Format: REF-Reference-Date or just Reference-Date
-                // Based on user request "generado el nombre del documento", usually it's unique.
-                // We'll use: Reference
+                // The original implementation just copied the reference value.
+                // If a date prefix was needed, it would be:
+                // const today = new Date();
+                // const dateStr = today.getFullYear().toString() +
+                //                 (today.getMonth() + 1).toString().padStart(2, '0') +
+                //                 today.getDate().toString().padStart(2, '0');
+                // registroInput.value = `${refValue}-${dateStr}`; 
                 registroInput.value = `${refValue}`; 
             } else {
                 registroInput.value = "";
