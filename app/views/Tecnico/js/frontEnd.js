@@ -772,7 +772,10 @@ function getTicketData() {
                 // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
               } else {
                 // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9 y id_failure != 12)
-                if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
+                // MODIFICACION: Si el estatus es 1 (Garantia Instalacion) o 3 (Garantia Reingreso), NO validar documentos
+                if (id_document == 1 || id_document == 3) {
+                    showButton = false;
+                } else if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                   showButton = true;
                 } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
                   showButton = true;

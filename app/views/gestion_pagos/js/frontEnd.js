@@ -20,6 +20,7 @@ let modalPagoPresupuestoInstance = null; // Global instance for the payment moda
 // Variables globales para la reasignación de tickets
 let currentTicketNro = null;
 let currentTicketData = null;
+let currentBudgetAmount = null; // New global variable for budget amount
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("--> DOMContentLoaded FIRED in frontEnd.js <--"); // DEBUG
@@ -30,6 +31,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const modalPagoElement = document.getElementById("modalPagoPresupuesto");
   if (modalPagoElement) {
       modalPagoPresupuestoInstance = new bootstrap.Modal(modalPagoElement, { keyboard: false });
+      
+      // Reset form on close
+      modalPagoElement.addEventListener('hidden.bs.modal', resetFormPago);
   }
 
   const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
@@ -433,6 +437,7 @@ function getTicketDataCoordinator() {
                     data-ticket-id="${data.id_ticket}" 
                     data-serial-pos="${data.serial_pos}" 
                     data-nro-ticket="${data.nro_ticket}" 
+                    data-budget-amount="${data.budget_amount || 0}"
                     title="Presupuesto" 
                     style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block;">
@@ -557,30 +562,7 @@ function getTicketDataCoordinator() {
             dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
             initComplete: function (settings, json) {
               const api = this.api();
-              const buttonsHtml = `
-                <button id="btn-por-asignar" class="btn btn-primary me-2" title="Tickets por Asignar">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
-                  </svg>
-                </button>
-                <button id="btn-recibidos" class="btn btn-secondary me-2" title="Tickets recibidos por la Coordinación">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-                    <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-                  </svg>
-                </button>
-                <button id="btn-asignados" class="btn btn-secondary me-2" title="Tickets Asignados">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-person-check-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
-                    <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                  </svg>
-                </button>
-                <button id="btn-reasignado" class="btn btn-secondary me-2" title="Tickets Reasignados">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
-                    <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
-                  </svg>
-                </button>`;
-              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+              $(".dt-buttons-container").addClass("d-flex").html('');
 
               function setActiveButton(activeButtonId) {
                 $("#btn-por-asignar, #btn-recibidos, #btn-asignados, #btn-reasignado")
@@ -1699,7 +1681,8 @@ function getDocumentType(url) {
 }
 
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+// Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true) {
   const modalElementView = document.getElementById("viewDocumentModal");
   const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
   const imageViewPreview = document.getElementById("imageViewPreview");
@@ -1764,15 +1747,18 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
   const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
   viewDocumentModal.show();
   
-  BotonCerrarModal.addEventListener('click', function () {
+  // Usamos onclick para limpiar listeners anteriores y manejar la lógica condicional
+  BotonCerrarModal.onclick = function () {
     // Ocultar el modal de visualización
     viewDocumentModal.hide();
                 
-    // Mostrar nuevamente el modal de selección
-    setTimeout(() => {
-      visualizarImagenModal.show();
-    }, 300); //
-  });
+    // Mostrar nuevamente el modal de selección SOLO si venimos de él
+    if (fromSelector) {
+        setTimeout(() => {
+          visualizarImagenModal.show();
+        }, 300); 
+    }
+  };
 
   BotonCerrarModalSelect.addEventListener('click', function () {
     // Ocultar el modal de visualización
@@ -1795,9 +1781,11 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             
             const ticketId = btnPayment.getAttribute("data-ticket-id");
             const nroTicket = btnPayment.getAttribute("data-nro-ticket");
+            const serialPos = btnPayment.getAttribute("data-serial-pos"); // Capture serial
+            const budgetAmount = btnPayment.getAttribute("data-budget-amount"); // Capture budget amount
             
             // Llamar a la función para abrir el modal (Patrón de Gestión Rosal)
-            openModalPagoPresupuesto(nroTicket, ticketId);
+            openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount);
             return;
         }
     });
@@ -1820,8 +1808,62 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
         });
     });
 
-// Crea una instancia del modal de confirmación de rechazo (si no lo has hecho ya)
-const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'));
+    // Crea una instancia del modal de confirmación de rechazo (si no lo has hecho ya)
+    const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'));
+
+      // 5. Botón Ver Presupuesto (Directo) - Nuevo Requerimiento
+    const btnVerPresupuesto = document.getElementById("btnVerPresupuestoModal");
+    if (btnVerPresupuesto) {
+        btnVerPresupuesto.addEventListener("click", function(e) {
+             e.preventDefault();
+             e.stopPropagation();
+             
+             if (!currentTicketNro) {
+                 Swal.fire("Error", "No se ha identificado el número de ticket.", "error");
+                 return;
+             }
+
+             // Configurar globales para el visualizador (necesario para showViewModal)
+             currentTicketNroForImage = currentTicketNro;
+             currentTicketIdForImage = currentTicketId;
+
+             // Fetch directo del documento tipo 'presupuesto'
+             // Reutilizamos la lógica de GetDocumentByType
+             fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                  body: `action=GetDocumentByType&ticketId=${currentTicketNro}&documentType=presupuesto`
+             })
+             .then(response => response.json())
+             .then(data => {
+                  if (data.success) {
+                       const document = data.document;
+                       const filePath = document.file_path;
+                       const mimeType = document.mime_type;
+                       const fileName = document.original_filename;
+                       
+                       if (mimeType.startsWith('image/')) {
+                            showViewModal(currentTicketIdForImage, currentTicketNroForImage, filePath, null, fileName, false);
+                       } else if (mimeType === 'application/pdf') {
+                            showViewModal(currentTicketIdForImage, currentTicketNroForImage, null, filePath, fileName, false);
+                       } else {
+                            Swal.fire("Aviso", "Tipo de documento no soportado para visualización directa.", "warning");
+                       }
+                  } else {
+                       Swal.fire({
+                            icon: 'warning',
+                            title: 'Aviso',
+                            text: `No se encontró documento de presupuesto: ${data.message || ''}`,
+                            confirmButtonColor: '#003594'
+                       });
+                  }
+             })
+             .catch(error => {
+                  console.error('Error fetching budget:', error);
+                  Swal.fire("Error", "Error al obtener el documento.", "error");
+             });
+        });
+    }
 
 // Evento para el botón de confirmar la acción de rechazo dentro del modal
 document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', function () {
@@ -1951,95 +1993,130 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
         modalPagoPresupuesto = new bootstrap.Modal(modalPagoPresupuestoElement);
     }
     */
-      
-
-    // 3. Evento Visualizar Presupuesto desde el Modal de Pago
-    const btnVerPresupuesto = document.getElementById("btnVisualizarPresupuestoModal");
-    if (btnVerPresupuesto) {
-        btnVerPresupuesto.addEventListener("click", function() {
-             const documentType = 'presupuesto';
-             
-             fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: `action=GetDocumentByType&ticketId=${currentTicketNro}&documentType=${documentType}`
-                })
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.success) {
-                      const document = data.document;
-                      const filePath = document.file_path;
-                      const mimeType = document.mime_type;
-                      const fileName = document.original_filename;
-                      
-                      if (mimeType.startsWith('image/')) {
-                        showViewModal(currentTicketId, currentTicketNro, filePath, null, fileName);
-                      } else if (mimeType === 'application/pdf') {
-                        showViewModal(currentTicketId, currentTicketNro, null, filePath, fileName);
-                      } else {
-                        Swal.fire("Error", "Tipo de documento no soportado", "error");
-                      }
-                    } else {
-                        Swal.fire("Aviso", data.message || "No se encontró documento de presupuesto.", "warning");
-                    }
-                  })
-                  .catch(error => {
-                      console.error("Error fetching budget doc:", error);
-                      Swal.fire("Error", "Error al buscar el documento.", "error");
-                  });
-        });
-    }
 
     // 4. Guardar Pago
     const btnGuardarPago = document.getElementById("btnGuardarPagoPresupuesto");
     if (btnGuardarPago) {
-        btnGuardarPago.addEventListener("click", function() {
-            const monto = document.getElementById("montoPagoPresupuesto").value;
-            const referencia = document.getElementById("referenciaPagoPresupuesto").value;
-            const banco = document.getElementById("bancoPagoPresupuesto").value;
-            const metodo = document.querySelector('input[name="metodoPagoPresupuesto"]:checked').value;
-
-            if (!monto || !referencia || !banco) {
-                Swal.fire("Error", "Por favor complete todos los campos obligatorios", "error");
-                return;
-            }
-
-            console.log("Guardando pago:", { ticket: currentTicketNro, monto, referencia, banco, metodo });
-            
-            Swal.fire({
-                title: "Éxito",
-                text: "Pago registrado correctamente (Simulación)",
-                icon: "success",
-                confirmButtonColor: "#003594"
-            }).then(() => {
-                if(modalPagoPresupuesto) modalPagoPresupuesto.hide();
-            });
+        btnGuardarPago.addEventListener("click", function(e) {
+             e.preventDefault();
+             e.stopPropagation();
+             savePayment();
         });
     }
+
 });
 
 /**
  * Función para abrir el modal de pago de presupuesto (Patrón Gestión Rosal)
  * @param {string} nroTicket - El número de ticket
  * @param {string} ticketId - El ID del ticket
+ * @param {string} serialPos - El Serial del POS (opcional)
+ * @param {string} budgetAmount - El Monto del Presupuesto (opcional)
  */
-function openModalPagoPresupuesto(nroTicket, ticketId) {
+function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) {
     currentTicketId = ticketId;
     currentTicketNro = nroTicket;
 
     // Limpiar formulario y resetear estado visual
     const formPago = document.getElementById("formPagoPresupuesto");
     if(formPago) formPago.reset();
+
+    // Robust Parsing and Logging
+    console.log("openModalPagoPresupuesto called. raw budgetAmount:", budgetAmount);
+    if (budgetAmount) {
+        // Remove currency symbols, handle comma decimals
+        let cleanAmount = budgetAmount.toString().replace('$', '').replace(/\s/g, ''); 
+        // If it uses comma for decimal, replace (e.g. 10,50 -> 10.50)
+        if (cleanAmount.includes(',') && !cleanAmount.includes('.')) {
+             cleanAmount = cleanAmount.replace(',', '.');
+        }
+        currentBudgetAmount = parseFloat(cleanAmount);
+        console.log("Parsed currentBudgetAmount:", currentBudgetAmount);
+        
+        // Populate inputs
+        const montoRefInput = document.getElementById("montoRef");
+        if(montoRefInput) montoRefInput.value = currentBudgetAmount.toFixed(2);
+        
+        // DEFAULT CURRENCY TO USD (force calculation)
+        const monedaSelect = document.getElementById("moneda");
+        if (monedaSelect) {
+            monedaSelect.value = "usd";
+            // Trigger calculation immediately if possible
+             if (typeof handleCurrencyChange === 'function') {
+                 handleCurrencyChange();
+             }
+        }
+        
+        // Reset suffixes
+        const montoBsSuffix = document.getElementById("montoBsSuffix");
+        if(montoBsSuffix) montoBsSuffix.style.display = "none";
+        const montoRefSuffix = document.getElementById("montoRefSuffix");
+        if(montoRefSuffix) montoRefSuffix.style.display = "none";
+        
+    } else {
+        currentBudgetAmount = null;
+        console.log("currentBudgetAmount set to null");
+    }
+
+
+
+
+    // Pre-populate Budget Amount
+    if (budgetAmount) {
+        const montoRefInput = document.getElementById("montoRef");
+        if (montoRefInput) {
+            montoRefInput.value = parseFloat(budgetAmount).toFixed(2);
+            // Trigger calculation for BS if needed
+             // Dispatch input event to trigger listeners (e.g., calculateUsdToBs, updateMontoEquipo)
+            montoRefInput.dispatchEvent(new Event('input'));
+        }
+        // Force update of the display just in case
+        const montoEquipoElement = document.getElementById("montoEquipo");
+        if (montoEquipoElement) {
+             montoEquipoElement.textContent = "$" + parseFloat(budgetAmount).toFixed(2);
+        }
+    } else {
+        // Clear if no budget amount
+        const montoEquipoElement = document.getElementById("montoEquipo");
+        if (montoEquipoElement) {
+             montoEquipoElement.textContent = "$0.00";
+        }
+    }
     
-    const inputTicket = document.getElementById("pagoPresupuestoTicket");
-    if(inputTicket) inputTicket.value = nroTicket;
+    // Header Info
+    // Update the ticket badge in the new header structure
+    const ticketHeader = document.getElementById("ticketNumeroPago");
+    if(ticketHeader) ticketHeader.textContent = "Ticket #" + nroTicket;
+
+    // Serial POS
+    const inputSerial = document.getElementById("serialPosPago");
+    if(inputSerial) inputSerial.value = serialPos || "No disponible";
     
-    const radioBs = document.getElementById("metodoPagoBs");
-    if(radioBs) radioBs.checked = true;
+    // Fecha Pago Default (Hoy)
+    const inputFecha = document.getElementById("fechaPago");
+    if(inputFecha) {
+         const today = new Date().toISOString().split('T')[0];
+         inputFecha.value = today;
+         loadExchangeRateToday(today);
+    }
     
-    const simbolo = document.getElementById("monedaSimbolo");
-    if(simbolo) simbolo.textContent = "Bs";
+    // Reset visual state (Hide dynamic fields)
+    const bancoContainer = document.getElementById("bancoFieldsContainer");
+    if(bancoContainer) bancoContainer.style.display = 'none';
     
+    const pagoMovilContainer = document.getElementById("pagoMovilFieldsContainer");
+    if(pagoMovilContainer) pagoMovilContainer.style.display = 'none';
+    
+    const monedaSelect = document.getElementById("moneda");
+    if(monedaSelect) {
+         monedaSelect.removeAttribute("disabled");
+         monedaSelect.value = ""; // Force reset selection
+    }
+    
+    // Cargar métodos de pago y bancos
+    loadPaymentMethods();
+    loadBancos();
+
     // Set globals for image viewer if needed
     currentTicketNroForImage = nroTicket;
     currentIdTicketForImage = ticketId;
@@ -2049,5 +2126,630 @@ function openModalPagoPresupuesto(nroTicket, ticketId) {
         modalPagoPresupuestoInstance.show();
     } else {
         console.error("Instancia de modalPagoPresupuestoInstance no inicializada.");
+        // Fallback
+        const modalEl = document.getElementById("modalPagoPresupuesto");
+        if(modalEl) {
+             const manualModal = new bootstrap.Modal(modalEl);
+             manualModal.show();
+        }
     }
+}
+
+// =================================================================================
+// FUNCONALIDAD DE PAGO AVANZADA (PORTADA DE CONSULTA_RIF)
+// =================================================================================
+
+function loadPaymentMethods() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    if (!formaPagoSelect) return;
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetPaymentMethods";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success && data.payment_methods && data.payment_methods.length > 0) {
+            formaPagoSelect.innerHTML = '<option value="">Seleccione</option>';
+            data.payment_methods.forEach(function(method) {
+              const option = document.createElement("option");
+              option.value = method.id_payment_method;
+              option.textContent = method.payment_method_name;
+              option.setAttribute("data-id", method.id_payment_method);
+              formaPagoSelect.appendChild(option);
+            });
+            setTimeout(function() { setupFormaPagoListener(); }, 100);
+          }
+        } catch (error) {}
+      }
+    };
+    xhr.send();
+}
+
+function loadBancos() {
+    const bancoOrigenSelect = document.getElementById("bancoOrigen");
+    const bancoDestinoSelect = document.getElementById("bancoDestino");
+    if (!bancoOrigenSelect || !bancoDestinoSelect) return;
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetBancos";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success && data.bancos && data.bancos.length > 0) {
+            bancoOrigenSelect.innerHTML = '<option value="">Seleccione</option>';
+            bancoDestinoSelect.innerHTML = '<option value="">Seleccione</option>';
+            data.bancos.forEach(function(banco) {
+              const optionOrigen = document.createElement("option");
+              optionOrigen.value = banco.codigobanco;
+              optionOrigen.textContent = banco.ibp;
+              bancoOrigenSelect.appendChild(optionOrigen);
+
+              const optionDestino = document.createElement("option");
+              optionDestino.value = banco.codigobanco;
+              optionDestino.textContent = banco.ibp;
+              bancoDestinoSelect.appendChild(optionDestino);
+            });
+          }
+        } catch (error) {}
+      }
+    };
+    xhr.send();
+}
+
+let exchangeRate = null;
+
+function loadExchangeRate() {
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRate";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success && data.exchange_rate && data.exchange_rate.tasa_dolar) {
+            exchangeRate = parseFloat(data.exchange_rate.tasa_dolar);
+          } else {
+            exchangeRate = null;
+          }
+        } catch (error) { exchangeRate = null; }
+      }
+    };
+    xhr.send();
+}
+
+function loadExchangeRateToday(fecha = null) {
+    if (!fecha) {
+      const fechaPagoInput = document.getElementById("fechaPago");
+      if (fechaPagoInput && fechaPagoInput.value) {
+        fecha = fechaPagoInput.value;
+      }
+    }
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+
+    let apiUrl;
+    let dataToSend;
+    if (fecha) {
+      apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateByDate";
+      dataToSend = "action=GetExchangeRateByDate&fecha=" + encodeURIComponent(fecha);
+    } else {
+      apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateToday";
+      dataToSend = null;
+    }
+    
+    const tasaDisplayValue = document.getElementById("tasaDisplayValue");
+    const fechaTasaDisplay = document.getElementById("fechaTasaDisplay");
+    
+    if (tasaDisplayValue) tasaDisplayValue.textContent = "Cargando Tasa...";
+
+    if (tasaDisplayValue) tasaDisplayValue.textContent = "Cargando Tasa...";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          console.log("loadExchangeRateToday response:", data); // DEBUG
+          if (data.success && data.exchange_rate) {
+            const tasaValue = data.exchange_rate.tasa_dolar || null;
+            if (tasaValue !== null) {
+               const tasa = parseFloat(tasaValue);
+               if (!isNaN(tasa)) {
+                 exchangeRate = tasa;
+                 console.log("Exchange Rate set to:", exchangeRate); // DEBUG
+                 if (tasaDisplayValue) tasaDisplayValue.textContent = "Bs. " + tasa.toFixed(2);
+                 
+                 // TRIGGER UPDATE IF MODAL OPEN
+                 if (currentBudgetAmount !== null) { // Only if we have a budget loaded
+                     console.log("Triggering handleCurrencyChange from loadExchangeRateToday");
+                     handleCurrencyChange(); 
+                 }
+               }
+            }
+            if (fechaTasaDisplay) {
+               fechaTasaDisplay.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: ' + (fecha ? formatDateToDDMMYYYY(fecha) : formatDateToDDMMYYYY(new Date()));
+            }
+          } else {
+             if (tasaDisplayValue) tasaDisplayValue.textContent = "No disponible";
+          }
+        } catch (error) { 
+            console.error("Error parsing exchange rate:", error);
+            if (tasaDisplayValue) tasaDisplayValue.textContent = "Error"; 
+        }
+      }
+    };
+    xhr.send(dataToSend);
+}
+
+window.loadExchangeRateToday = loadExchangeRateToday;
+
+function formatDateToDDMMYYYY(fecha) {
+    if (!fecha) return '';
+    if (typeof fecha === 'string' && fecha.includes('-')) {
+      const partes = fecha.split('-');
+      if (partes.length === 3) return partes[2] + '/' + partes[1] + '/' + partes[0];
+    }
+    if (fecha instanceof Date) {
+      const dia = String(fecha.getDate()).padStart(2, '0');
+      const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+      const año = fecha.getFullYear();
+      return dia + '/' + mes + '/' + año;
+    }
+    return fecha;
+}
+
+function handleCurrencyChange() {
+    const monedaSelect = document.getElementById("moneda");
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    if (!monedaSelect || !montoBsInput || !montoRefInput) return;
+
+    const selectedCurrency = monedaSelect.value;
+    
+    // DEBUG LOG
+    console.log("handleCurrencyChange run. Currency:", selectedCurrency, "Budget:", currentBudgetAmount, "Rate:", exchangeRate);
+
+    // Remove listeners
+    montoBsInput.removeEventListener("input", calculateBsToUsd);
+    montoBsInput.removeEventListener("keyup", calculateBsToUsd);
+    montoBsInput.removeEventListener("blur", formatBsDecimal);
+    montoBsInput.removeEventListener("input", calculateUsdToBs);
+    montoBsInput.removeEventListener("keyup", calculateUsdToBs);
+    montoRefInput.removeEventListener("input", calculateBsToUsd);
+    montoRefInput.removeEventListener("keyup", calculateBsToUsd);
+    montoRefInput.removeEventListener("input", calculateUsdToBs);
+    montoRefInput.removeEventListener("keyup", calculateUsdToBs);
+    montoRefInput.removeEventListener("blur", formatUsdDecimal);
+
+    if (selectedCurrency === "bs") {
+      montoBsInput.removeAttribute("disabled");
+      montoBsInput.required = true;
+      montoBsInput.style.backgroundColor = "#fff";
+      montoRefInput.setAttribute("disabled", "disabled");
+      
+      // LOGIC FOR BUDGET PRE-FILL
+      if (currentBudgetAmount > 0 && exchangeRate > 0) {
+          montoBsInput.value = (currentBudgetAmount * exchangeRate).toFixed(2);
+          montoRefInput.value = currentBudgetAmount.toFixed(2); // Keep reference
+      } else {
+          montoRefInput.value = "";
+      }
+      
+      montoRefInput.style.backgroundColor = "#e9ecef";
+      
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if(montoBsSuffix) montoBsSuffix.style.display = "block";
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if(montoRefSuffix) montoRefSuffix.style.display = "none";
+
+      montoBsInput.addEventListener("input", calculateBsToUsd);
+      montoBsInput.addEventListener("keyup", calculateBsToUsd);
+      montoBsInput.addEventListener("blur", formatBsDecimal);
+      
+      // Update equipo amount listener for calculated REF
+      montoRefInput.addEventListener("change", updateMontoEquipo); // Monitor hidden change? 
+      // Actually calculateBsToUsd updates the value, so we should call updateMontoEquipo inside it.
+      
+      updateMontoEquipo();
+
+    } else if (selectedCurrency === "usd") {
+      montoBsInput.setAttribute("disabled", "disabled");
+      
+      // LOGIC FOR BUDGET PRE-FILL
+      if (currentBudgetAmount > 0 && exchangeRate > 0) {
+          montoRefInput.value = currentBudgetAmount.toFixed(2);
+          montoBsInput.value = (currentBudgetAmount * exchangeRate).toFixed(2); // Show calculated BS
+      } else {
+          montoBsInput.value = "";
+      }
+      
+      montoBsInput.style.backgroundColor = "#e9ecef";
+      montoRefInput.removeAttribute("disabled");
+      montoRefInput.required = true;
+      montoRefInput.style.backgroundColor = "#fff";
+      
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if(montoBsSuffix) montoBsSuffix.style.display = "none";
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if(montoRefSuffix) montoRefSuffix.style.display = "block";
+
+      montoRefInput.addEventListener("input", calculateUsdToBs);
+      montoRefInput.addEventListener("keyup", calculateUsdToBs);
+      montoRefInput.addEventListener("blur", formatUsdDecimal);
+      
+      // Update equipo amount listener for direct input
+      montoRefInput.addEventListener("input", updateMontoEquipo);
+      montoRefInput.addEventListener("keyup", updateMontoEquipo);
+      
+      updateMontoEquipo();
+
+    } else {
+      montoBsInput.setAttribute("disabled", "disabled");
+      montoRefInput.setAttribute("disabled", "disabled");
+    }
+}
+
+function calculateBsToUsd() {
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    const fechaPago = document.getElementById("fechaPago");
+    
+    if (!exchangeRate) {
+      if(fechaPago) loadExchangeRateToday(fechaPago.value);
+      setTimeout(function() { if (exchangeRate) calculateBsToUsd(); }, 500);
+      return;
+    }
+    const montoBs = parseFloat(montoBsInput.value) || 0;
+    if (montoBs > 0 && exchangeRate > 0) {
+      montoRefInput.value = (montoBs / exchangeRate).toFixed(2);
+      
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if(montoRefSuffix) { montoRefSuffix.style.display = "block"; montoRefSuffix.textContent = "USD"; }
+      
+      updateMontoEquipo();
+    } else {
+      montoRefInput.value = "";
+      const montoRefSuffix = document.getElementById("montoRefSuffix");
+      if(montoRefSuffix) { montoRefSuffix.style.display = "none"; } // Hide suffix if no value
+      updateMontoEquipo();
+    }
+}
+
+function calculateUsdToBs() {
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    const fechaPago = document.getElementById("fechaPago");
+
+    if (!exchangeRate) {
+      if(fechaPago) loadExchangeRateToday(fechaPago.value); 
+      setTimeout(function() { if (exchangeRate) calculateUsdToBs(); }, 500);
+      return;
+    }
+    const montoUsd = parseFloat(montoRefInput.value) || 0;
+    if (montoUsd > 0 && exchangeRate > 0) {
+      montoBsInput.value = (montoUsd * exchangeRate).toFixed(2);
+      
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if(montoBsSuffix) { montoBsSuffix.style.display = "block"; montoBsSuffix.textContent = "Bs"; }
+      
+      updateMontoEquipo();
+    } else {
+      montoBsInput.value = "";
+      const montoBsSuffix = document.getElementById("montoBsSuffix");
+      if(montoBsSuffix) { montoBsSuffix.style.display = "none"; } // Hide suffix if no value
+      updateMontoEquipo();
+    }
+}
+
+function formatBsDecimal() {
+    const input = document.getElementById("montoBs");
+    if (input && input.value) {
+        const val = parseFloat(input.value);
+        if (!isNaN(val)) input.value = val.toFixed(2);
+    }
+}
+function formatUsdDecimal() {
+    const input = document.getElementById("montoRef");
+    if (input && input.value) {
+        const val = parseFloat(input.value);
+        if (!isNaN(val)) input.value = val.toFixed(2);
+    }
+}
+
+function updateMontoEquipo() {
+    const montoRefInput = document.getElementById("montoRef");
+    const montoEquipoElement = document.getElementById("montoEquipo");
+    
+    if (!montoRefInput || !montoEquipoElement) {
+      return;
+    }
+
+    const montoUsd = parseFloat(montoRefInput.value) || 0;
+    if (montoUsd > 0) {
+      montoEquipoElement.textContent = "$" + montoUsd.toFixed(2);
+    } else {
+      montoEquipoElement.textContent = "$0.00";
+    }
+}
+
+function setupCurrencyListener() {
+    const monedaSelect = document.getElementById("moneda");
+    if(monedaSelect) {
+        monedaSelect.removeEventListener("change", handleCurrencyChange);
+        monedaSelect.addEventListener("change", handleCurrencyChange);
+    }
+}
+
+function setupFormaPagoListener() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    if(formaPagoSelect) {
+        formaPagoSelect.removeEventListener("change", handleFormaPagoChange);
+        formaPagoSelect.addEventListener("change", handleFormaPagoChange);
+    }
+}
+
+function handleFormaPagoChange() {
+    const formaPagoSelect = document.getElementById("formaPago");
+    const monedaSelect = document.getElementById("moneda");
+    const bancoFieldsContainer = document.getElementById("bancoFieldsContainer");
+    const bancoOrigen = document.getElementById("bancoOrigen");
+    const bancoDestino = document.getElementById("bancoDestino");
+    const pagoMovilFieldsContainer = document.getElementById("pagoMovilFieldsContainer");
+
+    if (!formaPagoSelect || !monedaSelect) return;
+    const selectedId = parseInt(formaPagoSelect.value);
+    const selectedText = formaPagoSelect.options[formaPagoSelect.selectedIndex].textContent.toLowerCase();
+
+    if (selectedId === 2) { // Transferencia
+        monedaSelect.value = "bs";
+        monedaSelect.setAttribute("disabled", "disabled");
+        if(bancoFieldsContainer) bancoFieldsContainer.style.display = "flex"; // flex for row
+        loadBancos();
+        if(pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = "none";
+        limpiarCamposPagoMovil();
+        handleCurrencyChange();
+    } else if (selectedText.includes("móvil") || selectedText.includes("movil") || selectedId === 5) { // Pago Movil
+        monedaSelect.value = "bs";
+        monedaSelect.setAttribute("disabled", "disabled");
+        if(bancoFieldsContainer) bancoFieldsContainer.style.display = "none";
+        if(pagoMovilFieldsContainer) {
+            pagoMovilFieldsContainer.style.display = "block";
+            loadBancosPagoMovil();
+        }
+        
+        // Disable specific Destino fields as per consulta_rif
+        const destinoRifTipo = document.getElementById("destinoRifTipo");
+        const destinoRifNumero = document.getElementById("destinoRifNumero");
+        const destinoTelefono = document.getElementById("destinoTelefono");
+        
+        if(destinoRifTipo) { destinoRifTipo.value = "J"; destinoRifTipo.disabled = true; }
+        if(destinoRifNumero) { destinoRifNumero.value = "002916150"; destinoRifNumero.readOnly = true; }
+        if(destinoTelefono) { destinoTelefono.value = "04122632231"; destinoTelefono.readOnly = true; }
+        
+        handleCurrencyChange();
+    } else {
+        monedaSelect.removeAttribute("disabled");
+        if(bancoFieldsContainer) bancoFieldsContainer.style.display = "none";
+        if(pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = "none";
+        limpiarCamposPagoMovil();
+        handleCurrencyChange();
+    }
+}
+
+function limpiarCamposPagoMovil() {
+    const pagoMovilInputs = document.querySelectorAll("#pagoMovilFieldsContainer input, #pagoMovilFieldsContainer select");
+    pagoMovilInputs.forEach(input => {
+        // Reset values but keep generic structure? 
+        // Actually consulta_rif resets specific IDs
+        if(input.id !== "destinoRifTipo" && input.id !== "destinoRifNumero" && input.id !== "destinoTelefono") {
+            input.value = "";
+        }
+    });
+}
+
+function loadBancosPagoMovil() {
+    const destinoBanco = document.getElementById("destinoBanco");
+    const origenBanco = document.getElementById("origenBanco");
+    
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetBancos";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          if (data.success && data.bancos) {
+             if(destinoBanco) {
+                 destinoBanco.innerHTML = '<option value="">Seleccione</option>';
+                 data.bancos.forEach(b => {
+                     const opt = document.createElement("option");
+                     opt.value = b.codigobanco;
+                     opt.textContent = b.ibp;
+                     if(b.ibp.toLowerCase().includes("banesco")) opt.selected = true;
+                     destinoBanco.appendChild(opt);
+                 });
+             }
+             if(origenBanco) {
+                 origenBanco.innerHTML = '<option value="">Seleccione</option>';
+                 data.bancos.forEach(b => {
+                     const opt = document.createElement("option");
+                     opt.value = b.codigobanco;
+                     opt.textContent = b.ibp;
+                     origenBanco.appendChild(opt);
+                 });
+             }
+          }
+        } catch(e) {}
+      }
+    };
+    xhr.send();
+}
+
+function savePayment() {
+    const serialPosPago = document.getElementById("serialPosPago");
+    const idUser = document.getElementById("id_user_pago");
+    const fechaPago = document.getElementById("fechaPago");
+    const formaPago = document.getElementById("formaPago");
+    const moneda = document.getElementById("moneda");
+    const montoBs = document.getElementById("montoBs");
+    const montoRef = document.getElementById("montoRef");
+    const referencia = document.getElementById("referencia");
+    const depositante = document.getElementById("depositante");
+    const fechaCarga = document.getElementById("fechaCarga");
+    const obsAdministracion = document.getElementById("obsAdministracion");
+    const bancoOrigen = document.getElementById("bancoOrigen");
+    const bancoDestino = document.getElementById("bancoDestino");
+
+    // Validations (Simplified)
+    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value) {
+         Swal.fire("Error", "Por favor complete los campos obligatorios", "error");
+         return;
+    }
+    
+    // Configurar Payment ID para la API (usamos null porque es nuevo pago o el existing modal no lo tiene)
+    const paymentId = null; 
+
+    // Prepare FormData
+    const formData = new URLSearchParams();
+    if(serialPosPago) formData.append("serial_pos", serialPosPago.value);
+    if(idUser) formData.append("user_loader", idUser.value);
+    formData.append("payment_date", fechaPago.value + " " + new Date().toLocaleTimeString('en-GB'));
+    
+    // Bancos logic
+    let origenBankVal = null;
+    let destBankVal = null;
+    const selectedText = formaPago.options[formaPago.selectedIndex].textContent.toLowerCase();
+    
+    if (selectedText.includes("móvil") || selectedText.includes("movil")) {
+         const bancoOr = document.getElementById("origenBanco");
+         const bancoDes = document.getElementById("destinoBanco");
+         if(bancoOr && bancoOr.selectedIndex >= 0) origenBankVal = bancoOr.options[bancoOr.selectedIndex].textContent;
+         if(bancoDes && bancoDes.selectedIndex >= 0) destBankVal = bancoDes.options[bancoDes.selectedIndex].textContent;
+         
+         // Append Pago Movil specifics
+         formData.append("origen_telefono", document.getElementById("origenTelefono").value);
+         formData.append("origen_rif_numero", document.getElementById("origenRifNumero").value);
+         // ... add other fields if API requires them specifically or just rely on standard fields
+    } else if (parseInt(formaPago.value) === 2) { // Transferencia
+         if(bancoOrigen && bancoOrigen.selectedIndex >= 0) origenBankVal = bancoOrigen.options[bancoOrigen.selectedIndex].textContent;
+         if(bancoDestino && bancoDestino.selectedIndex >= 0) destBankVal = bancoDestino.options[bancoDestino.selectedIndex].textContent;
+    }
+
+    formData.append("origen_bank", origenBankVal);
+    formData.append("destination_bank", destBankVal);
+    formData.append("payment_method", formaPago.options[formaPago.selectedIndex].textContent);
+    formData.append("currency", moneda.value === 'bs' ? 'BS' : 'USD');
+    formData.append("reference_amount", montoRef && montoRef.value ? montoRef.value : 0);
+    formData.append("amount_bs", montoBs && montoBs.value ? montoBs.value.replace(/,/g, '') : 0);
+    formData.append("payment_reference", referencia.value);
+    formData.append("depositor", depositante.value);
+    if(obsAdministracion) formData.append("observations", obsAdministracion.value);
+    formData.append("loadpayment_date", fechaCarga && fechaCarga.value ? fechaCarga.value : new Date().toISOString().split('T')[0]);
+    formData.append("confirmation_number", false);
+    formData.append("payment_id", paymentId);
+    
+    // Add currentTicketId if available (Crucial for linking to existing ticket in gestion_pagos context if backend supports it)
+    // Note: The original SavePayment in consulta_rif might NOT take ticket_id, but saves to temp. 
+    // We hope the backend handles it or we might need to update the backend. 
+    // For now we send what we have.
+    
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/SavePayment";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    Swal.fire({
+                        title: "¡Pago Registrado!",
+                        text: "El pago se ha registrado correctamente.",
+                        icon: "success",
+                        confirmButtonColor: "#003594"
+                    }).then(() => {
+                        if(modalPagoPresupuestoInstance) modalPagoPresupuestoInstance.hide();
+                         // Refresh table if needed
+                         if(typeof getTicketDataCoordinator === 'function') getTicketDataCoordinator();
+                    });
+                } else {
+                    Swal.fire("Error", data.message || "Error al guardar", "error");
+                }
+            } catch (e) { Swal.fire("Error", "Respuesta inválida del servidor", "error"); }
+        } else {
+            Swal.fire("Error", "Error de conexión", "error");
+        }
+    };
+    xhr.send(formData.toString());
+}
+
+// Initial setup for listeners that don't depend on modal open
+document.addEventListener("DOMContentLoaded", function() {
+    setupCurrencyListener();
+    initializeDocumentNameGenerator();
+});
+
+function initializeDocumentNameGenerator() {
+    const referenciaInput = document.getElementById("referencia");
+    const registroInput = document.getElementById("registro");
+    
+    if (referenciaInput && registroInput) {
+        referenciaInput.addEventListener("input", function() {
+            const refValue = this.value.trim();
+            if (refValue) {
+                // The original implementation just copied the reference value.
+                // If a date prefix was needed, it would be:
+                // const today = new Date();
+                // const dateStr = today.getFullYear().toString() +
+                //                 (today.getMonth() + 1).toString().padStart(2, '0') +
+                //                 today.getDate().toString().padStart(2, '0');
+                // registroInput.value = `${refValue}-${dateStr}`; 
+                registroInput.value = `${refValue}`; 
+            } else {
+                registroInput.value = "";
+            }
+        });
+    }
+}
+
+/**
+ * Resets the Payment Form to its initial state.
+ * Clears inputs, hides dynamic sections, and resets custom UI elements.
+ */
+function resetFormPago() {
+    console.log("--> Resetting Payment Form <--"); 
+    const form = document.getElementById('formPagoPresupuesto');
+    if (form) form.reset();
+
+    // Reset currency suffixes
+    const bsSuffix = document.getElementById('montoBsSuffix');
+    const refSuffix = document.getElementById('montoRefSuffix');
+    if (bsSuffix) bsSuffix.style.display = 'none';
+    if (refSuffix) refSuffix.style.display = 'none';
+
+    // Hide dynamic containers
+    const bancosContainer = document.getElementById('bancoFieldsContainer');
+    const pagoMovilContainer = document.getElementById('pagoMovilFieldsContainer');
+    if (bancosContainer) bancosContainer.style.display = 'none';
+    if (pagoMovilContainer) pagoMovilContainer.style.display = 'none';
+    
+    // Clear dynamic fields that might not reset correctly with form.reset() if they were populated via JS
+    // (e.g., if value attribute wasn't updated in DOM, just property)
+    // Explicitly clearing some key fields to be safe
+    document.querySelectorAll('#bancoFieldsContainer select, #pagoMovilFieldsContainer input').forEach(el => el.value = '');
 }
