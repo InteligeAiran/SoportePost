@@ -671,7 +671,7 @@ function mi_navbar() {}
                                     <div class="col-lg-12 col-md-12 mt-4 mb-4">
                                         <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                             <strong>
-                                                <h5 class="text-black text-capitalize ps-3" style="color: black;">Asignación de Tickets</h5>
+                                                <h5 class="text-black text-capitalize ps-3" style="color: black;">Pagos</h5>
                                             </strong>
                                         </div>
                                     </div>
@@ -845,7 +845,7 @@ function mi_navbar() {}
                         <input type="hidden" id="presupuestoIdPago" value="">
                         <div class="d-flex justify-content-between align-items-center w-100">
                              <h5 class="modal-title mb-0" id="modalPagoPresupuestoLabel" style="font-weight: 600; font-size: 1.3rem;">
-                                <i class="fas fa-money-bill-wave me-2"></i>Pago de Presupuesto
+                                <i class="fas fa-money-bill-wave me-2"></i>Pagos Asociados al
                             </h5>
                              <div class="d-flex align-items-center gap-3">
                                 <div class="card border-0 shadow-sm" style="background: rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 8px 15px;">
@@ -864,7 +864,7 @@ function mi_navbar() {}
                                     </div>
                                 </div>
 
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close btn-close-white" id="btnClosePagoPresupuesto" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                         </div>
                     </div>
@@ -872,298 +872,302 @@ function mi_navbar() {}
                         <form id="formPagoPresupuesto">
                             <input type="hidden" id="id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
                          
-                        
-
-                        <!-- Sección: Extra -->
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <i class="fas fa-plus-circle"></i>
-                                <h6 class="form-section-title" style="color: black;">Extra</h6>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-md-12 mb-2">
-                                     <button type="button" class="btn btn-primary w-100" id="btnVerPresupuestoModal" title="Ver Documento de Presupuesto" style="box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08); transition: all 0.15s ease; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill me-2" viewBox="0 0 16 16">
-                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"></path>
-                                            <path d="M.046 8.5C.138 7.042 1.517 5.0 8 5.0s7.862 2.042 7.954 3.5c-.092 1.458-1.472 3.5-7.954 3.5S.138 9.958.046 8.5M13 8a5 5 0 1 0-10 0 5 5 0 0 0 10 0"></path>
-                                        </svg>
-                                        Ver Documento de Presupuesto
-                                    </button>
+                            <!-- BLOQUE 1: INFORMACIÓN DEL CLIENTE -->
+                             <div class="form-section">
+                                <div class="form-section-header">
+                                    <i class="fas fa-user-circle"></i>
+                                    <h6 class="form-section-title" style="color: black;">Información del Cliente</h6>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Sección: Información del Equipo -->
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <i class="fas fa-desktop"></i>
-                                <h6 class="form-section-title" style="color: black;">Información del Equipo</h6>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-md-12 mb-2">
-                                    <label for="serialPosPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-barcode me-1 text-primary"></i>Serial POS
-                                    </label>
-                                    <input type="text" class="form-control bg-light" id="serialPosPago" readonly style="cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                                <div class="form-section-header d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <i class="fas fa-exchange-alt"></i>
-                                        <h6 class="form-section-title mb-0">Tasa del Día</h6>
-                                    </div>
-                                    <div class="tasa-display">
-                                        <div class="text-end">
-                                            <span class="text-muted d-block" id="fechaTasaDisplay" style="font-size: 0.75rem; line-height: 1.2;">
-                                                <i class="fas fa-calendar-day me-1"></i>
-                                                Tasa: <?php echo date('Y-m-d'); ?> 
-                                            </span>
-                                            <span class="tasa-value d-block" id="tasaDisplayValue" style="font-size: 1.1rem; font-weight: 600; line-height: 1.2; margin-top: 2px;">
-                                                Cargando Tasa...
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                        <!-- Sección: Información de Pago -->
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <i class="fas fa-money-bill-wave"></i>
-                                <h6 class="form-section-title" style="color: black;">Información de Pago</h6>
-                            </div>
-                            <style>
-                                .currency-suffix {
-                                    position: absolute;
-                                    right: 15px;
-                                    top: 50%;
-                                    transform: translateY(-50%);
-                                    color: #6c757d;
-                                    font-weight: 500;
-                                    pointer-events: none;
-                                    font-size: 0.9rem;
-                                }
-                            </style>
-                            <div class="row g-2">
-                                <div class="col-md-6 mb-2">
-                                    <label for="fechaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-calendar-alt me-1 text-primary"></i>Fecha Pago <span style="color: #dc3545;">*</span>
-                                    </label>
-                                    <input type="date" class="form-control" id="fechaPago" placeholder="dd/mm/aaaa" required style="font-size: 0.95rem; padding: 8px 12px;" onchange="loadExchangeRateToday(this.value);" onclick="loadExchangeRateToday(this.value);">
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="formaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-credit-card me-1 text-primary"></i>Forma pago <span style="color: #dc3545;">*</span>
-                                    </label>
-                                    <select class="form-select" id="formaPago" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-md-6 mb-2">
-                                    <label for="moneda" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-coins me-1 text-primary"></i>Moneda <span style="color: #dc3545;">*</span>
-                                    </label>
-                                    <select class="form-select" id="moneda" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                        <option value="">Seleccionar</option>
-                                        <option value="bs">Bolívares (Bs)</option>
-                                        <option value="usd">Dólares (USD)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="estatus" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-info-circle me-1 text-primary"></i>Estatus
-                                    </label>
-                                    <input type="text" class="form-control" id="estatus" placeholder="Estatus del pago" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; width: 100%;">
-                                </div>
-                            </div>
-                            <!-- Montos Section with Suffixes -->
-                            <div class="row g-2">
-                                <div class="col-md-6 mb-2">
-                                    <label for="montoBs" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-money-bill me-1 text-primary"></i>Monto Bs
-                                    </label>
-                                    <div class="position-relative">
-                                        <input type="number" class="form-control" id="montoBs" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
-                                        <span class="currency-suffix" id="montoBsSuffix" style="display: none;">Bs</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="montoRef" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-exchange-alt me-1 text-primary"></i>Monto REF
-                                    </label>
-                                    <div class="position-relative">
-                                        <input type="number" class="form-control" id="montoRef" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
-                                        <span class="currency-suffix" id="montoRefSuffix" style="display: none;">USD</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Referencia and Depositante Section -->
-                            <div class="row g-2">
-                                <div class="col-md-6 mb-2">
-                                    <label for="referencia" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-hashtag me-1 text-primary"></i>Referencia <span style="color: #dc3545;">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" id="referencia" placeholder="Número de referencia" pattern="[0-9]*" inputmode="numeric" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="depositante" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-user me-1 text-primary"></i>Depositante <span style="color: #dc3545;">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" id="depositante" placeholder="Nombre del depositante" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                </div>
-                            </div>
-                            <div class="row g-2" id="bancoFieldsContainer" style="display: none;">
-                                <div class="col-md-6 mb-2">
-                                    <label for="bancoOrigen" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-university me-1 text-primary"></i>Banco Origen
-                                    </label>
-                                    <select class="form-select" id="bancoOrigen" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="bancoDestino" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-building me-1 text-primary"></i>Banco Destino
-                                    </label>
-                                    <select class="form-select" id="bancoDestino" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                        <option value="">Seleccione</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Sección: Datos de Pago Móvil -->
-                            <div id="pagoMovilFieldsContainer" style="display: none; margin-top: 15px;">
                                 <div class="row g-2">
-                                    <!-- Origen -->
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card border-success" style="border-width: 1px;">
-                                            <div class="card-header bg-success text-white py-2">
-                                                <h6 class="mb-0" style="font-size: 0.9rem; font-weight: 600;">
-                                                    <i class="fas fa-arrow-circle-up me-2"></i>Origen
-                                                </h6>
-                                            </div>
-                                            <div class="card-body p-3">
-                                                <div class="mb-2">
-                                                    <label for="origenRifTipo" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fas fa-id-card me-1 text-primary"></i>RIF
-                                                    </label>
-                                                    <div class="d-flex gap-2">
-                                                        <select class="form-select" id="origenRifTipo" required style="font-size: 0.9rem; padding: 6px 10px; width: 30%;">
-                                                            <option value="">Tipo</option>
-                                                            <option value="J">J</option>
-                                                            <option value="V">V</option>
-                                                            <option value="E">E</option>
-                                                            <option value="G">G</option>
-                                                            <option value="P">P</option>
+                                     <div class="col-md-6 mb-2">
+                                        <label for="displayRazonSocial" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-building me-1 text-primary"></i>Razón Social
+                                        </label>
+                                        <input type="text" class="form-control bg-light" id="displayRazonSocial" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="displayRif" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-id-card me-1 text-primary"></i>RIF
+                                        </label>
+                                        <input type="text" class="form-control bg-light" id="displayRif" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="serialPosPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-barcode me-1 text-primary"></i>Serial POS
+                                        </label>
+                                        <input type="text" class="form-control bg-light" id="serialPosPago" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                    </div>
+                                     <div class="col-md-6 mb-2">
+                                        <label for="displayEstatusPos" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-signal me-1 text-primary"></i>Estatus POS
+                                        </label>
+                                        <input type="text" class="form-control bg-light" id="displayEstatusPos" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BLOQUE 2: INFORMACIÓN DE PAGO -->
+                            <div class="form-section">
+                                <div class="form-section-header d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                         <i class="fas fa-money-bill-wave"></i>
+                                         <h6 class="form-section-title me-3" style="color: black; margin-bottom: 0;">Información de Pago</h6>
+                                    </div>
+                                     <!-- Tasa del Día Integrada -->
+                                    <div class="tasa-display" style="padding: 5px 12px;">
+                                        <div class="text-end">
+                                            <span class="text-muted d-block" id="fechaTasaDisplay" style="font-size: 0.7rem;">
+                                                <i class="fas fa-calendar-day me-1"></i><?php echo date('d/m/Y'); ?>
+                                            </span>
+                                            <span class="tasa-value d-block" id="tasaDisplayValue" style="font-size: 1rem; margin-top: 0;">
+                                                Cargando...
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <style>
+                                    .currency-suffix {
+                                        position: absolute;
+                                        right: 15px;
+                                        top: 50%;
+                                        transform: translateY(-50%);
+                                        color: #6c757d;
+                                        font-weight: 500;
+                                        pointer-events: none;
+                                        font-size: 0.9rem;
+                                    }
+                                </style>
+                                <div class="row g-2 mt-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="fechaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-calendar-alt me-1 text-primary"></i>Fecha Pago <span style="color: #dc3545;">*</span>
+                                        </label>
+                                        <input type="date" class="form-control" id="fechaPago" placeholder="dd/mm/aaaa" required style="font-size: 0.95rem; padding: 8px 12px;" onchange="loadExchangeRateToday(this.value);" onclick="loadExchangeRateToday(this.value);">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="formaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-credit-card me-1 text-primary"></i>Forma pago <span style="color: #dc3545;">*</span>
+                                        </label>
+                                        <select class="form-select" id="formaPago" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                            <option value="">Seleccione</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="moneda" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-coins me-1 text-primary"></i>Moneda <span style="color: #dc3545;">*</span>
+                                        </label>
+                                        <select class="form-select" id="moneda" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                            <option value="">Seleccionar</option>
+                                            <option value="bs">Bolívares (Bs)</option>
+                                            <option value="usd">Dólares (USD)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="estatus" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-info-circle me-1 text-primary"></i>Estatus
+                                        </label>
+                                        <input type="text" class="form-control" id="estatus" placeholder="Estatus del pago" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; width: 100%;">
+                                    </div>
+                                </div>
+                                <!-- Montos Section with Suffixes -->
+                                <div class="row g-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="montoBs" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-money-bill me-1 text-primary"></i>Monto Bs
+                                        </label>
+                                        <div class="position-relative">
+                                            <input type="number" class="form-control" id="montoBs" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
+                                            <span class="currency-suffix" id="montoBsSuffix" style="display: none;">Bs</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="montoRef" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-exchange-alt me-1 text-primary"></i>Monto REF
+                                        </label>
+                                        <div class="position-relative">
+                                            <input type="number" class="form-control" id="montoRef" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
+                                            <span class="currency-suffix" id="montoRefSuffix" style="display: none;">USD</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Referencia and Depositante Section -->
+                                <div class="row g-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="referencia" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-hashtag me-1 text-primary"></i>Referencia <span style="color: #dc3545;">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="referencia" placeholder="Número de referencia" pattern="[0-9]*" inputmode="numeric" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="depositante" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-user me-1 text-primary"></i>Depositante <span style="color: #dc3545;">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="depositante" placeholder="Nombre del depositante" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                    </div>
+                                </div>
+                                
+                                <hr class="my-3" style="border-top: 1px dashed #ced4da;">
+
+                                <!-- Información Adicional Integrada (Registro, Fecha Carga, Obs) -->
+                                <div class="row g-2">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="registro" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-book me-1 text-primary"></i>Registro
+                                        </label>
+                                        <input type="text" class="form-control" id="registro" placeholder="Generado autom." readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; cursor: not-allowed;">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="fechaCarga" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-calendar-check me-1 text-primary"></i>Fecha carga <span style="color: #dc3545;">*</span>
+                                        </label>
+                                        <input type="date" class="form-control" id="fechaCarga" required readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; cursor: not-allowed;">
+                                    </div>
+                                </div>
+                                 <div class="row g-2">
+                                    <div class="col-md-12 mb-2">
+                                        <label for="obsAdministracion" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-sticky-note me-1 text-primary"></i>Obs. Administración <span>*</span>
+                                        </label>
+                                        <textarea class="form-control" id="obsAdministracion" rows="1" placeholder="Observaciones de administración" style="font-size: 0.95rem; padding: 8px 12px; resize: vertical;"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Bancos and Pago Movil Fields Hidden by Default -->
+                                <div class="row g-2" id="bancoFieldsContainer" style="display: none;">
+                                    <div class="col-md-6 mb-2">
+                                        <label for="bancoOrigen" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-university me-1 text-primary"></i>Banco Origen
+                                        </label>
+                                        <select class="form-select" id="bancoOrigen" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                            <option value="">Seleccione</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="bancoDestino" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-building me-1 text-primary"></i>Banco Destino
+                                        </label>
+                                        <select class="form-select" id="bancoDestino" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                            <option value="">Seleccione</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Sección: Datos de Pago Móvil -->
+                                <div id="pagoMovilFieldsContainer" style="display: none; margin-top: 15px;">
+                                    <div class="row g-2">
+                                        <!-- Origen -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card border-success" style="border-width: 1px;">
+                                                <div class="card-header bg-success text-white py-2">
+                                                    <h6 class="mb-0" style="font-size: 0.9rem; font-weight: 600;">
+                                                        <i class="fas fa-arrow-circle-up me-2"></i>Origen
+                                                    </h6>
+                                                </div>
+                                                <div class="card-body p-3">
+                                                    <div class="mb-2">
+                                                        <label for="origenRifTipo" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                            <i class="fas fa-id-card me-1 text-primary"></i>RIF
+                                                        </label>
+                                                        <div class="d-flex gap-2">
+                                                            <select class="form-select" id="origenRifTipo" required style="font-size: 0.9rem; padding: 6px 10px; width: 30%;">
+                                                                <option value="">Tipo</option>
+                                                                <option value="J">J</option>
+                                                                <option value="V">V</option>
+                                                                <option value="E">E</option>
+                                                                <option value="G">G</option>
+                                                                <option value="P">P</option>
+                                                            </select>
+                                                            <input type="text" class="form-control" id="origenRifNumero" placeholder="Número RIF" pattern="[0-9]*" inputmode="numeric" required style="font-size: 0.9rem; padding: 6px 10px; width: 70%;">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label for="origenTelefono" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                            <i class="fas fa-phone me-1 text-primary"></i>Nro. Telefónico
+                                                        </label>
+                                                        <input type="text" class="form-control" id="origenTelefono" placeholder="Ej: 0412-1234567" pattern="[0-9\-]*" inputmode="numeric" required style="font-size: 0.9rem; padding: 6px 10px;">
+                                                    </div>
+                                                    <div>
+                                                        <label for="origenBanco" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                            <i class="fas fa-university me-1 text-primary"></i>Banco
+                                                        </label>
+                                                        <select class="form-select" id="origenBanco" required style="font-size: 0.9rem; padding: 6px 10px;">
+                                                            <option value="">Seleccione</option>
                                                         </select>
-                                                        <input type="text" class="form-control" id="origenRifNumero" placeholder="Número RIF" pattern="[0-9]*" inputmode="numeric" required style="font-size: 0.9rem; padding: 6px 10px; width: 70%;">
                                                     </div>
                                                 </div>
-                                                <div class="mb-2">
-                                                    <label for="origenTelefono" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fas fa-phone me-1 text-primary"></i>Nro. Telefónico
-                                                    </label>
-                                                    <input type="text" class="form-control" id="origenTelefono" placeholder="Ej: 0412-1234567" pattern="[0-9\-]*" inputmode="numeric" required style="font-size: 0.9rem; padding: 6px 10px;">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Destino -->
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card border-primary" style="border-width: 1px;">
+                                                <div class="card-header bg-primary text-white py-2">
+                                                    <h6 class="mb-0" style="font-size: 0.9rem; font-weight: 600;">
+                                                        <i class="fas fa-arrow-circle-down me-2"></i>Destino
+                                                    </h6>
                                                 </div>
-                                                <div>
-                                                    <label for="origenBanco" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fas fa-university me-1 text-primary"></i>Banco
-                                                    </label>
-                                                    <select class="form-select" id="origenBanco" required style="font-size: 0.9rem; padding: 6px 10px;">
-                                                        <option value="">Seleccione</option>
-                                                    </select>
+                                                <div class="card-body p-3">
+                                                    <div class="mb-2">
+                                                        <label for="destinoRifTipo" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                            <i class="fas fa-id-card me-1 text-primary"></i>RIF
+                                                        </label>
+                                                        <div class="d-flex gap-2">
+                                                            <select class="form-select" id="destinoRifTipo" required disabled style="font-size: 0.9rem; padding: 6px 10px; width: 30%; background-color: #e9ecef;">
+                                                                <option value="">Tipo</option>
+                                                                <option value="J" selected>J</option>
+                                                                <option value="V">V</option>
+                                                                <option value="E">E</option>
+                                                                <option value="G">G</option>
+                                                                <option value="P">P</option>
+                                                            </select>
+                                                            <input type="text" class="form-control" id="destinoRifNumero" placeholder="Número RIF" pattern="[0-9]*" inputmode="numeric" required value="002916150" readonly style="font-size: 0.9rem; padding: 6px 10px; width: 70%; background-color: #e9ecef;">
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <label for="destinoTelefono" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                            <i class="fas fa-phone me-1 text-primary"></i>Nro. Telefónico
+                                                        </label>
+                                                        <input type="text" class="form-control" id="destinoTelefono" placeholder="Ej: 0412-1234567" pattern="[0-9\-]*" inputmode="numeric" required value="04122632231" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
+                                                    </div>
+                                                    <div>
+                                                        <label for="destinoBanco" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
+                                                            <i class="fas fa-university me-1 text-primary"></i>Banco
+                                                        </label>
+                                                        <select class="form-select" id="destinoBanco" required disabled style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
+                                                            <option value="">Seleccione</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Destino -->
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card border-primary" style="border-width: 1px;">
-                                            <div class="card-header bg-primary text-white py-2">
-                                                <h6 class="mb-0" style="font-size: 0.9rem; font-weight: 600;">
-                                                    <i class="fas fa-arrow-circle-down me-2"></i>Destino
-                                                </h6>
-                                            </div>
-                                            <div class="card-body p-3">
-                                                <div class="mb-2">
-                                                    <label for="destinoRifTipo" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fas fa-id-card me-1 text-primary"></i>RIF
-                                                    </label>
-                                                    <div class="d-flex gap-2">
-                                                        <select class="form-select" id="destinoRifTipo" required disabled style="font-size: 0.9rem; padding: 6px 10px; width: 30%; background-color: #e9ecef;">
-                                                            <option value="">Tipo</option>
-                                                            <option value="J" selected>J</option>
-                                                            <option value="V">V</option>
-                                                            <option value="E">E</option>
-                                                            <option value="G">G</option>
-                                                            <option value="P">P</option>
-                                                        </select>
-                                                        <input type="text" class="form-control" id="destinoRifNumero" placeholder="Número RIF" pattern="[0-9]*" inputmode="numeric" required value="002916150" readonly style="font-size: 0.9rem; padding: 6px 10px; width: 70%; background-color: #e9ecef;">
-                                                    </div>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <label for="destinoTelefono" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fas fa-phone me-1 text-primary"></i>Nro. Telefónico
-                                                    </label>
-                                                    <input type="text" class="form-control" id="destinoTelefono" placeholder="Ej: 0412-1234567" pattern="[0-9\-]*" inputmode="numeric" required value="04122632231" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
-                                                </div>
-                                                <div>
-                                                    <label for="destinoBanco" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fas fa-university me-1 text-primary"></i>Banco
-                                                    </label>
-                                                    <select class="form-select" id="destinoBanco" required disabled style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
-                                                        <option value="">Seleccione</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
+                                </div>
+                            </div>
+
+                            <!-- BLOQUE 3: EXTRA (COMPACTO) -->
+                            <div class="form-section container-extra mt-3" style="border: none; background: transparent; padding: 0; box-shadow: none;">
+                                <div class="card border-light shadow-sm">
+                                    <div class="card-header bg-light py-2">
+                                        <h6 class="mb-0 text-dark" style="font-size: 0.95rem; font-weight: 600;">
+                                            <i class="fas fa-folder-open me-2 text-primary"></i>Documentos
+                                        </h6>
+                                    </div>
+                                    <div class="card-body p-3">
+                                        <button type="button" class="btn btn-outline-primary w-100" id="btnVerPresupuestoModal" title="Ver Documento de Presupuesto">
+                                            <i class="fas fa-file-pdf me-2"></i>Ver Documento de Presupuesto
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-        
-                            </div>
-
-                        <!-- Sección: Información Adicional -->
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <i class="fas fa-info-circle"></i>
-                                <h6 class="form-section-title" style="color: black;">Información Adicional</h6>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-md-6 mb-2">
-                                    <label for="registro" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-book me-1 text-primary"></i>Registro
-                                    </label>
-                                    <input type="text" class="form-control" id="registro" placeholder="Número de registro (generado automáticamente)" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; cursor: not-allowed;">
-                                </div>
-                                <div class="col-md-6 mb-2">
-                                    <label for="fechaCarga" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-calendar-check me-1 text-primary"></i>Fecha carga <span style="color: #dc3545;">*</span>
-                                    </label>
-                                    <input type="date" class="form-control" id="fechaCarga" placeholder="dd/mm/aaaa" required readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; cursor: not-allowed;">
-                                </div>
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-md-12 mb-2">
-                                    <label for="obsAdministracion" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                        <i class="fas fa-sticky-note me-1 text-primary"></i>Obs. Administración <span>*</span>
-                                    </label>
-                                    <textarea class="form-control" id="obsAdministracion" rows="2" placeholder="Observaciones de administración" style="font-size: 0.95rem; padding: 8px 12px; resize: vertical;"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-
-                    </form>
+                        </form>
                 </div>
                 <div class="modal-footer" style="background: #f8f9fa; border-radius: 0 0 12px 12px; padding: 15px 25px; border-top: 1px solid #dee2e6; flex-shrink: 0;">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="font-size: 0.95rem; padding: 8px 20px;">
+                    <button type="button" class="btn btn-secondary px-4" id="btnCancelarPagoPresupuesto" data-bs-dismiss="modal" style="font-size: 0.95rem; padding: 8px 20px;">
                         <i class="fas fa-times me-2"></i>Cancelar
                     </button>
                     <button type="button" class="btn btn-primary px-4" id="btnGuardarPagoPresupuesto" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-size: 0.95rem; padding: 8px 20px;">
