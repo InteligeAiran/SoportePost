@@ -1130,6 +1130,50 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetPaymentStatusByTicket($nro_ticket){
+        $result = $this->model->GetPaymentStatusByTicket($nro_ticket);
+        if ($result) {
+            //var_dump($result);  
+            $status = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $status[] = $agente;
+            }
+            //var_dump($agente);
+            return $status;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetEstatusPagoAutomatizado($nro_ticket = null){
+        $result = $this->model->GetPaymentStatusByTicket($nro_ticket);
+        if ($result) {
+            $status = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $status[] = $agente;
+            }
+            return $status;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetPaymentsByTicket($nro_ticket){
+        $result = $this->model->GetPaymentsByTicket($nro_ticket);
+        if ($result) {
+            $payments = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $payment = pg_fetch_assoc($result['query'], $i);
+                $payments[] = $payment;
+            }
+            return $payments;
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Guarda un pago en la tabla temporal temp_payment_uploads
      * 

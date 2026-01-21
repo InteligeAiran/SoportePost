@@ -939,6 +939,23 @@ function mi_navbar() {}
                                         pointer-events: none;
                                         font-size: 0.9rem;
                                     }
+                                    
+                                    /* Ensure disabled amount fields have consistent styling */
+                                    #montoBs:disabled,
+                                    #montoRef:disabled {
+                                        background-color: #e9ecef !important;
+                                        cursor: not-allowed !important;
+                                        border-color: #ced4da !important;
+                                        opacity: 1 !important;
+                                        color: #6c757d !important;
+                                    }
+                                    
+                                    #montoBs:disabled:focus,
+                                    #montoRef:disabled:focus {
+                                        border-color: #ced4da !important;
+                                        box-shadow: none !important;
+                                        outline: none !important;
+                                    }
                                 </style>
                                 <div class="row g-2 mt-2">
                                     <div class="col-md-6 mb-2">
@@ -968,52 +985,52 @@ function mi_navbar() {}
                                         </select>
                                     </div>
                                     <div class="col-md-6 mb-2">
-                                        <label for="estatus" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                            <i class="fas fa-info-circle me-1 text-primary"></i>Estatus
-                                        </label>
-                                        <input type="text" class="form-control" id="estatus" placeholder="Estatus del pago" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; width: 100%;">
-                                    </div>
-                                </div>
-                                <!-- Montos Section with Suffixes -->
-                                <div class="row g-2">
-                                    <div class="col-md-6 mb-2">
                                         <label for="montoBs" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
                                             <i class="fas fa-money-bill me-1 text-primary"></i>Monto Bs
                                         </label>
                                         <div class="position-relative">
-                                            <input type="number" class="form-control" id="montoBs" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
+                                            <input type="number" class="form-control" id="montoBs" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px; background-color: #e9ecef; cursor: not-allowed;">
                                             <span class="currency-suffix" id="montoBsSuffix" style="display: none;">Bs</span>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="row g-2">
                                     <div class="col-md-6 mb-2">
                                         <label for="montoRef" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
                                             <i class="fas fa-exchange-alt me-1 text-primary"></i>Monto REF
                                         </label>
                                         <div class="position-relative">
-                                            <input type="number" class="form-control" id="montoRef" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
+                                            <input type="number" class="form-control" id="montoRef" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px; background-color: #e9ecef; cursor: not-allowed;">
                                             <span class="currency-suffix" id="montoRefSuffix" style="display: none;">USD</span>
                                         </div>
                                     </div>
-                                </div>
-                                <!-- Referencia and Depositante Section -->
-                                <div class="row g-2">
                                     <div class="col-md-6 mb-2">
                                         <label for="referencia" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
                                             <i class="fas fa-hashtag me-1 text-primary"></i>Referencia <span style="color: #dc3545;">*</span>
                                         </label>
                                         <input type="text" class="form-control" id="referencia" placeholder="Número de referencia" pattern="[0-9]*" inputmode="numeric" required style="font-size: 0.95rem; padding: 8px 12px;">
                                     </div>
+                                </div>
+                                
+                                <div class="row g-2">
                                     <div class="col-md-6 mb-2">
                                         <label for="depositante" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
                                             <i class="fas fa-user me-1 text-primary"></i>Depositante <span style="color: #dc3545;">*</span>
                                         </label>
                                         <input type="text" class="form-control" id="depositante" placeholder="Nombre del depositante" required style="font-size: 0.95rem; padding: 8px 12px;">
                                     </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label for="obsAdministracion" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-sticky-note me-1 text-primary"></i>Obs. Administración <span>*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="obsAdministracion" placeholder="Observaciones de administración" style="font-size: 0.95rem; padding: 8px 12px;">
+                                    </div>
+                                    <input type="hidden" id="estatus" value="">
+                                    <input type="hidden" id="payment_id_to_save" name="payment_status">
                                 </div>
                                 
-                                <hr class="my-3" style="border-top: 1px dashed #ced4da;">
-
-                                <!-- Información Adicional Integrada (Registro, Fecha Carga, Obs) -->
+                                <!-- Información Adicional Integrada (Registro, Fecha Carga) -->
                                 <div class="row g-2">
                                     <div class="col-md-6 mb-2">
                                         <label for="registro" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
@@ -1026,14 +1043,6 @@ function mi_navbar() {}
                                             <i class="fas fa-calendar-check me-1 text-primary"></i>Fecha carga <span style="color: #dc3545;">*</span>
                                         </label>
                                         <input type="date" class="form-control" id="fechaCarga" required readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; cursor: not-allowed;">
-                                    </div>
-                                </div>
-                                 <div class="row g-2">
-                                    <div class="col-md-12 mb-2">
-                                        <label for="obsAdministracion" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                            <i class="fas fa-sticky-note me-1 text-primary"></i>Obs. Administración <span>*</span>
-                                        </label>
-                                        <textarea class="form-control" id="obsAdministracion" rows="1" placeholder="Observaciones de administración" style="font-size: 0.95rem; padding: 8px 12px; resize: vertical;"></textarea>
                                     </div>
                                 </div>
 
@@ -1149,7 +1158,39 @@ function mi_navbar() {}
                                 </div>
                             </div>
 
-                            <!-- BLOQUE 3: EXTRA (COMPACTO) -->
+                            <!-- BLOQUE 3: HISTORIAL DE PAGOS -->
+                            <div class="form-section mt-3">
+                                <div class="form-section-header">
+                                    <i class="fas fa-history"></i>
+                                    <h6 class="form-section-title">Historial de Pagos</h6>
+                                </div>
+                                <div class="table-responsive" style="max-height: 250px; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+                                    <table class="table table-sm table-hover mb-0" id="paymentHistoryTable" style="font-size: 0.85rem;">
+                                        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 1;">
+                                            <tr>
+                                                <th style="padding: 8px; white-space: nowrap;">N°</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Registro</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Fecha Pago</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Método</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Moneda</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Monto Bs</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Monto Ref</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Referencia</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Depositante</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="paymentHistoryBody">
+                                            <tr>
+                                                <td colspan="9" class="text-center text-muted" style="padding: 20px;">
+                                                    <i class="fas fa-info-circle me-1"></i>No hay pagos registrados
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- BLOQUE 4: EXTRA (COMPACTO) -->
                             <div class="form-section container-extra mt-3" style="border: none; background: transparent; padding: 0; box-shadow: none;">
                                 <div class="card border-light shadow-sm">
                                     <div class="card-header bg-light py-2">

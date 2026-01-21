@@ -6760,6 +6760,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
+    /* SOLO ME ELIJE EL ID_STATUS_PAYMENT = 7 LA CUAL ES PENDIENTE POR REVISION ANTICIPO DE LOS STATUS DE PAGO*/
     public function GetEstatusPago(){
         try {
 
@@ -6775,6 +6776,61 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
             return false;
 
+        }
+    }
+
+    /* ESTA ME TRAERA EL STATUS CORRECTO: 17 SI HAY PAGOS, 7 SI NO HAY PAGOS*/
+    public function GetPaymentStatusByTicket($nro_ticket = null){
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            if (!empty($nro_ticket)) {
+                $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+                $sql = "SELECT * FROM status_payments 
+                        WHERE id_status_payment = (
+                            CASE 
+                                WHEN EXISTS (SELECT 1 FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . ") THEN 17 
+                                ELSE 7 
+                            END
+                        )";
+            } else {
+                $sql = "SELECT * FROM status_payments WHERE id_status_payment = 7";
+            }
+
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentStatusByTicket: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function GetPaymentsByTicket($nro_ticket){
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            
+            $sql = "SELECT 
+                        id_payment_record,
+                        record_number,
+                        payment_date,
+                        payment_method,
+                        currency,
+                        amount_bs,
+                        reference_amount,
+                        payment_reference,
+                        depositor,
+                        origen_bank,
+                        destination_bank
+                    FROM payment_records 
+                    WHERE nro_ticket = " . $escaped_nro_ticket . "
+                    ORDER BY payment_date DESC";
+            
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentsByTicket: " . $e->getMessage());
+            return false;
         }
     }
 

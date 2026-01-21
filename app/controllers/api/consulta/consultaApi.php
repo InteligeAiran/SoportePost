@@ -366,6 +366,18 @@ class Consulta extends Controller
                     $this->handleGetEstatusPago();
                     break;
 
+                case 'GetEstatusPagoAutomatizado':
+                    $this->handleGetEstatusPagoAutomatizado();
+                    break;
+
+                case 'GetPaymentsByTicket':
+                    $this->handleGetPaymentsByTicket();
+                    break;
+
+                case 'GetStatuspayment':
+                    $this->handleGetStatuspayment();
+                    break;
+
                 case 'GetPaymentData':
                     $this->handleGetPaymentData();
                     break;
@@ -1237,7 +1249,11 @@ class Consulta extends Controller
         if ($serial != '') {
             $result = $repository->UltimateDateTicket($serial);
 
-            $this->response(['success' => true, 'fecha' => $result], 200); // Código de estado 200 OK por defecto
+            if ($result) {
+                $this->response(['success' => true, 'fecha' => $result['fecha'], 'nro_ticket' => $result['nro_ticket']], 200);
+            } else {
+                $this->response(['success' => true, 'message' => 'No tiene ticket', 'fecha' => null, 'nro_ticket' => null], 400);
+            }
         } else {
             $this->response(['success' => true, 'message' => 'No tiene ticket', 'fecha' => null], 400); // Código de estado 200 OK
         }
@@ -2539,6 +2555,52 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'No hay estatus de pago disponibles.', 'estatus_pago' => []], 404);
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los estatus de pago.'], 500);
+        }
+    }
+
+    public function handleGetEstatusPagoAutomatizado(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetEstatusPagoAutomatizado($nro_ticket);
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'estatus_pago' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay estatus de pago disponibles.', 'estatus_pago' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los estatus de pago.'], 500);
+        }
+    }
+
+    public function handleGetPaymentsByTicket(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentsByTicket($nro_ticket);
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'payments' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => true, 'message' => 'No hay pagos registrados para este ticket.', 'payments' => []], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los pagos.'], 500);
+        }
+    }
+
+    public function handleGetStatuspayment(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentStatusByTicket($nro_ticket);
+
+        if ($result !== null && !empty($result)) {
+            $this->response(['success' => true, 'data' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró estatus de pago para este ticket'], 404);
         }
     }
 

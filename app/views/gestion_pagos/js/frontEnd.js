@@ -1799,6 +1799,10 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             
             // Llamar a la función para abrir el modal (Patrón de Gestión Rosal)
             openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, razonSocial, rif, telefono, estatusPos, hasPresupuesto);
+            
+            // Cargar el historial de pagos para este ticket
+            loadPaymentHistory(nroTicket);
+            
             return;
         }
     });
@@ -2211,6 +2215,20 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
          monedaSelect.value = ""; // Force reset selection
     }
     
+    // Ensure both amount fields are disabled on modal open
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    if(montoBsInput) {
+        montoBsInput.disabled = true;
+        montoBsInput.style.backgroundColor = "#e9ecef";
+        montoBsInput.style.cursor = "not-allowed";
+    }
+    if(montoRefInput) {
+        montoRefInput.disabled = true;
+        montoRefInput.style.backgroundColor = "#e9ecef";
+        montoRefInput.style.cursor = "not-allowed";
+    }
+    
     // Cargar métodos de pago y bancos
     loadPaymentMethods();
     loadBancos();
@@ -2218,6 +2236,9 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
     // Set globals for image viewer if needed
     currentTicketNroForImage = nroTicket;
     currentIdTicketForImage = ticketId;
+
+    // Cargar el estatus del pago
+    getPagoEstatus(nroTicket);
 
     // Mostrar el modal usando la instancia global
     if (modalPagoPresupuestoInstance) {
@@ -2231,6 +2252,176 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
              manualModal.show();
         }
     }
+}
+
+/**
+ * Obtiene el estatus del pago basado en el número de ticket.
+ * @param {string} nroTicket - El número de ticket para consultar el estatus.
+ */
+function getPagoEstatus(nroTicket) {
+    const estatusInput = document.getElementById("estatus");
+    const paymentIdInput = document.getElementById("payment_id_to_save");
+
+    if (!estatusInput || !paymentIdInput) {
+        console.error("DEBUG getPagoEstatus: Elementos necesarios no encontrados.");
+        return;
+    }
+
+    // Estado inicial de carga
+    estatusInput.value = "Cargando estatus...";
+    paymentIdInput.value = "";
+
+    console.log("DEBUG getPagoEstatus: Solicitando para Ticket:", nroTicket);
+
+    const xhr = new XMLHttpRequest();
+    // Reutilizamos el endpoint existente en consultaApi
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetEstatusPagoAutomatizado`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        console.log("DEBUG getPagoEstatus: Respuesta recibida. Status:", xhr.status);
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                console.log("DEBUG getPagoEstatus: Data parsed:", response);
+                
+                const responseData = response.estatus_pago || response.data;
+                
+                if (response.success && Array.isArray(responseData) && responseData.length > 0) {
+                    const pagoData = responseData[0];
+                    
+                    paymentIdInput.value = pagoData.id_status_payment;
+                    estatusInput.value = pagoData.name_status_payment;
+                    
+                    console.log("DEBUG getPagoEstatus: Estatus asignado:", pagoData.name_status_payment);
+                } else {
+                    estatusInput.value = 'Pendiente por pagar';
+                    paymentIdInput.value = "7"; // Status 7 por defecto
+                    console.warn("DEBUG getPagoEstatus: Sin datos o formato incorrecto. Response:", response);
+                }
+            } catch (error) {
+                console.error("DEBUG getPagoEstatus: Error processing JSON or data:", error, xhr.responseText);
+                estatusInput.value = 'Error de procesamiento.';
+            }
+        } else {
+            estatusInput.value = `Error (HTTP ${xhr.status})`;
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error("DEBUG getPagoEstatus: Error de red");
+        estatusInput.value = "Error de red";
+    };
+
+    const datos = `action=GetEstatusPagoAutomatizado&nro_ticket=${encodeURIComponent(nroTicket || "")}`;
+    xhr.send(datos);
+}
+
+/**
+ * Carga el historial de pagos para un ticket específico.
+ * @param {string} nroTicket - Número de ticket
+ */
+function loadPaymentHistory(nroTicket) {
+    const tableBody = document.getElementById("paymentHistoryBody");
+    
+    if (!tableBody) {
+        console.error("DEBUG loadPaymentHistory: Elemento paymentHistoryBody no encontrado.");
+        return;
+    }
+
+    // Show loading state
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="9" class="text-center text-muted" style="padding: 20px;">
+                <i class="fas fa-spinner fa-spin me-1"></i>Cargando historial...
+            </td>
+        </tr>
+    `;
+
+    console.log("DEBUG loadPaymentHistory: Solicitando historial para Ticket:", nroTicket);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentsByTicket`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        console.log("DEBUG loadPaymentHistory: Respuesta recibida. Status:", xhr.status);
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                console.log("DEBUG loadPaymentHistory: Data parsed:", response);
+                
+                if (response.success && Array.isArray(response.payments) && response.payments.length > 0) {
+                    let rows = '';
+                    response.payments.forEach((payment, index) => {
+                        // Format date
+                        const paymentDate = payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('es-VE') : 'N/A';
+                        
+                        // Format amounts
+                        const amountBs = payment.amount_bs ? parseFloat(payment.amount_bs).toFixed(2) : '0.00';
+                        const refAmount = payment.reference_amount ? parseFloat(payment.reference_amount).toFixed(2) : '0.00';
+                        
+                        rows += `
+                            <tr>
+                                <td style="padding: 8px;">${index + 1}</td>
+                                <td style="padding: 8px;">${payment.record_number || 'N/A'}</td>
+                                <td style="padding: 8px;">${paymentDate}</td>
+                                <td style="padding: 8px;">${payment.payment_method || 'N/A'}</td>
+                                <td style="padding: 8px;">${payment.currency || 'N/A'}</td>
+                                <td style="padding: 8px;">${amountBs}</td>
+                                <td style="padding: 8px;">${refAmount}</td>
+                                <td style="padding: 8px;">${payment.payment_reference || 'N/A'}</td>
+                                <td style="padding: 8px;">${payment.depositor || 'N/A'}</td>
+                            </tr>
+                        `;
+                    });
+                    tableBody.innerHTML = rows;
+                    console.log("DEBUG loadPaymentHistory: Tabla poblada con", response.payments.length, "registros.");
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center text-muted" style="padding: 20px;">
+                                <i class="fas fa-info-circle me-1"></i>No hay pagos registrados
+                            </td>
+                        </tr>
+                    `;
+                    console.log("DEBUG loadPaymentHistory: Sin datos de pagos.");
+                }
+            } catch (error) {
+                console.error("DEBUG loadPaymentHistory: Error processing JSON:", error, xhr.responseText);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center text-danger" style="padding: 20px;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Error al procesar datos
+                        </td>
+                    </tr>
+                `;
+            }
+        } else {
+            console.error("DEBUG loadPaymentHistory: Error HTTP", xhr.status);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="text-center text-danger" style="padding: 20px;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Error al cargar historial (HTTP ${xhr.status})
+                    </td>
+                </tr>
+            `;
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error("DEBUG loadPaymentHistory: Error de red");
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center text-danger" style="padding: 20px;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Error de red
+                </td>
+            </tr>
+        `;
+    };
+
+    const datos = `action=GetPaymentsByTicket&nro_ticket=${encodeURIComponent(nroTicket || "")}`;
+    xhr.send(datos);
 }
 
 // =================================================================================
@@ -2837,19 +3028,23 @@ function setupPaymentModalCloseListener() {
 function initializeDocumentNameGenerator() {
     const referenciaInput = document.getElementById("referencia");
     const registroInput = document.getElementById("registro");
+    const serialPosInput = document.getElementById("serialPosPago");
     
     if (referenciaInput && registroInput) {
         referenciaInput.addEventListener("input", function() {
             const refValue = this.value.trim();
-            if (refValue) {
-                // The original implementation just copied the reference value.
-                // If a date prefix was needed, it would be:
-                // const today = new Date();
-                // const dateStr = today.getFullYear().toString() +
-                //                 (today.getMonth() + 1).toString().padStart(2, '0') +
-                //                 today.getDate().toString().padStart(2, '0');
-                // registroInput.value = `${refValue}-${dateStr}`; 
-                registroInput.value = `${refValue}`; 
+            const serialValue = serialPosInput ? serialPosInput.value.trim() : "";
+            
+            if (refValue && serialValue) {
+                // Get last 4 digits of reference
+                const refLast4 = refValue.slice(-4);
+                // Get last 4 digits of serial
+                const serialLast4 = serialValue.slice(-4);
+                // Generate: Pago + ref4digits + _ + serial4digits
+                registroInput.value = `Pago${refLast4}_${serialLast4}`;
+            } else if (refValue) {
+                // If only reference is available, just use it
+                registroInput.value = `${refValue}`;
             } else {
                 registroInput.value = "";
             }
@@ -2885,53 +3080,3 @@ function resetFormPago() {
 }
 
 
-function getPagoEstatus() {
-    const estatusInput = document.getElementById("estatus");
-    const paymentIdInput = document.getElementById("payment_id_to_save"); // <-- Nuevo elemento
-
-    if (!estatusInput || !paymentIdInput) { // Verificar ambos
-        console.error("Error: Elementos necesarios para el estatus no encontrados.");
-        return;
-    }
-    
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetStatuspayment`); 
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                
-                if (response.success) {
-                    if (
-                        Array.isArray(response.estatus_pago) &&
-                        response.estatus_pago.length > 0
-                    ) {
-                        const pagoData = response.estatus_pago[0];
-                        
-                        // 1. Guardar el ID del pago en el campo oculto
-                        paymentIdInput.value = pagoData.id_status_payment; // <-- Guardando el ID
-                        
-                        // 2. Mostrar el nombre del estatus en el campo visible
-                        estatusInput.value = pagoData.name_status_payment;
-                        
-                        console.log("ID del Pago cargado en campo oculto:", pagoData.id_status_payment);
-                    } else {
-                        estatusInput.value = 'Estatus no encontrado en la respuesta.';
-                    }
-                } else {
-                    estatusInput.value = 'Error al obtener estatus (API: false)';
-                }
-            } catch (error) {
-                console.error("Error al procesar la respuesta JSON:", error);
-                estatusInput.value = 'Error de procesamiento de datos.';
-            }
-        } else {
-            estatusInput.value = `Error de conexión (HTTP ${xhr.status})`;
-        }
-    };
-    const datos = `action=GetEstatusPago`; 
-    // Nota: Si GetEstatusPago requiere un parámetro (como el ID del usuario o referencia), debes agregarlo a 'datos'
-    xhr.send(datos);
-}
