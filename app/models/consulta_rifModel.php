@@ -6806,6 +6806,112 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
+    public function GetTotalPaidByTicket($nro_ticket){
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            
+            $sql = "SELECT 
+                        COALESCE(SUM(pr.reference_amount), 0) as total_paid,
+                        COALESCE((SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as total_budget
+                    FROM payment_records pr
+                    WHERE pr.nro_ticket = " . $escaped_nro_ticket;
+            
+            $result = Model::getResult($sql, $this->db);
+            
+            if ($result && $result['numRows'] > 0) {
+                $row = pg_fetch_assoc($result['query'], 0);
+                return [
+                    'total_paid' => floatval($row['total_paid']),
+                    'total_budget' => floatval($row['total_budget'])
+                ];
+            }
+            
+            return ['total_paid' => 0.0, 'total_budget' => 0.0];
+        } catch (Throwable $e) {
+            error_log("Error en GetTotalPaidByTicket: " . $e->getMessage());
+            return ['total_paid' => 0.0, 'total_budget' => 0.0];
+        }
+    }
+
+    public function InsertPaymentRecord($data) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // Prepare data with quoting/escaping
+            $nro_ticket = pg_escape_literal($db_conn, $data['nro_ticket']);
+            $serial_pos = pg_escape_literal($db_conn, $data['serial_pos']);
+            $user_loader = intval($data['user_loader']);
+            $payment_date = pg_escape_literal($db_conn, $data['payment_date']); // Transaction date
+            $payment_method = pg_escape_literal($db_conn, $data['payment_method']);
+            $currency = pg_escape_literal($db_conn, $data['currency']);
+            $reference_amount = !empty($data['reference_amount']) ? floatval($data['reference_amount']) : 'NULL';
+            $amount_bs = floatval($data['amount_bs']);
+            $payment_reference = pg_escape_literal($db_conn, $data['payment_reference']);
+            $depositor = pg_escape_literal($db_conn, $data['depositor']);
+            $observations = pg_escape_literal($db_conn, $data['observations']);
+            $record_number = pg_escape_literal($db_conn, $data['record_number']); // registro
+            
+            // Optional/Nullable fields
+            $origen_bank = !empty($data['origen_bank']) ? pg_escape_literal($db_conn, $data['origen_bank']) : 'NULL';
+            $destination_bank = !empty($data['destination_bank']) ? pg_escape_literal($db_conn, $data['destination_bank']) : 'NULL';
+            
+            // Mobile payment specific fields (if applicable, assuming null for now or passed in data)
+            $destino_rif_tipo = !empty($data['destino_rif_tipo']) ? pg_escape_literal($db_conn, $data['destino_rif_tipo']) : 'NULL';
+            $destino_rif_numero = !empty($data['destino_rif_numero']) ? pg_escape_literal($db_conn, $data['destino_rif_numero']) : 'NULL';
+            $destino_telefono = !empty($data['destino_telefono']) ? pg_escape_literal($db_conn, $data['destino_telefono']) : 'NULL';
+            
+            $origen_rif_tipo = !empty($data['origen_rif_tipo']) ? pg_escape_literal($db_conn, $data['origen_rif_tipo']) : 'NULL';
+            $origen_rif_numero = !empty($data['origen_rif_numero']) ? pg_escape_literal($db_conn, $data['origen_rif_numero']) : 'NULL';
+            $origen_telefono = !empty($data['origen_telefono']) ? pg_escape_literal($db_conn, $data['origen_telefono']) : 'NULL';
+
+            // Determine Status Check if existing payments
+            $checkSql = "SELECT COUNT(*) as count FROM payment_records WHERE nro_ticket = $nro_ticket";
+            $checkResult = Model::getResult($checkSql, $this->db);
+            $existingCount = 0;
+            if ($checkResult && $checkResult['numRows'] > 0) {
+                $checkRow = pg_fetch_assoc($checkResult['query'], 0);
+                $existingCount = intval($checkRow['count']);
+            }
+
+            // Logic: If FIRST payment (count 0) -> Status 7. If subsequent -> Status 17.
+            // Unless status is explicitly passed and different ? adhering to user rule.
+            $payment_status = ($existingCount === 0) ? 7 : 17;
+
+            // CONFIRMATION NUMBER defaults to FALSE
+            $confirmation_number = 'false';
+
+            $sql = "INSERT INTO payment_records (
+                nro_ticket, serial_pos, user_loader, payment_date, 
+                origen_bank, destination_bank, payment_method, currency, 
+                reference_amount, amount_bs, payment_reference, depositor, 
+                observations, record_number, loadpayment_date, payment_status,
+                confirmation_number,
+                destino_rif_tipo, destino_rif_numero, destino_telefono,
+                origen_rif_tipo, origen_rif_numero, origen_telefono
+            ) VALUES (
+                $nro_ticket, $serial_pos, $user_loader, $payment_date,
+                $origen_bank, $destination_bank, $payment_method, $currency,
+                $reference_amount, $amount_bs, $payment_reference, $depositor,
+                $observations, $record_number, NOW(), $payment_status,
+                $confirmation_number,
+                $destino_rif_tipo, $destino_rif_numero, $destino_telefono,
+                $origen_rif_tipo, $origen_rif_numero, $origen_telefono
+            ) RETURNING id_payment_record";
+
+            $result = Model::getResult($sql, $this->db);
+
+            if ($result && $result['numRows'] > 0) {
+                 $row = pg_fetch_assoc($result['query'], 0);
+                 return $row['id_payment_record'];
+            }
+            
+            return false;
+        } catch (Throwable $e) {
+            error_log("Error en InsertPaymentRecord: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function GetPaymentsByTicket($nro_ticket){
         try {
             $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
@@ -6821,7 +6927,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                         payment_reference,
                         depositor,
                         origen_bank,
-                        destination_bank
+                        destination_bank,
+                        confirmation_number
                     FROM payment_records 
                     WHERE nro_ticket = " . $escaped_nro_ticket . "
                     ORDER BY payment_date DESC";
@@ -7240,5 +7347,187 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             return null;
         }
     }
+
+    /**
+     * Get a payment record by its ID.
+     * @param int $id_payment
+     */
+    public function GetPaymentById($id_payment) {
+        try {
+            if (!$this->db) {
+                return false;
+            }
+
+            $conn = $this->db->getConnection();
+            $escaped_id = pg_escape_literal($conn, $id_payment);
+            
+            $sql = "SELECT * FROM payment_records WHERE id_payment_record = " . $escaped_id;
+            
+            $result = Model::getResult($sql, $this->db);
+            
+            if ($result && isset($result['row']) && $result['row'] !== false) {
+                return $result['row'];
+            }
+            
+            return false;
+
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentById: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get a payment record by its record number (Nro Registro).
+     * @param string $record_number e.g. Pago1234_5678
+     */
+    public function GetPaymentByRecordNumber(string $record_number) {
+        try {
+            if (!$this->db) {
+                return false;
+            }
+
+            $conn = $this->db->getConnection();
+            $escaped_rec = pg_escape_literal($conn, $record_number);
+            
+            $sql = "SELECT * FROM payment_records WHERE record_number = " . $escaped_rec;
+            
+            $result = Model::getResult($sql, $this->db);
+            
+            if ($result && isset($result['row']) && $result['row'] !== false) {
+                return $result['row'];
+            }
+            
+            return false;
+
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentByRecordNumber: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update a payment record.
+     * @param int $id_payment
+     * @param array $data Associative array of fields to update
+     */
+    public function UpdatePayment($id_payment, $data) {
+        try {
+            if (!$this->db) {
+                return false;
+            }
+
+            $conn = $this->db->getConnection();
+            $escaped_id = pg_escape_literal($conn, $id_payment);
+            
+            // Build SET clause
+            $sets = [];
+            
+            // Fields allowed to be updated
+            $allowedFields = [
+                'amount_bs', 
+                'reference_amount', 
+                'payment_method', 
+                'currency', 
+                'payment_reference', 
+                'depositor', 
+                'origen_bank', 
+                'destination_bank',
+                'origen_rif_numero',
+                'origen_telefono',
+                'updated_by'
+            ];
+
+            foreach ($data as $key => $value) {
+                if (in_array($key, $allowedFields)) {
+                    $escaped_val = pg_escape_literal($conn, $value);
+                    $sets[] = "$key = $escaped_val";
+                }
+            }
+
+            if (empty($sets)) {
+                return false; // No valid fields to update
+            }
+
+            $setClause = implode(", ", $sets);
+
+            // Constraint: Only update if confirmation_number is NOT true/confirmed
+            $sql = "UPDATE payment_records 
+                    SET $setClause, updated_at = NOW() 
+                    WHERE id_payment_record = $escaped_id 
+                    AND (confirmation_number IS NULL OR confirmation_number = 'false' OR confirmation_number = 'f')";
+            
+            $result = pg_query($conn, $sql);
+            
+            if ($result) {
+                $affected = pg_affected_rows($result);
+                return $affected > 0;
+            }
+            
+            return false;
+
+        } catch (Throwable $e) {
+            error_log("Error en UpdatePayment: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get payment attachment by record number
+     * Retrieves the file info for a payment receipt from archivos_adjuntos
+     * 
+     * @param string $record_number Payment record number
+     * @return array|null Attachment info or null if not found
+     */
+    public function GetPaymentAttachmentByRecordNumber($record_number) {
+        try {
+            $conn = $this->db->getConnection();
+            
+            // Escape the record number
+            $escaped_record_number = pg_escape_literal($conn, $record_number);
+            
+            // Get the payment info first to get nro_ticket and payment_date
+            $sql_payment = "SELECT nro_ticket, payment_date 
+                           FROM payment_records 
+                           WHERE record_number = $escaped_record_number";
+            
+            $result_payment = pg_query($conn, $sql_payment);
+            
+            if (!$result_payment || pg_num_rows($result_payment) === 0) {
+                error_log("Payment not found for record_number: $record_number");
+                return null;
+            }
+            
+            $payment = pg_fetch_assoc($result_payment);
+            $nro_ticket = $payment['nro_ticket'];
+            $payment_date = $payment['payment_date'];
+            
+            $escaped_nro_ticket = pg_escape_literal($conn, $nro_ticket);
+            
+            // Get attachment for this payment
+            // Match by nro_ticket and document_type, get the one closest to payment_date
+            $sql = "SELECT id, nro_ticket, original_filename, stored_filename, 
+                           file_path, mime_type, file_size_bytes, uploaded_at, 
+                           uploaded_by_user_id, document_type
+                    FROM archivos_adjuntos
+                    WHERE nro_ticket = $escaped_nro_ticket
+                    AND document_type = 'comprobante_pago'
+                    ORDER BY ABS(EXTRACT(EPOCH FROM (uploaded_at - '$payment_date'::timestamp)))
+                    LIMIT 1";
+            
+            $result = pg_query($conn, $sql);
+            
+            if (!$result || pg_num_rows($result) === 0) {
+                return null;
+            }
+            
+            return pg_fetch_assoc($result);
+            
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentAttachmentByRecordNumber: " . $e->getMessage());
+            return null;
+        }
+    }
 }
+
 ?>

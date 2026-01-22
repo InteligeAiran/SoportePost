@@ -374,6 +374,14 @@ class Consulta extends Controller
                     $this->handleGetPaymentsByTicket();
                     break;
 
+                case 'GetTotalPaidByTicket':
+                    $this->handleGetTotalPaidByTicket();
+                    break;
+                
+                case 'InsertPaymentRecord':
+                    $this->handleInsertPaymentRecord();
+                    break;
+
                 case 'GetStatuspayment':
                     $this->handleGetStatuspayment();
                     break;
@@ -401,6 +409,19 @@ class Consulta extends Controller
                 case 'GetBudgetIdByNroTicket':
                     $this->handleGetBudgetIdByNroTicket();
                     break;
+
+                case 'GetPaymentByRecordNumber':
+                    $this->handleGetPaymentByRecordNumber();
+                    break;
+
+                case 'GetPaymentById':
+                    $this->handleGetPaymentById();
+                    break;
+                
+                case 'UpdatePayment':
+                    $this->handleUpdatePayment();
+                    break;
+
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -2592,6 +2613,69 @@ class Consulta extends Controller
         }
     }
 
+    public function handleGetTotalPaidByTicket(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetTotalPaidByTicket($nro_ticket);
+
+        $this->response([
+            'success' => true, 
+            'total_paid' => $result['total_paid'],
+            'total_budget' => $result['total_budget']
+        ], 200);
+    }
+
+    public function handleInsertPaymentRecord(){
+        // Basic validation
+        if (empty($_POST['nro_ticket']) || empty($_POST['amount_bs'])) {
+             $this->response(['success' => false, 'message' => 'Faltan datos obligatorios.'], 400);
+             return;
+        }
+
+        $incomingDate = isset($_POST['payment_date']) ? $_POST['payment_date'] : date('Y-m-d');
+        $payment_date = $incomingDate . ' ' . date('H:i:s');
+
+        $data = [
+            'nro_ticket' => $_POST['nro_ticket'],
+            'serial_pos' => isset($_POST['serial_pos']) ? $_POST['serial_pos'] : '',
+            'user_loader' => isset($_POST['user_loader']) ? $_POST['user_loader'] : 0,
+            'payment_date' => $payment_date,
+            'origen_bank' => isset($_POST['origen_bank']) ? $_POST['origen_bank'] : null,
+            'destination_bank' => isset($_POST['destination_bank']) ? $_POST['destination_bank'] : null,
+            'payment_method' => isset($_POST['payment_method']) ? $_POST['payment_method'] : '',
+            'currency' => isset($_POST['currency']) ? $_POST['currency'] : 'BS',
+            'reference_amount' => isset($_POST['reference_amount']) ? $_POST['reference_amount'] : null,
+            'amount_bs' => $_POST['amount_bs'],
+            'payment_reference' => isset($_POST['payment_reference']) ? $_POST['payment_reference'] : '',
+            'depositor' => isset($_POST['depositor']) ? $_POST['depositor'] : '',
+            'observations' => isset($_POST['observations']) ? $_POST['observations'] : '',
+            'record_number' => isset($_POST['record_number']) ? $_POST['record_number'] : '',
+            
+            // Mobile payment fields
+            'destino_rif_tipo' => isset($_POST['destino_rif_tipo']) ? $_POST['destino_rif_tipo'] : null,
+            'destino_rif_numero' => isset($_POST['destino_rif_numero']) ? $_POST['destino_rif_numero'] : null,
+            'destino_telefono' => isset($_POST['destino_telefono']) ? $_POST['destino_telefono'] : null,
+            'origen_rif_tipo' => isset($_POST['origen_rif_tipo']) ? $_POST['origen_rif_tipo'] : null,
+            'origen_rif_numero' => isset($_POST['origen_rif_numero']) ? $_POST['origen_rif_numero'] : null,
+            'origen_telefono' => isset($_POST['origen_telefono']) ? $_POST['origen_telefono'] : null,
+        ];
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->InsertPaymentRecord($data);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Pago registrado con éxito.', 'id_payment' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al registrar el pago.'], 500);
+        }
+    }
+
     public function handleGetStatuspayment(){
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
         $repository = new technicalConsultionRepository();
@@ -3713,6 +3797,94 @@ HTML;
             $this->response(['success' => false, 'message' => 'No se encontraron tickets']);
         }
       
+    }
+
+
+    public function handleGetPaymentByRecordNumber() {
+        $repository = new technicalConsultionRepository();
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
+        
+        if (empty($record_number)) {
+            $this->response(['success' => false, 'message' => 'Nro de registro no proporcionado'], 400);
+            return;
+        }
+
+        $payment = $repository->GetPaymentByRecordNumber($record_number);
+        
+        if ($payment) {
+            $this->response(['success' => true, 'payment' => $payment], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Pago no encontrado'], 404);
+        }
+    }
+
+    public function handleGetPaymentById() {
+        $repository = new technicalConsultionRepository();
+        $id_payment = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
+        
+        if (empty($id_payment)) {
+            $this->response(['success' => false, 'message' => 'ID de pago no proporcionado'], 400);
+            return;
+        }
+
+        $payment = $repository->GetPaymentById($id_payment);
+        
+        if ($payment) {
+            $this->response(['success' => true, 'payment' => $payment], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Pago no encontrado por ID'], 404);
+        }
+    }
+
+    public function handleUpdatePayment() {
+        $repository = new technicalConsultionRepository();
+        $id_payment = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
+        
+        if (empty($id_payment)) {
+            $this->response(['success' => false, 'message' => 'ID de pago no proporcionado'], 400);
+            return;
+        }
+
+        // Collect fields to update from POST
+        $data = [];
+        $possibleFields = [
+            'amount_bs', 
+            'reference_amount', 
+            'payment_method', 
+            'currency', 
+            'payment_reference', 
+            'depositor', 
+            'origen_bank', 
+            'destination_bank',
+            'origen_rif_numero',
+            'origen_telefono'
+        ];
+
+        foreach ($possibleFields as $field) {
+            if (isset($_POST[$field])) {
+                $data[$field] = $_POST[$field];
+            }
+        }
+
+        if (empty($data)) {
+            $this->response(['success' => false, 'message' => 'No se enviaron datos para actualizar'], 400);
+            return;
+        }
+
+        // Add Audit info
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        $data['updated_by'] = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
+
+        $success = $repository->UpdatePayment($id_payment, $data);
+        
+        if ($success) {
+            $this->response(['success' => true, 'message' => 'Pago actualizado correctamente'], 200);
+        } else {
+            // This might fail if payment is confirmed or ID is wrong
+            $this->response(['success' => false, 'message' => 'No se pudo actualizar el pago. Verifique que no esté confirmado.'], 400);
+        }
     }
 }
 ?>

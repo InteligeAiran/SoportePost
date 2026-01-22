@@ -872,6 +872,13 @@ function mi_navbar() {}
                         <form id="formPagoPresupuesto">
                             <input type="hidden" id="id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
                          
+                            <!-- MONTO ABONADO SECTION -->
+                            <div class="payment-summary-card mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
+                                <h6 style="color: white; margin-bottom: 10px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Abonado</h6>
+                                <h3 id="montoAbonado" style="color: white; font-size: 2rem; font-weight: 700; margin: 0;">$0.00</h3>
+                                <small id="montoRestante" style="color: rgba(255, 255, 255, 0.9); font-size: 0.85rem; display: block; margin-top: 8px;">Restante: $0.00</small>
+                            </div>
+
                             <!-- BLOQUE 1: INFORMACIÓN DEL CLIENTE -->
                              <div class="form-section">
                                 <div class="form-section-header">
@@ -1177,6 +1184,7 @@ function mi_navbar() {}
                                                 <th style="padding: 8px; white-space: nowrap;">Monto Ref</th>
                                                 <th style="padding: 8px; white-space: nowrap;">Referencia</th>
                                                 <th style="padding: 8px; white-space: nowrap;">Depositante</th>
+                                                <th style="padding: 8px; white-space: nowrap;">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody id="paymentHistoryBody">
@@ -1291,6 +1299,137 @@ function mi_navbar() {}
             </div>
         </div>
     <!--END CONFIRMACION MOTIVO DE RECHAZO -->
+
+    <!-- MODAL EDITAR PAGO -->
+    <div class="modal fade" id="editPaymentModal" tabindex="-1" aria-labelledby="editPaymentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                <div class="modal-header bg-gradient-primary" style="color: white; border-radius: 12px 12px 0 0; padding: 15px 25px;">
+                    <h5 class="modal-title mb-0" id="editPaymentModalLabel" style="font-weight: 600; color: white;">
+                        <i class="fas fa-edit me-2"></i>Editar Pago
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 20px; background: #f8f9fa;">
+                    <form id="formEditPayment">
+                        <input type="hidden" id="edit_payment_id">
+                        
+                        <!-- BLOQUE 1: INFORMACIÓN DE PAGO -->
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <h6 class="form-section-title" style="color: black; margin-bottom: 0;">Detalles del Pago</h6>
+                            </div>
+
+                            <div class="row g-2 mt-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_fechaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-calendar-alt me-1 text-primary"></i>Fecha Pago
+                                    </label>
+                                    <input type="date" class="form-control" id="edit_fechaPago">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_formaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-credit-card me-1 text-primary"></i>Forma pago <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <select class="form-select" id="edit_formaPago" required>
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_moneda" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-coins me-1 text-primary"></i>Moneda <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <select class="form-select" id="edit_moneda" required>
+                                        <option value="bs">Bolívares (Bs)</option>
+                                        <option value="usd">Dólares (USD)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_montoBs" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-money-bill me-1 text-primary"></i>Monto Bs
+                                    </label>
+                                    <input type="number" class="form-control" id="edit_montoBs" step="0.01">
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_montoRef" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-exchange-alt me-1 text-primary"></i>Monto REF
+                                    </label>
+                                    <input type="number" class="form-control" id="edit_montoRef" step="0.01">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_referencia" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-hashtag me-1 text-primary"></i>Referencia <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_referencia" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_depositante" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-user me-1 text-primary"></i>Depositante <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_depositante" required>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_obsAdministracion" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-sticky-note me-1 text-primary"></i>Obs. Administración
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_obsAdministracion">
+                                </div>
+                            </div>
+
+                            <!-- Bancos -->
+                            <div class="row g-2" id="edit_bancoFieldsContainer">
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_bancoOrigen" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-university me-1 text-primary"></i>Banco Origen
+                                    </label>
+                                    <select class="form-select" id="edit_bancoOrigen">
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="edit_bancoDestino" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                    <select class="form-select" id="edit_bancoDestino">
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Payment Fields -->
+                            <div class="row g-2 mt-2" id="edit_pagoMovilFieldsContainer" style="display: none;">
+                                <div class="col-md-6 mb-2">
+                                     <label class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-id-card me-1 text-primary"></i>RIF Origen
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_origenRifNumero" placeholder="Número RIF">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-phone me-1 text-primary"></i>Teléfono Origen
+                                    </label>
+                                    <input type="text" class="form-control" id="edit_origenTelefono" placeholder="0412-1234567">
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="background: #f8f9fa; border-radius: 0 0 12px 12px; padding: 15px 25px;">
+                    <button type="button" class="btn btn-secondary px-4" id="btnCancelEditPayment">Cancelar</button>
+                    <button type="button" class="btn btn-primary px-4" id="btnUpdatePayment">Actualizar Pago</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL EDITAR PAGO -->
 
     <!--button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
         <i class="bi bi-person-gear"></i> Reasignar Ticket
