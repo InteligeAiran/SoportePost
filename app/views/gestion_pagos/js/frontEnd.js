@@ -2704,13 +2704,22 @@ function loadPaymentHistory(nroTicket) {
                         }
                         
                         let actionBtn = '';
+                        const viewIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+  <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+  <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+</svg>`;
+
+                        // ALWAYS show the view button as requested by the user icon
+                        // It will call viewPaymentReceipt which handles cases with no document
+                        actionBtn += `<button type="button" class="btn btn-sm btn-link text-success p-0 m-0 me-2" onclick="viewPaymentReceipt('${payment.receipt_path || ''}', '${payment.receipt_mime || ''}', '${payment.receipt_name || ''}')" title="Ver Comprobante">${viewIcon}</button>`;
+
                         if (!isConfirmed) {
                              // Use type="button" to prevent form submission behavior
                              const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
 </svg>`;
-                             actionBtn = `<button type="button" class="btn btn-sm btn-link text-primary p-0 m-0" onclick="editPayment('${payment.record_number}')" title="Editar Pago">${editIcon}</button>`;
+                             actionBtn += `<button type="button" class="btn btn-sm btn-link text-primary p-0 m-0" onclick="editPayment('${payment.record_number}')" title="Editar Pago">${editIcon}</button>`;
                         }
                         
                         rows += `
@@ -3784,7 +3793,24 @@ $('#btnUpdatePayment').click(function() {
                     try {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
-                            Swal.fire('¡Actualizado!', response.message, 'success');
+                            Swal.fire({
+                                title: '¡Actualizado!',
+                                icon: 'success',
+                                html: `
+                                    <div style="text-align: center;">
+                                        <h4 style="color: #333; font-weight: 600; margin-bottom: 10px;">Cambios Guardados</h4>
+                                        <p style="color: #666; font-size: 1.1rem;">${response.message || 'El pago se ha actualizado correctamente.'}</p>
+                                    </div>
+                                `,
+                                showConfirmButton: true,
+                                confirmButtonText: '<i class="fas fa-check-circle me-2"></i>Entendido',
+                                customClass: {
+                                    popup: 'swal-premium-popup',
+                                    title: 'swal-premium-title',
+                                    confirmButton: 'swal-premium-confirm'
+                                },
+                                buttonsStyling: false
+                            });
                             
                             if (editPaymentModalInstance) {
                                 editPaymentModalInstance.hide();
@@ -3801,18 +3827,62 @@ $('#btnUpdatePayment').click(function() {
                                 loadTotalPaid(refreshTicketId);
                             }
                         } else {
-                            Swal.fire('Error', response.message, 'error');
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'Aceptar',
+                                customClass: {
+                                    popup: 'swal-premium-popup',
+                                    title: 'swal-premium-title',
+                                    confirmButton: 'swal-premium-confirm'
+                                },
+                                buttonsStyling: false
+                            });
                         }
                     } catch (e) {
-                        Swal.fire('Error', 'Respuesta inválida del servidor.', 'error');
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Respuesta inválida del servidor.',
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar',
+                            customClass: {
+                                popup: 'swal-premium-popup',
+                                title: 'swal-premium-title',
+                                confirmButton: 'swal-premium-confirm'
+                            },
+                            buttonsStyling: false
+                        });
                     }
                 } else {
-                    Swal.fire('Error', 'Error HTTP ' + xhr.status, 'error');
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error HTTP ' + xhr.status,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar',
+                        customClass: {
+                            popup: 'swal-premium-popup',
+                            title: 'swal-premium-title',
+                            confirmButton: 'swal-premium-confirm'
+                        },
+                        buttonsStyling: false
+                    });
                 }
             };
             
             xhr.onerror = function() {
-                Swal.fire('Error', 'Error de conexión.', 'error');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error de conexión.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar',
+                    customClass: {
+                        popup: 'swal-premium-popup',
+                        title: 'swal-premium-title',
+                        confirmButton: 'swal-premium-confirm'
+                    },
+                    buttonsStyling: false
+                });
             };
             
             // Convert data object to URLSearchParams for easier encoding
