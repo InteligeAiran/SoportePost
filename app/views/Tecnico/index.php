@@ -703,6 +703,27 @@ function mi_navbar() {}
                                         Formatos permitidos: JPG, PNG, GIF o PDF
                                     </small>
                                 </div>
+                                
+                                <!-- Sección de Documentos Adicionales de Pago (Inicialmente oculta) -->
+                                <div id="btnTogglePaymentDocsContainer" class="mb-3 d-none">
+                                    <button type="button" id="btnTogglePaymentDocs" class="btn btn-outline-primary btn-sm w-100">
+                                        <i class="bi bi-plus-circle me-1"></i> Agregar Soportes o Retenciones
+                                    </button>
+                                </div>
+
+                                <div id="payment-docs-extension" class="d-none bg-light p-3 rounded mb-3 border">
+                                    <h6 class="text-primary mb-3" style="font-size: 0.9rem;">Documentos Adicionales</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="docSoportePago" class="form-label small fw-bold text-gray-700">Soporte de Pago</label>
+                                        <input class="form-control form-control-sm" type="file" id="docSoportePago" name="docSoportePago" accept="image/jpg, image/png, image/gif, application/pdf">
+                                    </div>
+                                    
+                                    <div class="mb-0">
+                                        <label for="docRetenciones" class="form-label small fw-bold text-gray-700">Comprobante de Retención</label>
+                                        <input class="form-control form-control-sm" type="file" id="docRetenciones" name="docRetenciones" accept="image/jpg, image/png, image/gif, application/pdf">
+                                    </div>
+                                </div>
 
                                 <!-- Previsualización DESACTIVADA POR MOTIVOS DE SEGURIDAD -->
                                 <!-- La previsualización ha sido desactivada para prevenir posibles inyecciones de código -->

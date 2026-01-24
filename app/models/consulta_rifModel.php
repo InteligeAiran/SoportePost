@@ -881,94 +881,96 @@ class consulta_rifModel extends Model
 
     // Nueva función para insertar en archivos_adjuntos
 
-    public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type)
-
+    public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type, $record_number = null)
     {
-
         try {
-
             $db_conn = $this->db->getConnection();
 
-
-
             $escaped_original_filename = pg_escape_literal($db_conn, $original_filename);
-
             $escaped_stored_filename = pg_escape_literal($db_conn, $stored_filename);
-
             $escaped_file_path = pg_escape_literal($db_conn, $file_path);
-
             $escaped_mime_type = pg_escape_literal($db_conn, $mime_type);
-
             $escaped_document_type = pg_escape_literal($db_conn, $document_type);
-
-
-
-            // ⭐️ CORRECCIÓN: Usar pg_escape_literal y %s para tratarlo como string ⭐️
-
             $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
-
-
-
-            // También puedes almacenar Nr_ticket si lo necesitas en la tabla archivos_adjuntos,
-
-            // aunque el ticket_id (ID de la clave primaria) es la relación principal.
-
-            // Para este ejemplo, lo añadiremos como un campo adicional si lo consideras útil,
-
-            // pero no es estrictamente necesario para la relación.
+            
+            // Manejo de record_number (puede ser null)
+            $escaped_record_number = 'NULL';
+            if ($record_number !== null && $record_number !== '') {
+                 $escaped_record_number = pg_escape_literal($db_conn, $record_number);
+            }
 
             $sql = sprintf(
-
-                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type) VALUES (%s, %s, %s, %s, %s, %d, %d, %s);",
-
-            $escaped_Nr_ticket, // ⭐️ Aquí pasamos el valor escapado y la referencia de string (%s) ⭐️
-
+                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type, record_number) VALUES (%s, %s, %s, %s, %s, %d, %d, %s, %s);",
+                $escaped_Nr_ticket, 
                 $escaped_original_filename,
-
                 $escaped_stored_filename,
-
                 $escaped_file_path,
-
                 $escaped_mime_type,
-
                 (int) $file_size_bytes,
-
                 (int) $uploaded_by_user_id,
-
-                $escaped_document_type
-
+                $escaped_document_type,
+                $escaped_record_number
             );
-
-
 
             $result = $this->db->pgquery($sql);
 
-
-
             if ($result === false) {
-
                 error_log("Error al insertar archivo adjunto: " . pg_last_error($db_conn) . " Query: " . $sql);
-
                 return ['error' => 'Error al guardar el archivo adjunto en la base de datos.'];
-
             }
-
-
 
             return ['success' => true];
 
-
-
         } catch (Throwable $e) {
-
             error_log("Excepción en saveArchivoAdjunto: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
-
             return ['error' => 'Error inesperado al guardar archivo adjunto: ' . $e->getMessage()];
-
         }
-
     }
 
+        public function savePagoAttachment($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type, $record_number)
+    {
+        try {
+            $db_conn = $this->db->getConnection();
+
+            $escaped_original_filename = pg_escape_literal($db_conn, $original_filename);
+            $escaped_stored_filename = pg_escape_literal($db_conn, $stored_filename);
+            $escaped_file_path = pg_escape_literal($db_conn, $file_path);
+            $escaped_mime_type = pg_escape_literal($db_conn, $mime_type);
+            $escaped_document_type = pg_escape_literal($db_conn, $document_type);
+            $escaped_Nr_ticket = pg_escape_literal($db_conn, $Nr_ticket);
+            
+            $escaped_record_number = 'NULL';
+            if ($record_number !== null) {
+                $escaped_record_number = pg_escape_literal($db_conn, $record_number);
+            }
+
+            $sql = sprintf(
+                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type, record_number) VALUES (%s, %s, %s, %s, %s, %d, %d, %s, %s);",
+                $escaped_Nr_ticket, 
+                $escaped_original_filename,
+                $escaped_stored_filename,
+                $escaped_file_path,
+                $escaped_mime_type,
+                (int) $file_size_bytes,
+                (int) $uploaded_by_user_id,
+                $escaped_document_type,
+                $escaped_record_number
+            );
+
+            $result = $this->db->pgquery($sql);
+
+            if ($result === false) {
+                error_log("Error al insertar archivo adjunto (PAGO): " . pg_last_error($db_conn) . " Query: " . $sql);
+                return ['error' => 'Error al guardar el pago adjunto en la base de datos.'];
+            }
+
+            return ['success' => true];
+
+        } catch (Throwable $e) {
+            error_log("Excepción en savePagoAttachment: " . $e->getMessage());
+            return ['error' => 'Error inesperado al guardar pago: ' . $e->getMessage()];
+        }
+    }
 
 
     public function UpdateSessionExpired($id_session)
@@ -5096,17 +5098,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         try {
 
             $db_conn = $this->db->getConnection();
-
-            
             
             $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
-
             $escaped_document_type = pg_escape_literal($db_conn, $documentType);
-
-
-
-            $sql = "SELECT * FROM get_latest_archivo_adjunto(".$escaped_ticket_id.", ".$escaped_document_type.");";
-
+            
+            $sql = "SELECT * FROM archivos_adjuntos WHERE nro_ticket = $escaped_ticket_id AND document_type = $escaped_document_type";
+            
             $result = $this->db->pgquery($sql);
 
 

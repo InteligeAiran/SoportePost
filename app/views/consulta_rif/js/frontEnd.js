@@ -999,6 +999,7 @@ function getCoordinador() {
 }
 
 //document.addEventListener("DOMContentLoaded", getCoordinador);
+window.lastPaymentRecordNumber = null;
 
 function getCoordinacion() {
   const xhr = new XMLHttpRequest();
@@ -2258,6 +2259,14 @@ function SendDataFailure2(idStatusPayment) {
       if (checkAnticipo && checkAnticipo.checked && archivoAnticipoFinal) {
         formData.append("archivoAnticipo", archivoAnticipoFinal);
         formData.append("documento_anticipo", "Sí"); // NUEVO: Marcar que se cargó anticipo
+        
+        // NUEVO: Agregar record_number si existe el campo 'registro'
+        const registroInput = document.getElementById("registro");
+        if (window.lastPaymentRecordNumber) {
+             formData.append("record_number", window.lastPaymentRecordNumber);
+        } else if (registroInput && registroInput.value) {
+             formData.append("record_number", registroInput.value);
+        }
       }
     }
 
@@ -3854,6 +3863,28 @@ function savePayment() {
                 const data = JSON.parse(xhr.responseText);
                 
                 if (data.success) {
+                    // Generar record_number CORREGIDO: Pago(4 ultimos referencia)_(4 ultimos serial)
+                    let generatedRecordNumber = "Pago";
+                    
+                    // 1. Obtener ultimos 4 de la referencia
+                    const referenciaInput = document.getElementById("referencia");
+                    if (referenciaInput && referenciaInput.value && referenciaInput.value.length >= 4) {
+                        generatedRecordNumber += referenciaInput.value.slice(-4);
+                    } else {
+                        // Fallback si no hay referencia o es muy corta
+                        generatedRecordNumber += data.id_payment_record;
+                    }
+
+                    // 2. Agregar separador y ultimos 4 del serial
+                    const serialInputVal = document.getElementById("serialPosPago") ? document.getElementById("serialPosPago").value : "";
+                    if (serialInputVal && serialInputVal.length >= 4) {
+                         generatedRecordNumber += "_" + serialInputVal.slice(-4);
+                    }
+                    
+                    // Guardar en global y en input visual
+                    window.lastPaymentRecordNumber = generatedRecordNumber;
+                    if (registro) registro.value = generatedRecordNumber;
+
                     // Obtener valores formateados para el informe
                     const fechaPagoFormatted = fechaPago && fechaPago.value ? new Date(fechaPago.value).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';
                     const fechaCargaFormatted = fechaCarga && fechaCarga.value ? new Date(fechaCarga.value).toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A';

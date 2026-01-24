@@ -1880,7 +1880,62 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             // El modal se cierra automáticamente por data-bs-dismiss="modal"
             // Pero podemos añadir limpieza adicional si fuera necesario.
             console.log("Cerrando modal de pago presupuesto...");
+            resetDocumentoPagoUI();
         });
+    }
+
+    // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO
+    const documentoPagoInput = document.getElementById("documentoPago");
+    if (documentoPagoInput) {
+        documentoPagoInput.addEventListener("change", function(e) {
+            const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
+            const textDisplay = document.getElementById("textDocumentoPago");
+            const iconDisplay = document.getElementById("iconDocumentoPago");
+            const labelDisplay = document.getElementById("labelDocumentoPago");
+            
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                if (fileNameDisplay) {
+                    fileNameDisplay.textContent = file.name;
+                    fileNameDisplay.classList.remove("d-none");
+                }
+                if (textDisplay) textDisplay.classList.add("d-none");
+                
+                if (iconDisplay) {
+                    iconDisplay.className = "fas fa-check-circle fa-2x text-success";
+                }
+                if (labelDisplay) {
+                    labelDisplay.style.borderColor = "#28a745";
+                    labelDisplay.style.backgroundColor = "#e8f5e9";
+                }
+            } else {
+                resetDocumentoPagoUI();
+            }
+        });
+    }
+
+    function resetDocumentoPagoUI() {
+        const input = document.getElementById("documentoPago");
+        const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
+        const textDisplay = document.getElementById("textDocumentoPago");
+        const iconDisplay = document.getElementById("iconDocumentoPago");
+        const labelDisplay = document.getElementById("labelDocumentoPago");
+        
+        if (input) input.value = "";
+        
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = "";
+            fileNameDisplay.classList.add("d-none");
+        }
+        if (textDisplay) textDisplay.classList.remove("d-none");
+        
+        if (iconDisplay) {
+            iconDisplay.className = "fas fa-camera fa-2x text-secondary";
+        }
+        if (labelDisplay) {
+            labelDisplay.style.borderColor = "#cbd5e0"; 
+            labelDisplay.style.backgroundColor = "#f8f9fa";
+        }
     }
 
     // VALIDACION DE MONTO LIMITE (PRESUPUESTO)
@@ -2008,6 +2063,12 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             const destinoTelefono = document.getElementById("destinoTelefono");
             if(destinoTelefono) formData.append('destino_telefono', destinoTelefono.value);
             
+            // Documento de Pago (Nuevo)
+            const documentoPagoInput = document.getElementById('documentoPago');
+            if (documentoPagoInput && documentoPagoInput.files.length > 0) {
+                formData.append('payment_doc', documentoPagoInput.files[0]);
+            }
+
             // --- FRONTEND VALIDATION (PREMIUM STYLE) ---
             let missingFieldsCreate = [];
             
@@ -2036,6 +2097,11 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             // 5. Depositor
             if (!depositanteElem || !depositanteElem.value.trim()) {
                 missingFieldsCreate.push("Depositante");
+            }
+
+            // 6. Documento de Pago (Mandatory)
+            if (!documentoPagoInput || documentoPagoInput.files.length === 0) {
+                missingFieldsCreate.push("Adjunte El Documento");
             }
 
             if (missingFieldsCreate.length > 0) {
@@ -2071,6 +2137,75 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+
+                    // --- LOGICA DE SUBIDA DE IMAGEN (INJECTED INTO FETCH) ---
+                    console.log(">>> IMAGEN: Pago registrado. Verificando archivo para subir...");
+                    const fileInput = document.getElementById("documentoPago");
+                    
+                    if (fileInput && fileInput.files.length > 0) {
+                        console.log(">>> IMAGEN: Archivo detectado. Preparando subida...");
+                        const file = fileInput.files[0];
+                        const formDataImg = new FormData();
+                        
+                        // Acción NUEVA y DEDICADA
+                        formDataImg.append("action", "UploadPaymentDoc"); 
+                        // Intentar obtener Nro Ticket de varias fuentes
+                        let nroTicketToSend = window.currentNroTicket || '';
+                        if (!nroTicketToSend) {
+                            const ticketSpan = document.getElementById("viewModalTicketId"); // Span en modal consultar
+                            if (ticketSpan) nroTicketToSend = ticketSpan.textContent.trim();
+                        }
+                        if (!nroTicketToSend) {
+                            const ticketNumeroSpan = document.getElementById("ticketNumeroPago"); // Span en modal pago presupuesto
+                            if (ticketNumeroSpan) {
+                                let parts = ticketNumeroSpan.textContent.split('#');
+                                if (parts.length > 1) {
+                                    nroTicketToSend = parts[1].trim();
+                                } else {
+                                     nroTicketToSend = ticketNumeroSpan.textContent.replace('Ticket #', '').trim();
+                                }
+                            }
+                        }
+                        
+                        console.log(">>> DEBUG IMAGEN: nroTicketToSend final:", nroTicketToSend);
+                        formDataImg.append("nro_ticket", nroTicketToSend);
+                        
+                        // Usar el valor STRING del input 'registro'
+                        const registroElem = document.getElementById("registro");
+                        const registroVal = registroElem ? registroElem.value : data.id_payment;
+                        formDataImg.append("record_number", registroVal);
+                       
+                        const userId = document.getElementById('id_user_pago') ? document.getElementById('id_user_pago').value : '';
+                        formDataImg.append("user_loader", userId);
+                        formDataImg.append("payment_doc", file);
+
+                        const xhrImg = new XMLHttpRequest();
+                        const apiUrlImg = (typeof ENDPOINT_BASE !== 'undefined' ? ENDPOINT_BASE + APP_PATH : '') + "api/consulta/UploadPaymentDoc";
+                        
+                        xhrImg.open("POST", apiUrlImg, true);
+                        
+                        xhrImg.onload = function() {
+                            if (xhrImg.status === 200) {
+                                try {
+                                    const dataImg = JSON.parse(xhrImg.responseText);
+                                    if(dataImg.success) {
+                                        console.log(">>> IMAGEN: Subida EXITOSA.");
+                                    } else {
+                                        console.warn(">>> IMAGEN: Error en respuesta:", dataImg.message);
+                                    }
+                                } catch(e) { 
+                                    console.error(">>> IMAGEN: Error parseando respuesta", e); 
+                                }
+                            } else {
+                                console.error(">>> IMAGEN: Error HTTP:", xhrImg.status);
+                            }
+                        };
+                        xhrImg.send(formDataImg);
+                    } else {
+                        console.log(">>> IMAGEN: No se seleccionó archivo (input vacío).");
+                    }
+                    // ----------------------------------------------------
+
                     Swal.fire({
                         title: '¡Pago Registrado!',
                         html: `
@@ -2101,7 +2236,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                         // LIMPIAR SOLO DATOS VARIABLES DE LA TRANSACCIÓN
                         const inputsToClear = [
                             "montoBs", "montoRef", "referencia", 
-                            "obsAdministracion", "registro"
+                            "obsAdministracion", "registro", "documentoPago"
                         ];
                         inputsToClear.forEach(id => {
                             const el = document.getElementById(id);
@@ -2119,6 +2254,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                         // Restaurar botón
                         btnGuardarPago.disabled = false;
                         btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
+                        resetDocumentoPagoUI(); // Resetear UI del archivo
                     });
                 } else {
                     Swal.fire({
@@ -2602,7 +2738,7 @@ function getPagoEstatus(nroTicket) {
     estatusInput.value = "Cargando estatus...";
     paymentIdInput.value = "";
 
-    console.log("DEBUG getPagoEstatus: Solicitando para Ticket:", nroTicket);
+    // console.log("DEBUG getPagoEstatus: Solicitando para Ticket:", nroTicket);
 
     const xhr = new XMLHttpRequest();
     // Reutilizamos el endpoint existente en consultaApi
@@ -2610,11 +2746,11 @@ function getPagoEstatus(nroTicket) {
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     xhr.onload = function () {
-        console.log("DEBUG getPagoEstatus: Respuesta recibida. Status:", xhr.status);
+        // console.log("DEBUG getPagoEstatus: Respuesta recibida. Status:", xhr.status);
         if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                console.log("DEBUG getPagoEstatus: Data parsed:", response);
+                // console.log("DEBUG getPagoEstatus: Data parsed:", response);
                 
                 const responseData = response.estatus_pago || response.data;
                 
@@ -2624,7 +2760,7 @@ function getPagoEstatus(nroTicket) {
                     paymentIdInput.value = pagoData.id_status_payment;
                     estatusInput.value = pagoData.name_status_payment;
                     
-                    console.log("DEBUG getPagoEstatus: Estatus asignado:", pagoData.name_status_payment);
+                    // console.log("DEBUG getPagoEstatus: Estatus asignado:", pagoData.name_status_payment);
                 } else {
                     estatusInput.value = 'Pendiente por pagar';
                     paymentIdInput.value = "7"; // Status 7 por defecto
@@ -2669,18 +2805,18 @@ function loadPaymentHistory(nroTicket) {
         </tr>
     `;
 
-    console.log("DEBUG loadPaymentHistory: Solicitando historial para Ticket:", nroTicket);
+    // console.log("DEBUG loadPaymentHistory: Solicitando historial para Ticket:", nroTicket);
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentsByTicket`);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     xhr.onload = function () {
-        console.log("DEBUG loadPaymentHistory: Respuesta recibida. Status:", xhr.status);
+        // console.log("DEBUG loadPaymentHistory: Respuesta recibida. Status:", xhr.status);
         if (xhr.status === 200) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                console.log("DEBUG loadPaymentHistory: Data parsed:", response);
+                // console.log("DEBUG loadPaymentHistory: Data parsed:", response);
                 
                 if (response.success && Array.isArray(response.payments) && response.payments.length > 0) {
                     let rows = '';
@@ -3361,8 +3497,9 @@ function savePayment() {
     const bancoDestino = document.getElementById("bancoDestino");
 
     // Validations (Simplified)
-    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value) {
-         Swal.fire("Error", "Por favor complete los campos obligatorios", "error");
+    const documentoPagoInput = document.getElementById('documentoPago');
+    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value || !documentoPagoInput || documentoPagoInput.files.length === 0) {
+         Swal.fire("Campos Incompletos", "Por favor complete los campos obligatorios y Adjunte El Documento de pago.", "error");
          return;
     }
     
@@ -3423,6 +3560,22 @@ function savePayment() {
             try {
                 const data = JSON.parse(xhr.responseText);
                 if (data.success) {
+
+                    // --- LOGICA DE SUBIDA DE IMAGEN (DUPLICADA - COMENTADA) ---
+                    /*
+                    console.log("Pago registrado. Intentando subir imagen...");
+                    // CORRECCIÓN: El ID en el HTML es 'documentoPago', no 'soportePago'
+                    const fileInput = document.getElementById("documentoPago");
+                    
+                    if (fileInput && fileInput.files.length > 0) {
+                        // ... Logica movida al listener principal ...
+                    } else {
+                        console.log("No se seleccionó archivo para subir.");
+                        // Swal.fire("Atención", "El pago se guardó, pero NO se detectó ningún documento adjunto para subir. Asegúrate de seleccionarlo.", "info");
+                    }
+                    */
+                    // ----------------------------------------------------
+
                     Swal.fire({
                         title: "¡Pago Registrado!",
                         text: "El pago se ha registrado correctamente.",
@@ -3432,6 +3585,7 @@ function savePayment() {
                         if(modalPagoPresupuestoInstance) modalPagoPresupuestoInstance.hide();
                          // Refresh table if needed
                          if(typeof getTicketDataCoordinator === 'function') getTicketDataCoordinator();
+                         if(typeof loadPaymentsTable === 'function') loadPaymentsTable(currentTicketNro);
                     });
                 } else {
                     Swal.fire("Error", data.message || "Error al guardar", "error");
@@ -3983,5 +4137,3 @@ $('#edit_montoRef').on('input keyup', function() {
 });
 
 console.log("frontEnd.js fully loaded with editPayment logic");
-
-

@@ -603,7 +603,8 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
-                                } else if (id_area == 3 && id_rol == 5) {
+                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 1 (Finanzas) || id_rol = 6 (Analista Financiero) */
+                                } else if ((id_area == 3 && id_rol == 5) || (id_area == 1 && id_rol == 6)) {
                                     // Filtros de Exoneración (Restaurados)
                                       buttonsHtml += `
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Exoneraciones Pendientes"> <!-- Título asumido, ajustar si es necesario -->

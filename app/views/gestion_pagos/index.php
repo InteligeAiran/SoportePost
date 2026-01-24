@@ -1036,6 +1036,8 @@ function mi_navbar() {}
                                     <input type="hidden" id="estatus" value="">
                                     <input type="hidden" id="payment_id_to_save" name="payment_status">
                                 </div>
+
+
                                 
                                 <!-- Información Adicional Integrada (Registro, Fecha Carga) -->
                                 <div class="row g-2">
@@ -1160,6 +1162,34 @@ function mi_navbar() {}
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BLOQUE INTERMEDIO: SOPORTE DIGITAL -->
+                            <div class="form-section mt-3">
+                                <div class="form-section-header">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <h6 class="form-section-title">Soporte Digital</h6>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                            <i class="fas fa-file-invoice-dollar me-1 text-primary"></i>Documento de Pago
+                                        </label>
+                                        <div class="upload-container text-center" style="position: relative;">
+                                            <input type="file" class="form-control" id="documentoPago" name="documentoPago" accept="image/*,.pdf" style="display: none;">
+                                            <label for="documentoPago" class="d-block p-4 border rounded bg-light" style="border: 2px dashed #cbd5e0 !important; cursor: pointer; transition: all 0.3s ease; width: 100%;" id="labelDocumentoPago">
+                                                <div class="mb-2">
+                                                    <i class="fas fa-camera fa-2x text-secondary" id="iconDocumentoPago"></i>
+                                                </div>
+                                                <span class="text-muted fw-medium d-block" id="textDocumentoPago">Adjunte el Documento de Pago</span>
+                                                <span class="text-success fw-bold d-none" id="fileNameDocumentoPago"></span>
+                                            </label>
+                                            <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">
+                                                <i class="fas fa-info-circle me-1"></i>Archivos permitidos: JPG, JPEG, PNG, PDF (Máx. 5MB)
+                                            </small>
                                         </div>
                                     </div>
                                 </div>

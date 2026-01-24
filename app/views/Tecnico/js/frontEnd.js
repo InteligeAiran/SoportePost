@@ -1446,6 +1446,23 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     $('#uploadForm').data('file-name', fileName);
     $('#uploadForm').data('ticket-id', ticketId);
 
+    // Lógica para mostrar/ocultar la sección de documentos adicionales (Solo para Anticipo/Pago)
+    const btnToggleContainer = document.getElementById('btnTogglePaymentDocsContainer');
+    const paymentDocsExtension = document.getElementById('payment-docs-extension');
+    
+    if (btnToggleContainer && paymentDocsExtension) {
+        // Resetear visibilidad y valores
+        paymentDocsExtension.classList.add('d-none');
+        $('#docSoportePago').val('');
+        $('#docRetenciones').val('');
+
+        if (documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago') {
+             btnToggleContainer.classList.remove('d-none');
+        } else {
+             btnToggleContainer.classList.add('d-none');
+        }
+    }
+
     // Configurar el listener para el input de archivo
     if (documentFileInput) {
       // Remover listener previo para evitar duplicados
@@ -1457,6 +1474,20 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     setTimeout(() => {
       uploadDocumentModal.show();
     }, 300);
+  });
+
+  // Manejador para el botón de alternar documentos adicionales
+  $(document).on('click', '#btnTogglePaymentDocs', function() {
+      const extensionDiv = document.getElementById('payment-docs-extension');
+      if (extensionDiv) {
+          if (extensionDiv.classList.contains('d-none')) {
+              extensionDiv.classList.remove('d-none');
+              $(this).html('<i class="bi bi-dash-circle me-1"></i> Ocultar Soportes o Retenciones');
+          } else {
+              extensionDiv.classList.add('d-none');
+              $(this).html('<i class="bi bi-plus-circle me-1"></i> Agregar Soportes o Retenciones');
+          }
+      }
   });
 
   $(document).on('click', '.btn-view-document', function() {
@@ -3198,6 +3229,19 @@ async function handleUploadButtonClick(ticketId, documentType, uploadModalBootst
     const formData = new FormData();
     formData.append("action", "uploadDocument");
     formData.append("ticket_id", ticketId);
+    
+    // Agregar archivos adicionales si es Anticipo y existen
+    if ((documentType === 'Anticipo' || documentType === 'Pago') && document.getElementById('payment-docs-extension') && !document.getElementById('payment-docs-extension').classList.contains('d-none')) {
+        const soportePago = document.getElementById('docSoportePago');
+        const retenciones = document.getElementById('docRetenciones');
+        
+        if (soportePago && soportePago.files && soportePago.files.length > 0) {
+             formData.append("doc_soporte_pago", soportePago.files[0]);
+        }
+        if (retenciones && retenciones.files && retenciones.files.length > 0) {
+             formData.append("doc_retenciones", retenciones.files[0]);
+        }
+    }
     formData.append("nro_ticket", ticketNumber); // Añadir el número de ticket
     formData.append("document_type", documentType);
     

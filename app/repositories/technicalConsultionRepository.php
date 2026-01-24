@@ -1,5 +1,4 @@
-<?php
-namespace App\Repositories; // Usar namespaces para organizar tus clases
+<?php namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
 use \DateTime;
@@ -259,6 +258,8 @@ class TechnicalConsultionRepository
 
     // Nueva función para guardar archivos adjuntos
     public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, array $fileInfo) {
+        $record_number = isset($fileInfo['record_number']) ? $fileInfo['record_number'] : null;
+        
         return $this->model->saveArchivoAdjunto(
             $ticket_id,
             $Nr_ticket, // Pasamos Nr_ticket para que se pueda guardar si es necesario en la DB
@@ -269,6 +270,7 @@ class TechnicalConsultionRepository
             $fileInfo['mime_type'],
             $fileInfo['file_size_bytes'],
             $fileInfo['document_type'],
+            $record_number
         );
     }
 
