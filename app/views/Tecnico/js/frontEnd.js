@@ -1446,7 +1446,7 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     $('#uploadForm').data('file-name', fileName);
     $('#uploadForm').data('ticket-id', ticketId);
 
-    // Lógica para mostrar/ocultar la sección de documentos adicionales (Solo para Anticipo/Pago)
+    /* SECCIÓN COMENTADA PARA USO FUTURO: Lógica para documentos adicionales
     const btnToggleContainer = document.getElementById('btnTogglePaymentDocsContainer');
     const paymentDocsExtension = document.getElementById('payment-docs-extension');
     
@@ -1462,6 +1462,7 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
              btnToggleContainer.classList.add('d-none');
         }
     }
+    */
 
     // Configurar el listener para el input de archivo
     if (documentFileInput) {
@@ -1476,7 +1477,7 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     }, 300);
   });
 
-  // Manejador para el botón de alternar documentos adicionales
+  /* SECCIÓN COMENTADA PARA USO FUTURO: Manejador para el botón de alternar documentos adicionales
   $(document).on('click', '#btnTogglePaymentDocs', function() {
       const extensionDiv = document.getElementById('payment-docs-extension');
       if (extensionDiv) {
@@ -1489,6 +1490,7 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
           }
       }
   });
+  */
 
   $(document).on('click', '.btn-view-document', function() {
     documentActionsModal.hide();

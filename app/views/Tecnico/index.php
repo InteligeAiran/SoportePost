@@ -704,7 +704,7 @@ function mi_navbar() {}
                                     </small>
                                 </div>
                                 
-                                <!-- Sección de Documentos Adicionales de Pago (Inicialmente oculta) -->
+                                <!-- SECCIÓN COMENTADA PARA USO FUTURO: Soportes o Retenciones Adicionales
                                 <div id="btnTogglePaymentDocsContainer" class="mb-3 d-none">
                                     <button type="button" id="btnTogglePaymentDocs" class="btn btn-outline-primary btn-sm w-100">
                                         <i class="bi bi-plus-circle me-1"></i> Agregar Soportes o Retenciones
@@ -724,6 +724,7 @@ function mi_navbar() {}
                                         <input class="form-control form-control-sm" type="file" id="docRetenciones" name="docRetenciones" accept="image/jpg, image/png, image/gif, application/pdf">
                                     </div>
                                 </div>
+                                -->
 
                                 <!-- Previsualización DESACTIVADA POR MOTIVOS DE SEGURIDAD -->
                                 <!-- La previsualización ha sido desactivada para prevenir posibles inyecciones de código -->
