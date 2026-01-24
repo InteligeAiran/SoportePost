@@ -419,6 +419,10 @@ class Consulta extends Controller
                     $this->handleGetPaymentByRecordNumber();
                     break;
 
+                case 'GetPaymentAttachmentByRecordNumber':
+                    $this->handleGetPaymentAttachmentByRecordNumber();
+                    break;
+
                 case 'GetPaymentById':
                     $this->handleGetPaymentById();
                     break;
@@ -3830,6 +3834,24 @@ HTML;
             $this->response(['success' => true, 'payment' => $payment], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Pago no encontrado'], 404);
+        }
+    }
+
+    public function handleGetPaymentAttachmentByRecordNumber() {
+        $repository = new technicalConsultionRepository();
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
+        
+        if (empty($record_number)) {
+            $this->response(['success' => false, 'message' => 'Nro de registro no proporcionado'], 400);
+            return;
+        }
+
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number);
+        
+        if ($attachment) {
+            $this->response(['success' => true, 'attachment' => $attachment], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Documento no encontrado para este pago'], 404);
         }
     }
 

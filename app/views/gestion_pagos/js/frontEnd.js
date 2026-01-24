@@ -105,20 +105,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
   const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
 
-  // Obtener el botón de rechazo del DOM
-  const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
-
   // 1. Manejar el evento de clic en el botón "Rechazar Documento"
-  // La lógica es: cerrar el modal actual y luego abrir el nuevo.
-  if (rechazoDocumentoBtn) {
-    rechazoDocumentoBtn.addEventListener('click', function () {
-      // Cierra el modal de visualización
-      viewDocumentModalInstance.hide();
-
-      // Abre el modal de rechazo
-      modalRechazoInstance.show();
-    });
-  }
+  // (Removido por solicitud del usuario en este módulo)
 
   if(modalConfirmacionRechazoBtn){
     modalConfirmacionRechazoBtn.addEventListener('click', function () {
@@ -974,8 +962,6 @@ function getTicketDataCoordinator() {
               const pagoValor = $(this).data("pago");
               const presupuestoValor = $(this).data("presupuesto");
               const ticketRechazado = $(this).data("rechazado");
-              const BotonRechazo = document.getElementById('RechazoDocumento');
-              BotonRechazo.style.display = 'none';
               currentTicketIdForImage = ticketId;
               currentTicketNroForImage = nroTicket;
               const VizualizarImage = document.getElementById('visualizarImagenModal');
@@ -1754,8 +1740,9 @@ function getDocumentType(url) {
 
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true) {
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null) {
   const modalElementView = document.getElementById("viewDocumentModal");
+  const modalTitleView = document.getElementById("viewDocumentModalLabel"); // The H5 title
   const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
   const imageViewPreview = document.getElementById("imageViewPreview");
   const pdfViewViewer = document.getElementById("pdfViewViewer");
@@ -1766,30 +1753,18 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
 
   currentTicketId = ticketId;
   currentNroTicket = nroTicket;
-  modalTicketIdSpanView.textContent = currentNroTicket;
+  
+  if (customTitle) {
+    modalTitleView.innerHTML = customTitle;
+  } else {
+    modalTitleView.innerHTML = `Visualizando Documento - Ticket: <span id="viewModalTicketId">${currentNroTicket}</span>`;
+  }
 
   // Limpiar vistas y mensajes
   imageViewPreview.style.display = "none";
   pdfViewViewer.style.display = "none";
   messageContainer.textContent = "";
   messageContainer.classList.add("hidden");
-
-  // Función para limpiar la ruta del archivo
-  function cleanFilePath(filePath) {
-    if (!filePath) return null;
-
-    // Reemplazar barras invertidas con barras normales
-    let cleanPath = filePath.replace(/\\/g, '/');
-
-    // Extraer la parte después de 'Documentos_SoportePost/'
-    const pathSegments = cleanPath.split('Documentos_SoportePost/');
-    if (pathSegments.length > 1) {
-      cleanPath = pathSegments[1];
-    }
-
-    // Construir la URL completa
-    return `http://${HOST}/Documentos/${cleanPath}`;
-  }
 
   if (imageUrl) {
     // Es una imagen
@@ -1837,7 +1812,74 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
     visualizarImagenModal.hide();
     
   });
+}
+
+/**
+ * View a payment receipt.
+ * Optimized: Uses parameters from JOIN or fallback.
+ */
+window.viewPaymentReceipt = function(path, mime, name, recordNumber) {
+    if (!path) {
+        Swal.fire("Atención", "Este pago no tiene un comprobante digital adjunto.", "info");
+        return;
+    }
+
+    const receiptName = name || 'Comprobante de Pago';
+    const isPdf = (mime && mime.includes('pdf')) || path.toLowerCase().endsWith('.pdf');
+    
+    // Custom title for payments as requested by the user
+    const title = recordNumber ? `Pago - Nro. Registro: <span class="badge bg-light text-primary">${recordNumber}</span>` : 'Pago';
+    
+    if (isPdf) {
+        showViewModal('', '', null, path, receiptName, false, title);
+    } else {
+        showViewModal('', '', path, null, receiptName, false, title);
+    }
 };
+
+/**
+ * Robustly clean file paths for document viewing.
+ * Extracts the relative part from absolute disk paths.
+ */
+function cleanFilePath(filePath) {
+    if (!filePath) return null;
+
+    // 1. Normalize all slashes to forward slashes first
+    let path = filePath.replace(/\\/g, '/');
+
+    // 2. Extract path after the storage root (Documentos_SoportePost)
+    // We look for 'Documentos_SoportePost' regardless of case
+    const rootMarker = "Documentos_SoportePost/";
+    const index = path.toLowerCase().indexOf(rootMarker.toLowerCase());
+    
+    if (index !== -1) {
+        path = path.substring(index + rootMarker.length);
+    } else {
+        // Fallback: If root marker not found, try to find by common segments
+        const segments = path.split('/');
+        const pagosIndex = segments.findIndex(s => s.toLowerCase() === 'pagos' || s.toLowerCase() === 'anticipo');
+        if (pagosIndex !== -1 && pagosIndex > 0) {
+            // Keep segments from the serial onwards (usually root/SERIAL/TICKET/Pagos/FILE)
+            path = segments.slice(pagosIndex - 2).join('/');
+        }
+    }
+
+    // 3. Construct the web URL
+    // Use ENDPOINT_BASE if HOST is not defined (standard in this app)
+    let baseUrl = "";
+    if (typeof HOST !== 'undefined' && HOST) {
+        baseUrl = `http://${HOST}/Documentos/`;
+    } else if (typeof ENDPOINT_BASE !== 'undefined') {
+        // ENDPOINT_BASE usually points to the app root, e.g., http://localhost/SoportePost/
+        // Documentos are served from a virtual directory /Documentos/ at the server root
+        const origin = new URL(ENDPOINT_BASE).origin;
+        baseUrl = `${origin}/Documentos/`;
+    } else {
+        baseUrl = "/Documentos/";
+    }
+
+    return baseUrl + path;
+}
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 
@@ -2846,8 +2888,13 @@ function loadPaymentHistory(nroTicket) {
 </svg>`;
 
                         // ALWAYS show the view button as requested by the user icon
-                        // It will call viewPaymentReceipt which handles cases with no document
-                        actionBtn += `<button type="button" class="btn btn-sm btn-link text-success p-0 m-0 me-2" onclick="viewPaymentReceipt('${payment.receipt_path || ''}', '${payment.receipt_mime || ''}', '${payment.receipt_name || ''}')" title="Ver Comprobante">${viewIcon}</button>`;
+                        // Now using data from SQL JOIN (no extra AJAX needed)
+                        // CRITICAL: Normalize slashes HERE to prevent backslashes from being treated as escapes in onclick
+                        const receiptPath = (payment.receipt_path || '').replace(/\\/g, '/');
+                        const receiptMime = payment.receipt_mime || '';
+                        const receiptName = payment.receipt_name || 'Comprobante';
+                        
+                        actionBtn += `<button type="button" class="btn btn-sm btn-link text-success p-0 m-0 me-2" onclick="viewPaymentReceipt('${receiptPath}', '${receiptMime}', '${receiptName}', '${payment.record_number}')" title="Ver Comprobante">${viewIcon}</button>`;
 
                         if (!isConfirmed) {
                              // Use type="button" to prevent form submission behavior

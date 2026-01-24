@@ -1272,7 +1272,6 @@ function mi_navbar() {}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="CerrarModalVizualizar">Cerrar</button>
-                        <button type="button" class="btn btn-danger" id="RechazoDocumento">Rechazar Documento</button>
                     </div>
                 </div>
             </div>

@@ -6914,21 +6914,25 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
             
             $sql = "SELECT 
-                        id_payment_record,
-                        record_number,
-                        payment_date,
-                        payment_method,
-                        currency,
-                        amount_bs,
-                        reference_amount,
-                        payment_reference,
-                        depositor,
-                        origen_bank,
-                        destination_bank,
-                        confirmation_number
-                    FROM payment_records 
-                    WHERE nro_ticket = " . $escaped_nro_ticket . "
-                    ORDER BY payment_date DESC";
+                        p.id_payment_record,
+                        p.record_number,
+                        p.payment_date,
+                        p.payment_method,
+                        p.currency,
+                        p.amount_bs,
+                        p.reference_amount,
+                        p.payment_reference,
+                        p.depositor,
+                        p.origen_bank,
+                        p.destination_bank,
+                        p.confirmation_number,
+                        a.file_path as receipt_path,
+                        a.mime_type as receipt_mime,
+                        a.original_filename as receipt_name
+                    FROM payment_records p
+                    LEFT JOIN archivos_adjuntos a ON p.record_number = a.record_number
+                    WHERE p.nro_ticket = " . $escaped_nro_ticket . "
+                    ORDER BY p.payment_date DESC";
             
             $result = Model::getResult($sql, $this->db);
             return $result;
@@ -7479,46 +7483,47 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
     public function GetPaymentAttachmentByRecordNumber($record_number) {
         try {
             $conn = $this->db->getConnection();
-            
-            // Escape the record number
             $escaped_record_number = pg_escape_literal($conn, $record_number);
             
-            // Get the payment info first to get nro_ticket and payment_date
+            // Search directly by record_number in archivos_adjuntos
+            $sql = "SELECT id, nro_ticket, original_filename, stored_filename, 
+                           file_path, mime_type, file_size_bytes, uploaded_at, 
+                           uploaded_by_user_id, document_type, record_number
+                    FROM archivos_adjuntos
+                    WHERE record_number = $escaped_record_number
+                    LIMIT 1";
+            
+            $result = pg_query($conn, $sql);
+            
+            if ($result && pg_num_rows($result) > 0) {
+                return pg_fetch_assoc($result);
+            }
+            
+            // Fallback: If no record_number match, try old proximity logic
             $sql_payment = "SELECT nro_ticket, payment_date 
                            FROM payment_records 
                            WHERE record_number = $escaped_record_number";
             
             $result_payment = pg_query($conn, $sql_payment);
             
-            if (!$result_payment || pg_num_rows($result_payment) === 0) {
-                error_log("Payment not found for record_number: $record_number");
-                return null;
+            if ($result_payment && pg_num_rows($result_payment) > 0) {
+                $payment = pg_fetch_assoc($result_payment);
+                $escaped_nro_ticket = pg_escape_literal($conn, $payment['nro_ticket']);
+                $payment_date = $payment['payment_date'];
+                
+                $sql_fallback = "SELECT * FROM archivos_adjuntos
+                        WHERE nro_ticket = $escaped_nro_ticket
+                        AND (document_type = 'Anticipo' OR document_type = 'Pago' OR document_type = 'comprobante_pago')
+                        ORDER BY ABS(EXTRACT(EPOCH FROM (uploaded_at - '$payment_date'::timestamp)))
+                        LIMIT 1";
+                
+                $result_fb = pg_query($conn, $sql_fallback);
+                if ($result_fb && pg_num_rows($result_fb) > 0) {
+                    return pg_fetch_assoc($result_fb);
+                }
             }
             
-            $payment = pg_fetch_assoc($result_payment);
-            $nro_ticket = $payment['nro_ticket'];
-            $payment_date = $payment['payment_date'];
-            
-            $escaped_nro_ticket = pg_escape_literal($conn, $nro_ticket);
-            
-            // Get attachment for this payment
-            // Match by nro_ticket and document_type, get the one closest to payment_date
-            $sql = "SELECT id, nro_ticket, original_filename, stored_filename, 
-                           file_path, mime_type, file_size_bytes, uploaded_at, 
-                           uploaded_by_user_id, document_type
-                    FROM archivos_adjuntos
-                    WHERE nro_ticket = $escaped_nro_ticket
-                    AND document_type = 'comprobante_pago'
-                    ORDER BY ABS(EXTRACT(EPOCH FROM (uploaded_at - '$payment_date'::timestamp)))
-                    LIMIT 1";
-            
-            $result = pg_query($conn, $sql);
-            
-            if (!$result || pg_num_rows($result) === 0) {
-                return null;
-            }
-            
-            return pg_fetch_assoc($result);
+            return null;
             
         } catch (Throwable $e) {
             error_log("Error en GetPaymentAttachmentByRecordNumber: " . $e->getMessage());
