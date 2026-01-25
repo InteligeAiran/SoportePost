@@ -919,12 +919,153 @@ class consulta_rifModel extends Model
                 return ['error' => 'Error al guardar el archivo adjunto en la base de datos.'];
             }
 
+            // PATRÓN saveDocument2: Determinación de estatus e historial
+            $id_status_payment = $this->determineStatusPayment($Nr_ticket, $document_type);
+            
+            // Sync status and history using helper
+            $this->syncTicketStatusAndHistoryByNro($Nr_ticket, $uploaded_by_user_id, $id_status_payment);
+
             return ['success' => true];
 
         } catch (Throwable $e) {
             error_log("Excepción en saveArchivoAdjunto: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
             return ['error' => 'Error inesperado al guardar archivo adjunto: ' . $e->getMessage()];
         }
+    }
+
+    private function syncTicketStatusAndHistoryByNro($nro_ticket, $id_user, $id_new_status_payment) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+
+            // 1. Get ticket ID and current statuses
+            $sql_ticket = "SELECT id_ticket, id_status_ticket, id_accion_ticket FROM tickets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1";
+            $result_ticket = pg_query($db_conn, $sql_ticket);
+            
+            if ($result_ticket && pg_num_rows($result_ticket) > 0) {
+                $ticket_row = pg_fetch_assoc($result_ticket);
+                $id_ticket = (int)$ticket_row['id_ticket'];
+                $id_status_ticket = $ticket_row['id_status_ticket'] !== null ? (int)$ticket_row['id_status_ticket'] : 'NULL';
+                $id_accion_ticket = $ticket_row['id_accion_ticket'] !== null ? (int)$ticket_row['id_accion_ticket'] : 'NULL';
+                
+                // 2. Update ticket status
+                $sqlticket_update = "UPDATE tickets SET id_status_payment = ".$id_new_status_payment." WHERE id_ticket = ".$id_ticket.";";
+                pg_query($db_conn, $sqlticket_update);
+
+                // 3. Gather other statuses
+                $id_status_lab = 0;
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket;
+                $status_lab_result = pg_query($db_conn, $status_lab_sql);
+                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+                }
+
+                $new_status_domiciliacion = 'NULL';
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". $id_ticket;
+                $status_domiciliacion_result = pg_query($db_conn, $status_domiciliacion_sql);
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                }
+
+                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket}";
+                $resultcoordinador = pg_query($db_conn, $sqlgetcoordinador);
+                $id_coordinador = 'NULL';
+                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                    $id_coordinador = (int)$row_coordinador['id_coordinador'];
+                }
+
+                // 4. Insert history
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer, %s::integer);",
+                    $id_ticket,
+                    (int)$id_user,
+                    $id_status_ticket,
+                    $id_accion_ticket,
+                    $id_status_lab,
+                    (int)$id_new_status_payment,
+                    $new_status_domiciliacion,
+                    $id_coordinador
+                );
+
+                pg_query($db_conn, $sqlInsertHistory);
+                return true;
+            }
+            return false;
+        } catch (Throwable $e) {
+            error_log("Error en syncTicketStatusAndHistoryByNro: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function determineStatusPayment($nro_ticket, $document_type_being_uploaded) {
+        // 1. Verificar estado actual para mantener aprobados si se sube Envio/Traslado
+        $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
+        $current_status_result = Model::getResult($current_status_sql, $this->db);
+        
+        if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
+            $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+            if (($current_status == 4 || $current_status == 6) && 
+                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
+                return $current_status;
+            }
+        }
+        
+        // 2. Obtener documentos existentes
+        $sql = "SELECT document_type FROM archivos_adjuntos WHERE nro_ticket = '".$nro_ticket."' AND document_type != '".$document_type_being_uploaded."'";
+        $result = Model::getResult($sql, $this->db);
+        
+        $existing_documents = [];
+        if ($result && isset($result['query'])) {
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $existing_documents[] = $agente['document_type'];
+            }
+        }
+
+        // 3. Validación de Región (Miranda, Caracas, etc.)
+        $serial_sql = "SELECT tik.serial_pos FROM tickets tik WHERE tik.nro_ticket = '".$nro_ticket."'";
+        $serial_result = Model::getResult($serial_sql, $this->db);
+        $serial = '';
+        if ($serial_result && isset($serial_result['query']) && $serial_result['numRows'] > 0) {
+            $serial = pg_fetch_result($serial_result['query'], 0,'serial_pos');
+        }
+
+        $estado_sql = "SELECT * FROM verifingbranches_serial('".$serial."');";
+        $estado_result = Model::getResult($estado_sql, $this->db);
+
+        if ($estado_result && isset($estado_result['query']) && $estado_result['numRows'] > 0) {
+            $nombre_estado = pg_fetch_result($estado_result['query'], 0, 'nombre_estado');
+            if (in_array($nombre_estado, ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'])) {
+                if ($document_type_being_uploaded === 'Exoneracion') return 5;
+                if ($document_type_being_uploaded === 'Anticipo') return 7;
+            }
+        }
+       
+        // 4. Lógica de transiciones (Basada en reportsModel.php:730)
+        if ($document_type_being_uploaded === 'Envio') {
+            if (in_array('Exoneracion', $existing_documents)) {
+                return 5; // Exoneracion Pendiente por Revision
+            } elseif (in_array('Anticipo', $existing_documents)) {
+                return 7; // Pago Anticipo Pendiente por Revision
+            } else {
+                return 10; // Pendiente Por Cargar Documento (Pago o Exoneracion)
+            }
+        } elseif ($document_type_being_uploaded === 'Exoneracion') {
+            if (in_array('Envio', $existing_documents)) {
+                return 5; // Exoneracion Pendiente por Revision
+            } else {
+                return 11; // Pendiente Por Cargar Documento (PDF Envio ZOOM)
+            }
+        } elseif ($document_type_being_uploaded === 'Anticipo') {
+            if (in_array('Envio', $existing_documents)) {
+                return 7; // Pago Anticipo Pendiente por Revision
+            } else {
+                return 11; // Pendiente Por Cargar Documento (PDF Envio ZOOM)
+            }
+        }   
+
+        return 11; // Por defecto
     }
 
         public function savePagoAttachment($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type, $record_number)
@@ -963,6 +1104,12 @@ class consulta_rifModel extends Model
                 error_log("Error al insertar archivo adjunto (PAGO): " . pg_last_error($db_conn) . " Query: " . $sql);
                 return ['error' => 'Error al guardar el pago adjunto en la base de datos.'];
             }
+
+            // PATRÓN saveDocument2: Determinación de estatus e historial
+            $id_status_payment = $this->determineStatusPayment($Nr_ticket, $document_type);
+            
+            // Sync status and history
+            $this->syncTicketStatusAndHistoryByNro($Nr_ticket, $uploaded_by_user_id, $id_status_payment);
 
             return ['success' => true];
 
@@ -6786,7 +6933,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $sql = "SELECT * FROM status_payments 
                         WHERE id_status_payment = (
                             CASE 
-                                WHEN EXISTS (SELECT 1 FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . ") THEN 17 
+                                WHEN EXISTS (SELECT 1 FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " AND amount_bs > 0) THEN 17 
                                 ELSE 7 
                             END
                         )";
@@ -6835,7 +6982,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $db_conn = $this->db->getConnection();
             
             // Prepare data with quoting/escaping
-            $nro_ticket = pg_escape_literal($db_conn, $data['nro_ticket']);
+            $nro_ticket_val = $data['nro_ticket'];
+            $nro_ticket = pg_escape_literal($db_conn, $nro_ticket_val);
             $serial_pos = pg_escape_literal($db_conn, $data['serial_pos']);
             $user_loader = intval($data['user_loader']);
             $payment_date = pg_escape_literal($db_conn, $data['payment_date']); // Transaction date
@@ -6870,9 +7018,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $existingCount = intval($checkRow['count']);
             }
 
-            // Logic: If FIRST payment (count 0) -> Status 7. If subsequent -> Status 17.
-            // Unless status is explicitly passed and different ? adhering to user rule.
-            $payment_status = ($existingCount === 0) ? 7 : 17;
+            // Determine Status using centralized logic
+            // We treat a payment insertion as an 'Anticipo' document upload event for status purposes
+            $payment_status = $this->determineStatusPayment($nro_ticket_val, 'Anticipo');
 
             // CONFIRMATION NUMBER defaults to FALSE
             $confirmation_number = 'false';
@@ -6899,7 +7047,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
             if ($result && $result['numRows'] > 0) {
                  $row = pg_fetch_assoc($result['query'], 0);
-                 return $row['id_payment_record'];
+                 $id_payment_record = $row['id_payment_record'];
+
+                 // UPDATE TICKET STATUS AND HISTORY
+                 $this->syncTicketStatusAndHistoryByNro($nro_ticket_val, $user_loader, $payment_status);
+
+                 return $id_payment_record;
             }
             
             return false;
@@ -6947,9 +7100,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         try {
             // Si hay nro_ticket, insertar directamente en payment_records
             if (!empty($nro_ticket)) {
-                $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
-                $escaped_serial_pos = pg_escape_literal($this->db->getConnection(), $serial_pos);
+                $db_conn = $this->db->getConnection();
+                $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+                $escaped_serial_pos = pg_escape_literal($db_conn, $serial_pos);
                 
+                // Recalculate status according to rules
+                $payment_status = $this->determineStatusPayment($nro_ticket, 'Anticipo');
                 $sql = "INSERT INTO payment_records (
                     nro_ticket,
                     serial_pos,
@@ -6980,35 +7136,40 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                     " . $escaped_nro_ticket . ",
                     " . $escaped_serial_pos . ",
                     " . ($user_loader ? (int)$user_loader : "NULL") . ",
-                    " . ($payment_date ? "'" . pg_escape_string($this->db->getConnection(), $payment_date) . "'" : "NULL") . ",
-                    " . ($origen_bank ? pg_escape_literal($this->db->getConnection(), $origen_bank) : "NULL") . ",
-                    " . ($destination_bank ? pg_escape_literal($this->db->getConnection(), $destination_bank) : "NULL") . ",
-                    " . pg_escape_literal($this->db->getConnection(), $payment_method) . ",
-                    " . pg_escape_literal($this->db->getConnection(), $currency) . ",
+                    " . ($payment_date ? "'" . pg_escape_string($db_conn, $payment_date) . "'" : "NULL") . ",
+                    " . ($origen_bank ? pg_escape_literal($db_conn, $origen_bank) : "NULL") . ",
+                    " . ($destination_bank ? pg_escape_literal($db_conn, $destination_bank) : "NULL") . ",
+                    " . pg_escape_literal($db_conn, $payment_method) . ",
+                    " . pg_escape_literal($db_conn, $currency) . ",
                     " . ($reference_amount ? (float)$reference_amount : "NULL") . ",
                     " . (float)$amount_bs . ",
-                    " . ($payment_reference ? pg_escape_literal($this->db->getConnection(), $payment_reference) : "NULL") . ",
-                    " . ($depositor ? pg_escape_literal($this->db->getConnection(), $depositor) : "NULL") . ",
-                    " . ($observations ? pg_escape_literal($this->db->getConnection(), $observations) : "NULL") . ",
-                    " . ($record_number ? pg_escape_literal($this->db->getConnection(), $record_number) : "NULL") . ",
-                    " . ($loadpayment_date ? "'" . pg_escape_string($this->db->getConnection(), $loadpayment_date) . "'" : "NOW()") . ",
+                    " . ($payment_reference ? pg_escape_literal($db_conn, $payment_reference) : "NULL") . ",
+                    " . ($depositor ? pg_escape_literal($db_conn, $depositor) : "NULL") . ",
+                    " . ($observations ? pg_escape_literal($db_conn, $observations) : "NULL") . ",
+                    " . ($record_number ? pg_escape_literal($db_conn, $record_number) : "NULL") . ",
+                    " . ($loadpayment_date ? "'" . pg_escape_string($db_conn, $loadpayment_date) . "'" : "NOW()") . ",
                     " . ($confirmation_number ? "TRUE" : "FALSE") . ",
-                    " . ($payment_status ? (int)$payment_status : "1") . ",
-                    " . ($destino_rif_tipo ? pg_escape_literal($this->db->getConnection(), $destino_rif_tipo) : "NULL") . ",
-                    " . ($destino_rif_numero ? pg_escape_literal($this->db->getConnection(), $destino_rif_numero) : "NULL") . ",
-                    " . ($destino_telefono ? pg_escape_literal($this->db->getConnection(), $destino_telefono) : "NULL") . ",
-                    " . ($destino_banco ? pg_escape_literal($this->db->getConnection(), $destino_banco) : "NULL") . ",
-                    " . ($origen_rif_tipo ? pg_escape_literal($this->db->getConnection(), $origen_rif_tipo) : "NULL") . ",
-                    " . ($origen_rif_numero ? pg_escape_literal($this->db->getConnection(), $origen_rif_numero) : "NULL") . ",
-                    " . ($origen_telefono ? pg_escape_literal($this->db->getConnection(), $origen_telefono) : "NULL") . ",
-                    " . ($origen_banco ? pg_escape_literal($this->db->getConnection(), $origen_banco) : "NULL") . "
+                    " . (int)$payment_status . ",
+                    " . ($destino_rif_tipo ? pg_escape_literal($db_conn, $destino_rif_tipo) : "NULL") . ",
+                    " . ($destino_rif_numero ? pg_escape_literal($db_conn, $destino_rif_numero) : "NULL") . ",
+                    " . ($destino_telefono ? pg_escape_literal($db_conn, $destino_telefono) : "NULL") . ",
+                    " . ($destino_banco ? pg_escape_literal($db_conn, $destino_banco) : "NULL") . ",
+                    " . ($origen_rif_tipo ? pg_escape_literal($db_conn, $origen_rif_tipo) : "NULL") . ",
+                    " . ($origen_rif_numero ? pg_escape_literal($db_conn, $origen_rif_numero) : "NULL") . ",
+                    " . ($origen_telefono ? pg_escape_literal($db_conn, $origen_telefono) : "NULL") . ",
+                    " . ($origen_banco ? pg_escape_literal($db_conn, $origen_banco) : "NULL") . "
                 ) RETURNING id_payment_record;";
                 
                 $result = Model::getResult($sql, $this->db);
                 
                 if ($result && $result['numRows'] > 0) {
                     $row = pg_fetch_assoc($result['query'], 0);
-                    return $row['id_payment_record'];
+                    $id_payment_record = $row['id_payment_record'];
+
+                    // UPDATE TICKET STATUS AND HISTORY
+                    $this->syncTicketStatusAndHistoryByNro($nro_ticket, $user_loader, $payment_status);
+
+                    return $id_payment_record;
                 }
                 
                 return false;
