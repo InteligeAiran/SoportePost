@@ -1058,14 +1058,12 @@ class consulta_rifModel extends Model
                 return 11; // Pendiente Por Cargar Documento (PDF Envio ZOOM)
             }
         } elseif ($document_type_being_uploaded === 'Anticipo') {
-            if (in_array('Envio', $existing_documents)) {
-                return 7; // Pago Anticipo Pendiente por Revision
-            } else {
-                return 11; // Pendiente Por Cargar Documento (PDF Envio ZOOM)
-            }
+            return 7; // Pago Anticipo Pendiente por Revision
+        } elseif ($document_type_being_uploaded === 'Pago' || $document_type_being_uploaded === 'pago') {
+            return 17; // Pago Pendiente por Revision
         }   
 
-        return 11; // Por defecto
+        return 11; // Por defecto (Pendiente Por Cargar Documento ZOOM)
     }
 
         public function savePagoAttachment($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type, $record_number)

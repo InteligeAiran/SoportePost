@@ -3984,18 +3984,22 @@ HTML;
         $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : __DIR__ . '/../../../../public/documentos/';
         
         $folderName = 'Pagos';
-        $documentType = 'Pago';
+        $documentType = isset($_POST['document_type']) && !empty($_POST['document_type']) ? $_POST['document_type'] : 'Pago';
 
         if ($ticketInfo && isset($ticketInfo['serial_pos'])) {
-             // Verificar si ya existe un Anticipo (usando nro_ticket)
-             $existingAnticipo = $repository->getDocumentByType($ticketInfo['nro_ticket'], 'Anticipo');
-             
-             // Si NO existe anticipo, este pago será el Anticipo
-             // getDocumentByType retorna array o false
-             if (!$existingAnticipo) {
-                 $folderName = 'Anticipo';
-                 $documentType = 'Anticipo';
+             // Si el documentType NO viene del POST, intentamos adivinarlo (fallback)
+             if (!isset($_POST['document_type']) || empty($_POST['document_type'])) {
+                 // Verificar si ya existe un Anticipo (usando nro_ticket)
+                 $existingAnticipo = $repository->getDocumentByType($ticketInfo['nro_ticket'], 'Anticipo');
+                 
+                 // Si NO existe anticipo, este pago será el Anticipo
+                 if (!$existingAnticipo) {
+                     $documentType = 'Anticipo';
+                 }
              }
+             
+             // Establecer la carpeta basada en el documentType final
+             $folderName = ($documentType === 'Anticipo') ? 'Anticipo' : 'Pagos';
              
              $serial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $ticketInfo['serial_pos']);
              $ticketFolder = preg_replace("/[^a-zA-Z0-9]/", "", $nro_ticket); 
