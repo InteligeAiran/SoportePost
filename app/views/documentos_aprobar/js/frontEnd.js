@@ -500,7 +500,9 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                 `;
-                                if (isRejected) {
+                                const isRejectedStatus = [12, 13].includes(parseInt(idStatusPayment));
+                                
+                                if (isRejectedStatus) {
                                     actionButtons += `
                                         <button class="btn btn-warning btn-sm upload-new-doc-btn ms-1" 
                                                 data-id="${idTicket}" 
@@ -619,7 +621,8 @@ function getTicketAprovalDocument() {
                                     `;
                                     /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 6 (Operaciones) || id_rol = 4 (Coordinador) */
                                 } else if ((id_area == 3 && id_rol == 5) || (id_area == 1 && id_rol == 6)) {
-                                    // Filtros de Exoneración (Restaurados)
+                                    // Filtros de Exoneración (OCULTOS POR SOLICITUD)
+                                    /*
                                       buttonsHtml += `
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Exoneraciones Pendientes"> <!-- Título asumido, ajustar si es necesario -->
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -639,6 +642,7 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
+                                    */
                                 } else {
                                     // Default behavior: Show Anticipos (or maybe nothing? Staying safe and showing Anticipos as fallback or if user matches neither but has access)
                                     // For now, let's show Anticipos as default to avoid empty UI for other roles, or hide everything if strict?
@@ -718,7 +722,7 @@ function getTicketAprovalDocument() {
                                     { 
                                         button: "btn-por-asignar", 
                                         searchTerms: [
-                                            { column: 'id_status_payment', value: '7' }
+                                            { column: 'id_status_payment', value: '^7$|^17$' }
                                         ]
                                     },
                                     { 
@@ -733,7 +737,8 @@ function getTicketAprovalDocument() {
                                             { column: 'id_status_payment', value: '13' }
                                         ]
                                     },
-                                    // Nuevas configuraciones para Exoneración
+                                    // Nuevas configuraciones para Exoneración (COMENTADAS POR SOLICITUD DE USUARIO)
+                                    /*
                                     {
                                         button: "btn-recibidos",
                                         searchTerms: [ { column: '(id_status_payment)', value: '5' } ]
@@ -746,6 +751,7 @@ function getTicketAprovalDocument() {
                                         button: "btn-rechazado_exoneracion",
                                         searchTerms: [ { column: 'id_status_payment', value: '12' } ]
                                     }
+                                    */
                                 ];
 
                                 for (let i = 0; i < searchConfigs.length; i++) {
@@ -759,7 +765,7 @@ function getTicketAprovalDocument() {
                                         api.columns().search('').draw(false);
                                         
                                         if (button === "btn-por-asignar") {
-                                            api.column(1).search('^7$', true, false, true).draw();
+                                            api.column(1).search('^7$|^17$', true, false, true).draw();
                                             api.column(11).visible(false);
                                         } else if (button === "btn-anticipos-aprobados") {
                                             api.column(1).search('^6$', true, false, true).draw();
@@ -822,10 +828,10 @@ function getTicketAprovalDocument() {
                                     // ✅ LIMPIAR FILTROS PERSONALIZADOS
                                     $.fn.dataTable.ext.search.pop();
                                     
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$' }];
+                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$|^17$' }];
                                     if (checkDataExistsById(searchTerms)) {
                                         api.columns().search('').draw(false);
-                                        api.column(1).search('^7$', true, false, true).draw();
+                                        api.column(1).search('^7$|^17$', true, false, true).draw();
                                         api.column(11).visible(false);
                                         setActiveButton("btn-por-asignar");
                                     } else {
@@ -1213,14 +1219,6 @@ function getTicketAprovalDocument() {
             }
         } else if (xhr.status === 404) {
             if (tableContainer) {
-                let serverMessage = "No hay tickets para aprobar documentos en este momento.";
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.message) serverMessage += `<br><small>(${response.message})</small>`;
-                } catch(e) {
-                     serverMessage += `<br><small>(Respuesta del servidor: ${xhr.responseText.substring(0, 100)})</small>`;
-                }
-
                 tableContainer.innerHTML = `<tr>
         <td colspan="14" class="text-center text-muted py-5">
           <div class="d-flex flex-column align-items-center">
@@ -1228,7 +1226,7 @@ function getTicketAprovalDocument() {
               <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
             </svg>
             <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">${serverMessage}</p>
+            <p class="text-muted mb-0">No hay tickets para aprobar documentos en este momento.</p>
           </div>
         </td>
       </tr>`
@@ -6235,7 +6233,22 @@ function loadPaymentMethods() {
                         const pmCont = document.getElementById("pagoMovilFieldsContainer");
 
                         if (bancoCont) bancoCont.style.display = (id === 2) ? 'flex' : 'none'; // Transferencia
-                        if (pmCont) pmCont.style.display = (id === 5) ? 'block' : 'none'; // Pago Móvil
+                        if (pmCont) {
+                            pmCont.style.display = (id === 5) ? 'block' : 'none'; // Pago Móvil
+                            
+                            if (id === 5) {
+                                // Ocultar campos de RIF y Teléfono en Origen (Solicitud Usuario)
+                                const $rifCont = $("#origenRifTipo").closest(".mb-2");
+                                const $tlfCont = $("#origenTelefono").closest(".mb-2");
+                                
+                                $rifCont.hide();
+                                $tlfCont.hide();
+                                
+                                // Deshabilitar para evitar validación HTML5
+                                $rifCont.find("input, select").prop("required", false).prop("disabled", true);
+                                $tlfCont.find("input, select").prop("required", false).prop("disabled", true);
+                            }
+                        }
 
                         if (id === 2 || id === 5) { // Transferencia or Pago Móvil
                             if (moneda) {
@@ -6302,7 +6315,7 @@ function openDetailedPaymentModal(element) {
     loadExchangeRateToday();
 
     // Obtener y establecer el estatus del pago
-    getPagoEstatus(nroTicket);
+    getPagoEstatus(nroTicket, documentType);
     
     // Configurar ayudas visuales
     setupAutoRegistrationNumber();
@@ -6318,9 +6331,20 @@ function openDetailedPaymentModal(element) {
     }
 }
 
-function getPagoEstatus(nroTicket) {
+function getPagoEstatus(nroTicket, documentType = null) {
     const estatusInput = document.getElementById("estatus");
     if (!estatusInput) return;
+
+    // Si tenemos el tipo de documento (flujo de rechazo), establecemos el estatus directamente
+    if (documentType) {
+        if (documentType === 'Anticipo') {
+            estatusInput.value = "Anticipo Pendiente por Revision";
+            return;
+        } else if (documentType === 'Pago') {
+            estatusInput.value = "Pago Pendiente por Revision";
+            return;
+        }
+    }
 
     estatusInput.value = "Cargando...";
 

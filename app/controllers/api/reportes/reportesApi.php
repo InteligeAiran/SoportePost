@@ -99,6 +99,8 @@ class reportes extends Controller {
                     $this->uploadDocument();
                 break;
 
+
+
                 case 'uploadDocumentnNew':
                     $this->uploadDocumentnNew();
                 break;
@@ -2650,7 +2652,8 @@ HTML;
         </body>
 </html>
 HTML;
-    }
+        }
+
 
 }
 ?>
