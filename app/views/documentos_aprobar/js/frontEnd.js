@@ -1,6 +1,7 @@
 let currentSelectedTicket = null;
 let currentTicketNroForImage = null;
 let paymentAgreementModalInstance = null;
+let detailedPaymentModalInstance = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
@@ -9,6 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (approveTicketFromImageBtn) {
         approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
     }
+
+    // --- INICIALIZACIÓN DE LOGICA DE PAGO ---
+    if (typeof setupPaymentMethodsLoader === 'function') {
+        setupPaymentMethodsLoader();
+    }
+    if (typeof setupCurrencyListener === 'function') {
+        setupCurrencyListener();
+    }
+    if (typeof setupFormaPagoListener === 'function') {
+        setupFormaPagoListener();
+    }
+    // ----------------------------------------
 });
 
 function handleTicketApprovalFromImage() {
@@ -581,8 +594,9 @@ function getTicketAprovalDocument() {
                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                         </svg>
                                     </button>
-                                    `;
-                                } else if (id_area == 2 && id_rol == 5) {
+                                    `;    
+                                    /* id_area = 2 (Tesoreria) || id_rol = 5 (Administrativo) */ /* id_area = 6 (El rosal) || id_rol = 4 (Coordinador) */
+                                } else if ((id_area == 2 && id_rol == 5) || (id_area == 5 && id_rol == 4)){
                                     // Filtros de Anticipos
                                     buttonsHtml += `
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
@@ -603,7 +617,8 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
-                                } else if (id_area == 3 && id_rol == 5) {
+                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 6 (Operaciones) || id_rol = 4 (Coordinador) */
+                                } else if ((id_area == 3 && id_rol == 5) || (id_area == 1 && id_rol == 6)) {
                                     // Filtros de Exoneración (Restaurados)
                                       buttonsHtml += `
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Exoneraciones Pendientes"> <!-- Título asumido, ajustar si es necesario -->
@@ -970,14 +985,26 @@ function getTicketAprovalDocument() {
 
                         // Event listener para subir nuevo documento
                         $("#tabla-ticket tbody").on("click", ".upload-new-doc-btn", function () {
-                            const ticketId = $(this).data("id");
-                            currentSelectedTicket = ticketId;
-                            const nroTicket = $(this).data("nro-ticket");
-                            const serialPos = $(this).data("serial-pos");
-                            const documentType = $(this).data("document-type");
-                            const motivoRechazo = $(this).data("motivo-rechazo");
+                            const ticketData = {
+                                id: $(this).data("id"),
+                                nroTicket: $(this).data("nro-ticket"),
+                                serialPos: $(this).data("serial-pos"),
+                                documentType: $(this).data("document-type"),
+                                motivoRechazo: $(this).data("motivo-rechazo")
+                            };
                             
-                            showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo);
+                            currentSelectedTicket = ticketData.id;
+
+                            if (ticketData.documentType === 'Anticipo') {
+                                if (typeof openDetailedPaymentModal === 'function') {
+                                    openDetailedPaymentModal(this);
+                                } else {
+                                    // Fallback si no está definida aún
+                                    showUploadNewDocumentModal(ticketData.id, ticketData.nroTicket, ticketData.serialPos, ticketData.documentType, ticketData.motivoRechazo);
+                                }
+                            } else {
+                                showUploadNewDocumentModal(ticketData.id, ticketData.nroTicket, ticketData.serialPos, ticketData.documentType, ticketData.motivoRechazo);
+                            }
                         });
 
                         // Event listener para filas de la tabla
@@ -1186,6 +1213,14 @@ function getTicketAprovalDocument() {
             }
         } else if (xhr.status === 404) {
             if (tableContainer) {
+                let serverMessage = "No hay tickets para aprobar documentos en este momento.";
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.message) serverMessage += `<br><small>(${response.message})</small>`;
+                } catch(e) {
+                     serverMessage += `<br><small>(Respuesta del servidor: ${xhr.responseText.substring(0, 100)})</small>`;
+                }
+
                 tableContainer.innerHTML = `<tr>
         <td colspan="14" class="text-center text-muted py-5">
           <div class="d-flex flex-column align-items-center">
@@ -1193,7 +1228,7 @@ function getTicketAprovalDocument() {
               <path d="M4.98 4a.5.5 0 0 0-.39.196L1.302 8.83l-.046.486A2 2 0 0 0 4.018 11h7.964a2 2 0 0 0 1.762-1.766l-.046-.486L11.02 4.196A.5.5 0 0 0 10.63 4H4.98zm3.072 7a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
             </svg>
             <h5 class="text-muted mb-2">Sin Datos Disponibles</h5>
-            <p class="text-muted mb-0">No hay tickets para aprobar documentos en este momento.</p>
+            <p class="text-muted mb-0">${serverMessage}</p>
           </div>
         </td>
       </tr>`
@@ -1227,7 +1262,14 @@ function getTicketAprovalDocument() {
     xhr.send(datos);
 }
 
-document.addEventListener("DOMContentLoaded", getTicketAprovalDocument);
+document.addEventListener("DOMContentLoaded", function() {
+    getTicketAprovalDocument();
+    
+    // Iniciar listeners de pagos
+    if (typeof setupPaymentMethodsLoader === 'function') setupPaymentMethodsLoader();
+    if (typeof setupCurrencyListener === 'function') setupCurrencyListener();
+    if (typeof setupFormaPagoListener === 'function') setupFormaPagoListener();
+});
 
 function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo) {
     // Obtener elementos del modal
@@ -1241,6 +1283,7 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
     const uploadForm = document.getElementById('uploadForm');
     const DocumentTypeInput = document.getElementById('document_type');
     const nro_ticket = document.getElementById('nro_ticket');
+    const btnRegistrarPagoModal = document.getElementById('btnRegistrarPagoModal');
 
     // Verificar que todos los elementos necesarios existan
     if (!modal || !modalTicketIdSpan || !idTicketInput || !documentFileInput  || !uploadMessage || !uploadFileBtn || !cerrarBoton || !uploadForm) {
@@ -1337,6 +1380,29 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
         if(botonConvenio && botonEnvio) {
             botonConvenio.style.display = 'none';
             botonEnvio.style.display = 'none';
+        }
+    }
+
+    // Lógica para el botón de Registro de Pago (Solo para Anticipos)
+    if (btnRegistrarPagoModal) {
+        if (documentType === 'Anticipo') {
+            btnRegistrarPagoModal.style.display = 'block';
+            $(btnRegistrarPagoModal).off('click').on('click', function() {
+                // Preparar datos para el modal de pago
+                const serialPosInput = document.getElementById('serialPosPago');
+                if (serialPosInput) {
+                    serialPosInput.value = serialPos;
+                }
+                
+                // Abrir el modal de pago
+                const modalPagoElement = document.getElementById('modalAgregarDatosPago');
+                if (modalPagoElement) {
+                    const modalPago = new bootstrap.Modal(modalPagoElement);
+                    modalPago.show();
+                }
+            });
+        } else {
+            btnRegistrarPagoModal.style.display = 'none';
         }
     }
     
@@ -6024,3 +6090,491 @@ function buildDeliveryNoteHtml(d) {
   </body>
   </html>`;
 }
+
+// --- LÓGICA DE DETALLES DE PAGO (PORTADA DE CONSULTA_RIF) ---
+
+let exchangeRate = null;
+
+function loadExchangeRateToday(fecha = null) {
+  if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+  
+  // Si no se proporciona fecha, intentar obtenerla del input
+  if (!fecha) {
+    const fechaPagoInput = document.getElementById("fechaPago");
+    if (fechaPagoInput && fechaPagoInput.value) {
+      fecha = fechaPagoInput.value;
+    }
+  }
+
+  let apiUrl;
+  let dataToSend;
+  
+  if (fecha) {
+    apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateByDate";
+    dataToSend = "action=GetExchangeRateByDate&fecha=" + encodeURIComponent(fecha);
+  } else {
+    apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateToday";
+    dataToSend = null;
+  }
+
+  const tasaDisplayValue = document.getElementById("tasaDisplayValue");
+  if (tasaDisplayValue) tasaDisplayValue.textContent = "Cargando...";
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", apiUrl);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (data.success && data.exchange_rate) {
+          const tasaValue = data.exchange_rate.tasa_dolar || data.exchange_rate.tasa;
+          if (tasaValue) {
+            exchangeRate = parseFloat(tasaValue);
+            if (tasaDisplayValue) {
+                tasaDisplayValue.textContent = "Bs. " + exchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2 });
+            }
+            // Actualizar montos si ya hay valores
+            const montoBs = document.getElementById('montoBs');
+            const montoRef = document.getElementById('montoRef');
+            if (montoBs && montoBs.value && !montoBs.disabled) $(montoBs).trigger('input');
+            else if (montoRef && montoRef.value && !montoRef.disabled) $(montoRef).trigger('input');
+          }
+        } else {
+            if (tasaDisplayValue) tasaDisplayValue.textContent = "N/D";
+        }
+      } catch (e) {
+          if (tasaDisplayValue) tasaDisplayValue.textContent = "Error";
+      }
+    }
+  };
+  xhr.send(dataToSend);
+}
+
+function formatDateToDDMMYYYY(dateString) {
+  if (!dateString) return "";
+  const parts = dateString.split("-");
+  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return dateString;
+}
+
+function formatBsDecimal(input) {
+  let value = input.value.replace(/[^\d.,]/g, "");
+  input.value = value;
+}
+
+function formatUsdDecimal(input) {
+  let value = input.value.replace(/[^\d.,]/g, "");
+  input.value = value;
+}
+
+function loadBancos() {
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+    const selects = ['bancoOrigen', 'bancoDestino', 'origenBanco', 'destinoBanco'];
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetBancos";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success && data.bancos) {
+                    selects.forEach(id => {
+                        const select = document.getElementById(id);
+                        if (select) {
+                            select.innerHTML = '<option value="">Seleccione</option>';
+                            data.bancos.forEach(banco => {
+                                const option = document.createElement("option");
+                                option.value = banco.codigobanco;
+                                option.textContent = banco.ibp;
+                                select.appendChild(option);
+                            });
+                            // For 'destinoBanco' in Pago Móvil, pre-select Banesco and disable
+                            if (id === 'destinoBanco') {
+                                const banescoOption = Array.from(select.options).find(opt => opt.textContent.toLowerCase().includes("banesco"));
+                                if (banescoOption) banescoOption.selected = true;
+                                select.disabled = true;
+                            }
+                        }
+                    });
+                }
+            } catch (e) { console.error('Error parse bancos:', e); }
+        }
+    };
+    xhr.send();
+}
+
+function loadPaymentMethods() {
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
+    const formaPagoSelect = document.getElementById("formaPago");
+    if (!formaPagoSelect) return;
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetPaymentMethods";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success && data.payment_methods) {
+                    formaPagoSelect.innerHTML = '<option value="">Seleccione</option>';
+                    data.payment_methods.forEach(method => {
+                        const option = document.createElement("option");
+                        option.value = method.id_payment_method;
+                        option.textContent = method.payment_method_name;
+                        formaPagoSelect.appendChild(option);
+                    });
+                    
+                    // Asegurar que el listener de cambios esté activo
+                    formaPagoSelect.onchange = function() {
+                        const id = parseInt(this.value);
+                        const moneda = document.getElementById("moneda");
+                        const bancoCont = document.getElementById("bancoFieldsContainer");
+                        const pmCont = document.getElementById("pagoMovilFieldsContainer");
+
+                        if (bancoCont) bancoCont.style.display = (id === 2) ? 'flex' : 'none'; // Transferencia
+                        if (pmCont) pmCont.style.display = (id === 5) ? 'block' : 'none'; // Pago Móvil
+
+                        if (id === 2 || id === 5) { // Transferencia or Pago Móvil
+                            if (moneda) {
+                                moneda.value = "bs";
+                                moneda.disabled = true;
+                                $(moneda).trigger('change'); // Trigger change to update monto fields
+                            }
+                        } else {
+                            if (moneda) {
+                                moneda.disabled = false;
+                            }
+                        }
+                    };
+                }
+            } catch (e) { console.error('Error parse payment methods:', e); }
+        }
+    };
+    xhr.send();
+}
+
+/**
+ * Abre el modal de detalles de pago (Implementación unificada con carga de archivo)
+ */
+function openDetailedPaymentModal(element) {
+    const ticketId = element.getAttribute('data-id') || element.dataset.id;
+    const nroTicket = element.getAttribute('data-nro-ticket') || element.dataset.nroTicket;
+    const serialPos = element.getAttribute('data-serial-pos') || element.dataset.serialPos;
+    const documentType = element.getAttribute('data-document-type') || element.dataset.documentType;
+
+    if (!ticketId) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo obtener la información del ticket.', confirmButtonColor: '#003594' });
+        return;
+    }
+
+    // Establecer los valores en los campos del modal
+    const serialPosPagoInput = document.getElementById('serialPosPago');
+    const nroTicketPagoInput = document.getElementById('nro_ticket_pago');
+    const documentTypePagoInput = document.getElementById('document_type_pago');
+    const fechaCargaInput = document.getElementById('fechaCarga');
+    const montoEquipoLabel = document.getElementById('montoEquipo');
+
+    if (serialPosPagoInput) serialPosPagoInput.value = serialPos || '';
+    if (nroTicketPagoInput) nroTicketPagoInput.value = nroTicket || '';
+    if (documentTypePagoInput) documentTypePagoInput.value = documentType || '';
+    
+    if (fechaCargaInput) {
+        const today = new Date();
+        fechaCargaInput.value = today.toISOString().split('T')[0];
+    }
+
+    if (montoEquipoLabel) montoEquipoLabel.textContent = "$0.00";
+
+    // Inicializar campos de monto
+    const montoBsInput = document.getElementById('montoBs');
+    const montoRefInput = document.getElementById('montoRef');
+    const monedaSelect = document.getElementById('moneda');
+    if (montoBsInput) { montoBsInput.readOnly = true; montoBsInput.disabled = true; montoBsInput.style.backgroundColor = '#e9ecef'; montoBsInput.value = ''; }
+    if (montoRefInput) { montoRefInput.readOnly = true; montoRefInput.disabled = true; montoRefInput.style.backgroundColor = '#e9ecef'; montoRefInput.value = ''; }
+    if (monedaSelect) monedaSelect.value = '';
+
+    // Cargar catálogos
+    loadPaymentMethods();
+    loadBancos();
+    loadExchangeRateToday();
+
+    // Obtener y establecer el estatus del pago
+    getPagoEstatus(nroTicket);
+    
+    // Configurar ayudas visuales
+    setupAutoRegistrationNumber();
+    setupNumericValidation();
+
+    // Mostrar el modal
+    const modalElement = document.getElementById('modalAgregarDatosPago');
+    if (modalElement) {
+        if (!detailedPaymentModalInstance) {
+            detailedPaymentModalInstance = new bootstrap.Modal(modalElement, { backdrop: 'static', keyboard: false });
+        }
+        detailedPaymentModalInstance.show();
+    }
+}
+
+function getPagoEstatus(nroTicket) {
+    const estatusInput = document.getElementById("estatus");
+    if (!estatusInput) return;
+
+    estatusInput.value = "Cargando...";
+
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetEstatusPagoAutomatizado`;
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                const responseData = response.estatus_pago || response.data;
+                if (response.success && Array.isArray(responseData) && responseData.length > 0) {
+                    const statusId = parseInt(responseData[0].id_status_payment);
+                    estatusInput.value = (statusId === 17) ? "Pago Pendiente por Revision" : "Pago Anticipo Pendiente por Revision";
+                } else {
+                    estatusInput.value = "Pago Anticipo Pendiente por Revision"; 
+                }
+            } catch (error) {
+                estatusInput.value = 'Pago Anticipo Pendiente por Revision';
+            }
+        }
+    };
+    xhr.send(`action=GetEstatusPagoAutomatizado&nro_ticket=${encodeURIComponent(nroTicket || "")}`);
+}
+
+function setupAutoRegistrationNumber() {
+    const ref = document.getElementById("referencia");
+    const serial = document.getElementById("serialPosPago");
+    const reg = document.getElementById("registro");
+    if (!ref || !serial || !reg) return;
+
+    const updateReg = () => {
+        const rVal = ref.value.trim();
+        const sVal = serial.value.trim();
+        if (rVal.length >= 4 && sVal.length >= 4) {
+            const cleanRef = rVal.slice(-4).replace(/\D/g, '').padStart(4, '0');
+            const cleanSerial = sVal.slice(-4);
+            reg.value = `Pago${cleanRef}_${cleanSerial}`;
+        }
+    };
+    ref.addEventListener("input", updateReg);
+}
+
+function setupNumericValidation() {
+    const numericFields = ["referencia", "montoBs", "montoRef"];
+    numericFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("keypress", function(e) {
+                if (!/[0-9.]/.test(e.key)) e.preventDefault();
+                if (e.key === '.' && this.value.includes('.')) e.preventDefault();
+            });
+        }
+    });
+}
+
+async function savePayment() {
+    // 1. Validaciones
+    const required = ["fechaPago", "formaPago", "moneda", "referencia", "depositante", "montoBs", "montoRef"];
+    for (const id of required) {
+        const el = document.getElementById(id);
+        if (!el || !el.value || (el.disabled && el.value === '')) { // Check for disabled fields with empty values
+            Swal.fire({ icon: 'warning', title: 'Atención', text: `El campo ${id} es obligatorio.` });
+            return;
+        }
+    }
+
+    const fileInput = document.getElementById("documentFileDetailed");
+    if (!fileInput || !fileInput.files.length) {
+        Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe cargar el comprobante de pago.' });
+        return;
+    }
+
+    const idMethod = parseInt(document.getElementById("formaPago").value);
+    if (idMethod === 2) { // Transferencia
+        if (!document.getElementById("bancoOrigen").value || !document.getElementById("bancoDestino").value) {
+            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar los bancos de origen y destino.' });
+            return;
+        }
+    } else if (idMethod === 5) { // Pago Móvil
+        if (!document.getElementById("origenBanco").value || !document.getElementById("destinoBanco").value) {
+            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar los bancos para el Pago Móvil.' });
+            return;
+        }
+    }
+
+    Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    // 2. Preparar datos para SavePayment
+    const getValue = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    };
+
+    const nroTicket = getValue("nro_ticket_pago");
+    const serialPos = getValue("serialPosPago");
+    const recordNumber = getValue("registro");
+    const idUser = getValue("userId") || getValue("id_user_pago");
+
+    const dataPayment = new URLSearchParams();
+    dataPayment.append("serial_pos", serialPos);
+    dataPayment.append("nro_ticket", nroTicket);
+    dataPayment.append("user_loader", idUser);
+    dataPayment.append("payment_date", getValue("fechaPago"));
+    
+    const formaPagoEl = document.getElementById("formaPago");
+    dataPayment.append("payment_method", (formaPagoEl && formaPagoEl.selectedIndex >= 0) ? formaPagoEl.options[formaPagoEl.selectedIndex].text : '');
+    dataPayment.append("currency", getValue("moneda") === 'bs' ? 'BS' : 'USD');
+    dataPayment.append("amount_bs", getValue("montoBs"));
+    dataPayment.append("reference_amount", getValue("montoRef"));
+    dataPayment.append("payment_reference", getValue("referencia"));
+    dataPayment.append("depositor", getValue("depositante"));
+    dataPayment.append("record_number", recordNumber);
+    dataPayment.append("observations", getValue("obsAdministracion"));
+    dataPayment.append("loadpayment_date", getValue("fechaCarga"));
+    dataPayment.append("confirmation_number", "false");
+
+    if (idMethod === 2) {
+        dataPayment.append("origen_bank", document.getElementById("bancoOrigen").options[document.getElementById("bancoOrigen").selectedIndex].text);
+        dataPayment.append("destination_bank", document.getElementById("bancoDestino").options[document.getElementById("bancoDestino").selectedIndex].text);
+    } else if (idMethod === 5) {
+        dataPayment.append("origen_bank", document.getElementById("origenBanco").options[document.getElementById("origenBanco").selectedIndex].text);
+        dataPayment.append("destination_bank", document.getElementById("destinoBanco").options[document.getElementById("destinoBanco").selectedIndex].text);
+    }
+
+    try {
+        // PASO 1: Guardar metadatos
+        const resSave = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SavePayment`, {
+            method: 'POST',
+            body: dataPayment.toString(),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        const dataSave = await resSave.json();
+        if (!dataSave.success) throw new Error(dataSave.message || "Error al guardar el pago.");
+
+        // PASO 2: Subir documento
+        Swal.update({ title: 'Subiendo comprobante...' });
+        const formDataDoc = new FormData();
+        formDataDoc.append("payment_doc", fileInput.files[0]);
+        formDataDoc.append("nro_ticket", nroTicket);
+        formDataDoc.append("record_number", recordNumber);
+        formDataDoc.append("user_loader", idUser);
+        formDataDoc.append("document_type", getValue("document_type_pago"));
+
+        const resUpload = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/UploadPaymentDoc`, {
+            method: 'POST',
+            body: formDataDoc
+        });
+        const dataUpload = await resUpload.json();
+
+        if (dataUpload.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: 'Pago y comprobante registrados correctamente.',
+                confirmButtonColor: '#003594'
+            }).then(() => {
+                if (detailedPaymentModalInstance) detailedPaymentModalInstance.hide();
+                location.reload();
+            });
+        } else {
+            throw new Error(dataUpload.message || "Error al subir el comprobante.");
+        }
+    } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Error', text: e.message });
+    }
+}
+
+function limpiarFormularioDatosPago() {
+    const form = document.getElementById("formAgregarDatosPago");
+    if (form) form.reset();
+    const pmFields = document.getElementById("pagoMovilFieldsContainer");
+    const bFields = document.getElementById("bancoFieldsContainer");
+    if (pmFields) pmFields.style.display = "none";
+    if (bFields) bFields.style.display = "none";
+    const display = document.getElementById("montoEquipo");
+    if (display) display.textContent = "$0.00";
+
+    // Re-enable moneda select and clear monto fields
+    const monedaSelect = document.getElementById('moneda');
+    const montoBsInput = document.getElementById('montoBs');
+    const montoRefInput = document.getElementById('montoRef');
+    if (monedaSelect) {
+        monedaSelect.disabled = false;
+        monedaSelect.value = '';
+    }
+    if (montoBsInput) {
+        montoBsInput.readOnly = true;
+        montoBsInput.disabled = true;
+        montoBsInput.style.backgroundColor = '#e9ecef';
+        montoBsInput.value = '';
+    }
+    if (montoRefInput) {
+        montoRefInput.readOnly = true;
+        montoRefInput.disabled = true;
+        montoRefInput.style.backgroundColor = '#e9ecef';
+        montoRefInput.value = '';
+    }
+}
+
+// Listeners finales
+$(document).on("click", "#btnGuardarDatosPago", function(e) {
+    e.preventDefault();
+    savePayment();
+});
+
+$(document).on("click", "#btnCancelarModalPagoFooter", function() {
+    if (detailedPaymentModalInstance) {
+        detailedPaymentModalInstance.hide();
+    }
+});
+
+/**
+ * Listener para cambios de moneda
+ */
+$(document).on('change', '#moneda', function() {
+    const bs = document.getElementById('montoBs');
+    const ref = document.getElementById('montoRef');
+    const val = this.value;
+
+    if (val === 'bs') {
+        if (bs) { bs.disabled = false; bs.readOnly = false; bs.style.backgroundColor = '#fff'; }
+        if (ref) { ref.disabled = true; ref.readOnly = true; ref.style.backgroundColor = '#e9ecef'; ref.value = ''; }
+    } else if (val === 'usd') {
+        if (bs) { bs.disabled = true; bs.readOnly = true; bs.style.backgroundColor = '#e9ecef'; bs.value = ''; }
+        if (ref) { ref.disabled = false; ref.readOnly = false; ref.style.backgroundColor = '#fff'; }
+    } else {
+        if (bs) { bs.disabled = true; bs.readOnly = true; bs.style.backgroundColor = '#e9ecef'; bs.value = ''; }
+        if (ref) { ref.disabled = true; ref.readOnly = true; ref.style.backgroundColor = '#e9ecef'; ref.value = ''; }
+    }
+    const display = document.getElementById('montoEquipo');
+    if (display) display.textContent = "$0.00";
+});
+
+/**
+ * Listener para conversión de montos
+ */
+$(document).on('input', '#montoBs, #montoRef', function() {
+    const moneda = document.getElementById('moneda').value;
+    const bs = document.getElementById('montoBs');
+    const ref = document.getElementById('montoRef');
+    const display = document.getElementById('montoEquipo');
+    const rate = exchangeRate || 0;
+
+    if (!rate) return;
+
+    if (this.id === 'montoBs' && moneda === 'bs') {
+        const val = parseFloat(bs.value.replace(',', '.')) || 0;
+        ref.value = (val / rate).toFixed(2);
+        if (display) display.textContent = `$${ref.value}`;
+    } else if (this.id === 'montoRef' && moneda === 'usd') {
+        const val = parseFloat(ref.value) || 0;
+        bs.value = (val * rate).toFixed(2);
+        if (display) display.textContent = `$${val.toFixed(2)}`;
+    }
+});

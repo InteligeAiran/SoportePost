@@ -1,5 +1,5 @@
 // Instancias de los modales de Bootstrap (las inicializaremos cuando el DOM esté listo)
-console.log("--> frontEnd.js LOADED <--"); // DEBUG
+
 
 let modalInstance;
 let currentTicketId = null;
@@ -16,6 +16,70 @@ let EnvioInput = null;
 let ExoInput = null;
 let PagoInput = null;
 let modalPagoPresupuestoInstance = null; // Global instance for the payment modal
+let editPaymentModalInstance = null; // Global instance for edit payment modal
+// --- CUSTOM STYLES FOR NON-BOOTSTRAP LOOK ---
+const customSwalStyles = `
+<style id="custom-swal-styles">
+    .swal-premium-popup {
+        border-radius: 16px !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    }
+    .swal-premium-title {
+        color: #2c3e50 !important;
+        font-weight: 600 !important;
+        font-size: 1.5rem !important;
+    }
+    .swal-premium-confirm {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 12px 30px !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.5px !important;
+        box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    .swal-premium-confirm:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(118, 75, 162, 0.6) !important;
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+    }
+    .swal-premium-cancel {
+        background: #fff !important;
+        color: #e74c3c !important;
+        border: 2px solid #e74c3c !important;
+        border-radius: 8px !important;
+        padding: 10px 25px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+    .swal-premium-cancel:hover {
+        background: #e74c3c !important;
+        color: #fff !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4) !important;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 480px) {
+        .swal-premium-popup {
+            width: 90% !important;
+            padding: 1rem !important;
+        }
+        .swal-premium-title {
+            font-size: 1.25rem !important;
+        }
+        .swal-premium-confirm, .swal-premium-cancel {
+            width: 100% !important;
+            margin: 5px 0 !important;
+        }
+    }
+</style>
+`;
+if (!document.getElementById('custom-swal-styles')) {
+    $('head').append(customSwalStyles);
+}
 
 // Variables globales para la reasignación de tickets
 let currentTicketNro = null;
@@ -41,20 +105,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
   const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
 
-  // Obtener el botón de rechazo del DOM
-  const rechazoDocumentoBtn = document.getElementById('RechazoDocumento');
-
   // 1. Manejar el evento de clic en el botón "Rechazar Documento"
-  // La lógica es: cerrar el modal actual y luego abrir el nuevo.
-  if (rechazoDocumentoBtn) {
-    rechazoDocumentoBtn.addEventListener('click', function () {
-      // Cierra el modal de visualización
-      viewDocumentModalInstance.hide();
-
-      // Abre el modal de rechazo
-      modalRechazoInstance.show();
-    });
-  }
+  // (Removido por solicitud del usuario en este módulo)
 
   if(modalConfirmacionRechazoBtn){
     modalConfirmacionRechazoBtn.addEventListener('click', function () {
@@ -429,22 +481,30 @@ function getTicketDataCoordinator() {
 
 
             // BOTON AGREGAR PAGO COMPLETO PRESUPUESTO
-            // Solo mostrar si tiene presupuesto cargado y NO es garantía (id_status_payment 1 o 3)
+            // MODIFICACION: Validacion anterior comentada para permitir pagos multiples/sin presupuesto explícito
+            /*
             const idStatusPayment = data.id_status_payment ? parseInt(data.id_status_payment) : null;
             if ((data.presupuesto === 'Si' || data.presupuesto === 'Sí') && idStatusPayment !== 1 && idStatusPayment !== 3) {
+            */
+            // Se muestra SIEMPRE (Comportamiento solicitado: "lo haré visible SIEMPRE")
+            if (true) { 
               actionButtonsHtml += `
                   <button type="button" id="btnPaymentBudget" class="btn generate-presupuesto-btn" 
                     data-ticket-id="${data.id_ticket}" 
                     data-serial-pos="${data.serial_pos}" 
                     data-nro-ticket="${data.nro_ticket}" 
                     data-budget-amount="${data.budget_amount || 0}"
-                    title="Presupuesto" 
+                    data-razon-social="${data.razonsocial_cliente || ''}"
+                    data-rif="${data.rif || ''}"
+                    data-telefono="${data.telefono_cliente || ''}"
+                    data-estatus-pos="${data.estatus_inteliservices || ''}"
+                    data-has-presupuesto="${data.presupuesto || 'No'}"
+                    title="Agregar pagos" 
                     style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block;">
-                        <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"></path>
-                        <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5"></path>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-plus-lg" viewBox="0 0 16 16" style="display: inline-block;">
+                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
                       </svg>
-                      <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Presupuesto</span>
+                      <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Agregar pagos</span>
                   </button>
               `;
             }
@@ -902,8 +962,6 @@ function getTicketDataCoordinator() {
               const pagoValor = $(this).data("pago");
               const presupuestoValor = $(this).data("presupuesto");
               const ticketRechazado = $(this).data("rechazado");
-              const BotonRechazo = document.getElementById('RechazoDocumento');
-              BotonRechazo.style.display = 'none';
               currentTicketIdForImage = ticketId;
               currentTicketNroForImage = nroTicket;
               const VizualizarImage = document.getElementById('visualizarImagenModal');
@@ -1682,8 +1740,9 @@ function getDocumentType(url) {
 
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true) {
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null) {
   const modalElementView = document.getElementById("viewDocumentModal");
+  const modalTitleView = document.getElementById("viewDocumentModalLabel"); // The H5 title
   const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
   const imageViewPreview = document.getElementById("imageViewPreview");
   const pdfViewViewer = document.getElementById("pdfViewViewer");
@@ -1694,30 +1753,18 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
 
   currentTicketId = ticketId;
   currentNroTicket = nroTicket;
-  modalTicketIdSpanView.textContent = currentNroTicket;
+  
+  if (customTitle) {
+    modalTitleView.innerHTML = customTitle;
+  } else {
+    modalTitleView.innerHTML = `Visualizando Documento - Ticket: <span id="viewModalTicketId">${currentNroTicket}</span>`;
+  }
 
   // Limpiar vistas y mensajes
   imageViewPreview.style.display = "none";
   pdfViewViewer.style.display = "none";
   messageContainer.textContent = "";
   messageContainer.classList.add("hidden");
-
-  // Función para limpiar la ruta del archivo
-  function cleanFilePath(filePath) {
-    if (!filePath) return null;
-
-    // Reemplazar barras invertidas con barras normales
-    let cleanPath = filePath.replace(/\\/g, '/');
-
-    // Extraer la parte después de 'Documentos_SoportePost/'
-    const pathSegments = cleanPath.split('Documentos_SoportePost/');
-    if (pathSegments.length > 1) {
-      cleanPath = pathSegments[1];
-    }
-
-    // Construir la URL completa
-    return `http://${HOST}/Documentos/${cleanPath}`;
-  }
 
   if (imageUrl) {
     // Es una imagen
@@ -1765,7 +1812,74 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
     visualizarImagenModal.hide();
     
   });
+}
+
+/**
+ * View a payment receipt.
+ * Optimized: Uses parameters from JOIN or fallback.
+ */
+window.viewPaymentReceipt = function(path, mime, name, recordNumber) {
+    if (!path) {
+        Swal.fire("Atención", "Este pago no tiene un comprobante digital adjunto.", "info");
+        return;
+    }
+
+    const receiptName = name || 'Comprobante de Pago';
+    const isPdf = (mime && mime.includes('pdf')) || path.toLowerCase().endsWith('.pdf');
+    
+    // Custom title for payments as requested by the user
+    const title = recordNumber ? `Pago - Nro. Registro: <span class="badge bg-light text-primary">${recordNumber}</span>` : 'Pago';
+    
+    if (isPdf) {
+        showViewModal('', '', null, path, receiptName, false, title);
+    } else {
+        showViewModal('', '', path, null, receiptName, false, title);
+    }
 };
+
+/**
+ * Robustly clean file paths for document viewing.
+ * Extracts the relative part from absolute disk paths.
+ */
+function cleanFilePath(filePath) {
+    if (!filePath) return null;
+
+    // 1. Normalize all slashes to forward slashes first
+    let path = filePath.replace(/\\/g, '/');
+
+    // 2. Extract path after the storage root (Documentos_SoportePost)
+    // We look for 'Documentos_SoportePost' regardless of case
+    const rootMarker = "Documentos_SoportePost/";
+    const index = path.toLowerCase().indexOf(rootMarker.toLowerCase());
+    
+    if (index !== -1) {
+        path = path.substring(index + rootMarker.length);
+    } else {
+        // Fallback: If root marker not found, try to find by common segments
+        const segments = path.split('/');
+        const pagosIndex = segments.findIndex(s => s.toLowerCase() === 'pagos' || s.toLowerCase() === 'anticipo');
+        if (pagosIndex !== -1 && pagosIndex > 0) {
+            // Keep segments from the serial onwards (usually root/SERIAL/TICKET/Pagos/FILE)
+            path = segments.slice(pagosIndex - 2).join('/');
+        }
+    }
+
+    // 3. Construct the web URL
+    // Use ENDPOINT_BASE if HOST is not defined (standard in this app)
+    let baseUrl = "";
+    if (typeof HOST !== 'undefined' && HOST) {
+        baseUrl = `http://${HOST}/Documentos/`;
+    } else if (typeof ENDPOINT_BASE !== 'undefined') {
+        // ENDPOINT_BASE usually points to the app root, e.g., http://localhost/SoportePost/
+        // Documentos are served from a virtual directory /Documentos/ at the server root
+        const origin = new URL(ENDPOINT_BASE).origin;
+        baseUrl = `${origin}/Documentos/`;
+    } else {
+        baseUrl = "/Documentos/";
+    }
+
+    return baseUrl + path;
+}
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 
@@ -1783,9 +1897,21 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             const nroTicket = btnPayment.getAttribute("data-nro-ticket");
             const serialPos = btnPayment.getAttribute("data-serial-pos"); // Capture serial
             const budgetAmount = btnPayment.getAttribute("data-budget-amount"); // Capture budget amount
+            const razonSocial = btnPayment.getAttribute("data-razon-social");
+            const rif = btnPayment.getAttribute("data-rif");
+            const telefono = btnPayment.getAttribute("data-telefono");
+            const estatusPos = btnPayment.getAttribute("data-estatus-pos");
+            const hasPresupuesto = btnPayment.getAttribute("data-has-presupuesto");
             
             // Llamar a la función para abrir el modal (Patrón de Gestión Rosal)
-            openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount);
+            openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, razonSocial, rif, telefono, estatusPos, hasPresupuesto);
+            
+            // Cargar el historial de pagos para este ticket
+            loadPaymentHistory(nroTicket);
+            
+            // Cargar el monto total abonado
+            loadTotalPaid(nroTicket, budgetAmount);
+            
             return;
         }
     });
@@ -1796,6 +1922,402 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             // El modal se cierra automáticamente por data-bs-dismiss="modal"
             // Pero podemos añadir limpieza adicional si fuera necesario.
             console.log("Cerrando modal de pago presupuesto...");
+            resetDocumentoPagoUI();
+        });
+    }
+
+    // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO
+    const documentoPagoInput = document.getElementById("documentoPago");
+    if (documentoPagoInput) {
+        documentoPagoInput.addEventListener("change", function(e) {
+            const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
+            const textDisplay = document.getElementById("textDocumentoPago");
+            const iconDisplay = document.getElementById("iconDocumentoPago");
+            const labelDisplay = document.getElementById("labelDocumentoPago");
+            
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                if (fileNameDisplay) {
+                    fileNameDisplay.textContent = file.name;
+                    fileNameDisplay.classList.remove("d-none");
+                }
+                if (textDisplay) textDisplay.classList.add("d-none");
+                
+                if (iconDisplay) {
+                    iconDisplay.className = "fas fa-check-circle fa-2x text-success";
+                }
+                if (labelDisplay) {
+                    labelDisplay.style.borderColor = "#28a745";
+                    labelDisplay.style.backgroundColor = "#e8f5e9";
+                }
+            } else {
+                resetDocumentoPagoUI();
+            }
+        });
+    }
+
+    function resetDocumentoPagoUI() {
+        const input = document.getElementById("documentoPago");
+        const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
+        const textDisplay = document.getElementById("textDocumentoPago");
+        const iconDisplay = document.getElementById("iconDocumentoPago");
+        const labelDisplay = document.getElementById("labelDocumentoPago");
+        
+        if (input) input.value = "";
+        
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = "";
+            fileNameDisplay.classList.add("d-none");
+        }
+        if (textDisplay) textDisplay.classList.remove("d-none");
+        
+        if (iconDisplay) {
+            iconDisplay.className = "fas fa-camera fa-2x text-secondary";
+        }
+        if (labelDisplay) {
+            labelDisplay.style.borderColor = "#cbd5e0"; 
+            labelDisplay.style.backgroundColor = "#f8f9fa";
+        }
+    }
+
+    // VALIDACION DE MONTO LIMITE (PRESUPUESTO)
+    const btnGuardarPago = document.getElementById("btnGuardarPagoPresupuesto");
+    if (btnGuardarPago) {
+        btnGuardarPago.addEventListener("click", function(e) {
+            // Obtenemos los valores globales actualizados por loadTotalPaid
+            const totalPagado = window.currentTotalPaid || 0;
+            const presupuestoTotal = window.currentBudgetAmount || 0;
+            
+            // Obtenemos el monto que intenta agregar el usuario (Monto REF en USD)
+            const montoRefInput = document.getElementById("montoRef");
+            let montoNuevo = 0;
+            
+            if (montoRefInput) {
+                montoNuevo = parseFloat(montoRefInput.value) || 0;
+            }
+            
+            // Validamos solo si tenemos un presupuesto definido mayor a 0
+            if (presupuestoTotal > 0) {
+                const nuevoTotal = totalPagado + montoNuevo;
+                const excedente = nuevoTotal - presupuestoTotal;
+                
+                // Margen de error pequeño para flotantes (0.01)
+                if (excedente > 0.01) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation(); // Previene otros listeners de guardado
+                    
+                    Swal.fire({
+                        title: 'Excede el Presupuesto',
+                        html: `
+                            <div class="text-start">
+                                <p>No se puede agregar este pago porque excede el monto total del presupuesto.</p>
+                                <ul style="list-style: none; padding: 0;">
+                                    <li><strong>Presupuesto Total:</strong> $${presupuestoTotal.toFixed(2)}</li>
+                                    <li><strong>Total Abonado:</strong> $${totalPagado.toFixed(2)}</li>
+                                    <li><strong>Nuevo Pago:</strong> $${montoNuevo.toFixed(2)}</li>
+                                    <hr>
+                                    <li class="text-danger"><strong>Total Resultante:</strong> $${nuevoTotal.toFixed(2)}</li>
+                                    <li class="text-danger"><strong>Excedente:</strong> $${excedente.toFixed(2)}</li>
+                                </ul>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        confirmButtonText: 'Entendido'
+                    });
+                    
+                    return false;
+                }
+            }
+            
+            
+            // Si pasa la validación, procedemos a enviar los datos
+            console.log("Validación de presupuesto exitosa. Enviando pago...");
+            
+            // Recolectar datos
+            const formData = new FormData();
+            formData.append('action', 'InsertPaymentRecord');
+            formData.append('nro_ticket', window.currentNroTicket || '');
+            formData.append('serial_pos', window.currentSerialPos || '');
+            
+            const userId = document.getElementById('id_user_pago') ? document.getElementById('id_user_pago').value : '';
+            formData.append('user_loader', userId);
+            
+            // Campos del formulario
+            // Payment Method Select - Save NAME (text) not ID (value)
+            const formaPagoElem = document.getElementById("formaPago");
+            let paymentMethodText = '';
+            if (formaPagoElem && formaPagoElem.selectedIndex >= 0 && formaPagoElem.value !== "") {
+                paymentMethodText = formaPagoElem.options[formaPagoElem.selectedIndex].text;
+            }
+            formData.append('payment_method', paymentMethodText);
+            
+            const monedaElem = document.getElementById("moneda");
+            formData.append('currency', monedaElem ? monedaElem.value.toUpperCase() : 'BS');
+            
+            const montoBsElem = document.getElementById("montoBs");
+            formData.append('amount_bs', montoBsElem ? montoBsElem.value : '0');
+            
+            const montoRefElem = document.getElementById("montoRef");
+            formData.append('reference_amount', montoRefElem ? montoRefElem.value : '0');
+            
+            const referenciaElem = document.getElementById("referencia");
+            formData.append('payment_reference', referenciaElem ? referenciaElem.value : '');
+            
+            const fechaPagoElem = document.getElementById("fechaPago");
+            formData.append('payment_date', fechaPagoElem ? fechaPagoElem.value : '');
+            
+            const depositanteElem = document.getElementById("depositante");
+            formData.append('depositor', depositanteElem ? depositanteElem.value : '');
+            
+            const obsElem = document.getElementById("obsAdministracion");
+            formData.append('observations', obsElem ? obsElem.value : '');
+            
+            const registroElem = document.getElementById("registro");
+            formData.append('record_number', registroElem ? registroElem.value : '');
+            
+            // Bancos
+            const bancoOrigenElem = document.getElementById("bancoOrigen");
+            if (bancoOrigenElem && bancoOrigenElem.offsetParent !== null) {
+                 formData.append('origen_bank', bancoOrigenElem.options[bancoOrigenElem.selectedIndex].text);
+            }
+            
+            const bancoDestinoElem = document.getElementById("bancoDestino");
+            if (bancoDestinoElem && bancoDestinoElem.offsetParent !== null) {
+                 formData.append('destination_bank', bancoDestinoElem.options[bancoDestinoElem.selectedIndex].text);
+            }
+            
+            // Pago Movil
+            const origenRifTipo = document.getElementById("origenRifTipo");
+            if(origenRifTipo) formData.append('origen_rif_tipo', origenRifTipo.value);
+            
+            const origenRifNumero = document.getElementById("origenRifNumero");
+            if(origenRifNumero) formData.append('origen_rif_numero', origenRifNumero.value);
+            
+            const origenTelefono = document.getElementById("origenTelefono");
+            if(origenTelefono) formData.append('origen_telefono', origenTelefono.value);
+            
+            const destinoRifTipo = document.getElementById("destinoRifTipo");
+            if(destinoRifTipo) formData.append('destino_rif_tipo', destinoRifTipo.value);
+            
+            const destinoRifNumero = document.getElementById("destinoRifNumero");
+            if(destinoRifNumero) formData.append('destino_rif_numero', destinoRifNumero.value);
+            
+            const destinoTelefono = document.getElementById("destinoTelefono");
+            if(destinoTelefono) formData.append('destino_telefono', destinoTelefono.value);
+            
+            // Documento de Pago (Nuevo)
+            const documentoPagoInput = document.getElementById('documentoPago');
+            if (documentoPagoInput && documentoPagoInput.files.length > 0) {
+                formData.append('payment_doc', documentoPagoInput.files[0]);
+            }
+
+            // --- FRONTEND VALIDATION (PREMIUM STYLE) ---
+            let missingFieldsCreate = [];
+            
+            // 1. Payment Method
+            if (!paymentMethodText || paymentMethodText.trim() === "" || paymentMethodText === "Seleccione") {
+                missingFieldsCreate.push("Forma de Pago");
+            }
+            
+            // 2. Currency
+            if (!monedaElem || !monedaElem.value) {
+                missingFieldsCreate.push("Moneda");
+            }
+            
+            // 3. Amount (Check if at least one amount is provided)
+            const valBs = montoBsElem ? parseFloat(montoBsElem.value) : 0;
+            const valRef = montoRefElem ? parseFloat(montoRefElem.value) : 0;
+            if (valBs <= 0 && valRef <= 0) {
+                missingFieldsCreate.push("Monto (Bs o USD)");
+            }
+            
+            // 4. Reference
+            if (!referenciaElem || !referenciaElem.value.trim()) {
+                missingFieldsCreate.push("Referencia");
+            }
+            
+            // 5. Depositor
+            if (!depositanteElem || !depositanteElem.value.trim()) {
+                missingFieldsCreate.push("Depositante");
+            }
+
+            // 6. Documento de Pago (Mandatory)
+            if (!documentoPagoInput || documentoPagoInput.files.length === 0) {
+                missingFieldsCreate.push("Adjunte El Documento");
+            }
+
+            if (missingFieldsCreate.length > 0) {
+                let errorHtml = '<ul style="text-align: left; margin-bottom: 0;">';
+                missingFieldsCreate.forEach(field => {
+                    errorHtml += `<li>${field}</li>`;
+                });
+                errorHtml += '</ul>';
+
+                Swal.fire({
+                    title: 'Campos Incompletos',
+                    html: `Por favor complete los siguientes datos:<br>${errorHtml}`,
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'swal-premium-popup',
+                        title: 'swal-premium-title',
+                        confirmButton: 'swal-premium-confirm'
+                    }
+                });
+                return; // STOP execution
+            }
+            
+            // Enviar AJAX
+            btnGuardarPago.disabled = true;
+            btnGuardarPago.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+            
+            fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/InsertPaymentRecord`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+
+                    // --- LOGICA DE SUBIDA DE IMAGEN (INJECTED INTO FETCH) ---
+                    console.log(">>> IMAGEN: Pago registrado. Verificando archivo para subir...");
+                    const fileInput = document.getElementById("documentoPago");
+                    
+                    if (fileInput && fileInput.files.length > 0) {
+                        console.log(">>> IMAGEN: Archivo detectado. Preparando subida...");
+                        const file = fileInput.files[0];
+                        const formDataImg = new FormData();
+                        
+                        // Acción NUEVA y DEDICADA
+                        formDataImg.append("action", "UploadPaymentDoc"); 
+                        // Intentar obtener Nro Ticket de varias fuentes
+                        let nroTicketToSend = window.currentNroTicket || '';
+                        if (!nroTicketToSend) {
+                            const ticketSpan = document.getElementById("viewModalTicketId"); // Span en modal consultar
+                            if (ticketSpan) nroTicketToSend = ticketSpan.textContent.trim();
+                        }
+                        if (!nroTicketToSend) {
+                            const ticketNumeroSpan = document.getElementById("ticketNumeroPago"); // Span en modal pago presupuesto
+                            if (ticketNumeroSpan) {
+                                let parts = ticketNumeroSpan.textContent.split('#');
+                                if (parts.length > 1) {
+                                    nroTicketToSend = parts[1].trim();
+                                } else {
+                                     nroTicketToSend = ticketNumeroSpan.textContent.replace('Ticket #', '').trim();
+                                }
+                            }
+                        }
+                        
+                        console.log(">>> DEBUG IMAGEN: nroTicketToSend final:", nroTicketToSend);
+                        formDataImg.append("nro_ticket", nroTicketToSend);
+                        
+                        // Usar el valor STRING del input 'registro'
+                        const registroElem = document.getElementById("registro");
+                        const registroVal = registroElem ? registroElem.value : data.id_payment;
+                        formDataImg.append("record_number", registroVal);
+                       
+                        const userId = document.getElementById('id_user_pago') ? document.getElementById('id_user_pago').value : '';
+                        formDataImg.append("user_loader", userId);
+                        formDataImg.append("payment_doc", file);
+
+                        const xhrImg = new XMLHttpRequest();
+                        const apiUrlImg = (typeof ENDPOINT_BASE !== 'undefined' ? ENDPOINT_BASE + APP_PATH : '') + "api/consulta/UploadPaymentDoc";
+                        
+                        xhrImg.open("POST", apiUrlImg, true);
+                        
+                        xhrImg.onload = function() {
+                            if (xhrImg.status === 200) {
+                                try {
+                                    const dataImg = JSON.parse(xhrImg.responseText);
+                                    if(dataImg.success) {
+                                        console.log(">>> IMAGEN: Subida EXITOSA.");
+                                    } else {
+                                        console.warn(">>> IMAGEN: Error en respuesta:", dataImg.message);
+                                    }
+                                } catch(e) { 
+                                    console.error(">>> IMAGEN: Error parseando respuesta", e); 
+                                }
+                            } else {
+                                console.error(">>> IMAGEN: Error HTTP:", xhrImg.status);
+                            }
+                        };
+                        xhrImg.send(formDataImg);
+                    } else {
+                        console.log(">>> IMAGEN: No se seleccionó archivo (input vacío).");
+                    }
+                    // ----------------------------------------------------
+
+                    Swal.fire({
+                        title: '¡Pago Registrado!',
+                        html: `
+                            <div style="text-align: center;">
+                                <div style="font-size: 4rem; color: #28a745; margin-bottom: 15px;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <h4 style="color: #333; font-weight: 600; margin-bottom: 10px;">Operación Exitosa</h4>
+                                <p style="color: #666; font-size: 1.1rem;">El pago se ha procesado y guardado correctamente en el expediente.</p>
+                            </div>
+                        `,
+                        icon: null, // Custom HTML icon used
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#28a745',
+                        background: '#fff',
+                        customClass: {
+                            popup: 'rounded-4 shadow-lg',
+                            confirmButton: 'px-4 py-2 rounded-3'
+                        },
+                        timer: 3000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        // Recargar historial y totales
+                        loadPaymentHistory(window.currentNroTicket);
+                        loadTotalPaid(window.currentNroTicket, window.currentBudgetAmount);
+                        
+                        // LIMPIAR SOLO DATOS VARIABLES DE LA TRANSACCIÓN
+                        const inputsToClear = [
+                            "montoBs", "montoRef", "referencia", 
+                            "obsAdministracion", "registro", "documentoPago"
+                        ];
+                        inputsToClear.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.value = "";
+                        });
+
+                        // Selects a default (Reiniciamos solo moneda, bancos de transferencia y forma de pago)
+                        // MANTENEMOS: origenRifTipo, destinoRifTipo, origenBanco (datos constantes del cliente/empresa)
+                        const selectsToReset = ["moneda", "bancoOrigen", "bancoDestino", "formaPago"];
+                        selectsToReset.forEach(id => {
+                            const el = document.getElementById(id);
+                            if(el) el.selectedIndex = 0;
+                        });
+
+                        // Restaurar botón
+                        btnGuardarPago.disabled = false;
+                        btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
+                        resetDocumentoPagoUI(); // Resetear UI del archivo
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al guardar el pago.'
+                    });
+                    btnGuardarPago.disabled = false;
+                    btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Red',
+                    text: 'Hubo un problema al conectar con el servidor.'
+                });
+                btnGuardarPago.disabled = false;
+                btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
+            });
         });
     }
 
@@ -2012,14 +2534,104 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
  * @param {string} ticketId - El ID del ticket
  * @param {string} serialPos - El Serial del POS (opcional)
  * @param {string} budgetAmount - El Monto del Presupuesto (opcional)
+ * @param {string} razonSocial - Razón Social del Cliente (opcional)
+ * @param {string} rif - RIF del Cliente (opcional)
+ * @param {string} telefono - Teléfono del Cliente (opcional)
  */
-function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) {
+/**
+ * Función para abrir el modal de pago de presupuesto (Patrón Gestión Rosal)
+ * @param {string} nroTicket - El número de ticket
+ * @param {string} ticketId - El ID del ticket
+ * @param {string} serialPos - El Serial del POS (opcional)
+ * @param {string} budgetAmount - El Monto del Presupuesto (opcional)
+ * @param {string} razonSocial - Razón Social del Cliente (opcional)
+ * @param {string} rif - RIF del Cliente (opcional)
+ * @param {string} telefono - Teléfono del Cliente (opcional)
+ * @param {string} estatusPos - Estatus del POS (opcional)
+ * @param {string} hasPresupuesto - Si tiene presupuesto ('Si'/'No')
+ */
+function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, razonSocial, rif, telefono, estatusPos, hasPresupuesto) {
     currentTicketId = ticketId;
     currentTicketNro = nroTicket;
 
     // Limpiar formulario y resetear estado visual
     const formPago = document.getElementById("formPagoPresupuesto");
     if(formPago) formPago.reset();
+
+    // Validar razonSocial
+    if (!razonSocial || razonSocial === "undefined" || razonSocial === "null") {
+        razonSocial = "";
+    }
+    // Validar rif
+    if (!rif || rif === "undefined" || rif === "null") {
+        rif = "";
+    }
+    // Validar telefono
+    if (!telefono || telefono === "undefined" || telefono === "null") {
+        telefono = "";
+    }
+    // Validar estatusPos
+    if (!estatusPos || estatusPos === "undefined" || estatusPos === "null") {
+        estatusPos = "No disponible";
+    }
+
+    // --- VISIBILITY LOGIC FOR EXTRA DOCUMENT BUTTON ---
+    const containerExtra = document.querySelector(".container-extra");
+    if (containerExtra) {
+        if (hasPresupuesto === 'Si' || hasPresupuesto === 'Sí') {
+            containerExtra.style.display = 'block';
+        } else {
+            containerExtra.style.display = 'none';
+        }
+    }
+
+    // --- POPULATE BLOCK 1: CLIENT INFO ---
+    const displayRazonSocial = document.getElementById("displayRazonSocial");
+    if(displayRazonSocial) displayRazonSocial.value = razonSocial;
+
+    const displayRif = document.getElementById("displayRif");
+    if(displayRif) displayRif.value = rif;
+
+    const displaySerialPos = document.getElementById("serialPosPago");
+    if(displaySerialPos) displaySerialPos.value = serialPos || "No disponible";
+
+    const displayEstatusPos = document.getElementById("displayEstatusPos");
+    if(displayEstatusPos) displayEstatusPos.value = estatusPos;
+
+    // --- POPULATE BLOCK 2: PAYMENT INFO ---
+    
+    // Depositante (defaults to Client Name)
+    const depositanteInput = document.getElementById("depositante");
+    if (depositanteInput) {
+         depositanteInput.value = razonSocial;
+    }
+    
+    // RIF Field (Banking Details - Hidden by default but good to pre-fill)
+    const origenRifNumero = document.getElementById("origenRifNumero");
+    if (origenRifNumero && rif) {
+        // Attempt to split Type and Number if possible
+        const parts = rif.split('-');
+        if (parts.length > 1) {
+             const typeSelect = document.getElementById("origenRifTipo");
+             if(typeSelect) typeSelect.value = parts[0];
+             origenRifNumero.value = parts[1];
+        } else {
+             origenRifNumero.value = rif;
+        }
+    }
+
+    const origenTelefono = document.getElementById("origenTelefono");
+    if (origenTelefono && telefono) {
+        origenTelefono.value = telefono;
+    }
+
+    // Fecha Carga (Auto-set to Today)
+    const fechaCargaInput = document.getElementById("fechaCarga");
+    if(fechaCargaInput) {
+        const today = new Date().toISOString().split('T')[0];
+        fechaCargaInput.value = today;
+    }
+
 
     // Robust Parsing and Logging
     console.log("openModalPagoPresupuesto called. raw budgetAmount:", budgetAmount);
@@ -2032,6 +2644,10 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) 
         }
         currentBudgetAmount = parseFloat(cleanAmount);
         console.log("Parsed currentBudgetAmount:", currentBudgetAmount);
+        
+        // Store context globally for save handler
+        window.currentNroTicket = nroTicket;
+        window.currentSerialPos = serialPos;
         
         // Populate inputs
         const montoRefInput = document.getElementById("montoRef");
@@ -2057,8 +2673,6 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) 
         currentBudgetAmount = null;
         console.log("currentBudgetAmount set to null");
     }
-
-
 
 
     // Pre-populate Budget Amount
@@ -2088,9 +2702,6 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) 
     const ticketHeader = document.getElementById("ticketNumeroPago");
     if(ticketHeader) ticketHeader.textContent = "Ticket #" + nroTicket;
 
-    // Serial POS
-    const inputSerial = document.getElementById("serialPosPago");
-    if(inputSerial) inputSerial.value = serialPos || "No disponible";
     
     // Fecha Pago Default (Hoy)
     const inputFecha = document.getElementById("fechaPago");
@@ -2113,6 +2724,20 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) 
          monedaSelect.value = ""; // Force reset selection
     }
     
+    // Ensure both amount fields are disabled on modal open
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    if(montoBsInput) {
+        montoBsInput.disabled = true;
+        montoBsInput.style.backgroundColor = "#e9ecef";
+        montoBsInput.style.cursor = "not-allowed";
+    }
+    if(montoRefInput) {
+        montoRefInput.disabled = true;
+        montoRefInput.style.backgroundColor = "#e9ecef";
+        montoRefInput.style.cursor = "not-allowed";
+    }
+    
     // Cargar métodos de pago y bancos
     loadPaymentMethods();
     loadBancos();
@@ -2120,6 +2745,9 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) 
     // Set globals for image viewer if needed
     currentTicketNroForImage = nroTicket;
     currentIdTicketForImage = ticketId;
+
+    // Cargar el estatus del pago
+    getPagoEstatus(nroTicket);
 
     // Mostrar el modal usando la instancia global
     if (modalPagoPresupuestoInstance) {
@@ -2133,6 +2761,307 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount) 
              manualModal.show();
         }
     }
+}
+
+/**
+ * Obtiene el estatus del pago basado en el número de ticket.
+ * @param {string} nroTicket - El número de ticket para consultar el estatus.
+ */
+function getPagoEstatus(nroTicket) {
+    const estatusInput = document.getElementById("estatus");
+    const paymentIdInput = document.getElementById("payment_id_to_save");
+
+    if (!estatusInput || !paymentIdInput) {
+        console.error("DEBUG getPagoEstatus: Elementos necesarios no encontrados.");
+        return;
+    }
+
+    // Estado inicial de carga
+    estatusInput.value = "Cargando estatus...";
+    paymentIdInput.value = "";
+
+    // console.log("DEBUG getPagoEstatus: Solicitando para Ticket:", nroTicket);
+
+    const xhr = new XMLHttpRequest();
+    // Reutilizamos el endpoint existente en consultaApi
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetEstatusPagoAutomatizado`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        // console.log("DEBUG getPagoEstatus: Respuesta recibida. Status:", xhr.status);
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                // console.log("DEBUG getPagoEstatus: Data parsed:", response);
+                
+                const responseData = response.estatus_pago || response.data;
+                
+                if (response.success && Array.isArray(responseData) && responseData.length > 0) {
+                    const pagoData = responseData[0];
+                    
+                    paymentIdInput.value = pagoData.id_status_payment;
+                    estatusInput.value = pagoData.name_status_payment;
+                    
+                    // console.log("DEBUG getPagoEstatus: Estatus asignado:", pagoData.name_status_payment);
+                } else {
+                    estatusInput.value = 'Pendiente por pagar';
+                    paymentIdInput.value = "7"; // Status 7 por defecto
+                    console.warn("DEBUG getPagoEstatus: Sin datos o formato incorrecto. Response:", response);
+                }
+            } catch (error) {
+                console.error("DEBUG getPagoEstatus: Error processing JSON or data:", error, xhr.responseText);
+                estatusInput.value = 'Error de procesamiento.';
+            }
+        } else {
+            estatusInput.value = `Error (HTTP ${xhr.status})`;
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error("DEBUG getPagoEstatus: Error de red");
+        estatusInput.value = "Error de red";
+    };
+
+    const datos = `action=GetEstatusPagoAutomatizado&nro_ticket=${encodeURIComponent(nroTicket || "")}`;
+    xhr.send(datos);
+}
+
+/**
+ * Carga el historial de pagos para un ticket específico.
+ * @param {string} nroTicket - Número de ticket
+ */
+function loadPaymentHistory(nroTicket) {
+    const tableBody = document.getElementById("paymentHistoryBody");
+    
+    if (!tableBody) {
+        console.error("DEBUG loadPaymentHistory: Elemento paymentHistoryBody no encontrado.");
+        return;
+    }
+
+    // Show loading state
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="10" class="text-center text-muted" style="padding: 20px;">
+                <i class="fas fa-spinner fa-spin me-1"></i>Cargando historial...
+            </td>
+        </tr>
+    `;
+
+    // console.log("DEBUG loadPaymentHistory: Solicitando historial para Ticket:", nroTicket);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentsByTicket`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        // console.log("DEBUG loadPaymentHistory: Respuesta recibida. Status:", xhr.status);
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                // console.log("DEBUG loadPaymentHistory: Data parsed:", response);
+                
+                if (response.success && Array.isArray(response.payments) && response.payments.length > 0) {
+                    let rows = '';
+                    response.payments.forEach((payment, index) => {
+                        // Format date
+                        const paymentDate = payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('es-VE') : 'N/A';
+                        
+                        // Format amounts
+                        const amountBs = payment.amount_bs ? parseFloat(payment.amount_bs).toFixed(2) : '0.00';
+                        const refAmount = payment.reference_amount ? parseFloat(payment.reference_amount).toFixed(2) : '0.00';
+                        
+                        // Check confirmation status
+                        const rawConf = payment.confirmation_number;
+                        console.log("DEBUG Payment ID " + payment.id_payment_record + " ConfNum:", rawConf, "Type:", typeof rawConf);
+                        
+                        // Postgres might return 't'/'f' or boolean. Check for truthy confirmed state.
+                        // Postgres might return 't'/'f' or boolean. Check for truthy confirmed state.
+                        let isConfirmed = (rawConf === true || rawConf === 't' || rawConf === 'true' || rawConf === 1 || rawConf === '1');
+                        if (rawConf === 'f' || rawConf === 'false') {
+                            isConfirmed = false;
+                        }
+                        
+                        let actionBtn = '';
+                        const viewIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+  <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+  <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+</svg>`;
+
+                        // ALWAYS show the view button as requested by the user icon
+                        // Now using data from SQL JOIN (no extra AJAX needed)
+                        // CRITICAL: Normalize slashes HERE to prevent backslashes from being treated as escapes in onclick
+                        const receiptPath = (payment.receipt_path || '').replace(/\\/g, '/');
+                        const receiptMime = payment.receipt_mime || '';
+                        const receiptName = payment.receipt_name || 'Comprobante';
+                        
+                        actionBtn += `<button type="button" class="btn btn-sm btn-link text-success p-0 m-0 me-2" onclick="viewPaymentReceipt('${receiptPath}', '${receiptMime}', '${receiptName}', '${payment.record_number}')" title="Ver Comprobante">${viewIcon}</button>`;
+
+                        if (!isConfirmed) {
+                             // Use type="button" to prevent form submission behavior
+                             const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+  <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+  <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+</svg>`;
+                             actionBtn += `<button type="button" class="btn btn-sm btn-link text-primary p-0 m-0" onclick="editPayment('${payment.record_number}')" title="Editar Pago">${editIcon}</button>`;
+                        }
+                        
+                        rows += `
+                            <tr>
+                                <td style="padding: 8px;">${index + 1}</td>
+                                <td style="padding: 8px;">${payment.record_number || 'N/A'}</td>
+                                <td style="padding: 8px;">${paymentDate}</td>
+                                <td style="padding: 8px;">${payment.payment_method || 'N/A'}</td>
+                                <td style="padding: 8px;">${payment.currency || 'N/A'}</td>
+                                <td style="padding: 8px;">${amountBs}</td>
+                                <td style="padding: 8px;">${refAmount}</td>
+                                <td style="padding: 8px;">${payment.payment_reference || 'N/A'}</td>
+                                <td style="padding: 8px;">${payment.depositor || 'N/A'}</td>
+                                <td style="padding: 8px; text-align: center;">${actionBtn}</td>
+                            </tr>
+                        `;
+                    });
+                    tableBody.innerHTML = rows;
+                    console.log("DEBUG loadPaymentHistory: Tabla poblada con", response.payments.length, "registros.");
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="10" class="text-center text-muted" style="padding: 20px;">
+                                <i class="fas fa-info-circle me-1"></i>No hay pagos registrados
+                            </td>
+                        </tr>
+                    `;
+                    console.log("DEBUG loadPaymentHistory: Sin datos de pagos.");
+                }
+            } catch (error) {
+                console.error("DEBUG loadPaymentHistory: Error processing JSON:", error, xhr.responseText);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center text-danger" style="padding: 20px;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Error al procesar datos
+                        </td>
+                    </tr>
+                `;
+            }
+        } else {
+            console.error("DEBUG loadPaymentHistory: Error HTTP", xhr.status);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center text-danger" style="padding: 20px;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Error al cargar historial (HTTP ${xhr.status})
+                    </td>
+                </tr>
+            `;
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error("DEBUG loadPaymentHistory: Error de red");
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="10" class="text-center text-danger" style="padding: 20px;">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Error de red
+                </td>
+            </tr>
+        `;
+    };
+
+    const datos = `action=GetPaymentsByTicket&nro_ticket=${encodeURIComponent(nroTicket || "")}`;
+    xhr.send(datos);
+}
+
+/**
+ * Carga el monto total abonado para un ticket específico.
+ * @param {string} nroTicket - Número de ticket
+ * @param {number} budgetAmount - Monto del presupuesto
+ */
+function loadTotalPaid(nroTicket, budgetAmount) {
+    const montoAbonadoElement = document.getElementById("montoAbonado");
+    const montoRestanteElement = document.getElementById("montoRestante");
+    
+    if (!montoAbonadoElement || !montoRestanteElement) {
+        console.error("DEBUG loadTotalPaid: Elementos no encontrados.");
+        return;
+    }
+
+    // Show loading state
+    montoAbonadoElement.textContent = "Cargando...";
+    montoRestanteElement.textContent = "Calculando...";
+
+    console.log("DEBUG loadTotalPaid: Solicitando total para Ticket:", nroTicket);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTotalPaidByTicket`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        console.log("DEBUG loadTotalPaid: Respuesta recibida. Status:", xhr.status);
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                console.log("DEBUG loadTotalPaid: Data parsed:", response);
+                
+                if (response.success) {
+                    const totalPaid = parseFloat(response.total_paid) || 0;
+                    const totalBudget = parseFloat(response.total_budget) || 0;
+                    
+                    // If total budget is 0, fallback to passed parameter (though API should return it)
+                    const budgetToUse = totalBudget > 0 ? totalBudget : (parseFloat(budgetAmount) || 0);
+                    
+                    const remaining = Math.max(0, budgetToUse - totalPaid);
+                    
+                    // Store in global variable for validation
+                    window.currentTotalPaid = totalPaid;
+                    window.currentBudgetAmount = budgetToUse;
+                    
+                    // Update display
+                    montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
+                    montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
+                    
+                    // Button control logic
+                    const btnGuardarPago = document.getElementById("btnGuardarPagoPresupuesto");
+                    if (btnGuardarPago) {
+                        // Only block if budget is set (>0) AND remaining is 0 or less
+                        if (budgetToUse > 0 && remaining <= 0.00) {
+                            btnGuardarPago.disabled = true;
+                            btnGuardarPago.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pagado Completo';
+                            btnGuardarPago.classList.remove('btn-primary');
+                            btnGuardarPago.classList.add('btn-secondary');
+                            btnGuardarPago.style.background = '#6c757d'; // Force gray override
+                        } else {
+                            btnGuardarPago.disabled = false;
+                            btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
+                            btnGuardarPago.classList.add('btn-primary');
+                            btnGuardarPago.classList.remove('btn-secondary');
+                            btnGuardarPago.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                        }
+                    }
+                    
+                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Total:", budgetToUse, "Restante:", remaining);
+                } else {
+                    montoAbonadoElement.textContent = "$0.00";
+                    montoRestanteElement.textContent = `Restante: $${(parseFloat(budgetAmount) || 0).toFixed(2)}`;
+                    console.warn("DEBUG loadTotalPaid: Response no exitosa:", response);
+                }
+            } catch (error) {
+                console.error("DEBUG loadTotalPaid: Error processing JSON:", error, xhr.responseText);
+                montoAbonadoElement.textContent = "Error";
+                montoRestanteElement.textContent = "Error";
+            }
+        } else {
+            console.error("DEBUG loadTotalPaid: Error HTTP", xhr.status);
+            montoAbonadoElement.textContent = "Error";
+            montoRestanteElement.textContent = "Error";
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error("DEBUG loadTotalPaid: Error de red");
+        montoAbonadoElement.textContent = "Error de red";
+        montoRestanteElement.textContent = "Error de red";
+    };
+
+    const datos = `action=GetTotalPaidByTicket&nro_ticket=${encodeURIComponent(nroTicket || "")}`;
+    xhr.send(datos);
 }
 
 // =================================================================================
@@ -2615,8 +3544,9 @@ function savePayment() {
     const bancoDestino = document.getElementById("bancoDestino");
 
     // Validations (Simplified)
-    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value) {
-         Swal.fire("Error", "Por favor complete los campos obligatorios", "error");
+    const documentoPagoInput = document.getElementById('documentoPago');
+    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value || !documentoPagoInput || documentoPagoInput.files.length === 0) {
+         Swal.fire("Campos Incompletos", "Por favor complete los campos obligatorios y Adjunte El Documento de pago.", "error");
          return;
     }
     
@@ -2677,6 +3607,22 @@ function savePayment() {
             try {
                 const data = JSON.parse(xhr.responseText);
                 if (data.success) {
+
+                    // --- LOGICA DE SUBIDA DE IMAGEN (DUPLICADA - COMENTADA) ---
+                    /*
+                    console.log("Pago registrado. Intentando subir imagen...");
+                    // CORRECCIÓN: El ID en el HTML es 'documentoPago', no 'soportePago'
+                    const fileInput = document.getElementById("documentoPago");
+                    
+                    if (fileInput && fileInput.files.length > 0) {
+                        // ... Logica movida al listener principal ...
+                    } else {
+                        console.log("No se seleccionó archivo para subir.");
+                        // Swal.fire("Atención", "El pago se guardó, pero NO se detectó ningún documento adjunto para subir. Asegúrate de seleccionarlo.", "info");
+                    }
+                    */
+                    // ----------------------------------------------------
+
                     Swal.fire({
                         title: "¡Pago Registrado!",
                         text: "El pago se ha registrado correctamente.",
@@ -2686,6 +3632,7 @@ function savePayment() {
                         if(modalPagoPresupuestoInstance) modalPagoPresupuestoInstance.hide();
                          // Refresh table if needed
                          if(typeof getTicketDataCoordinator === 'function') getTicketDataCoordinator();
+                         if(typeof loadPaymentsTable === 'function') loadPaymentsTable(currentTicketNro);
                     });
                 } else {
                     Swal.fire("Error", data.message || "Error al guardar", "error");
@@ -2702,24 +3649,60 @@ function savePayment() {
 document.addEventListener("DOMContentLoaded", function() {
     setupCurrencyListener();
     initializeDocumentNameGenerator();
+    setupPaymentModalCloseListener();
 });
+
+function setupPaymentModalCloseListener() {
+    const buttons = [
+        document.getElementById('btnClosePagoPresupuesto'),
+        document.getElementById('btnCancelarPagoPresupuesto')
+    ];
+
+    buttons.forEach(btn => {
+        if (btn) {
+            btn.addEventListener('click', function() {
+                // First try using the global instance used to open it 
+                if (typeof modalPagoPresupuestoInstance !== 'undefined' && modalPagoPresupuestoInstance) {
+                    modalPagoPresupuestoInstance.hide();
+                } else {
+                    // Fallbacks if global instance is missing
+                    const el = document.getElementById('modalPagoPresupuesto');
+                    if (el) {
+                        if (typeof $ !== 'undefined' && $(el).modal) {
+                             $(el).modal('hide');
+                        } else {
+                            try {
+                                const manualInstance = new bootstrap.Modal(el);
+                                manualInstance.hide();
+                            } catch(e) { console.error(e); }
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
 
 function initializeDocumentNameGenerator() {
     const referenciaInput = document.getElementById("referencia");
     const registroInput = document.getElementById("registro");
+    const serialPosInput = document.getElementById("serialPosPago");
     
     if (referenciaInput && registroInput) {
         referenciaInput.addEventListener("input", function() {
             const refValue = this.value.trim();
-            if (refValue) {
-                // The original implementation just copied the reference value.
-                // If a date prefix was needed, it would be:
-                // const today = new Date();
-                // const dateStr = today.getFullYear().toString() +
-                //                 (today.getMonth() + 1).toString().padStart(2, '0') +
-                //                 today.getDate().toString().padStart(2, '0');
-                // registroInput.value = `${refValue}-${dateStr}`; 
-                registroInput.value = `${refValue}`; 
+            const serialValue = serialPosInput ? serialPosInput.value.trim() : "";
+            
+            if (refValue && serialValue) {
+                // Get last 4 digits of reference
+                const refLast4 = refValue.slice(-4);
+                // Get last 4 digits of serial
+                const serialLast4 = serialValue.slice(-4);
+                // Generate: Pago + ref4digits + _ + serial4digits
+                registroInput.value = `Pago${refLast4}_${serialLast4}`;
+            } else if (refValue) {
+                // If only reference is available, just use it
+                registroInput.value = `${refValue}`;
             } else {
                 registroInput.value = "";
             }
@@ -2753,3 +3736,451 @@ function resetFormPago() {
     // Explicitly clearing some key fields to be safe
     document.querySelectorAll('#bancoFieldsContainer select, #pagoMovilFieldsContainer input').forEach(el => el.value = '');
 }
+
+/**
+ * Global edit payment function
+ * @param {number} id - The ID of the payment record
+ */
+/**
+ * Global edit payment function
+ * @param {number} id - The ID of the payment record
+ */
+/**
+ * Global edit payment function
+ * @param {string} recordNumber - The record number (nro de registro)
+ */
+window.editPayment = function(recordNumber) {
+    console.log("Edit payment clicked for Record Number:", recordNumber);
+    
+    // 1. Fetch Payment Data via XMLHttpRequest
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetPaymentByRecordNumber";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success && response.payment) {
+                    const p = response.payment;
+                    
+                    // 2. Populate Modal Fields
+                    $('#edit_payment_id').val(p.id_payment_record); // Still keep internal ID for update precision
+                    // Fix date format: Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
+                    let rawDate = p.payment_date || "";
+                    if (rawDate.includes(" ")) {
+                        rawDate = rawDate.split(" ")[0];
+                    }
+                    $('#edit_fechaPago').val(rawDate);
+                    
+                    // Load Exchange Rate for this date
+                    loadEditExchangeRate(rawDate);
+                    
+                    $('#edit_referencia').val(p.payment_reference);
+                    $('#edit_depositante').val(p.depositor);
+                    $('#edit_obsAdministracion').val(p.observations);
+                    $('#edit_montoBs').val(p.amount_bs);
+                    $('#edit_montoRef').val(p.reference_amount);
+                    
+                    if ($('#edit_formaPago option').length <= 1) {
+                        $('#formaPago option').clone().appendTo('#edit_formaPago');
+                    }
+                    // Select Payment Method by Text (since backend saves Name not ID)
+                    if (p.payment_method) {
+                        $('#edit_formaPago option').each(function() {
+                            if ($(this).text().trim().toLowerCase() === p.payment_method.trim().toLowerCase()) {
+                                $(this).prop('selected', true);
+                                return false; // break
+                            }
+                        });
+                    }
+
+                    // Moneda & Visibility
+                    $('#edit_moneda').val(p.currency.toLowerCase());
+                    handleEditMonedaChange(p.currency.toLowerCase());
+                    
+                    // Trigger Payment Method Change to show correct fields
+                    handleEditFormaPagoChange();
+
+                    // Populate Mobile Payment Fields if visible (and if data exists)
+                     if(p.origen_rif_numero) $('#edit_origenRifNumero').val(p.origen_rif_numero);
+                     if(p.origen_telefono) $('#edit_origenTelefono').val(p.origen_telefono);
+
+                    // 3. Show Modal
+                    var el = document.getElementById('editPaymentModal');
+                    // Store instance globally to control it later
+                    editPaymentModalInstance = new bootstrap.Modal(el);
+                    editPaymentModalInstance.show();
+                    
+                } else {
+                    Swal.fire('Error', response.message || 'No se pudo cargar la información del pago.', 'error');
+                }
+            } catch (e) {
+                console.error("JSON Parse error:", e);
+                Swal.fire('Error', 'Respuesta inválida del servidor.', 'error');
+            }
+        } else {
+            Swal.fire('Error', 'Error HTTP ' + xhr.status, 'error');
+        }
+    };
+    
+    xhr.onerror = function() {
+        Swal.fire('Error', 'Error de conexión al buscar el pago.', 'error');
+    };
+    
+    xhr.send(`record_number=${encodeURIComponent(recordNumber)}`);
+};
+
+// --- NEW HELPER FOR EDIT MODAL ---
+function handleEditFormaPagoChange() {
+    const formaPagoSelect = document.getElementById("edit_formaPago");
+    const monedaSelect = document.getElementById("edit_moneda");
+    const bancoFieldsContainer = document.getElementById("edit_bancoFieldsContainer");
+    const pagoMovilFieldsContainer = document.getElementById("edit_pagoMovilFieldsContainer");
+    
+    // Only proceed if elements exist
+    if (!formaPagoSelect || !monedaSelect) return;
+
+    // Safety Check: If no option selected, return
+    if (formaPagoSelect.selectedIndex === -1) return;
+
+    const selectedId = parseInt(formaPagoSelect.value) || 0;
+    const selectedOption = formaPagoSelect.options[formaPagoSelect.selectedIndex];
+    const selectedText = selectedOption ? selectedOption.textContent.toLowerCase() : "";
+
+    // Reset visibility first
+    if(bancoFieldsContainer) bancoFieldsContainer.style.display = "none";
+    if(pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = "none";
+
+    // Logic similar to CREATE modal
+    if (selectedId === 2) { // Transferencia
+        monedaSelect.value = "bs";
+        monedaSelect.setAttribute("disabled", "disabled");
+        if(bancoFieldsContainer) bancoFieldsContainer.style.display = "flex"; 
+        
+        // Ensure options are loaded if empty (simple clone from main if needed or fetch)
+        // For now relying on main 'loadBancos' or existing options
+        if($('#edit_bancoOrigen option').length <= 1) {
+             $('#bancoOrigen option').clone().appendTo('#edit_bancoOrigen');
+        }
+        if($('#edit_bancoDestino option').length <= 1) {
+             $('#bancoDestino option').clone().appendTo('#edit_bancoDestino');
+        }
+
+        handleEditMonedaChange("bs");
+
+    } else if (selectedText.includes("móvil") || selectedText.includes("movil") || selectedId === 5) { // Pago Movil
+        monedaSelect.value = "bs";
+        monedaSelect.setAttribute("disabled", "disabled");
+        
+        if(pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = "flex";
+        
+        handleEditMonedaChange("bs");
+        
+    } else {
+        // Other methods (Cash, Zelle etc)
+        monedaSelect.removeAttribute("disabled");
+        handleEditMonedaChange(monedaSelect.value);
+    }
+}
+
+// Attach listener to Edit Payment Method Select
+$('#edit_formaPago').change(function() {
+    handleEditFormaPagoChange();
+});
+
+// Helper to handle field visibility in Edit Mode
+function handleEditMonedaChange(currency) {
+    const isBs = (currency === 'bs' || currency === 'bolivares');
+    const isUsd = (currency === 'usd' || currency === 'dolares');
+
+    if (isBs) {
+        $('#edit_montoBs').prop('disabled', false).css('background-color', '#fff');
+        // Do NOT clear val() here, just disable. User wants to see the Ref amount even if paying in Bs.
+        $('#edit_montoRef').prop('disabled', true).css('background-color', '#e9ecef'); 
+    } else if (isUsd) {
+        // Do NOT clear val() here.
+        $('#edit_montoBs').prop('disabled', true).css('background-color', '#e9ecef');
+        $('#edit_montoRef').prop('disabled', false).css('background-color', '#fff');
+    } else {
+         // Default or empty
+        $('#edit_montoBs').prop('disabled', true);
+        $('#edit_montoRef').prop('disabled', true);
+    }
+}
+
+// Event Listener for Moneda Change in Edit Modal
+$('#edit_moneda').change(function() {
+    handleEditMonedaChange($(this).val());
+});
+
+// Save Update
+$('#btnUpdatePayment').click(function() {
+    const id = $('#edit_payment_id').val();
+    const ticketId = $('#ticketIdPago').val();
+
+    const data = {
+        id_payment: id,
+        payment_method: $('#edit_formaPago option:selected').text().trim(),
+        currency: $('#edit_moneda').val().toUpperCase(),
+        amount_bs: $('#edit_montoBs').val(),
+        reference_amount: $('#edit_montoRef').val(),
+        payment_reference: $('#edit_referencia').val(),
+        depositor: $('#edit_depositante').val(),
+        origen_bank: $('#edit_bancoOrigen').val(),
+        destination_bank: $('#edit_bancoDestino').val(),
+        // New Mobile Payment Fields
+        origen_rif_numero: $('#edit_origenRifNumero').val(),
+        origen_telefono: $('#edit_origenTelefono').val()
+    };
+
+    // Detailed Validation
+    let missingFields = [];
+    if (!data.payment_method) missingFields.push("Forma de Pago");
+    if (!data.currency) missingFields.push("Moneda");
+    if (!data.reference_amount && !data.amount_bs) missingFields.push("Monto (Bs o USD)");
+    if (!data.payment_reference) missingFields.push("Referencia");
+    if (!data.depositor) missingFields.push("Depositante");
+
+    if (missingFields.length > 0) {
+        let errorHtml = '<ul style="text-align: left; margin-bottom: 0;">';
+        missingFields.forEach(field => {
+            errorHtml += `<li>${field}</li>`;
+        });
+        errorHtml += '</ul>';
+
+        Swal.fire({
+            title: 'Campos Incompletos',
+            html: `Por favor complete los siguientes datos:<br>${errorHtml}`,
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'swal-premium-popup',
+                title: 'swal-premium-title',
+                confirmButton: 'swal-premium-confirm'
+            }
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Confirmación',
+        html: "<span style='color: #555; font-size: 1.1em;'>¿Desea aplicar los cambios a este pago?</span><br><div style='margin-top:10px; font-size: 0.9em; color: #888;'>Se guardará un registro de auditoría.</div>",
+        icon: 'info', // Changed to info/question for cleaner look, icon color overridden by CSS usually
+        showCancelButton: true,
+        confirmButtonText: 'Sí, Actualizar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true,
+        background: '#fff',
+        backdrop: `rgba(0,0,123,0.1)`, // Custom light backdrop
+        customClass: {
+            popup: 'swal-premium-popup',
+            title: 'swal-premium-title',
+            confirmButton: 'swal-premium-confirm',
+            cancelButton: 'swal-premium-cancel'
+        },
+        buttonsStyling: false // IMPORTANT: Disables SweetAlert's default styles (and Bootstrap's interference)
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/UpdatePayment";
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", apiUrl);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            Swal.fire({
+                                title: '¡Actualizado!',
+                                icon: 'success',
+                                html: `
+                                    <div style="text-align: center;">
+                                        <h4 style="color: #333; font-weight: 600; margin-bottom: 10px;">Cambios Guardados</h4>
+                                        <p style="color: #666; font-size: 1.1rem;">${response.message || 'El pago se ha actualizado correctamente.'}</p>
+                                    </div>
+                                `,
+                                showConfirmButton: true,
+                                confirmButtonText: '<i class="fas fa-check-circle me-2"></i>Entendido',
+                                customClass: {
+                                    popup: 'swal-premium-popup',
+                                    title: 'swal-premium-title',
+                                    confirmButton: 'swal-premium-confirm'
+                                },
+                                buttonsStyling: false
+                            });
+                            
+                            if (editPaymentModalInstance) {
+                                editPaymentModalInstance.hide();
+                            } else {
+                                $('#editPaymentModal').modal('hide');
+                            }
+                            
+                            // Use parsed ticketId or fallback to global currentTicketNro
+                            const refreshTicketId = ticketId || currentTicketNro;
+                            console.log("Refreshing tables for Ticket:", refreshTicketId);
+
+                            if (refreshTicketId) {
+                                loadPaymentHistory(refreshTicketId);
+                                loadTotalPaid(refreshTicketId);
+                            }
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'Aceptar',
+                                customClass: {
+                                    popup: 'swal-premium-popup',
+                                    title: 'swal-premium-title',
+                                    confirmButton: 'swal-premium-confirm'
+                                },
+                                buttonsStyling: false
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Respuesta inválida del servidor.',
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar',
+                            customClass: {
+                                popup: 'swal-premium-popup',
+                                title: 'swal-premium-title',
+                                confirmButton: 'swal-premium-confirm'
+                            },
+                            buttonsStyling: false
+                        });
+                    }
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Error HTTP ' + xhr.status,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar',
+                        customClass: {
+                            popup: 'swal-premium-popup',
+                            title: 'swal-premium-title',
+                            confirmButton: 'swal-premium-confirm'
+                        },
+                        buttonsStyling: false
+                    });
+                }
+            };
+            
+            xhr.onerror = function() {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error de conexión.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar',
+                    customClass: {
+                        popup: 'swal-premium-popup',
+                        title: 'swal-premium-title',
+                        confirmButton: 'swal-premium-confirm'
+                    },
+                    buttonsStyling: false
+                });
+            };
+            
+            // Convert data object to URLSearchParams for easier encoding
+            const params = new URLSearchParams();
+            for (let key in data) {
+                params.append(key, data[key]);
+            }
+            xhr.send(params.toString());
+        }
+    });
+});
+
+// Listener for Close/Cancel Button in Edit Modal
+$('#btnCancelEditPayment').click(function() {
+    // 1. Reset Form
+    document.getElementById('formEditPayment').reset();
+    
+    // 2. Hide Dynamic Containers
+    $('#edit_bancoFieldsContainer').hide();
+    $('#edit_pagoMovilFieldsContainer').hide();
+    
+    // 3. Close Modal using Global Instance
+    if (editPaymentModalInstance) {
+        editPaymentModalInstance.hide();
+    } else {
+        // Fallback
+        $('#editPaymentModal').modal('hide');
+    }
+});
+
+// --- CURRENCY CONVERSION LOGIC FOR EDIT MODAL ---
+
+function loadEditExchangeRate(date) {
+    if (!date) return;
+    
+    // Reuse existing API endpoint
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/GetExchangeRateByDate";
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", apiUrl);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success && response.exchange_rate) {
+                    editExchangeRate = parseFloat(response.exchange_rate.tasa_dolar);
+                    console.log("Edit Mode Rate loaded:", editExchangeRate);
+                    // Recalculate if values exist
+                    if ($('#edit_moneda').val().toLowerCase() === 'bs') {
+                         calculateEditBsToUsd();
+                    } else {
+                         calculateEditUsdToBs();
+                    }
+                } else {
+                    editExchangeRate = null;
+                }
+            } catch (e) {
+                console.error("Rate parse error", e);
+            }
+        }
+    };
+    xhr.send("fecha=" + date);
+}
+
+function calculateEditBsToUsd() {
+    if (!editExchangeRate) return;
+    
+    const montoBs = parseFloat($('#edit_montoBs').val()) || 0;
+    if (montoBs > 0) {
+        $('#edit_montoRef').val((montoBs / editExchangeRate).toFixed(2));
+    }
+}
+
+function calculateEditUsdToBs() {
+    if (!editExchangeRate) return;
+    
+    const montoUsd = parseFloat($('#edit_montoRef').val()) || 0;
+    if (montoUsd > 0) {
+        $('#edit_montoBs').val((montoUsd * editExchangeRate).toFixed(2));
+    }
+}
+
+// BIND EVENTS
+$('#edit_fechaPago').change(function() {
+    loadEditExchangeRate($(this).val());
+});
+
+$('#edit_montoBs').on('input keyup', function() {
+    if ($('#edit_moneda').val().toLowerCase() === 'bs') {
+        calculateEditBsToUsd();
+    }
+});
+
+$('#edit_montoRef').on('input keyup', function() {
+    if ($('#edit_moneda').val().toLowerCase().includes('usd')) {
+        calculateEditUsdToBs();
+    }
+});
+
+console.log("frontEnd.js fully loaded with editPayment logic");

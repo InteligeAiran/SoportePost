@@ -1,5 +1,4 @@
-<?php
-namespace App\Repositories; // Usar namespaces para organizar tus clases
+<?php namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
 use \DateTime;
@@ -259,6 +258,8 @@ class TechnicalConsultionRepository
 
     // Nueva función para guardar archivos adjuntos
     public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, array $fileInfo) {
+        $record_number = isset($fileInfo['record_number']) ? $fileInfo['record_number'] : null;
+        
         return $this->model->saveArchivoAdjunto(
             $ticket_id,
             $Nr_ticket, // Pasamos Nr_ticket para que se pueda guardar si es necesario en la DB
@@ -269,6 +270,7 @@ class TechnicalConsultionRepository
             $fileInfo['mime_type'],
             $fileInfo['file_size_bytes'],
             $fileInfo['document_type'],
+            $record_number
         );
     }
 
@@ -1130,6 +1132,58 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetPaymentStatusByTicket($nro_ticket){
+        $result = $this->model->GetPaymentStatusByTicket($nro_ticket);
+        if ($result) {
+            //var_dump($result);  
+            $status = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $status[] = $agente;
+            }
+            //var_dump($agente);
+            return $status;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetEstatusPagoAutomatizado($nro_ticket = null){
+        $result = $this->model->GetPaymentStatusByTicket($nro_ticket);
+        if ($result) {
+            $status = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $status[] = $agente;
+            }
+            return $status;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetPaymentsByTicket($nro_ticket){
+        $result = $this->model->GetPaymentsByTicket($nro_ticket);
+        if ($result) {
+            $payments = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $payment = pg_fetch_assoc($result['query'], $i);
+                $payments[] = $payment;
+            }
+            return $payments;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetTotalPaidByTicket($nro_ticket){
+        return $this->model->GetTotalPaidByTicket($nro_ticket);
+    }
+
+    public function InsertPaymentRecord($data){
+        return $this->model->InsertPaymentRecord($data);
+    }
+
     /**
      * Guarda un pago en la tabla temporal temp_payment_uploads
      * 
@@ -1138,25 +1192,25 @@ class TechnicalConsultionRepository
      * @param string|null $payment_date Fecha del pago
      * @param string|null $origen_bank Banco de origen
      * @param string|null $destination_bank Banco de destino
-     * @param string $payment_method Método de pago
+     * @param string $payment_method MÃ©todo de pago
      * @param string $currency Moneda (BS o USD)
      * @param float|null $reference_amount Monto de referencia
-     * @param float $amount_bs Monto en Bolívares
+     * @param float $amount_bs Monto en BolÃ­vares
      * @param string|null $payment_reference Referencia del pago
      * @param string|null $depositor Depositante
      * @param string|null $observations Observaciones
-     * @param string|null $record_number Número de registro
+     * @param string|null $record_number NÃºmero de registro
      * @param string $loadpayment_date Fecha de carga del pago
-     * @param bool $confirmation_number Número de confirmación
+     * @param bool $confirmation_number NÃºmero de confirmaciÃ³n
      * @param int $payment_status Estado del pago
-     * @param string|null $destino_rif_tipo Tipo de RIF del destino (Pago Móvil)
-     * @param string|null $destino_rif_numero Número de RIF del destino (Pago Móvil)
-     * @param string|null $destino_telefono Teléfono del destino (Pago Móvil)
-     * @param string|null $destino_banco Banco del destino (Pago Móvil)
-     * @param string|null $origen_rif_tipo Tipo de RIF del origen (Pago Móvil)
-     * @param string|null $origen_rif_numero Número de RIF del origen (Pago Móvil)
-     * @param string|null $origen_telefono Teléfono del origen (Pago Móvil)
-     * @param string|null $origen_banco Banco del origen (Pago Móvil)
+     * @param string|null $destino_rif_tipo Tipo de RIF del destino (Pago MÃ³vil)
+     * @param string|null $destino_rif_numero NÃºmero de RIF del destino (Pago MÃ³vil)
+     * @param string|null $destino_telefono TelÃ©fono del destino (Pago MÃ³vil)
+     * @param string|null $destino_banco Banco del destino (Pago MÃ³vil)
+     * @param string|null $origen_rif_tipo Tipo de RIF del origen (Pago MÃ³vil)
+     * @param string|null $origen_rif_numero NÃºmero de RIF del origen (Pago MÃ³vil)
+     * @param string|null $origen_telefono TelÃ©fono del origen (Pago MÃ³vil)
+     * @param string|null $origen_banco Banco del origen (Pago MÃ³vil)
      * @return int|false ID del registro guardado o false en caso de error
      */
     public function SavePayment(
@@ -1221,7 +1275,7 @@ class TechnicalConsultionRepository
      * Transfiere el pago de la tabla temporal a la tabla principal cuando se crea el ticket
      * 
      * @param string $serial_pos Serial del POS
-     * @param string $nro_ticket Número del ticket creado
+     * @param string $nro_ticket NÃºmero del ticket creado
      * @return bool|int ID del registro insertado en payment_records o false en caso de error
      */
     public function TransferPaymentFromTempToMain($serial_pos, $nro_ticket) {
@@ -1232,5 +1286,26 @@ class TechnicalConsultionRepository
         return $this->model->CheckPaymentExistsToday($serial_pos);
     }
 
+    public function GetPaymentById($id_payment) {
+        return $this->model->GetPaymentById($id_payment);
+    }
+
+    public function GetPaymentByRecordNumber($record_number) {
+        return $this->model->GetPaymentByRecordNumber($record_number);
+    }
+
+    public function UpdatePayment($id_payment, $data) {
+        return $this->model->UpdatePayment($id_payment, $data);
+    }
+
+    /**
+     * Get payment attachment by record number
+     * 
+     * @param string $record_number Payment record number
+     * @return array|null Attachment info or null if not found
+     */
+    public function GetPaymentAttachment($record_number) {
+        return $this->model->GetPaymentAttachmentByRecordNumber($record_number);
+    }
 }
 ?>
