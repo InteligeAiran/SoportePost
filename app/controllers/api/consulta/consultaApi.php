@@ -46,6 +46,7 @@ class Consulta extends Controller
         $method = $_SERVER['REQUEST_METHOD'];
         if (isset($urlSegments[1])) {
             $action = $urlSegments[1];
+            error_log("ConsultaApi receiving action: " . $action);
             switch ($action) {
                 case 'SearchRif':
                     $this->handleSearchRif();
@@ -152,6 +153,10 @@ class Consulta extends Controller
 
                 case 'GetTicketDataLab':
                     $this->handleGetTicketDataLab();
+                    break;
+
+                case 'UploadPaymentDoc':
+                    $this->handleUploadPaymentDoc();
                     break;
 
                 case 'GetStatusLab':
@@ -366,6 +371,26 @@ class Consulta extends Controller
                     $this->handleGetEstatusPago();
                     break;
 
+                case 'GetEstatusPagoAutomatizado':
+                    $this->handleGetEstatusPagoAutomatizado();
+                    break;
+
+                case 'GetPaymentsByTicket':
+                    $this->handleGetPaymentsByTicket();
+                    break;
+
+                case 'GetTotalPaidByTicket':
+                    $this->handleGetTotalPaidByTicket();
+                    break;
+                
+                case 'InsertPaymentRecord':
+                    $this->handleInsertPaymentRecord();
+                    break;
+
+                case 'GetStatuspayment':
+                    $this->handleGetStatuspayment();
+                    break;
+
                 case 'GetPaymentData':
                     $this->handleGetPaymentData();
                     break;
@@ -389,6 +414,23 @@ class Consulta extends Controller
                 case 'GetBudgetIdByNroTicket':
                     $this->handleGetBudgetIdByNroTicket();
                     break;
+
+                case 'GetPaymentByRecordNumber':
+                    $this->handleGetPaymentByRecordNumber();
+                    break;
+
+                case 'GetPaymentAttachmentByRecordNumber':
+                    $this->handleGetPaymentAttachmentByRecordNumber();
+                    break;
+
+                case 'GetPaymentById':
+                    $this->handleGetPaymentById();
+                    break;
+                
+                case 'UpdatePayment':
+                    $this->handleUpdatePayment();
+                    break;
+
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en consulta'], 404);
@@ -862,6 +904,9 @@ class Consulta extends Controller
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
     $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
+    // NUEVO: Obtener record_number para Anticipo
+    $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+    
     // Ahora estas variables se pasarán por referencia a la función auxiliar
     $archivoEnvioInfo = null;
     $archivoExoneracionInfo = null;
@@ -980,7 +1025,7 @@ class Consulta extends Controller
         }
 
         // 7. Función auxiliar para procesar archivos subidos (sin cambios)
-        $processFile = function($fileKey, $documentType, $ticketId, $nrTicket, $userId, $repo, $baseTicketDir, $dateForFilename, &$targetVar) {
+        $processFile = function($fileKey, $documentType, $ticketId, $nrTicket, $userId, $repo, $baseTicketDir, $dateForFilename, &$targetVar, $recordNumber = null) {
             $repo = new technicalConsultionRepository();
 
             if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
@@ -1014,6 +1059,12 @@ class Consulta extends Controller
                         'file_size_bytes' => $archivo['size'],
                         'document_type' => $documentType
                     ];
+                    
+                    // Solo agregar record_number si es Anticipo
+                    if ($documentType === 'Anticipo' && $recordNumber) {
+                        $targetVar['record_number'] = $recordNumber;
+                    }
+                    
                     $repo->saveArchivoAdjunto($ticketId, $nrTicket, $userId, $targetVar);
                     return true;
                 } else {
@@ -1035,7 +1086,8 @@ class Consulta extends Controller
         // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", NO procesar anticipo ni exoneración
         $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
         $exoneracionOk = $isFallaSinPago ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
-        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo);
+        // Pasamos record_number solo a Anticipo
+        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo, $record_number);
 
         if (!$envioOk || (!$isFallaSinPago && (!$exoneracionOk || !$anticipoOk))) {
             error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
@@ -1237,7 +1289,11 @@ class Consulta extends Controller
         if ($serial != '') {
             $result = $repository->UltimateDateTicket($serial);
 
-            $this->response(['success' => true, 'fecha' => $result], 200); // Código de estado 200 OK por defecto
+            if ($result) {
+                $this->response(['success' => true, 'fecha' => $result['fecha'], 'nro_ticket' => $result['nro_ticket']], 200);
+            } else {
+                $this->response(['success' => true, 'message' => 'No tiene ticket', 'fecha' => null, 'nro_ticket' => null], 400);
+            }
         } else {
             $this->response(['success' => true, 'message' => 'No tiene ticket', 'fecha' => null], 400); // Código de estado 200 OK
         }
@@ -2542,6 +2598,115 @@ class Consulta extends Controller
         }
     }
 
+    public function handleGetEstatusPagoAutomatizado(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetEstatusPagoAutomatizado($nro_ticket);
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'estatus_pago' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay estatus de pago disponibles.', 'estatus_pago' => []], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los estatus de pago.'], 500);
+        }
+    }
+
+    public function handleGetPaymentsByTicket(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentsByTicket($nro_ticket);
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'payments' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => true, 'message' => 'No hay pagos registrados para este ticket.', 'payments' => []], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los pagos.'], 500);
+        }
+    }
+
+    public function handleGetTotalPaidByTicket(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket requerido.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetTotalPaidByTicket($nro_ticket);
+
+        $this->response([
+            'success' => true, 
+            'total_paid' => $result['total_paid'],
+            'total_budget' => $result['total_budget']
+        ], 200);
+    }
+
+    public function handleInsertPaymentRecord(){
+        // Basic validation
+        if (empty($_POST['nro_ticket']) || empty($_POST['amount_bs'])) {
+             $this->response(['success' => false, 'message' => 'Faltan datos obligatorios.'], 400);
+             return;
+        }
+
+        $incomingDate = isset($_POST['payment_date']) ? $_POST['payment_date'] : date('Y-m-d');
+        $payment_date = $incomingDate . ' ' . date('H:i:s');
+
+        $data = [
+            'nro_ticket' => $_POST['nro_ticket'],
+            'serial_pos' => isset($_POST['serial_pos']) ? $_POST['serial_pos'] : '',
+            'user_loader' => isset($_POST['user_loader']) ? $_POST['user_loader'] : 0,
+            'payment_date' => $payment_date,
+            'origen_bank' => isset($_POST['origen_bank']) ? $_POST['origen_bank'] : null,
+            'destination_bank' => isset($_POST['destination_bank']) ? $_POST['destination_bank'] : null,
+            'payment_method' => isset($_POST['payment_method']) ? $_POST['payment_method'] : '',
+            'currency' => isset($_POST['currency']) ? $_POST['currency'] : 'BS',
+            'reference_amount' => isset($_POST['reference_amount']) ? $_POST['reference_amount'] : null,
+            'amount_bs' => $_POST['amount_bs'],
+            'payment_reference' => isset($_POST['payment_reference']) ? $_POST['payment_reference'] : '',
+            'depositor' => isset($_POST['depositor']) ? $_POST['depositor'] : '',
+            'observations' => isset($_POST['observations']) ? $_POST['observations'] : '',
+            'record_number' => isset($_POST['record_number']) ? $_POST['record_number'] : '',
+            
+            // Mobile payment fields
+            'destino_rif_tipo' => isset($_POST['destino_rif_tipo']) ? $_POST['destino_rif_tipo'] : null,
+            'destino_rif_numero' => isset($_POST['destino_rif_numero']) ? $_POST['destino_rif_numero'] : null,
+            'destino_telefono' => isset($_POST['destino_telefono']) ? $_POST['destino_telefono'] : null,
+            'origen_rif_tipo' => isset($_POST['origen_rif_tipo']) ? $_POST['origen_rif_tipo'] : null,
+            'origen_rif_numero' => isset($_POST['origen_rif_numero']) ? $_POST['origen_rif_numero'] : null,
+            'origen_telefono' => isset($_POST['origen_telefono']) ? $_POST['origen_telefono'] : null,
+        ];
+
+        $repository = new technicalConsultionRepository();
+        $result = $repository->InsertPaymentRecord($data);
+
+        if ($result) {
+            $this->response(['success' => true, 'message' => 'Pago registrado con éxito.', 'id_payment' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al registrar el pago.'], 500);
+        }
+    }
+
+    public function handleGetStatuspayment(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetPaymentStatusByTicket($nro_ticket);
+
+        if ($result !== null && !empty($result)) {
+            $this->response(['success' => true, 'data' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró estatus de pago para este ticket'], 404);
+        }
+    }
+
     public function handleGetPaymentData(){
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
         
@@ -3651,6 +3816,247 @@ HTML;
             $this->response(['success' => false, 'message' => 'No se encontraron tickets']);
         }
       
+    }
+
+
+    public function handleGetPaymentByRecordNumber() {
+        $repository = new technicalConsultionRepository();
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
+        
+        if (empty($record_number)) {
+            $this->response(['success' => false, 'message' => 'Nro de registro no proporcionado'], 400);
+            return;
+        }
+
+        $payment = $repository->GetPaymentByRecordNumber($record_number);
+        
+        if ($payment) {
+            $this->response(['success' => true, 'payment' => $payment], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Pago no encontrado'], 404);
+        }
+    }
+
+    public function handleGetPaymentAttachmentByRecordNumber() {
+        $repository = new technicalConsultionRepository();
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
+        
+        if (empty($record_number)) {
+            $this->response(['success' => false, 'message' => 'Nro de registro no proporcionado'], 400);
+            return;
+        }
+
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number);
+        
+        if ($attachment) {
+            $this->response(['success' => true, 'attachment' => $attachment], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Documento no encontrado para este pago'], 404);
+        }
+    }
+
+    public function handleGetPaymentById() {
+        $repository = new technicalConsultionRepository();
+        $id_payment = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
+        
+        if (empty($id_payment)) {
+            $this->response(['success' => false, 'message' => 'ID de pago no proporcionado'], 400);
+            return;
+        }
+
+        $payment = $repository->GetPaymentById($id_payment);
+        
+        if ($payment) {
+            $this->response(['success' => true, 'payment' => $payment], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Pago no encontrado por ID'], 404);
+        }
+    }
+
+    public function handleUpdatePayment() {
+        $repository = new technicalConsultionRepository();
+        $id_payment = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
+        
+        if (empty($id_payment)) {
+            $this->response(['success' => false, 'message' => 'ID de pago no proporcionado'], 400);
+            return;
+        }
+
+        // Collect fields to update from POST
+        $data = [];
+        $possibleFields = [
+            'amount_bs', 
+            'reference_amount', 
+            'payment_method', 
+            'currency', 
+            'payment_reference', 
+            'depositor', 
+            'origen_bank', 
+            'destination_bank',
+            'origen_rif_numero',
+            'origen_telefono'
+        ];
+
+        foreach ($possibleFields as $field) {
+            if (isset($_POST[$field])) {
+                $data[$field] = $_POST[$field];
+            }
+        }
+
+        if (empty($data)) {
+            $this->response(['success' => false, 'message' => 'No se enviaron datos para actualizar'], 400);
+            return;
+        }
+
+        // Add Audit info
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        $data['updated_by'] = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
+
+        $success = $repository->UpdatePayment($id_payment, $data);
+        
+        if ($success) {
+            $this->response(['success' => true, 'message' => 'Pago actualizado correctamente'], 200);
+        } else {
+            // This might fail if payment is confirmed or ID is wrong
+            $this->response(['success' => false, 'message' => 'No se pudo actualizar el pago. Verifique que no esté confirmado.'], 400);
+        }
+    }
+
+    private function handleUploadPaymentDoc()
+    {
+        error_log("handleUploadPaymentDoc CALLED");
+        // Validar que se recibieron archivos
+        if (!isset($_FILES['payment_doc']) || $_FILES['payment_doc']['error'] !== UPLOAD_ERR_OK) {
+             $this->response(['success' => false, 'message' => 'No se ha subido ningún archivo o hubo un error.'], 400);
+             return;
+        }
+
+        // Validar parámetros necesarios
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : null;
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+        $user_loader = isset($_POST['user_loader']) ? $_POST['user_loader'] : 0;
+
+        if (!$nro_ticket || !$record_number) {
+            $this->response(['success' => false, 'message' => 'Faltan datos requeridos (nro_ticket o record_number).'], 400);
+            return;
+        }
+
+        $file = $_FILES['payment_doc'];
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf', 'image/jpg'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!in_array($file['type'], $allowedMimeTypes)) {
+             $this->response(['success' => false, 'message' => 'Formato de archivo no permitido. Solo JPG, PNG o PDF.'], 400);
+             return;
+        } 
+        
+        if ($file['size'] > $maxSize) {
+             $this->response(['success' => false, 'message' => 'El archivo excede el tamaño permitido de 5MB.'], 400);
+             return;
+        }
+
+        // 1. Instanciar repositorio
+        $repository = new technicalConsultionRepository();
+
+        // 2. Obtener datos del ticket y serial para construir la ruta
+        // Primero intentamos buscar el pago por record_number para asegurar que tenemos el nro_ticket correcto
+        $paymentInfo = $repository->GetPaymentByRecordNumber($record_number);
+        
+        $ticketInfo = null;
+        if ($paymentInfo && isset($paymentInfo['nro_ticket'])) {
+            $nro_ticket = $paymentInfo['nro_ticket']; // Usar el nro_ticket del pago si existe
+        }
+
+        // Si tenemos nro_ticket (ya sea del POST o del pago), buscamos info del ticket
+        if ($nro_ticket) {
+            $ticketResults = $repository->GetTicketByNro($nro_ticket);
+            // GetTicketByNro retorna un array de arrays, tomamos el primero
+            if (is_array($ticketResults) && isset($ticketResults[0])) {
+                $ticketInfo = $ticketResults[0];
+            } else {
+                $ticketInfo = $ticketResults;
+            }
+        }
+
+        // Definir directorio base
+        $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : __DIR__ . '/../../../../public/documentos/';
+        
+        $folderName = 'Pagos';
+        $documentType = isset($_POST['document_type']) && !empty($_POST['document_type']) ? $_POST['document_type'] : 'Pago';
+
+        if ($ticketInfo && isset($ticketInfo['serial_pos'])) {
+             // Si el documentType NO viene del POST, intentamos adivinarlo (fallback)
+             if (!isset($_POST['document_type']) || empty($_POST['document_type'])) {
+                 // Verificar si ya existe un Anticipo (usando nro_ticket)
+                 $existingAnticipo = $repository->getDocumentByType($ticketInfo['nro_ticket'], 'Anticipo');
+                 
+                 // Si NO existe anticipo, este pago será el Anticipo
+                 if (!$existingAnticipo) {
+                     $documentType = 'Anticipo';
+                 }
+             }
+             
+             // Establecer la carpeta basada en el documentType final
+             $folderName = ($documentType === 'Anticipo') ? 'Anticipo' : 'Pagos';
+             
+             $serial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $ticketInfo['serial_pos']);
+             $ticketFolder = preg_replace("/[^a-zA-Z0-9]/", "", $nro_ticket); 
+             
+             // Estructura Solicitada: C:\Documentos_SoportePost\SERIAL\NRO_TICKET\Carpeta\
+             $uploadDir = $baseUploadDir . $serial . DIRECTORY_SEPARATOR . $ticketFolder . DIRECTORY_SEPARATOR . $folderName . DIRECTORY_SEPARATOR;
+        } else {
+             // Fallback
+             $uploadDir = $baseUploadDir . 'PagosGenerales' . DIRECTORY_SEPARATOR;
+        }
+
+        if (!is_dir($uploadDir)) {
+            if (!mkdir($uploadDir, 0755, true)) {
+                $this->response(['success' => false, 'message' => 'Error interno al crear directorio de subida: ' . $uploadDir], 500);
+                return;
+            }
+        }
+
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        // Formato solicitado: record_number_fecha.extension
+        // Ejemplo: Pago1234_5678_20260123_223800.jpg
+        $fechaHora = date('Ymd_His');
+        // Si es anticipo, podemos mantener el prefijo Anticipo o Pago, el usuario pidió record_number_fecha
+        // La variable $record_number ya trae "Pago..."
+        $filename = $record_number . '_' . $fechaHora . '.' . $ext;
+        $targetPath = $uploadDir . $filename;
+
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            $fileInfo = [
+                'original_filename' => $file['name'],
+                'stored_filename' => $filename,
+                'file_path' => $targetPath,
+                'mime_type' => $file['type'],
+                'file_size_bytes' => $file['size'],
+                'document_type' => $documentType, // Dinamico: Anticipo o Pago
+                'record_number' => $record_number
+            ];
+
+            // 3. Guardar en BD
+            // $repository ya está instanciado arriba
+            // Llamar al método genérico saveArchivoAdjunto que ya maneja record_number
+            $result = $repository->saveArchivoAdjunto(
+                0, // ticket_id placeholder
+                $nro_ticket,
+                $user_loader,
+                $fileInfo
+            );
+
+            if (isset($result['error'])) {
+                $this->response(['success' => false, 'message' => $result['error']], 500);
+            } else {
+                $this->response(['success' => true, 'message' => 'Documento de pago guardado correctamente.'], 200);
+            }
+
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al mover el archivo al servidor.'], 500);
+        }
     }
 }
 ?>
