@@ -692,27 +692,102 @@ function getTicketAprovalDocument() {
                                     $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
                                 }
 
-                            // ✅ FUNCIÓN MEJORADA: Verificar si hay datos por ID
-                            function checkDataExistsById(searchTerms) {
+                                // ✅ FUNCIÓN CENTRALIZADA PARA APLICAR FILTROS
+                                function applyFilters(buttonId) {
+                                    // 1. Limpiar filtros anteriores
+                                    $.fn.dataTable.ext.search.pop();
+                                    api.columns().search('').draw(false);
+                                    
+                                    // 2. Configurar el filtro por tipo de documento si aplica
+                                    let allowedTypes = [];
+                                    if (["btn-por-asignar", "btn-anticipos-aprobados", "btn-asignados"].includes(buttonId)) {
+                                        allowedTypes = ['Anticipo', 'Pago'];
+                                    } else if (["btn-recibidos", "btn-aprobado_exoneracion", "btn-rechazado_exoneracion"].includes(buttonId)) {
+                                        allowedTypes = ['Exoneracion'];
+                                    }
+
+                                    if (allowedTypes.length > 0) {
+                                        $.fn.dataTable.ext.search.push(function(settings, searchData, index, rowData) {
+                                            if (settings.nTable.id !== 'tabla-ticket') return true;
+                                            const docType = rowData.document_type; 
+                                            return allowedTypes.includes(docType);
+                                        });
+                                    }
+
+                                    // 3. Aplicar filtros de estatus específicos por botón
+                                    if (buttonId === "btn-por-asignar") {
+                                        api.column(1).search('^7$|^17$', true, false, true);
+                                        api.column(11).visible(false);
+                                    } else if (buttonId === "btn-anticipos-aprobados") {
+                                        api.column(1).search('^6$', true, false, true);
+                                        api.column(11).visible(false);
+                                    } else if (buttonId === "btn-recibidos") {
+                                        api.column(1).search('^5$', true, false, true);
+                                        api.column(11).visible(false);
+                                    } else if (buttonId === "btn-aprobado_exoneracion") {
+                                        api.column(1).search('^4$', true, false, true);
+                                        api.column(11).visible(false);
+                                    } else if (buttonId === "btn-rechazado_exoneracion") {
+                                        api.column(1).search('^12$', true, false, true);
+                                        api.column(11).visible(true);
+                                    } else if (buttonId === "btn-asignados") {
+                                        api.column(11).visible(true);
+                                        api.column(12).visible(true);
+                                        api.column(10).visible(true);
+                                        api.column(9).visible(true);
+                                        
+                                        // Modificar el filtro de búsqueda para incluir lógica de rechazados
+                                        const originalSearch = $.fn.dataTable.ext.search.pop(); // Sacar el de tipos para combinarlo
+                                        $.fn.dataTable.ext.search.push(function(settings, searchData, index, rowData) {
+                                            if (settings.nTable.id !== 'tabla-ticket') return true;
+                                            
+                                            const idPayment = parseInt(rowData.id_status_payment || searchData[1]);
+                                            const isRejected = idPayment === 13;
+                                            const docType = rowData.document_type;
+                                            const isAllowedType = ['Anticipo', 'Pago'].includes(docType);
+
+                                            return isRejected && isAllowedType;
+                                        });
+                                    }
+
+                                    // 4. Dibujar la tabla y marcar el botón activo
+                                    api.draw();
+                                    setActiveButton(buttonId);
+                                }
+
+                            // ✅ FUNCIÓN MEJORADA: Verificar si hay datos considerando el tipo de documento
+                            function checkDataExistsDetailed(buttonId, searchTerms) {
+                                // Limpiar filtros para el conteo
                                 api.columns().search('').draw(false);
-                                
+                                $.fn.dataTable.ext.search.pop();
+
+                                // Definir tipos permitidos para este botón
+                                let allowedTypes = [];
+                                if (["btn-por-asignar", "btn-anticipos-aprobados", "btn-asignados"].includes(buttonId)) {
+                                    allowedTypes = ['Anticipo', 'Pago'];
+                                } else if (["btn-recibidos", "btn-aprobado_exoneracion", "btn-rechazado_exoneracion"].includes(buttonId)) {
+                                    allowedTypes = ['Exoneracion'];
+                                }
+
+                                // Aplicar filtro de tipo temporalmente
+                                if (allowedTypes.length > 0) {
+                                    $.fn.dataTable.ext.search.push(function(settings, searchData, index, rowData) {
+                                        if (settings.nTable.id !== 'tabla-ticket') return true;
+                                        return allowedTypes.includes(rowData.document_type);
+                                    });
+                                }
+
                                 let hasData = false;
                                 searchTerms.forEach(searchTerm => {
                                     if (searchTerm.column === 'id_status_payment') {
-                                        // Buscar en columna de ID status payment (índice 1)
                                         api.column(1).search(searchTerm.value, true, false, true).draw();
-                                        const rowCount = api.rows({ filter: 'applied' }).count();
-                                        if (rowCount > 0) hasData = true;
-                                        api.columns().search('').draw(false);
-                                    } else if (searchTerm.column === 'id_status_domiciliacion') {
-                                        // Buscar en columna de ID status domiciliación (índice 2)
-                                        api.column(2).search(searchTerm.value, true, false, true).draw();
-                                        const rowCount = api.rows({ filter: 'applied' }).count();
-                                        if (rowCount > 0) hasData = true;
-                                        api.columns().search('').draw(false);
+                                        if (api.rows({ filter: 'applied' }).count() > 0) hasData = true;
+                                        api.column(1).search('').draw(false);
                                     }
                                 });
                                 
+                                // Limpiar filtro temporal
+                                $.fn.dataTable.ext.search.pop();
                                 return hasData;
                             }
 
@@ -721,96 +796,44 @@ function getTicketAprovalDocument() {
                                 const searchConfigs = [
                                     { 
                                         button: "btn-por-asignar", 
-                                        searchTerms: [
-                                            { column: 'id_status_payment', value: '^7$|^17$' }
-                                        ]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^7$|^17$' }]
                                     },
                                     { 
                                         button: "btn-anticipos-aprobados", 
-                                        searchTerms: [
-                                            { column: 'id_status_payment', value: '6' }
-                                        ]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^6$' }]
                                     },
                                     { 
                                         button: "btn-asignados", 
-                                        searchTerms: [
-                                            { column: 'id_status_payment', value: '13' }
-                                        ]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^13$' }]
                                     },
-                                    // Nuevas configuraciones para Exoneración (COMENTADAS POR SOLICITUD DE USUARIO)
-                                    /*
                                     {
                                         button: "btn-recibidos",
-                                        searchTerms: [ { column: '(id_status_payment)', value: '5' } ]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^5$' }]
                                     },
                                     {
                                         button: "btn-aprobado_exoneracion",
-                                        searchTerms: [ { column: 'id_status_payment', value: '4' } ]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^4$' }]
                                     },
                                     {
                                         button: "btn-rechazado_exoneracion",
-                                        searchTerms: [ { column: 'id_status_payment', value: '12' } ]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^12$' }]
                                     }
-                                    */
                                 ];
 
                                 for (let i = 0; i < searchConfigs.length; i++) {
                                     const { button, searchTerms } = searchConfigs[i];
                                     
-                                    // Verificar si el botón existe en el DOM (importante por roles)
                                     if ($(`#${button}`).length === 0) continue;
 
-                                    if (checkDataExistsById(searchTerms)) {
-                                        // Si hay datos, aplicar la búsqueda y activar el botón
-                                        api.columns().search('').draw(false);
-                                        
-                                        if (button === "btn-por-asignar") {
-                                            api.column(1).search('^7$|^17$', true, false, true).draw();
-                                            api.column(11).visible(false);
-                                        } else if (button === "btn-anticipos-aprobados") {
-                                            api.column(1).search('^6$', true, false, true).draw();
-                                            api.column(11).visible(false);
-                                        } else if (button === "btn-recibidos") {
-                                            api.column(1).search('^5$', true, false, true).draw();
-                                            api.column(11).visible(false);
-                                        } else if (button === "btn-aprobado_exoneracion") {
-                                            api.column(1).search('^4$', true, false, true).draw();
-                                            api.column(11).visible(false);
-                                        } else if (button === "btn-rechazado_exoneracion") {
-                                            api.column(1).search('^12$', true, false, true).draw();
-                                            api.column(11).visible(true);
-                                        } else if (button === "btn-asignados") {
-                                            api.search('').draw(false);
-                                            api.column(11).visible(true);
-                                            api.column(12).visible(true);
-                                            api.column(10).visible(true);
-                                            api.column(9).visible(true);
-                                            // Filtrar manualmente para mostrar rechazados de payment Y domiciliación
-                                            api.rows().every(function() {
-                                                const data = this.data();
-                                                const idPayment = data.id_status_payment;
-                                                const idDomiciliacion = data.id_status_domiciliacion;
-                                                
-                                                const isPaymentRejected = [12, 13, 14].includes(parseInt(idPayment));
-                                                const isDomiciliacionRejected = parseInt(idDomiciliacion) === 7;
-                                                
-                                                if (isPaymentRejected || isDomiciliacionRejected) {
-                                                    $(this.node()).show();
-                                                } else {
-                                                    $(this.node()).hide();
-                                                }
-                                            });
-                                        }
-                                  
-                                        setActiveButton(button);
-                                        return true; // Encontramos datos
+                                    if (checkDataExistsDetailed(button, searchTerms)) {
+                                        applyFilters(button);
+                                        return true;
                                     }
                                 }
                                 
-                                // Si no hay datos en ningún botón, mostrar un mensaje
+                                // Si no hay datos, mostrar mensaje
                                 api.columns().search('').draw(false);
                                 api.column(1).search("NO_DATA_FOUND").draw();
-                                // setActiveButton("btn-por-asignar"); // Mejor no forzar activo si no hay nada
 
                                 const tbody = document.querySelector("#tabla-ticket tbody");
                                 if (tbody) {
@@ -823,140 +846,13 @@ function getTicketAprovalDocument() {
                             // Ejecutar la búsqueda automática al inicializar
                             findFirstButtonWithData();
 
-                            // ✅ EVENT LISTENERS MEJORADOS: Usar búsqueda por ID
-                                $("#btn-por-asignar").on("click", function () {
-                                    // ✅ LIMPIAR FILTROS PERSONALIZADOS
-                                    $.fn.dataTable.ext.search.pop();
-                                    
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^7$|^17$' }];
-                                    if (checkDataExistsById(searchTerms)) {
-                                        api.columns().search('').draw(false);
-                                        api.column(1).search('^7$|^17$', true, false, true).draw();
-                                        api.column(11).visible(false);
-                                        setActiveButton("btn-por-asignar");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                $("#btn-anticipos-aprobados").on("click", function () {
-                                    // ✅ LIMPIAR FILTROS PERSONALIZADOS
-                                    $.fn.dataTable.ext.search.pop();
-                                    
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^6$' }];
-                                    if (checkDataExistsById(searchTerms)) {
-                                        api.columns().search('').draw(false);
-                                        api.column(1).search('^6$', true, false, true).draw();
-                                        api.column(11).visible(false);
-                                        setActiveButton("btn-anticipos-aprobados");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                // ✅ EVENT LISTENER PARA EXONERACIONES PENDIENTES (btn-recibidos)
-                                $("#btn-recibidos").on("click", function () {
-                                    $.fn.dataTable.ext.search.pop(); // Limpiar
-                                    
-                                    // Status: 5 (Exoneracion Pendiente por Revision)
-                                    const searchTerms = [{ column: '(id_status_payment)', value: '5' }];
-                                    if (checkDataExistsById(searchTerms)) {
-                                        api.columns().search('').draw(false);
-                                        api.column(1).search('^5$', true, false, true).draw();
-                                        
-                                        // Ocultar columnas irrelevantes
-                                        api.column(11).visible(false); 
-                                        
-                                        setActiveButton("btn-recibidos");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                // ✅ EVENT LISTENER PARA EXONERACIONES APROBADAS (btn-aprobado_exoneracion)
-                                $("#btn-aprobado_exoneracion").on("click", function () {
-                                    $.fn.dataTable.ext.search.pop(); // Limpiar
-                                    
-                                    // Status: 4 (Exoneración Aprobada)
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^4$' }];
-                                    if (checkDataExistsById(searchTerms)) {
-                                        api.columns().search('').draw(false);
-                                        api.column(1).search('^4$', true, false, true).draw();
-                                        
-                                        api.column(11).visible(false);
-                                        
-                                        setActiveButton("btn-aprobado_exoneracion");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-                                // ✅ EVENT LISTENER PARA EXONERACIONES RECHAZADAS (btn-rechazado_exoneracion)
-                                $("#btn-rechazado_exoneracion").on("click", function () {
-                                    $.fn.dataTable.ext.search.pop(); // Limpiar
-                                    
-                                    // Status: 12 (Exoneración Rechazada)
-                                    const searchTerms = [{ column: 'id_status_payment', value: '^12$' }];
-                                    
-                                    if (checkDataExistsById(searchTerms)) {
-                                        api.columns().search('').draw(false);
-                                        api.column(1).search('^12$', true, false, true).draw();
-                                        
-                                        api.column(11).visible(true); // Mostrar motivo de rechazo
-                                        
-                                        setActiveButton("btn-rechazado_exoneracion");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
-
-
-                                $("#btn-asignados").on("click", function () {
-                                    // ✅ LIMPIAR COMPLETAMENTE TODOS LOS FILTROS
-                                    api.columns().search('').draw(false);
-                                    api.search('').draw(false);
-
-                                    api.column(11).visible(true);
-                                    api.column(12).visible(true);
-                                    api.column(10).visible(true);
-                                    api.column(9).visible(true);
-                                    
-                                    // ✅ MOSTRAR TODAS LAS FILAS PRIMERO
-                                    api.rows().every(function() {
-                                        $(this.node()).show();
-                                    });
-                                    
-                                    // ✅ USAR FILTRO PERSONALIZADO DE DATATABLE PARA OR LÓGICO
-                                    // Limpiar filtros personalizados anteriores
-                                    $.fn.dataTable.ext.search.pop();
-
-                                    // Status: 13 (Documento de Anticipo Rechazado) ONLY
-                                    const searchTerms = [
-                                        { column: 'id_status_payment', value: '13' }
-                                    ];
-
-                                    if (checkDataExistsById(searchTerms)) {
-                                        // Agregar filtro personalizado para rechazados (Simplificado solo para 13)
-                                        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                                            // Solo aplicar este filtro en nuestra tabla
-                                            if (settings.nTable.id !== 'tabla-ticket') {
-                                                return true;
-                                            }
-                                        
-                                        const idPayment = parseInt(data[1]); // Columna 1: id_status_payment
-                                        
-                                        // SOLO: 13 (Anticipo Rechazado).
-                                        return idPayment === 13;
-                                    });
-                                    
-                                    // ✅ APLICAR EL FILTRO PERSONALIZADO
-                                    api.draw();
-                                    
-                                    setActiveButton("btn-asignados");
-                                    } else {
-                                        findFirstButtonWithData();
-                                    }
-                                });
+                            // ✅ EVENT LISTENERS SIMPLIFICADOS
+                            $("#btn-por-asignar").on("click", function () { applyFilters("btn-por-asignar"); });
+                            $("#btn-anticipos-aprobados").on("click", function () { applyFilters("btn-anticipos-aprobados"); });
+                            $("#btn-recibidos").on("click", function () { applyFilters("btn-recibidos"); });
+                            $("#btn-aprobado_exoneracion").on("click", function () { applyFilters("btn-aprobado_exoneracion"); });
+                            $("#btn-rechazado_exoneracion").on("click", function () { applyFilters("btn-rechazado_exoneracion"); });
+                            $("#btn-asignados").on("click", function () { applyFilters("btn-asignados"); });
                             },
                         });
 
