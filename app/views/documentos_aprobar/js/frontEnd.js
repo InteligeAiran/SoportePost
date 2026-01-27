@@ -617,7 +617,7 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
-                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 1 (Finanzas) || id_rol = 6 (Analista Financiero) */
+                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 6 (Operaciones) || id_rol = 4 (Coordinador) */
                                 } else if ((id_area == 3 && id_rol == 5) || (id_area == 1 && id_rol == 6)) {
                                     // Filtros de Exoneración (Restaurados)
                                       buttonsHtml += `
