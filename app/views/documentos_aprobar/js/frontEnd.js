@@ -594,8 +594,9 @@ function getTicketAprovalDocument() {
                                          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/>
                                         </svg>
                                     </button>
-                                    `;
-                                } else if (id_area == 2 && id_rol == 5) {
+                                    `;    
+                                    /* id_area = 2 (Tesoreria) || id_rol = 5 (Administrativo) */ /* id_area = 6 (El rosal) || id_rol = 4 (Coordinador) */
+                                } else if ((id_area == 2 && id_rol == 5) || (id_area == 5 && id_rol == 4)){
                                     // Filtros de Anticipos
                                     buttonsHtml += `
                                     <button id="btn-por-asignar" class="btn btn-primary me-2" title="Anticipos Pendientes por Revisión">
@@ -616,7 +617,7 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
-                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 1 (Finanzas) || id_rol = 6 (Analista Financiero) */
+                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 6 (Operaciones) || id_rol = 4 (Coordinador) */
                                 } else if ((id_area == 3 && id_rol == 5) || (id_area == 1 && id_rol == 6)) {
                                     // Filtros de Exoneración (Restaurados)
                                       buttonsHtml += `
