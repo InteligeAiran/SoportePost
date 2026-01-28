@@ -268,9 +268,14 @@ function getTicketData() {
             ticket.confirmtecn === "t" ||
             ticket.confirmtecn === true;
 
+          const isGarantia = ticket.id_status_payment == 1 || ticket.id_status_payment == 3;
+          const isEstadoSinEnvio = ticket.nombre_estado_cliente && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(ticket.nombre_estado_cliente);
+          const shouldHideActionsForGarantia = isGarantia && isEstadoSinEnvio;
+
           if (
-            (ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4) &&
-            (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true)
+            (ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4 || ticket.id_status_payment == 1 || ticket.id_status_payment == 3) &&
+            (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true) &&
+            !shouldHideActionsForGarantia
           ) {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-info btn-document-actions-modal mr-2"
@@ -773,25 +778,37 @@ function getTicketData() {
                 // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
               } else {
                 // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9 y id_failure != 12)
-                // MODIFICACION: Si el estatus es 1 (Garantia Instalacion) o 3 (Garantia Reingreso), NO validar documentos
+                // MODIFICACION: Si el estatus es 1 (Garantia Instalacion) o 3 (Garantia Reingreso)
                 if (id_document == 1 || id_document == 3) {
-                    showButton = false;
+                    // Solo validar Envio si NO es region central
+                    if (!isEstadoSinEnvio && (url_envio === "" || url_envio === null || url_envio === undefined)) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '¡Advertencia!',
+                            text: 'Para este caso de garantía externo a la región central, debe cargar al menos el documento de envío antes de enviar al taller.',
+                            confirmButtonText: 'Ok',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                        });
+                        return;
+                    }
+                    // Si es region central o ya tiene envio, permitir (showButton se mantiene false)
                 } else if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 10 && isEstadoSinEnvio && (url_pago === "" || url_exoneracion === "")) {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 11 && url_envio === "" && (url_exoneracion !== "" || url_pago !== "")) {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 6 && !isEstadoSinEnvio && url_envio == "" && url_pago != "") {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 4 && !isEstadoSinEnvio && url_envio == "" && url_exoneracion != "") {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 6 && url_pago == "") {
-                  showButton = true;
+                    showButton = true;
                 } else if (id_document === 4 && url_exoneracion == "") {
-                  showButton = true;
+                    showButton = true;
                 }
 
                 if (showButton) {
@@ -1116,7 +1133,8 @@ function getTicketData() {
     const idFailure = $(this).data('id-failure') ? parseInt($(this).data('id-failure')) : null;
     const isActualizacionSoftware = idFailure === 9;
     const isSinLlavesDukpt = idFailure === 12;
-    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+    const isGarantia = statusPayment == 1 || statusPayment == 3;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt || isGarantia;
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');

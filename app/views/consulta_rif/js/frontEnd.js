@@ -1312,6 +1312,13 @@ function getInstalationDate(serial) {
 // Variable global para controlar que el alerta de garantía se muestre solo una vez
 let isInitialLoad = true;
 
+// Función auxiliar para calcular la diferencia en meses (calendario) entre dos fechas
+function getDiffMonths(date1, date2) {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+}
+
 function validarGarantiaReingreso(fechaUltimoTicket) {
   const resultadoElemento = document.getElementById("resultadoGarantiaReingreso");
   const botonExoneracion = document.getElementById("DownloadExo");
@@ -1324,8 +1331,7 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
   } else {
     const fechaActual = new Date();
     const fechaTicket = new Date(fechaUltimoTicket);
-    const diferencia = fechaActual.getTime() - fechaTicket.getTime();
-    const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
+    const meses = getDiffMonths(fechaTicket, fechaActual);
 
     if (meses <= 1) {
       resultadoElemento.textContent = "Garantía por Reingreso aplica";
@@ -1370,8 +1376,7 @@ function validarGarantiaInstalacion(fechaInstalacion) {
   } else {
     const fechaActual = new Date();
     const fechaInstalacionDate = new Date(fechaInstalacion);
-    const diferencia = fechaActual.getTime() - fechaInstalacionDate.getTime();
-    const meses = Math.ceil(diferencia / (1000 * 3600 * 24 * 30));
+    const meses = getDiffMonths(fechaInstalacionDate, fechaActual);
 
     if (meses <= 6) {
       resultadoElemento.textContent = "Garantía por Instalación aplica";
@@ -6750,7 +6755,7 @@ function SendRif() {
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
             const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMeses = getDiffMonths(fechaInstalacion, ahora);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
@@ -7337,7 +7342,7 @@ function SendSerial() {
               render: function(data, type, row) {
                 const fechaInstalacion = new Date(data);
                 const ahora = new Date();
-                const diffEnMeses = (ahora.getFullYear() - fechaInstalacion.getFullYear()) * 12 + (ahora.getMonth() - fechaInstalacion.getMonth());
+                const diffEnMeses = getDiffMonths(fechaInstalacion, ahora);
                 const garantiaTexto = (diffEnMeses <= 6) ? "Garantía Instalación (6 meses)" : "Sin garantía";
                 const garantiaClase = (diffEnMeses <= 6) ? "garantia-activa" : "sin-garantia";
                 return `<span>${data}</span><br><span class="${garantiaClase}" style="font-size: 10px; font-weight: bold; display: block; margin-top: 5px;">${garantiaTexto}</span>`;
@@ -7895,7 +7900,7 @@ function SendRazon() {
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
             const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMeses = getDiffMonths(fechaInstalacion, ahora);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
