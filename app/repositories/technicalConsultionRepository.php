@@ -163,8 +163,11 @@ class TechnicalConsultionRepository
     public function UltimateDateTicket($serial){
         $result = $this->model->UltimateDateTicket($serial);
         // Verifica si $result es un array y si contiene la clave 'row'
-        if ($result) {
-            return $result['row']['ult_ticket_formateado'];
+        if ($result && is_array($result) && isset($result['row'])) {
+            return [
+                'fecha' => $result['row']['ult_ticket_formateado'] ?? null,
+                'nro_ticket' => $result['row']['nro_ticket'] ?? null
+            ];
         } else {
             return null; // Devuelve null si no hay resultados o la estructura es incorrecta
         }
