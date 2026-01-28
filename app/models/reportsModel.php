@@ -407,6 +407,18 @@ class reportsModel extends Model
  */
 private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_being_uploaded) {
     try {
+        // 1. Verificar estado actual para mantener aprobados si se sube Envio/Traslado
+        $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
+        $current_status_result = Model::getResult($current_status_sql, $this->db);
+        
+        if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
+            $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+            if (in_array((int)$current_status, [1, 3, 4, 6, 17]) && 
+                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
+                return $current_status;
+            }
+        }
+
         // ✅ NUEVA VALIDACIÓN: Si es convenio_firmado, actualizar domiciliación
         if ($document_type_being_uploaded === 'convenio_firmado') {
             // Actualizar tickets_status_domiciliacion a 6
@@ -674,7 +686,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         
         // Si el ticket ya tiene documentos aprobados (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado)
         // y se está subiendo un documento de traslado o envio, mantener el status aprobado
-        if (($current_status == 4 || $current_status == 6) && 
+        if (in_array((int)$current_status, [1, 3, 4, 6, 17]) && 
             ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
             return $current_status; // Mantener el status aprobado
         }

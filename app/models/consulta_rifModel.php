@@ -1005,7 +1005,7 @@ class consulta_rifModel extends Model
         
         if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
             $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
-            if (($current_status == 4 || $current_status == 6) && 
+            if (in_array($current_status, [1, 3, 4, 6, 17]) && 
                 ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
                 return $current_status;
             }
