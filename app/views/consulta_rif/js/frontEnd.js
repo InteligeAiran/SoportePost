@@ -6755,7 +6755,7 @@ function SendRif() {
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
             const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMeses = getDiffMonths(fechaInstalacion, ahora);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
@@ -7900,7 +7900,7 @@ function SendRazon() {
             const fechaInstalacion = new Date(item.fechainstalacion);
             const ahora = new Date();
             const diffEnMilisegundos = ahora.getTime() - fechaInstalacion.getTime();
-            const diffEnMeses = diffEnMilisegundos / (1000 * 60 * 60 * 24 * 30.44);
+            const diffEnMeses = getDiffMonths(fechaInstalacion, ahora);
 
             const garantiaLabel = document.createElement("span");
             garantiaLabel.style.fontSize = "10px";
