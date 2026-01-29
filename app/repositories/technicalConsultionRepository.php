@@ -793,6 +793,10 @@ class TechnicalConsultionRepository
         return $this->model->getDocumentByType($ticketId, $documentType);
     }
 
+    public function getNonRejectedDocumentByType($ticketId, $documentType) {
+        return $this->model->getNonRejectedDocumentByType($ticketId, $documentType);
+    }
+
     public function getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType) {
         return $this->model->getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType);
     }
@@ -1310,5 +1314,6 @@ class TechnicalConsultionRepository
     public function GetPaymentAttachment($record_number) {
         return $this->model->GetPaymentAttachmentByRecordNumber($record_number);
     }
+
 }
 ?>

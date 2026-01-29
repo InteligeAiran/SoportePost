@@ -1169,14 +1169,17 @@ function getPosSerials(rif) {
 }
 
 function getUltimateTicket(serial) {
+  console.log("GetUltimateTicket DEBUG: Enviando serial = '" + serial + "'");
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
+    console.log("GetUltimateTicket DEBUG: XHR Status =", xhr.status);
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
+        console.log("GetUltimateTicket DEBUG: Response =", response);
         if (response && response.success) {
           if (response.fecha !== null) {
             fechaUltimoTicketGlobal = response.fecha;
@@ -5743,6 +5746,14 @@ checkEnvio.addEventListener("change", function() {
       }
     });
   }
+
+  // NUEVO: Obtener y establecer el estatus de pago automatizado
+      // Intentar obtener el nro_ticket si está disponible en algún campo oculto o variable global
+      // Si no hay nro_ticket (ej. creación de nuevo ticket), pasamos null para que el backend devuelva "Anticipo"
+      const nroTicketField = document.getElementById("nro_ticket_pago") || document.getElementById("Nr_ticket") || document.getElementById("nro_ticket_global");
+      const nroTicket = nroTicketField ? nroTicketField.value : "";
+      
+      getPagoEstatus(nroTicket);
   
   // Asegurar que el icono se actualice al cargar la página
   setTimeout(function() {

@@ -1464,7 +1464,7 @@ function mi_navbar()
     <!-- END MODAL DE NOTA DE ENTREGA-->
 
     <!--MODAL PARA VIZUALIZAR EL DOCUMENTO DE ENVIO A DESTIN0-->
-        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+        <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="viewDocumentModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); z-index: 1060;">
             <div class="modal-dialog modal-dialog-centered modal-xl">
                 <div class="modal-content">
                     <div class="modal-header bg-gradient-primary">
@@ -1474,43 +1474,15 @@ function mi_navbar()
                         </strong>
                     </div>
                     <div class="modal-body">
-                        <!-- Radio buttons para seleccionar el tipo de documento -->
-                        <div class="mb-3" id="documentSelectionContainer" style="display: none;">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="documentTypeView" id="radioEnvioDestino" value="Envio_Destino">
-                                <label class="form-check-label" for="radioEnvioDestino">Documento de Envío a Destino</label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="documentTypeView" id="radioPresupuesto" value="Presupuesto">
-                                <label class="form-check-label" for="radioPresupuesto">Documento de Presupuesto</label>
-                            </div>
-                        </div>
-                        
                         <!-- Área de visualización del documento -->
-                        <div id="documentViewArea" style="display: none;">
-                            <div class="mb-3">
-                                <label>Nombre del documento: <span id="NombreDocumento"></span></label>
-                            </div>
-                            <div class="mb-3 text-center" style="max-height: 80vh; overflow-y: auto;">
-                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización de Imagen" style="max-width: 100%; height: auto; display: none;">
-                                <div id="pdfViewViewer" style="width: 100%; height: 600px; display: none; border: 1px solid #ddd;"></div>
-                            </div>
-                            <div id="viewDocumentMessage" class="message-box hidden text-center mt-3"></div>
-                            <div class="mt-3">
-
+                        <div id="documentViewArea">
+                            <div class="text-center" style="max-height: 80vh; overflow-y: auto;">
+                                <!-- El contenido se inyectará dinámicamente aquí -->
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="modalCerrarshow"
-                            data-bs-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary" id="btnVisualizarDocumento" style="display: none;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill me-2" viewBox="0 0 16 16">
-                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                            </svg>
-                            Visualizar Documento
-                        </button>
+                        <button type="button" class="btn btn-secondary" id="btnCerrarViewModal" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -2016,6 +1988,35 @@ function mi_navbar()
                             </div>
                         </div>
 
+                        <!-- Sección: Documento de Validación (NUEVO BLOQUE PARA VISUALIZAR DOCUMENTO) -->
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-file-earmark-text me-2" viewBox="0 0 16 16"><path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/><path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5"/></svg>
+                                <h6 class="form-section-title">Documento de Validación</h6>
+                            </div>
+                             <div class="row g-2">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info d-flex align-items-center flex-column" role="alert" style="padding: 10px; margin-bottom: 0;">
+                                        <div class="d-flex align-items-center w-100 mb-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-info-circle-fill flex-shrink-0 me-2" viewBox="0 0 16 16">
+                                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+                                            </svg>
+                                            <div style="font-size: 0.9rem; color: white;">
+                                                Visualice el documento adjunto para verificar los datos del pago.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="btnVerDocumentoPago" style="display: none; font-weight: 600; padding: 10px; margin-left: 30%; position: relative;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill me-2" viewBox="0 0 16 16">
+                                                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                            </svg>
+                                            Ver Documento de Anticipo
+                                        </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Sección: Información de Pago -->
                         <div class="form-section">
                             <div class="form-section-header">
@@ -2054,6 +2055,7 @@ function mi_navbar()
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle me-1 text-primary" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>Estatus
                                     </label>
                                     <input type="text" class="form-control" id="estatus" placeholder="Estatus del pago" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef; width: 105%; margin-left: -2%;">
+                                    <input type="hidden" id="id_status_payment" name="id_status_payment">
                                 </div>
                             </div>
                             <div class="row g-2" id="bancoFieldsContainer" style="display: none;">
@@ -2087,12 +2089,12 @@ function mi_navbar()
                                                 </h6>
                                             </div>
                                             <div class="card-body" style="padding: 15px;">
-                                                <div class="mb-2">
+                                                <div class="mb-2" style="display: none;">
                                                     <label for="origenRifTipo" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-card-list me-1 text-primary" viewBox="0 0 16 16"><path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/><path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A1.5 1.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>RIF
                                                     </label>
                                                     <div class="d-flex gap-2">
-                                                        <select class="form-select" id="origenRifTipo" required style="font-size: 0.9rem; padding: 6px 10px; width: 25%;">
+                                                        <select class="form-select" id="origenRifTipo" style="font-size: 0.9rem; padding: 6px 10px; width: 25%;">
                                                             <option value="">Tipo</option>
                                                             <option value="J">J</option>
                                                             <option value="V">V</option>
@@ -2100,14 +2102,14 @@ function mi_navbar()
                                                             <option value="G">G</option>
                                                             <option value="P">P</option>
                                                         </select>
-                                                        <input type="text" class="form-control" id="origenRifNumero" placeholder="Número RIF" pattern="[0-9]*" inputmode="numeric" required style="font-size: 0.9rem; padding: 6px 10px; width: 75%;">
+                                                        <input type="text" class="form-control" id="origenRifNumero" placeholder="Número RIF" pattern="[0-9]*" inputmode="numeric" style="font-size: 0.9rem; padding: 6px 10px; width: 75%;">
                                                     </div>
                                                 </div>
-                                                <div class="mb-2">
+                                                <div class="mb-2" style="display: none;">
                                                     <label for="origenTelefono" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-telephone me-1 text-primary" viewBox="0 0 16 16"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.256.487.7.34 1.12l-.593 2.37a.75.75 0 0 0 .194.707l2.191 2.191a.75.75 0 0 0 .708.194l2.37-.593c.42-.105.864.053 1.12.34l2.307 2.307a1.745 1.745 0 0 1 .163 2.612l-1.034 1.034a2.745 2.745 0 0 1-3.907.03 21.6 21.6 0 0 1-5.224-5.224 2.745 2.745 0 0 1 .03-3.907z"/></svg>Nro. Telefónico
                                                     </label>
-                                                    <input type="text" class="form-control" id="origenTelefono" placeholder="Ej: 0412-1234567" pattern="[0-9\-]*" inputmode="numeric" required style="font-size: 0.9rem; padding: 6px 10px;">
+                                                    <input type="text" class="form-control" id="origenTelefono" placeholder="Ej: 0412-1234567" pattern="[0-9\-]*" inputmode="numeric" style="font-size: 0.9rem; padding: 6px 10px;">
                                                 </div>
                                                 <div>
                                                     <label for="origenBanco" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
@@ -2156,7 +2158,7 @@ function mi_navbar()
                                                     <label for="destinoBanco" class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-bank me-1 text-primary" viewBox="0 0 16 16"><path d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.499.499 0 0 1-.485.62H.5a.499.499 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h.89zM3.777 3h8.447L8 1.11zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h2.5V6zm3.5 0v7h1V6zM1.5 14l-.25 1h13.5l-.25-1z"/></svg>Banco
                                                     </label>
-                                                    <select class="form-select" id="destinoBanco" required disabled style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef; cursor: not-allowed;">
+                                                    <select class="form-select" id="destinoBanco" required style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef; cursor: not-allowed;">
                                                         <option value="">Seleccione</option>
                                                     </select>
                                                 </div>
@@ -2170,8 +2172,8 @@ function mi_navbar()
                         <!-- Sección: Montos y Referencias -->
                         <div class="form-section">
                             <div class="form-section-header d-flex justify-content-between align-items-center">
-                                <div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>
+                                <div class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right me-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>
                                     <h6 class="form-section-title mb-0">Montos y Referencias</h6>
                                 </div>
                                 <div class="tasa-display">

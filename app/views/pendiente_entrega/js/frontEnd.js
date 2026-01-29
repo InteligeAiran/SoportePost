@@ -5,7 +5,13 @@ let currentSerialPosForConfirmTaller = null; // <--- NUEVA VARIABLE PARA EL SERI
 let currentTicketNroForImage = null; 
 let bsPresupuestoPDFModal = null; // Instancia global del modal de presupuesto PDF
 let bsPresupuestoModal = null; // Instancia global del modal de presupuesto
-let bsViewModal = null; // Instancia global del modal de visualización 
+let bsViewModal = null; 
+
+// --- NUEVO: Variables para el botón de Ver Documento de Pago ---
+let currentPaymentDocUrl = null;
+let currentPaymentDocType = null; // 'image' o 'pdf'
+let currentPaymentDocName = null;
+// --- FIN NUEVO --- // Instancia global del modal de visualización 
 
 const urlParamsPendienteEntrega = new URLSearchParams(window.location.search);
 const targetTicketIdPendienteEntrega = urlParamsPendienteEntrega.get('id_ticket');
@@ -610,6 +616,100 @@ function closeUploadModalAndClean() {
     } else {
         console.warn("Advertencia: Icono de cerrar no encontrado para el modal de presupuesto.");
     }
+    // --- NUEVO: Listener para el botón "Ver Documento de Pago" ---
+    const btnVerDocumentoPago = document.getElementById("btnVerDocumentoPago");
+    if (btnVerDocumentoPago) {
+        btnVerDocumentoPago.addEventListener("click", function() {
+            if (currentPaymentDocUrl) {
+                const isImage = currentPaymentDocType === 'image';
+                const imageUrl = isImage ? currentPaymentDocUrl : null;
+                const pdfUrl = !isImage ? currentPaymentDocUrl : null;
+                const nroTicketPago = document.getElementById("nro_ticket_pago")?.value || "";
+                
+                if (typeof window.showViewModal === 'function') {
+                    window.showViewModal(null, nroTicketPago, imageUrl, pdfUrl, currentPaymentDocName, false, null);
+                } else {
+                    // Fallback logic: Manually open the modal
+                    const modalTitleRef = document.getElementById('viewModalTicketId');
+                    const imgPreview = document.getElementById('imageViewPreview');
+                    const pdfPreview = document.getElementById('pdfViewViewer');
+                    const docNameSpan = document.getElementById('NombreDocumento');
+                    const docSelection = document.getElementById('documentSelectionContainer');
+                    const docArea = document.getElementById('documentViewArea');
+                     const btnVisualizarExpr = document.getElementById('btnVisualizarDocumento');
+                    
+                    if (bsViewModal) {
+                         if(modalTitleRef) modalTitleRef.textContent = nroTicketPago || '';
+                         if(docNameSpan) docNameSpan.textContent = currentPaymentDocName || 'Documento';
+                         
+                         if(docSelection) docSelection.style.display = 'none'; // No selection needed
+                         if(docArea) docArea.style.display = 'block';
+                         if(btnVisualizarExpr) btnVisualizarExpr.style.display = 'none';
+
+                         if (currentPaymentDocType === 'image') {
+                             if(imgPreview) { imgPreview.src = currentPaymentDocUrl; imgPreview.style.display = 'block'; }
+                             if(pdfPreview) { pdfPreview.style.display = 'none'; pdfPreview.innerHTML = ''; }
+                         } else {
+                             if(imgPreview) { imgPreview.style.display = 'none'; imgPreview.src = '#'; }
+                             if(pdfPreview) {
+                                 pdfPreview.style.display = 'block';
+                                 pdfPreview.innerHTML = `<iframe src="${currentPaymentDocUrl}" width="100%" height="600px" style="border: none;"></iframe>`;
+                             }
+                         }
+                         bsViewModal.show();
+                    } else {
+                        console.error('bsViewModal no está definido.');
+                        Swal.fire('Error', 'No se puede abrir el visor de documentos.', 'error');
+                    }
+                }
+            } else {
+                Swal.fire('Aviso', 'No hay documento para visualizar.', 'info');
+            }
+        });
+    }
+
+    // --- NUEVO: Detectar cuando se abre el modal de pago para actualizar el botón ---
+    const modalAgregarDatosPago = document.getElementById('modalAgregarDatosPago');
+    if (modalAgregarDatosPago) {
+        modalAgregarDatosPago.addEventListener('shown.bs.modal', function (event) {
+            // El botón que disparó el modal
+            const button = event.relatedTarget;
+            
+            // Si el modal se abrió vía JS (no button), intentamos obtener datos de alguna variable global o del DOM
+            // Pero si se abrió vía botón, 'button' tendrá la referencia.
+            
+            // Restablecer estado inicial
+            currentPaymentDocUrl = null;
+            currentPaymentDocType = null;
+            currentPaymentDocName = null;
+            if (btnVerDocumentoPago) btnVerDocumentoPago.style.display = 'none';
+
+            if (button) {
+                const docUrl = button.getAttribute('data-payment-doc-url');
+                const docName = button.getAttribute('data-payment-doc-name');
+                const docType = button.getAttribute('data-payment-doc-type'); // 'image' o 'pdf'
+                
+                if (docUrl && docUrl.trim() !== '') {
+                    currentPaymentDocUrl = docUrl;
+                    currentPaymentDocName = docName || 'Documento de Pago';
+                    currentPaymentDocType = docType || (docUrl.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image');
+                    
+                    if (btnVerDocumentoPago) btnVerDocumentoPago.style.display = 'block';
+                }
+            } else {
+                 // Si no hay button (abierto por JS), quizás los datos se pusieron en atributos del modal o campos ocultos
+                 // Intentar leer de campos ocultos si existen (habría que crearlos si no existen)
+                 const hiddenDocUrl = document.getElementById('hiddenPaymentDocUrl');
+                 if (hiddenDocUrl && hiddenDocUrl.value) {
+                     currentPaymentDocUrl = hiddenDocUrl.value;
+                     currentPaymentDocName = 'Documento de Pago';
+                     currentPaymentDocType = (currentPaymentDocUrl.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image');
+                     if (btnVerDocumentoPago) btnVerDocumentoPago.style.display = 'block';
+                 }
+            }
+        });
+    }
+    // --- FIN NUEVO ---
 
     // Event listener para limpiar colores cuando el modal se cierre completamente
     if (modalElementPresupuesto) {
@@ -7835,19 +7935,108 @@ if (modalElementUploadPresupuestoPDFGlobal) {
 
 // Función para abrir el modal de agregar anticipo
 function openAgregarAnticipoModal(nroTicket, serialPos = '') {
-    // Si no se pasó el serial, intentar obtenerlo desde la tabla
-    if (!serialPos) {
-        const table = $('#ticketsTable').DataTable();
-        if (table) {
-            table.rows().every(function() {
-                const rowData = this.data();
-                if (rowData && rowData.nro_ticket === nroTicket) {
-                    serialPos = rowData.serial_pos || '';
-                    return false; // Salir del bucle
-                }
-            });
+    console.log("openAgregarAnticipoModal called for Ticket:", nroTicket);
+    let docUrl = null;
+    let docFilename = null;
+    let docType = null;
+    
+    // --- NUEVO: Obtener Documento de Anticipo desde el servidor ---
+    const btnVerDocumentoPago = document.getElementById("btnVerDocumentoPago");
+    
+    // Resetear variables y estado del botón
+    currentPaymentDocUrl = null;
+    currentPaymentDocName = null;
+    currentPaymentDocType = null;
+    if (btnVerDocumentoPago) btnVerDocumentoPago.style.display = 'none';
+
+    // Llamada AJAX para buscar el documento
+    const formData = new FormData();
+    formData.append('nro_ticket', nroTicket);
+    formData.append('document_type', 'Anticipo');
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetNonRejectedDocumentByType`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.document) {
+            const doc = data.document;
+            // Asegurar que la ruta sea accesible desde el frontend
+            // La ruta en BD puede ser absoluta del sistema de archivos, hay que convertirla a URL web
+            // Asumiendo que cleanFilePath ya existe o implementando logica similar
+            
+            // Si cleanFilePath no está disponible en este scope, hacemos una limpieza básica
+            // Ajustar segun estructura de carpetas: C:/xampp/htdocs/SoportePost/public/documentos/...
+            // a http://localhost/SoportePost/public/documentos/...
+            
+            let fullPath = doc.file_path || '';
+            let webPath = fullPath;
+            
+            if (fullPath.includes('public/documentos')) {
+                 const parts = fullPath.split('public/documentos');
+                 if (parts.length > 1) {
+                     // Construir URL relativa
+                     webPath = `${ENDPOINT_BASE}${APP_PATH}public/documentos${parts[1]}`;
+                 }
+            } else if (fullPath.includes('Documentos_SoportePost')) {
+                 // Caso soporte post externo
+                 const parts = fullPath.split('Documentos_SoportePost');
+                  if (parts.length > 1) {
+                     const hostToUse = (typeof HOST !== 'undefined' && HOST) ? HOST : window.location.host;
+                     webPath = `http://${hostToUse}/Documentos${parts[1]}`;
+                 }
+            }
+            // Normalizar slashes
+            webPath = webPath.replace(/\\/g, '/');
+
+            currentPaymentDocUrl = webPath;
+            currentPaymentDocName = doc.original_filename || 'Anticipo';
+            currentPaymentDocType = (doc.mime_type === 'application/pdf' || currentPaymentDocName.toLowerCase().endsWith('.pdf')) ? 'pdf' : 'image';
+            
+            console.log("Documento Anticipo encontrado:", currentPaymentDocUrl);
+
+            if (btnVerDocumentoPago) {
+                btnVerDocumentoPago.style.display = 'block';
+            }
+        } else {
+            console.log("No se encontró documento de Anticipo para este ticket.");
         }
-    }
+    })
+    .catch(error => {
+        console.error("Error al buscar documento de Anticipo:", error);
+    });
+
+    // --- NUEVO: Obtener Estatus del Pago ---
+    const estatusInput = document.getElementById('estatus');
+    const idStatusPaymentInput = document.getElementById('id_status_payment');
+
+    const statusFormData = new FormData();
+    statusFormData.append('nro_ticket', nroTicket);
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentStatusByTicket`, {
+        method: 'POST',
+        body: statusFormData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.status) {
+            console.log("Estatus de pago obtenido:", data.status);
+            if (estatusInput) {
+                estatusInput.value = data.status.name_status_payment || '';
+            }
+            if (idStatusPaymentInput) {
+                idStatusPaymentInput.value = data.status.id_status_payment || '';
+            }
+        } else {
+            console.warn("No se pudo obtener el estatus de pago.");
+        }
+    })
+    .catch(error => {
+        console.error("Error al obtener estatus de pago:", error);
+    });
+    // --- FIN NUEVO ESTATUS ---
+    // --- FIN NUEVO ---
     
     // Establecer el serial en el campo
     const serialPosPagoInput = document.getElementById('serialPosPago');
@@ -7895,6 +8084,89 @@ function openAgregarAnticipoModal(nroTicket, serialPos = '') {
         modal.show();
     }
 }
+
+// Event listener para el botón "Ver Documento de Anticipo"
+document.addEventListener('DOMContentLoaded', function() {
+    const btnVerDocumentoPago = document.getElementById('btnVerDocumentoPago');
+    if (btnVerDocumentoPago) {
+        btnVerDocumentoPago.addEventListener('click', function() {
+            if (currentPaymentDocUrl && currentPaymentDocType) {
+                // Abrir el modal de visualización
+                const viewModal = document.getElementById('viewDocumentModal');
+                if (viewModal) {
+                    // Configurar el contenido del modal
+                    const documentViewArea = document.getElementById('documentViewArea');
+                    if (documentViewArea) {
+                        // Inyectar directamente en el div interno
+                        const contentDiv = documentViewArea.querySelector('.text-center');
+                        if (contentDiv) {
+                            if (currentPaymentDocType === 'pdf') {
+                                contentDiv.innerHTML = `
+                                    <iframe src="${currentPaymentDocUrl}" 
+                                            style="width: 100%; height: 600px; border: none;" 
+                                            title="${currentPaymentDocName}">
+                                    </iframe>
+                                `;
+                            } else {
+                                contentDiv.innerHTML = `
+                                    <img src="${currentPaymentDocUrl}" 
+                                         alt="${currentPaymentDocName}" 
+                                         style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+                                `;
+                            }
+                        }
+                    }
+                    
+                    // Mostrar el modal con z-index apropiado
+                    const bsViewModal = new bootstrap.Modal(viewModal);
+                    
+                    // Ajustar z-index del backdrop cuando se muestra el modal
+                    viewModal.addEventListener('shown.bs.modal', function() {
+                        const backdrop = document.querySelector('.modal-backdrop.show');
+                        if (backdrop) {
+                            backdrop.style.zIndex = '1059';
+                        }
+                    }, { once: true });
+                    
+                    // Limpiar contenido cuando se cierra el modal
+                    viewModal.addEventListener('hidden.bs.modal', function() {
+                        const contentDiv = documentViewArea.querySelector('.text-center');
+                        if (contentDiv) {
+                            contentDiv.innerHTML = '<!-- El contenido se inyectará dinámicamente aquí -->';
+                        }
+                    }, { once: true });
+                    
+                    bsViewModal.show();
+                }
+            } else {
+                console.error('No hay documento disponible para mostrar');
+            }
+        });
+    }
+    
+    // Event listener explícito para el botón cerrar del modal de visualización
+    const btnCerrarViewModal = document.getElementById('btnCerrarViewModal');
+    if (btnCerrarViewModal) {
+        btnCerrarViewModal.addEventListener('click', function() {
+            const viewModal = document.getElementById('viewDocumentModal');
+            if (viewModal) {
+                // Cerrar el modal manualmente
+                viewModal.classList.remove('show');
+                viewModal.setAttribute('aria-hidden', 'true');
+                viewModal.style.display = 'none';
+                
+                // Remover todos los backdrops
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+                
+                // Remover clase del body
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+        });
+    }
+});
 
 // Función para guardar los datos de pago (adaptada de consulta_rif)
 function savePaymentPendienteEntrega() {
@@ -7976,38 +8248,8 @@ function savePaymentPendienteEntrega() {
         const origenTelefono = document.getElementById("origenTelefono");
         const origenBanco = document.getElementById("origenBanco");
 
-        if (!origenRifTipo || !origenRifTipo.value || origenRifTipo.value === "" || origenRifTipo.value === "0") {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campo Obligatorio',
-                text: 'Debe seleccionar el tipo de RIF del origen para Pago Móvil.',
-                confirmButtonColor: '#3085d6'
-            });
-            if (origenRifTipo) origenRifTipo.focus();
-            return;
-        }
+        // Validaciones de RIF y Teléfono eliminadas por solicitud del usuario (ya no son campos visibles ni obligatorios)
 
-        if (!origenRifNumero || !origenRifNumero.value || origenRifNumero.value.trim() === "") {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campo Obligatorio',
-                text: 'Debe ingresar el número de RIF del origen para Pago Móvil.',
-                confirmButtonColor: '#3085d6'
-            });
-            if (origenRifNumero) origenRifNumero.focus();
-            return;
-        }
-
-        if (!origenTelefono || !origenTelefono.value || origenTelefono.value.trim() === "") {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campo Obligatorio',
-                text: 'Debe ingresar el número telefónico del origen para Pago Móvil.',
-                confirmButtonColor: '#3085d6'
-            });
-            if (origenTelefono) origenTelefono.focus();
-            return;
-        }
 
         if (!origenBanco || !origenBanco.value || origenBanco.value === "" || origenBanco.value === "0") {
             Swal.fire({
@@ -8017,6 +8259,56 @@ function savePaymentPendienteEntrega() {
                 confirmButtonColor: '#3085d6'
             });
             if (origenBanco) origenBanco.focus();
+            return;
+        }
+
+        // Validar campos de Destino para Pago Móvil
+        const destinoRifTipo = document.getElementById("destinoRifTipo");
+        const destinoRifNumero = document.getElementById("destinoRifNumero");
+        const destinoTelefono = document.getElementById("destinoTelefono");
+        const destinoBanco = document.getElementById("destinoBanco");
+
+        if (!destinoRifTipo || !destinoRifTipo.value || destinoRifTipo.value === "" || destinoRifTipo.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar el tipo de RIF del destino para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (destinoRifTipo) destinoRifTipo.focus();
+            return;
+        }
+
+        if (!destinoRifNumero || !destinoRifNumero.value || destinoRifNumero.value.trim() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe ingresar el número de RIF del destino para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (destinoRifNumero) destinoRifNumero.focus();
+            return;
+        }
+
+        if (!destinoTelefono || !destinoTelefono.value || destinoTelefono.value.trim() === "") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe ingresar el número telefónico del destino para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (destinoTelefono) destinoTelefono.focus();
+            return;
+        }
+
+        if (!destinoBanco || !destinoBanco.value || destinoBanco.value === "" || destinoBanco.value === "0") {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo Obligatorio',
+                text: 'Debe seleccionar el banco del destino para Pago Móvil.',
+                confirmButtonColor: '#3085d6'
+            });
+            if (destinoBanco) destinoBanco.focus();
             return;
         }
     }
@@ -8924,6 +9216,8 @@ function loadBancos() {
                     if (origenBancoSelect) origenBancoSelect.innerHTML = '<option value="">Seleccione</option>';
                     if (destinoBancoSelect) destinoBancoSelect.innerHTML = '<option value="">Seleccione</option>';
                     
+                    let banescoOption = null; // Variable para guardar la opción de Banesco
+                    
                     data.bancos.forEach(function(banco) {
                         const optionOrigen = document.createElement("option");
                         optionOrigen.value = banco.codigobanco;
@@ -8947,8 +9241,28 @@ function loadBancos() {
                             optionDestinoPM.value = banco.codigobanco;
                             optionDestinoPM.textContent = banco.ibp;
                             destinoBancoSelect.appendChild(optionDestinoPM);
+                            
+                            // Guardar la opción de Banesco para seleccionarla después
+                            if (banco.ibp && banco.ibp.toLowerCase().includes('banesco')) {
+                                banescoOption = banco.codigobanco;
+                            }
                         }
                     });
+                    
+                    // Seleccionar automáticamente Banesco en el campo destinoBanco (Pago Móvil)
+                    if (destinoBancoSelect && banescoOption) {
+                        destinoBancoSelect.value = banescoOption;
+                        // Hacer el campo de solo lectura (no usar disabled para que se envíe el valor)
+                        destinoBancoSelect.style.pointerEvents = 'none';
+                        destinoBancoSelect.style.opacity = '0.6';
+                        // Prevenir cambios mediante eventos
+                        destinoBancoSelect.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
+                        });
+                        destinoBancoSelect.addEventListener('keydown', function(e) {
+                            e.preventDefault();
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error al parsear bancos:', error);
@@ -8979,6 +9293,7 @@ function setupFormaPagoListener() {
     
     function handleFormaPagoChange() {
         const selectedId = parseInt(formaPagoSelect.value);
+        const monedaSelect = document.getElementById("moneda");
         
         // Ocultar todos los campos condicionales primero
         if (bancoFieldsContainer) bancoFieldsContainer.style.display = 'none';
@@ -8988,9 +9303,39 @@ function setupFormaPagoListener() {
         if (selectedId === 2) {
             // Transferencia - mostrar campos de bancos
             if (bancoFieldsContainer) bancoFieldsContainer.style.display = 'block';
+            
+            // Desbloquear el campo de moneda para transferencias
+            if (monedaSelect) {
+                monedaSelect.disabled = false;
+                monedaSelect.style.pointerEvents = '';
+                monedaSelect.style.opacity = '';
+                monedaSelect.style.cursor = '';
+            }
         } else if (selectedId === 5) {
             // Pago Móvil - mostrar campos de pago móvil
             if (pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = 'block';
+            
+            // Establecer automáticamente la moneda en Bolívares (bs) y bloquear el campo
+            if (monedaSelect) {
+                monedaSelect.value = 'bs';
+                monedaSelect.disabled = true;
+                monedaSelect.style.pointerEvents = 'none';
+                monedaSelect.style.opacity = '0.6';
+                monedaSelect.style.cursor = 'not-allowed';
+                
+                // Disparar el evento 'change' para activar los listeners de moneda
+                // Esto habilitará el campo montoBs y deshabilitará montoRef
+                const changeEvent = new Event('change', { bubbles: true });
+                monedaSelect.dispatchEvent(changeEvent);
+            }
+        } else {
+            // Para otros métodos de pago, desbloquear el campo de moneda
+            if (monedaSelect) {
+                monedaSelect.disabled = false;
+                monedaSelect.style.pointerEvents = '';
+                monedaSelect.style.opacity = '';
+                monedaSelect.style.cursor = '';
+            }
         }
     }
 }
@@ -9033,6 +9378,9 @@ function loadExchangeRateToday(fecha = null) {
                         fechaTasaDisplay.innerHTML = `<i class="fas fa-calendar-day me-1"></i>Tasa: ${fecha.toLocaleDateString('es-VE')}`;
                     }
                     window.exchangeRate = tasa;
+                    
+                    // Trigger calculation
+                    calculateRefAmount();
                 } else {
                     if (tasaDisplayValue) tasaDisplayValue.textContent = "Error al cargar";
                 }
@@ -9145,6 +9493,31 @@ function sendAnticipoPresupuestoEmail(nroTicket) {
     }
 }
 
+// NUEVO: Función para calcular Monto REF (Corregido)
+function calculateRefAmount() {
+    const montoBsInput = document.getElementById('montoBs');
+    const montoRefInput = document.getElementById('montoRef');
+    
+    if (montoBsInput && montoRefInput && window.exchangeRate) {
+        const bsAmount = parseFloat(montoBsInput.value);
+        if (!isNaN(bsAmount) && window.exchangeRate > 0) {
+            const refAmount = bsAmount / window.exchangeRate;
+            montoRefInput.value = refAmount.toFixed(2);
+        } else {
+            montoRefInput.value = '0.00';
+        }
+    }
+}
+
+// NUEVO: Listener para Monto Bs
+document.addEventListener('DOMContentLoaded', function() {
+    const montoBsInput = document.getElementById('montoBs');
+    if (montoBsInput) {
+        montoBsInput.addEventListener('input', calculateRefAmount);
+        montoBsInput.addEventListener('change', calculateRefAmount);
+    }
+});
+
 // Configurar listener para cambios en moneda y forma de pago
 $(document).on('change', '#moneda', function() {
     const monedaValue = this.value;
@@ -9220,4 +9593,92 @@ $(document).on('input', '#montoRef', function() {
         calcularConversion();
     }
 });
+}
+
+// ========================================
+// LÓGICA DE ESTATUS DE PAGO AUTOMATIZADO
+// ========================================
+
+/**
+ * Función para configurar listeners automáticos (como el status del pago)
+ */
+function setupPaymentStatusLogic() {
+    const modalPago = document.getElementById("modalAgregarDatosPago");
+    if (modalPago) {
+        modalPago.addEventListener("shown.bs.modal", function() {
+            // Usar la variable global definida al inicio del archivo
+            const nroTicket = targetNroTicketPendienteEntrega || "";
+            
+            console.log("Modal Pago Abierto (Pendiente Entrega). Ticket:", nroTicket);
+
+            if (typeof getPagoEstatus === 'function') {
+                getPagoEstatus(nroTicket);
+            }
+        });
+    }
+}
+
+/**
+ * Función para obtener el estatus de pago automatizado basado en el nro_ticket.
+ * Si no hay pagos registrados, devuelve "Anticipo" (7).
+ * Si ya existen pagos, devuelve "Pago" (17).
+ * @param {string} nroTicket 
+ */
+function getPagoEstatus(nroTicket) {
+    const estatusInput = document.getElementById("estatus");
+    if (!estatusInput) return;
+
+    // Solo cargar si tenemos un ticket válido
+    if (!nroTicket) {
+        estatusInput.value = "Anticipo"; // Valor por defecto si no hay ticket
+        return;
+    }
+
+    estatusInput.value = "Cargando estatus...";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetEstatusPagoAutomatizado`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                // El API devuelve { success: true, estatus_pago: [...] }
+                const responseData = response.estatus_pago || response.data;
+                
+                if (response.success && Array.isArray(responseData) && responseData.length > 0) {
+                    const statusData = responseData[0];
+                    if (statusData.name_status_payment) {
+                        estatusInput.value = statusData.name_status_payment;
+                        // Opcional: guardar ID si es necesario
+                        if (estatusInput.dataset) {
+                            estatusInput.dataset.idStatus = statusData.id_status_payment;
+                        }
+                    } else {
+                        estatusInput.value = "Anticipo";
+                    }
+                } else {
+                    estatusInput.value = "Anticipo";
+                }
+            } catch (error) {
+                console.error("Error al parsear status pago:", error);
+                estatusInput.value = "Anticipo";
+            }
+        } else {
+            estatusInput.value = "Anticipo";
+        }
+    };
+
+    xhr.onerror = function() {
+        estatusInput.value = "Anticipo";
+    };
+
+    const params = `action=GetEstatusPagoAutomatizado&nro_ticket=${encodeURIComponent(nroTicket || '')}`;
+    xhr.send(params);
+}
+
+// Inicializar lógica de estatus de pago inmediatamente
+if (typeof setupPaymentStatusLogic === 'function') {
+    setupPaymentStatusLogic();
 }
