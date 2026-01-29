@@ -1916,15 +1916,28 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
         }
     });
 
-    const CerramodalBtn = document.getElementById("btnCerrarPagoPresupuesto");
+    const CerramodalBtn = document.getElementById("btnCancelarPagoPresupuesto");
+    const closeXBtn = document.getElementById("btnClosePagoPresupuesto");
+
     if (CerramodalBtn) {
         CerramodalBtn.addEventListener("click", function () {
-            // El modal se cierra automáticamente por data-bs-dismiss="modal"
-            // Pero podemos añadir limpieza adicional si fuera necesario.
-            console.log("Cerrando modal de pago presupuesto...");
-            resetDocumentoPagoUI();
+            console.log("Cerrando modal de pago presupuesto (Botón Cancelar)...");
+            resetFormPago();
         });
     }
+
+    if (closeXBtn) {
+        closeXBtn.addEventListener("click", function () {
+            console.log("Cerrando modal de pago presupuesto (Botón X)...");
+            resetFormPago();
+        });
+    }
+
+    // Asegurar que se resetee la UI al cerrar el modal por cualquier medio (ej. clic fuera o tecla ESC)
+    $('#modalPagoPresupuesto').on('hidden.bs.modal', function () {
+        console.log("Modal oculto - Reseteando formulario completo...");
+        resetFormPago();
+    });
 
     // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO
     const documentoPagoInput = document.getElementById("documentoPago");
@@ -1944,7 +1957,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                 if (textDisplay) textDisplay.classList.add("d-none");
                 
                 if (iconDisplay) {
-                    iconDisplay.className = "fas fa-check-circle fa-2x text-success";
+                    iconDisplay.innerHTML = '<i class="fas fa-check-circle fa-2x text-success"></i>';
                 }
                 if (labelDisplay) {
                     labelDisplay.style.borderColor = "#28a745";
@@ -2556,7 +2569,9 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
 
     // Limpiar formulario y resetear estado visual
     const formPago = document.getElementById("formPagoPresupuesto");
-    if(formPago) formPago.reset();
+    if(formPago) {
+        resetFormPago(); // Usar la función de reset completa
+    }
 
     // Validar razonSocial
     if (!razonSocial || razonSocial === "undefined" || razonSocial === "null") {
@@ -3017,6 +3032,12 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
                     montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
                     
+                    // ACTUALIZACIÓN: Actualizar también el card del encabezado "Monto a Pagar" con el saldo restante
+                    const montoEquipoHeader = document.getElementById("montoEquipo");
+                    if (montoEquipoHeader) {
+                        montoEquipoHeader.textContent = `$${remaining.toFixed(2)}`;
+                    }
+                    
                     // Button control logic
                     const btnGuardarPago = document.getElementById("btnGuardarPagoPresupuesto");
                     if (btnGuardarPago) {
@@ -3451,6 +3472,11 @@ function handleFormaPagoChange() {
     } else if (selectedText.includes("móvil") || selectedText.includes("movil") || selectedId === 5) { // Pago Movil
         monedaSelect.value = "bs";
         monedaSelect.setAttribute("disabled", "disabled");
+        // Estilos para campo bloqueado
+        monedaSelect.style.pointerEvents = 'none';
+        monedaSelect.style.opacity = '0.6';
+        monedaSelect.style.cursor = 'not-allowed';
+
         if(bancoFieldsContainer) bancoFieldsContainer.style.display = "none";
         if(pagoMovilFieldsContainer) {
             pagoMovilFieldsContainer.style.display = "block";
@@ -3567,13 +3593,24 @@ function savePayment() {
     if (selectedText.includes("móvil") || selectedText.includes("movil")) {
          const bancoOr = document.getElementById("origenBanco");
          const bancoDes = document.getElementById("destinoBanco");
+         
+         // Validar que el banco origen esté seleccionado
+         if(!bancoOr || !bancoOr.value || bancoOr.value === "") {
+             Swal.fire({
+                 title: "Campo Requerido",
+                 text: "Por favor seleccione el Banco Origen para el Pago Móvil.",
+                 icon: "warning",
+                 confirmButtonText: "Entendido"
+             });
+             return;
+         }
+
          if(bancoOr && bancoOr.selectedIndex >= 0) origenBankVal = bancoOr.options[bancoOr.selectedIndex].textContent;
          if(bancoDes && bancoDes.selectedIndex >= 0) destBankVal = bancoDes.options[bancoDes.selectedIndex].textContent;
          
-         // Append Pago Movil specifics
-         formData.append("origen_telefono", document.getElementById("origenTelefono").value);
-         formData.append("origen_rif_numero", document.getElementById("origenRifNumero").value);
-         // ... add other fields if API requires them specifically or just rely on standard fields
+         // Append Pago Movil specifics as null as requested
+         formData.append("origen_telefono", "null");
+         formData.append("origen_rif_numero", "null");
     } else if (parseInt(formaPago.value) === 2) { // Transferencia
          if(bancoOrigen && bancoOrigen.selectedIndex >= 0) origenBankVal = bancoOrigen.options[bancoOrigen.selectedIndex].textContent;
          if(bancoDestino && bancoDestino.selectedIndex >= 0) destBankVal = bancoDestino.options[bancoDestino.selectedIndex].textContent;
@@ -3731,9 +3768,51 @@ function resetFormPago() {
     if (bancosContainer) bancosContainer.style.display = 'none';
     if (pagoMovilContainer) pagoMovilContainer.style.display = 'none';
     
-    // Clear dynamic fields that might not reset correctly with form.reset() if they were populated via JS
-    // (e.g., if value attribute wasn't updated in DOM, just property)
-    // Explicitly clearing some key fields to be safe
+    // Reset Monto Displays
+    const montoEquipo = document.getElementById("montoEquipo");
+    if (montoEquipo) montoEquipo.textContent = "$0.00";
+    
+    const montoAbonado = document.getElementById("montoAbonado");
+    if (montoAbonado) montoAbonado.textContent = "$0.00";
+    
+    const montoRestante = document.getElementById("montoRestante");
+    if (montoRestante) montoRestante.textContent = "Restante: $0.00";
+    
+    // Reset File Input UI
+    const docInput = document.getElementById("documentoPago");
+    const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
+    const textDisplay = document.getElementById("textDocumentoPago");
+    const labelDisplay = document.getElementById("labelDocumentoPago");
+    
+    const iconDisplay = document.getElementById("iconDocumentoPago");
+    
+    if (docInput) docInput.value = "";
+    
+    if (fileNameDisplay) {
+        fileNameDisplay.textContent = "";
+        fileNameDisplay.classList.add("d-none");
+    }
+    if (textDisplay) textDisplay.classList.remove("d-none");
+    
+    if (iconDisplay) {
+        iconDisplay.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-camera text-secondary" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>';
+    }
+    
+    if (labelDisplay) {
+        labelDisplay.style.borderColor = "#cbd5e0"; 
+        labelDisplay.style.backgroundColor = "#f8f9fa";
+    }
+
+    // Reset Currency Field
+    const monedaSelect = document.getElementById("moneda");
+    if (monedaSelect) {
+        monedaSelect.removeAttribute("disabled");
+        monedaSelect.style.pointerEvents = '';
+        monedaSelect.style.opacity = '';
+        monedaSelect.style.cursor = '';
+    }
+
+    // Clear dynamic fields
     document.querySelectorAll('#bancoFieldsContainer select, #pagoMovilFieldsContainer input').forEach(el => el.value = '');
 }
 
@@ -3942,6 +4021,13 @@ $('#btnUpdatePayment').click(function() {
     if (!data.reference_amount && !data.amount_bs) missingFields.push("Monto (Bs o USD)");
     if (!data.payment_reference) missingFields.push("Referencia");
     if (!data.depositor) missingFields.push("Depositante");
+
+    // Add specific validation for Pago Movil
+    if (data.payment_method.toLowerCase().includes("móvil") || data.payment_method.toLowerCase().includes("movil")) {
+        if (!data.origen_bank || data.origen_bank === "") {
+            missingFields.push("Banco Origen");
+        }
+    }
 
     if (missingFields.length > 0) {
         let errorHtml = '<ul style="text-align: left; margin-bottom: 0;">';
