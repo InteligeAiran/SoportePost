@@ -5289,6 +5289,56 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
+
+    public function getNonRejectedDocumentByType($ticketId, $documentType) {
+
+        try {
+
+            $db_conn = $this->db->getConnection();
+            
+            $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
+            $escaped_document_type = pg_escape_literal($db_conn, $documentType);
+            
+            // Filtrar solo documentos que NO están rechazados
+            $sql = "SELECT * FROM archivos_adjuntos WHERE nro_ticket = $escaped_ticket_id AND document_type = $escaped_document_type AND (rechazado = false OR rechazado IS NULL) ORDER BY id DESC LIMIT 1";
+            
+            $result = $this->db->pgquery($sql);
+
+
+
+            if ($result === false) {
+
+                error_log("Error al consultar documento no rechazado: " . pg_last_error($db_conn));
+
+                return false;
+
+            }
+
+
+
+            if (pg_num_rows($result) === 0) {
+
+                return false;
+
+            }
+
+
+
+            return pg_fetch_assoc($result);
+
+
+
+        } catch (Throwable $e) {
+
+            error_log("Excepción en getNonRejectedDocumentByType: " . $e->getMessage());
+
+            return false;
+
+        }
+
+    }
+
+
     public function GetMotivos($documentType) {
         try {
 

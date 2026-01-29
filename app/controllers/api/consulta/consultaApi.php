@@ -21,6 +21,8 @@ use App\Services\EmailService;
 use Controller;
 use DatabaseCon;
 use DateTime;
+require_once __DIR__ . '/../../../models/consulta_rifModel.php';
+use consulta_rifModel;
 
 class Consulta extends Controller
 {
@@ -278,6 +280,16 @@ class Consulta extends Controller
                 case 'GetDocumentByType':
                     $this->handleGetDocumentByType();
                     break;
+
+                case 'GetNonRejectedDocumentByType':
+                    $this->handleGetNonRejectedDocumentByType();
+                    break;
+
+                case 'GetPaymentStatusByTicket':
+                    $this->handleGetPaymentStatusByTicket();
+                    break;
+
+
 
                 case 'GetMotivos':
                     $this->handleGetMotivos();
@@ -1284,10 +1296,12 @@ class Consulta extends Controller
     public function handleGetUltimateTicket()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+        error_log("GetUltimateTicket DEBUG: Serial recibido = '" . $serial . "'");
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
 
         if ($serial != '') {
             $result = $repository->UltimateDateTicket($serial);
+            error_log("GetUltimateTicket DEBUG: Resultado del repositorio = " . print_r($result, true));
 
             if ($result) {
                 $this->response(['success' => true, 'fecha' => $result['fecha'], 'nro_ticket' => $result['nro_ticket']], 200);
@@ -2207,6 +2221,61 @@ class Consulta extends Controller
                 'document_type' => $attachment['document_type']
             ]
         ], 200);
+    }
+
+
+
+    public function handleGetNonRejectedDocumentByType() {
+        // Support both snake_case (new) and camelCase (old)
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : (isset($_POST['ticketId']) ? $_POST['ticketId'] : '');
+        $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : (isset($_POST['documentType']) ? $_POST['documentType'] : '');
+
+        if (!$nro_ticket || !$document_type) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket y tipo de documento requeridos.'], 400);
+            return;
+        }
+
+        // Bypass repository due to file stability issues, use Model directly
+        $model = new consulta_rifModel();
+        $attachment = $model->getNonRejectedDocumentByType($nro_ticket, $document_type);
+
+        if ($attachment === false || empty($attachment)) {
+            $this->response(['success' => false, 'message' => 'No se encontró el documento solicitado (no rechazado).'], 404);
+            return;
+        }
+
+        $this->response([
+            'success' => true,
+            'document' => [
+                'file_path' => $attachment['file_path'],
+                'mime_type' => $attachment['mime_type'],
+                'original_filename' => $attachment['original_filename'],
+                'document_type' => $attachment['document_type']
+            ]
+        ], 200);
+    }
+
+
+    public function handleGetPaymentStatusByTicket() {
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : '';
+
+        if (!$nro_ticket) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket requerido.'], 400);
+            return;
+        }
+
+        // Bypass repository due to file stability issues, use Model directly
+        $model = new consulta_rifModel();
+        
+        // This method in the model is documented to return 17 if multiple payments exist, or 7 if none.
+        $result = $model->GetPaymentStatusByTicket($nro_ticket);
+
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+             $status = pg_fetch_assoc($result['query'], 0);
+             $this->response(['success' => true, 'status' => $status], 200);
+        } else {
+             $this->response(['success' => false, 'message' => 'No se pudo determinar el estatus de pago.'], 500);
+        }
     }
 
     public function handleGetMotivosDomiciliacion(){
