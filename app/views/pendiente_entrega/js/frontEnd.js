@@ -5225,6 +5225,11 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                         }
                     };
                     
+                    // Determinar el método de pago para control de visibilidad
+                    const metodoPagoLower = (paymentData.payment_method || '').toLowerCase().trim();
+                    const isPagoMovil = metodoPagoLower.includes('móvil') || metodoPagoLower.includes('movil');
+                    const isTransferencia = metodoPagoLower.includes('transferencia');
+
                     // Llenar campos del modal
                     const montoUSD = paymentData.reference_amount ? parseFloat(paymentData.reference_amount) : 0;
                     const montoBS = paymentData.amount_bs ? parseFloat(paymentData.amount_bs) : 0;
@@ -5234,9 +5239,16 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                     document.getElementById('presupuestoMetodoPago').value = paymentData.payment_method || 'N/A';
                     document.getElementById('presupuestoMontoBS').value = montoBS.toFixed(2);
                     
-                    // Campos condicionales - Transferencia (Bancos)
-                    toggleField('presupuestoBancoOrigenContainer', 'presupuestoBancoOrigen', paymentData.origen_bank);
-                    toggleField('presupuestoBancoDestinoContainer', 'presupuestoBancoDestino', paymentData.destination_bank);
+                    // Campos condicionales - Transferencia (Bancos) - Solo mostrar si el método es Transferencia
+                    if (isTransferencia) {
+                        toggleField('presupuestoBancoOrigenContainer', 'presupuestoBancoOrigen', paymentData.origen_bank);
+                        toggleField('presupuestoBancoDestinoContainer', 'presupuestoBancoDestino', paymentData.destination_bank);
+                    } else {
+                        const boContainer = document.getElementById('presupuestoBancoOrigenContainer');
+                        const bdContainer = document.getElementById('presupuestoBancoDestinoContainer');
+                        if (boContainer) boContainer.style.display = 'none';
+                        if (bdContainer) bdContainer.style.display = 'none';
+                    }
                     
                     // Campos condicionales - Referencia, Depositante, Fecha
                     toggleField('presupuestoReferenciaContainer', 'presupuestoReferencia', paymentData.payment_reference);
@@ -5258,7 +5270,8 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                                             paymentData.origen_telefono || paymentData.origen_banco;
                     
                     if (pagoMovilContainer) {
-                        if (hasPagoMovilData) {
+                        // ACTUALIZACIÓN: Solo mostrar si el método es estrictamente Pago Móvil
+                        if (isPagoMovil) {
                             pagoMovilContainer.style.display = '';
                             
                             // Destino - RIF
@@ -5341,15 +5354,67 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                         }
                     }
                     
+                    // Establecer fecha de hoy (no editable) - MOVIDO ANTES DEL FETCH
+                    const today = new Date();
+                    const fechaFormateada = today.toISOString().split('T')[0];
+                    const fechaInput = document.getElementById('presupuestoFecha');
+                    if (fechaInput) {
+                        fechaInput.value = fechaFormateada;
+                    }
+
                     // Guardar datos para cálculos
                     document.getElementById('presupuestoMontoPagadoUSD').value = montoUSD.toFixed(2);
                     window.presupuestoMontoPagadoUSD = montoUSD;
-                    window.presupuestoTasaCambio = montoUSD > 0 ? (montoBS / montoUSD) : 0;
                     
-                    // Establecer fecha de hoy (no editable)
-                    const today = new Date();
-                    const fechaFormateada = today.toISOString().split('T')[0];
-                    document.getElementById('presupuestoFecha').value = fechaFormateada;
+                    // ✅ NUEVO: Cargar tasa del BCV usando XMLHttpRequest y la fecha del campo
+                    const xhrTasa = new XMLHttpRequest();
+                    xhrTasa.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExchangeRateByDate`);
+                    xhrTasa.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    
+                    xhrTasa.onload = function() {
+                        if (xhrTasa.status >= 200 && xhrTasa.status < 300) {
+                            try {
+                                const data = JSON.parse(xhrTasa.responseText);
+                                if (data.success && data.exchange_rate) {
+                                    window.presupuestoTasaCambio = parseFloat(data.exchange_rate.tasa_dolar);
+                                    console.log('Tasa BCV cargada:', window.presupuestoTasaCambio);
+                                    
+                                    // ✅ Mostrar la tasa en el nuevo campo de la UI
+                                    const tasaInput = document.getElementById('presupuestoTasaBCV');
+                                    if (tasaInput) {
+                                        tasaInput.value = window.presupuestoTasaCambio.toFixed(2);
+                                    }
+                                } else {
+                                    // Fallback
+                                    useFallbackRate(montoUSD, montoBS);
+                                }
+                            } catch (error) {
+                                console.error('Error parseando tasa:', error);
+                                useFallbackRate(montoUSD, montoBS);
+                            }
+                        } else {
+                            console.error('Error HTTP al cargar tasa:', xhrTasa.status);
+                            useFallbackRate(montoUSD, montoBS);
+                        }
+                        calcularDiferenciaPresupuesto();
+                    };
+                    
+                    xhrTasa.onerror = function() {
+                        console.error('Error de red al cargar tasa');
+                        useFallbackRate(montoUSD, montoBS);
+                        calcularDiferenciaPresupuesto();
+                    };
+                    
+                    function useFallbackRate(usd, bs) {
+                         window.presupuestoTasaCambio = usd > 0 ? (bs / usd) : 0;
+                         const tasaInput = document.getElementById('presupuestoTasaBCV');
+                         if (tasaInput) {
+                             tasaInput.value = window.presupuestoTasaCambio.toFixed(2) + ' (Promedio)';
+                         }
+                    }
+                    
+                    // Enviar con action GetExchangeRateByDate y la fecha
+                    xhrTasa.send(`action=GetExchangeRateByDate&fecha=${encodeURIComponent(fechaFormateada)}`);
                     
                     // Limpiar descripción
                     document.getElementById('presupuestoDescripcion').value = '';
@@ -5663,6 +5728,13 @@ function calcularDiferenciaPresupuesto() {
     const montoTaller = parseFloat(document.getElementById('presupuestoMontoTaller').value) || 0;
     const montoPagadoUSD = window.presupuestoMontoPagadoUSD || 0;
     const tasaCambio = window.presupuestoTasaCambio || 0;
+    
+    // ✅ Actualizar el Monto en Bolívares del Anticipo con la tasa actual
+    const montoPagadoBS = montoPagadoUSD * tasaCambio;
+    const montoPagadoBSInput = document.getElementById('presupuestoMontoBS');
+    if (montoPagadoBSInput) {
+        montoPagadoBSInput.value = montoPagadoBS.toFixed(2);
+    }
     
     const diferenciaUSD = montoTaller - montoPagadoUSD;
     const diferenciaBS = diferenciaUSD * tasaCambio;

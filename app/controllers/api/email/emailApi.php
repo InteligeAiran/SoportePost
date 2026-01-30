@@ -3281,9 +3281,12 @@ HTML;
         }
         
         // Formatear datos del anticipo
+        $monto_anticipo_usd_raw = isset($paymentData['total_reference_amount']) ? (float)$paymentData['total_reference_amount'] : (isset($paymentData['reference_amount']) ? (float)$paymentData['reference_amount'] : 0);
+        $monto_anticipo_bs_raw = isset($paymentData['total_amount_bs']) ? (float)$paymentData['total_amount_bs'] : (isset($paymentData['amount_bs']) ? (float)$paymentData['amount_bs'] : 0);
+        
         $moneda_anticipo = htmlspecialchars($paymentData['currency'] ?? 'N/A');
-        $monto_anticipo_usd = isset($paymentData['reference_amount']) ? number_format((float)$paymentData['reference_amount'], 2, ',', '.') : '0,00';
-        $monto_anticipo_bs = isset($paymentData['amount_bs']) ? number_format((float)$paymentData['amount_bs'], 2, ',', '.') : '0,00';
+        $monto_anticipo_usd = number_format($monto_anticipo_usd_raw, 2, ',', '.');
+        $monto_anticipo_bs = number_format($monto_anticipo_bs_raw, 2, ',', '.');
         $metodo_pago = htmlspecialchars($paymentData['payment_method'] ?? 'N/A');
         $referencia_pago = htmlspecialchars($paymentData['payment_reference'] ?? 'N/A');
         $depositante = htmlspecialchars($paymentData['depositor'] ?? 'N/A');
@@ -3319,9 +3322,7 @@ HTML;
         $fecha_presupuesto = isset($presupuestoData['fecha_presupuesto']) ? date('d/m/Y', strtotime($presupuestoData['fecha_presupuesto'])) : date('d/m/Y');
         
         // Calcular monto del taller en USD: anticipo + diferencia
-        $monto_anticipo_usd_float = isset($paymentData['reference_amount']) ? (float)$paymentData['reference_amount'] : 0;
-        $diferencia_usd_float = isset($presupuestoData['diferencia_usd']) ? (float)$presupuestoData['diferencia_usd'] : 0;
-        $monto_taller_usd = $monto_anticipo_usd_float + $diferencia_usd_float;
+        $monto_taller_usd = $monto_anticipo_usd_raw + $diferencia_usd_float;
         $monto_taller_usd_formatted = number_format($monto_taller_usd, 2, ',', '.');
         
         // Construir HTML condicional para Transferencia

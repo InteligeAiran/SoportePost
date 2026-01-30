@@ -1791,6 +1791,20 @@ function mi_navbar()
                             
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-exchange me-1" viewBox="0 0 16 16">
+                                        <path d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4z"/>
+                                        <path d="M11.146 1.146a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L12 2.707V12.5A2.5 2.5 0 0 1 9.5 15h-8a.5.5 0 0 1 0-1h8A1.5 1.5 0 0 0 11 12.5V2.707l-3.146 3.147a.5.5 0 0 1-.708-.708l4-4z"/>
+                                    </svg>
+                                    Tasa BCV (Hoy)
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">Bs/$</span>
+                                    <input type="text" id="presupuestoTasaBCV" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; background-color: #f5f5f5; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly placeholder="Cargando...">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right me-1" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/>
                                     </svg>
