@@ -2306,6 +2306,13 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                             if(el) el.selectedIndex = 0;
                         });
 
+                        // Ocultar contenedores de métodos de pago dinámicos
+                        const bancoContainer = document.getElementById("bancoFieldsContainer");
+                        if(bancoContainer) bancoContainer.style.display = 'none';
+                        
+                        const pagoMovilContainer = document.getElementById("pagoMovilFieldsContainer");
+                        if(pagoMovilContainer) pagoMovilContainer.style.display = 'none';
+
                         // Restaurar botón
                         btnGuardarPago.disabled = false;
                         btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
@@ -2620,6 +2627,12 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
     if (depositanteInput) {
          depositanteInput.value = razonSocial;
     }
+
+    // Ensure inputs are clear by default
+    const montoBsInput = document.getElementById("montoBs");
+    const montoRefInput = document.getElementById("montoRef");
+    if(montoBsInput) montoBsInput.value = "";
+    if(montoRefInput) montoRefInput.value = "";
     
     // RIF Field (Banking Details - Hidden by default but good to pre-fill)
     const origenRifNumero = document.getElementById("origenRifNumero");
@@ -2666,7 +2679,8 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
         
         // Populate inputs
         const montoRefInput = document.getElementById("montoRef");
-        if(montoRefInput) montoRefInput.value = currentBudgetAmount.toFixed(2);
+        // UPDATED: Do not pre-fill input.
+        // if(montoRefInput) montoRefInput.value = currentBudgetAmount.toFixed(2);
         
         // DEFAULT CURRENCY TO USD (force calculation)
         const monedaSelect = document.getElementById("moneda");
@@ -2694,20 +2708,29 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
     if (budgetAmount) {
         const montoRefInput = document.getElementById("montoRef");
         if (montoRefInput) {
-            montoRefInput.value = parseFloat(budgetAmount).toFixed(2);
-            // Trigger calculation for BS if needed
+            // UPDATED: No pre-fill, allow user to type amount to pay
+            // montoRefInput.value = parseFloat(budgetAmount).toFixed(2);
              // Dispatch input event to trigger listeners (e.g., calculateUsdToBs, updateMontoEquipo)
             montoRefInput.dispatchEvent(new Event('input'));
         }
         // Force update of the display just in case
+        // Force update of the display just in case
         const montoEquipoElement = document.getElementById("montoEquipo");
         if (montoEquipoElement) {
-             montoEquipoElement.textContent = "$" + parseFloat(budgetAmount).toFixed(2);
+             // UPDATED: Do NOT set to budgetAmount directly. Let updateMontoEquipo handle the logic (showing remaining)
+             // montoEquipoElement.textContent = "$" + parseFloat(budgetAmount).toFixed(2);
+             // Call update to set initial state (Remaining - 0)
+             if (typeof updateMontoEquipo === 'function') updateMontoEquipo();
         }
     } else {
         // Clear if no budget amount
         const montoEquipoElement = document.getElementById("montoEquipo");
         if (montoEquipoElement) {
+             /* 
+             ORIGINAL: montoEquipoElement.textContent = "$0.00";
+             Keep this unless we want it to show something else. 
+             For non-budget, it should probably be 0.
+             */
              montoEquipoElement.textContent = "$0.00";
         }
     }
@@ -2740,8 +2763,6 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
     }
     
     // Ensure both amount fields are disabled on modal open
-    const montoBsInput = document.getElementById("montoBs");
-    const montoRefInput = document.getElementById("montoRef");
     if(montoBsInput) {
         montoBsInput.disabled = true;
         montoBsInput.style.backgroundColor = "#e9ecef";
@@ -3014,12 +3035,16 @@ function loadTotalPaid(nroTicket, budgetAmount) {
             try {
                 const response = JSON.parse(xhr.responseText);
                 console.log("DEBUG loadTotalPaid: Data parsed:", response);
+                console.log("DEBUG loadTotalPaid: presupuesto_diferencia raw:", response.presupuesto_diferencia);
+                console.log("DEBUG loadTotalPaid: total_budget raw:", response.total_budget);
                 
                 if (response.success) {
                     const totalPaid = parseFloat(response.total_paid) || 0;
                     const totalBudget = parseFloat(response.total_budget) || 0;
+                    const presupuestoDiferencia = parseFloat(response.presupuesto_diferencia) || 0;
                     
-                    // If total budget is 0, fallback to passed parameter (though API should return it)
+                    // Logic: Amount to use for calculation (total) vs display (diff)
+                    // If total budget is 0, fallback to passed parameter
                     const budgetToUse = totalBudget > 0 ? totalBudget : (parseFloat(budgetAmount) || 0);
                     
                     const remaining = Math.max(0, budgetToUse - totalPaid);
@@ -3027,10 +3052,19 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     // Store in global variable for validation
                     window.currentTotalPaid = totalPaid;
                     window.currentBudgetAmount = budgetToUse;
+                    window.currentDiferenciaBudget = presupuestoDiferencia;
+                    window.currentRemaining = remaining; // Added for dynamic header calculation
                     
                     // Update display
                     montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
                     montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
+                    
+                    // ACTUALIZACIÓN: Actualizar Card de 'Monto del Presupuesto'
+                    const montoPresupuestoDisplay = document.getElementById("montoPresupuestoDisplay");
+                    if (montoPresupuestoDisplay) {
+                        // User requested 'monto del taller' (Total) instead of difference
+                        montoPresupuestoDisplay.textContent = `$${totalBudget.toFixed(2)}`;
+                    }
                     
                     // ACTUALIZACIÓN: Actualizar también el card del encabezado "Monto a Pagar" con el saldo restante
                     const montoEquipoHeader = document.getElementById("montoEquipo");
@@ -3286,14 +3320,16 @@ function handleCurrencyChange() {
       montoBsInput.removeAttribute("disabled");
       montoBsInput.required = true;
       montoBsInput.style.backgroundColor = "#fff";
+      montoBsInput.style.cursor = "text"; // Fix cursor
       montoRefInput.setAttribute("disabled", "disabled");
+      montoRefInput.style.cursor = "not-allowed"; // Explicitly block
       
-      // LOGIC FOR BUDGET PRE-FILL
+      // LOGIC FOR BUDGET PRE-FILL - DISABLED
       if (currentBudgetAmount > 0 && exchangeRate > 0) {
-          montoBsInput.value = (currentBudgetAmount * exchangeRate).toFixed(2);
-          montoRefInput.value = currentBudgetAmount.toFixed(2); // Keep reference
+          // montoBsInput.value = (currentBudgetAmount * exchangeRate).toFixed(2);
+          // montoRefInput.value = currentBudgetAmount.toFixed(2); // Keep reference
       } else {
-          montoRefInput.value = "";
+          // montoRefInput.value = "";
       }
       
       montoRefInput.style.backgroundColor = "#e9ecef";
@@ -3316,18 +3352,20 @@ function handleCurrencyChange() {
     } else if (selectedCurrency === "usd") {
       montoBsInput.setAttribute("disabled", "disabled");
       
-      // LOGIC FOR BUDGET PRE-FILL
+      // LOGIC FOR BUDGET PRE-FILL - DISABLED
       if (currentBudgetAmount > 0 && exchangeRate > 0) {
-          montoRefInput.value = currentBudgetAmount.toFixed(2);
-          montoBsInput.value = (currentBudgetAmount * exchangeRate).toFixed(2); // Show calculated BS
+          // montoRefInput.value = currentBudgetAmount.toFixed(2);
+          // montoBsInput.value = (currentBudgetAmount * exchangeRate).toFixed(2); // Show calculated BS
       } else {
-          montoBsInput.value = "";
+          // montoBsInput.value = "";
       }
       
       montoBsInput.style.backgroundColor = "#e9ecef";
+      montoBsInput.style.cursor = "not-allowed"; // Explicitly block
       montoRefInput.removeAttribute("disabled");
       montoRefInput.required = true;
       montoRefInput.style.backgroundColor = "#fff";
+      montoRefInput.style.cursor = "text"; // Fix cursor
       
       const montoBsSuffix = document.getElementById("montoBsSuffix");
       if(montoBsSuffix) montoBsSuffix.style.display = "none";
@@ -3400,6 +3438,8 @@ function calculateUsdToBs() {
       if(montoBsSuffix) { montoBsSuffix.style.display = "none"; } // Hide suffix if no value
       updateMontoEquipo();
     }
+    // Validate budget on every calculation/input
+    validateBudget(false);
 }
 
 function formatBsDecimal() {
@@ -3415,6 +3455,161 @@ function formatUsdDecimal() {
         const val = parseFloat(input.value);
         if (!isNaN(val)) input.value = val.toFixed(2);
     }
+    // Trigger validation on blur
+    validateBudget(true);
+}
+
+/**
+ * Validates if the input amount exceeds the remaining budget.
+ * @param {boolean} showModal - Whether to show the alert modal if invalid.
+ */
+// --------------------------------------------------------------------------------
+// PREMIUM ICON STYLES INJECTION (SVG VERSION)
+// --------------------------------------------------------------------------------
+const style = document.createElement('style');
+style.innerHTML = `
+    @keyframes premium-pulse {
+        0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(220, 53, 69, 0.4)); }
+        50% { transform: scale(1.1); filter: drop-shadow(0 0 10px rgba(220, 53, 69, 0.2)); }
+        100% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(220, 53, 69, 0.4)); }
+    }
+    .premium-icon-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .premium-icon-svg {
+        width: 6rem;
+        height: 6rem;
+        animation: premium-pulse 2s infinite ease-in-out;
+        /* Ensure circle shape for potential background effects if desired */
+        border-radius: 50%; 
+    }
+`;
+document.head.appendChild(style);
+// --------------------------------------------------------------------------------
+
+function validateBudget(showModal = false) {
+    const montoRefInput = document.getElementById("montoRef");
+    const btnGuardar = document.getElementById("btnGuardarPagoPresupuesto");
+    
+    // Only valid if we have budget data
+    if (typeof window.currentBudgetAmount === 'undefined' || window.currentBudgetAmount <= 0) {
+        if(btnGuardar) {
+             btnGuardar.disabled = false;
+             btnGuardar.title = "";
+             btnGuardar.classList.remove('btn-secondary');
+             btnGuardar.classList.add('btn-primary');
+             btnGuardar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        }
+        return;
+    }
+
+    const inputAmount = parseFloat(montoRefInput.value) || 0;
+    const remaining = window.currentRemaining || 0;
+    
+    // Safety check: if remaining is 0 (Fully Paid), keep it disabled
+    if (remaining <= 0.001) {
+         if (btnGuardar) {
+             btnGuardar.disabled = true;
+             // Maintain "Pagado Completo" style from loadTotalPaid potentially, or reinforce it
+         }
+         return;
+    }
+    
+    // Logic: If input > remaining, it's an overrun.
+    // Floating point precision handling recommended but simple comparison usually works for JS numbers
+    // Use a small epsilon if needed, but strict > is likely requested.
+    
+    const isOverBudget = inputAmount > (remaining + 0.001); // Epsilon for safety
+
+    if (isOverBudget) {
+        // DISABLE BUTTON
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.title = "Pago Excede presupuesto"; // Tooltip requested
+            btnGuardar.classList.remove('btn-primary');
+            btnGuardar.classList.add('btn-secondary');
+            btnGuardar.style.background = '#6c757d'; 
+            btnGuardar.style.cursor = 'not-allowed';
+        }
+        
+        // VISUAL ERROR
+        montoRefInput.style.borderColor = "#dc3545";
+        montoRefInput.style.backgroundColor = "#fff5f5";
+
+        // SHOW MODAL (Only on blur or explicit check)
+        if (showModal) {
+            Swal.fire({
+                title: 'Excede el Presupuesto',
+                // CUSTOM ICON HTML (SVG)
+                iconHtml: `
+                    <div class="premium-icon-wrapper">
+                        <svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg" class="premium-icon-svg">
+                            <defs>
+                                <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#f06595;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <g transform="translate(0, 1600) scale(1, -1)">
+                                <path d="M768 1408q209 0 385.5 -103t279.5 -279.5t103 -385.5t-103 -385.5t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103zM896 161v190q0 14 -9 23.5t-22 9.5h-192q-13 0 -23 -10t-10 -23v-190q0 -13 10 -23t23 -10h192q13 0 22 9.5t9 23.5zM894 505l18 621q0 12 -10 18q-10 8 -24 8h-220q-14 0 -24 -8q-10 -6 -10 -18l17 -621q0 -10 10 -17.5t24 -7.5h185q14 0 23.5 7.5t10.5 17.5z" fill="url(#premiumGradient)"></path>
+                            </g>
+                        </svg>
+                    </div>
+                `,
+                html: `
+                    <div style="text-align: left; padding: 0 10px;">
+                        <p style="color: #666; font-size: 0.95rem;">No se puede agregar este pago porque excede el monto total del presupuesto.</p>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-weight: 600; color: #444;">Presupuesto Total:</span>
+                                <span>$${window.currentBudgetAmount.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-weight: 600; color: #444;">Total Abonado:</span>
+                                <span>$${window.currentTotalPaid.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 4px;">
+                                <span style="font-weight: 600; color: #444;">Restante Real:</span>
+                                <span style="color: #28a745; font-weight: 600;">$${remaining.toFixed(2)}</span>
+                            </div>
+                             <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                                <span style="font-weight: 600; color: #d63384;">Nuevo Pago:</span>
+                                <span style="font-weight: 600; color: #d63384;">$${inputAmount.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; text-align: right;">
+                             <span style="color: #dc3545; font-weight: 700;">Excedente: $${(inputAmount - remaining).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `,
+                // Remove standard icon
+                icon: null, 
+                confirmButtonText: 'Entendido',
+                buttonsStyling: false,
+                customClass: {
+                    popup: 'swal-premium-popup',
+                    title: 'swal-premium-title',
+                    confirmButton: 'swal-premium-confirm',
+                    icon: 'border-0' // Remove default border ring if present
+                }
+            });
+        }
+    } else {
+        // VALID STATE
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.title = "";
+            btnGuardar.classList.remove('btn-secondary');
+            btnGuardar.classList.add('btn-primary');
+            btnGuardar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+             btnGuardar.style.cursor = 'pointer';
+        }
+        montoRefInput.style.borderColor = ""; // Reset
+        montoRefInput.style.backgroundColor = "#fff";
+    }
 }
 
 function updateMontoEquipo() {
@@ -3426,6 +3621,25 @@ function updateMontoEquipo() {
     }
 
     const montoUsd = parseFloat(montoRefInput.value) || 0;
+
+    // UPDATED CHECK: If there is an active budget, show Remaining - Input
+    if (typeof window.currentBudgetAmount !== 'undefined' && window.currentBudgetAmount > 0) {
+        const initialRemaining = window.currentRemaining || 0;
+        const newRemaining = initialRemaining - montoUsd;
+        
+        // Ensure we handle negative values gracefully in display if needed, or just show them
+        montoEquipoElement.textContent = "$" + newRemaining.toFixed(2);
+        
+        // Optional: Visual feedback if negative
+        if (newRemaining < 0) {
+            montoEquipoElement.classList.add('text-danger');
+        } else {
+            montoEquipoElement.classList.remove('text-danger');
+        }
+        return;
+    }
+
+    // ORIGINAL BEHAVIOR (No Budget): Header mirrors the input
     if (montoUsd > 0) {
       montoEquipoElement.textContent = "$" + montoUsd.toFixed(2);
     } else {
@@ -3461,9 +3675,20 @@ function handleFormaPagoChange() {
     const selectedId = parseInt(formaPagoSelect.value);
     const selectedText = formaPagoSelect.options[formaPagoSelect.selectedIndex].textContent.toLowerCase();
 
+    // Reset styles and state by default
+    monedaSelect.removeAttribute("disabled");
+    monedaSelect.style.pointerEvents = '';
+    monedaSelect.style.opacity = '';
+    monedaSelect.style.cursor = '';
+
     if (selectedId === 2) { // Transferencia
         monedaSelect.value = "bs";
         monedaSelect.setAttribute("disabled", "disabled");
+        // Apply locked styles
+        monedaSelect.style.pointerEvents = 'none';
+        monedaSelect.style.opacity = '0.6';
+        monedaSelect.style.cursor = 'not-allowed';
+
         if(bancoFieldsContainer) bancoFieldsContainer.style.display = "flex"; // flex for row
         loadBancos();
         if(pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = "none";
@@ -3472,7 +3697,7 @@ function handleFormaPagoChange() {
     } else if (selectedText.includes("móvil") || selectedText.includes("movil") || selectedId === 5) { // Pago Movil
         monedaSelect.value = "bs";
         monedaSelect.setAttribute("disabled", "disabled");
-        // Estilos para campo bloqueado
+        // Apply locked styles
         monedaSelect.style.pointerEvents = 'none';
         monedaSelect.style.opacity = '0.6';
         monedaSelect.style.cursor = 'not-allowed';
@@ -3494,7 +3719,6 @@ function handleFormaPagoChange() {
         
         handleCurrencyChange();
     } else {
-        monedaSelect.removeAttribute("disabled");
         if(bancoFieldsContainer) bancoFieldsContainer.style.display = "none";
         if(pagoMovilFieldsContainer) pagoMovilFieldsContainer.style.display = "none";
         limpiarCamposPagoMovil();

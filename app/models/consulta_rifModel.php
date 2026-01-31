@@ -7009,7 +7009,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
             $sql = "SELECT 
                         COALESCE(SUM(pr.reference_amount), 0) as total_paid,
-                        COALESCE((SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as total_budget
+                        COALESCE((SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as total_budget,
+                        COALESCE((SELECT diferencia_usd FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as presupuesto_diferencia
                     FROM payment_records pr
                     WHERE pr.nro_ticket = " . $escaped_nro_ticket;
             
@@ -7019,7 +7020,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $row = pg_fetch_assoc($result['query'], 0);
                 return [
                     'total_paid' => floatval($row['total_paid']),
-                    'total_budget' => floatval($row['total_budget'])
+                    'total_budget' => floatval($row['total_budget']),
+                    'presupuesto_diferencia' => floatval($row['presupuesto_diferencia'])
                 ];
             }
             

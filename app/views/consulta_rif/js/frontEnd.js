@@ -6728,11 +6728,20 @@ function SendRif() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
+            const presupuestoCell = row.insertCell();
+            const abonadoCell = row.insertCell();
+            const deudaCell = row.insertCell();
 
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
+            
+            // Estilo condicional por deuda
+            if (parseFloat(item.deuda) > 0) {
+              row.style.backgroundColor = "#f8d7da";
+              row.style.color = "#721c24";
+            }
             
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
@@ -6794,6 +6803,14 @@ function SendRif() {
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
+            presupuestoCell.textContent = item.total_presupuesto || '0';
+            abonadoCell.textContent = item.total_abonado || '0';
+            deudaCell.textContent = item.deuda || '0';
+
+            // Asegurar color de texto blanco para los links si la fila es roja
+            if (parseFloat(item.deuda) > 0) {
+              enlaceSerial.style.color = "#004085";
+            }
           });
 
           // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
@@ -6831,10 +6848,16 @@ function SendRif() {
           }
           $("#rifCountTable").DataTable({
 
-            responsive: false,
+            scrollX: true,
+            scrollY: "500px",
+            scrollCollapse: true,
+            autoWidth: true,
+            columnDefs: [
+              { targets: "_all", className: "dt-nowrap" }
+            ],
             pagingType: "simple_numbers",
-            lengthMenu: [5],
-            autoWidth: false,
+            lengthMenu: [5, 10, 50],
+            pageLength: 5,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -6907,7 +6930,7 @@ function SendRif() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: {
                             header: function(data, columnIdx) {
                                 if (typeof data === 'string') {
@@ -7019,7 +7042,7 @@ function SendRif() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: { body: (data) => safeValue(data) }
                     },
                     customize: function(doc) {
@@ -7363,6 +7386,9 @@ function SendSerial() {
             { data: "direccion_instalacion", title: "Dirección Instalación" },
             { data: "estado", title: "Estado" },
             { data: "municipio", title: "Municipio" },
+            { data: "total_presupuesto", title: "Presupuesto" },
+            { data: "total_abonado", title: "Abonado" },
+            { data: "deuda", title: "Deuda" },
           ];
 
             // Lógica para crear las columnas y el thead
@@ -7395,13 +7421,28 @@ function SendSerial() {
 
 
           $(newTable).DataTable({
-            responsive: false,
+            scrollX: true,
+            scrollY: "500px",
+            scrollCollapse: true,
             fixedHeader: true,
             data: data,
             columns: columnsConfig,
+            autoWidth: true,
+            columnDefs: [
+              { targets: "_all", className: "dt-nowrap" }
+            ],
+            createdRow: function (row, data, dataIndex) {
+              if (parseFloat(data.deuda) > 0) {
+                $(row).css({
+                  'background-color': '#f8d7da',
+                  'color': '#721c24'
+                });
+                $(row).find('a').css('color', '#004085');
+              }
+            },
             pagingType: "simple_numbers",
-            lengthMenu: [5],
-            autoWidth: false,
+            lengthMenu: [5, 10, 50],
+            pageLength: 5,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -7473,7 +7514,7 @@ function SendSerial() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: {
                             header: function(data, columnIdx) {
                                 if (typeof data === 'string') {
@@ -7581,7 +7622,7 @@ function SendSerial() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     format: { body: (data) => safeValue(data) }
   },
   customize: function(doc) {
@@ -7864,8 +7905,7 @@ function SendRazon() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
-            serial_posCell.className = 'serial-pos-column'; // AÑADE ESTA LÍNEA
-
+            serial_posCell.className = 'serial-pos-column';
             const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
@@ -7873,11 +7913,20 @@ function SendRazon() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
+            const presupuestoCell = row.insertCell();
+            const abonadoCell = row.insertCell();
+            const deudaCell = row.insertCell();
 
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
+
+            // Estilo condicional por deuda
+            if (parseFloat(item.deuda) > 0) {
+              row.style.backgroundColor = "#f8d7da";
+              row.style.color = "#721c24";
+            }
 
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
@@ -7939,6 +7988,14 @@ function SendRazon() {
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
+            presupuestoCell.textContent = item.total_presupuesto || '0';
+            abonadoCell.textContent = item.total_abonado || '0';
+            deudaCell.textContent = item.deuda || '0';
+
+            // Asegurar color de texto blanco para los links si la fila es roja
+            if (parseFloat(item.deuda) > 0) {
+              enlaceSerial.style.color = "#004085";
+            }
           });
 
           // Lógica para crear las columnas y el thead
@@ -7975,61 +8032,17 @@ function SendRazon() {
             $("#rifCountTable").DataTable().destroy();
           }
           $("#rifCountTable").DataTable({
-            dom: "Blfrtip",
-            buttons: [{
-              extend: "excelHtml5",
-              footer: true,
-              text: "Excel",
-              filename: () => {
-                  const razon = document.getElementById('RazonInput')?.value?.trim() || 'SIN_RAZON_SOCIAL';
-                  const razonLimpia = razon.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50).toUpperCase();
-                  const fecha = new Date().toISOString().split('T')[0];
-                  return `REPORTE CONSULTA - CONTEOS_RAZON_SOCIAL ${razonLimpia}_${fecha}`;
-              },
-              title: () => {
-                  return 'Conteos por Razón Social';
-              },
-              action: function(e, dt, button, config) {
-                  // Limpiar timeout anterior si existe
-                  if (exportTimeoutId) {
-                      clearTimeout(exportTimeoutId);
-                  }
-                  
-                  // Mostrar overlay inmediatamente
-                  showExportLoading();
-                  exportStartTime = Date.now();
-                  
-                  // Iniciar detección de descarga
-                  detectDownloadStart();
-                  
-                  // Calcular delay basado en número de registros (fallback si no se detecta descarga)
-                  const rowCount = dt.rows({search: 'applied'}).count();
-                  // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
-                  const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
-                  
-                  // Llamar a la acción por defecto de forma asíncrona
-                  setTimeout(function() {
-                      $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                  }.bind(this), 100);
-                  
-                  // Ocultar overlay después del delay calculado (fallback)
-                  exportTimeoutId = setTimeout(function() {
-                      if (!downloadDetected) {
-                          hideExportLoading();
-                          exportTimeoutId = null;
-                      }
-                  }, delay);
-              },
-            }, ],
-            responsive: false,
-            pagingType: "simple_numbers",
-            lengthMenu: [5, 10, 20, 50], // Opciones del length menu
-            pageLength: 5, // Página por defecto
-            scrollY: '400px', // Altura fija para el scroll vertical
-            scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
-            fixedHeader: true, // Fija el encabezado durante el scroll
-            autoWidth: false,
-            fixedHeader: true,
+            dom: '<"text-center"B>lfrtip',
+            scrollX: true,
+            scrollY: "500px",
+            scrollCollapse: true,
+            autoWidth: true,
+            columnDefs: [
+              { targets: 10, width: "120px" },  // Estado
+              { targets: 11, width: "120px" }   // Municipio
+            ],
+            lengthMenu: [5, 10, 50],
+            pageLength: 5,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -8047,8 +8060,6 @@ function SendRazon() {
                 previous: "Anterior",
               },
             },
-
-            dom: 'Bfrtip',
             buttons: [
                 {
                     extend: 'excelHtml5',
@@ -8101,7 +8112,7 @@ function SendRazon() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: {
                             header: function(data, columnIdx) {
                                 if (typeof data === 'string') {
@@ -8214,7 +8225,7 @@ function SendRazon() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     format: { body: (data) => safeValue(data) }
   },
   customize: function(doc) {

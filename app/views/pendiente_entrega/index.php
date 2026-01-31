@@ -1795,7 +1795,7 @@ function mi_navbar()
                                         <path d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4z"/>
                                         <path d="M11.146 1.146a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L12 2.707V12.5A2.5 2.5 0 0 1 9.5 15h-8a.5.5 0 0 1 0-1h8A1.5 1.5 0 0 0 11 12.5V2.707l-3.146 3.147a.5.5 0 0 1-.708-.708l4-4z"/>
                                     </svg>
-                                    Tasa BCV (Hoy)
+                                    Tasa BCV <span id="labelTasaBCVDate" class="text-primary">(Cargando...)</span>
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">Bs/$</span>

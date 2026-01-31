@@ -2715,7 +2715,8 @@ class Consulta extends Controller
         $this->response([
             'success' => true, 
             'total_paid' => $result['total_paid'],
-            'total_budget' => $result['total_budget']
+            'total_budget' => $result['total_budget'],
+            'presupuesto_diferencia' => isset($result['presupuesto_diferencia']) ? $result['presupuesto_diferencia'] : 0
         ], 200);
     }
 

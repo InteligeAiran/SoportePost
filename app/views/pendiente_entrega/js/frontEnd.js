@@ -5384,6 +5384,26 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                                     if (tasaInput) {
                                         tasaInput.value = window.presupuestoTasaCambio.toFixed(2);
                                     }
+                                    
+                                    // ✅ NUEVO: Actualizar la etiqueta con la fecha real de la tasa
+                                    const labelDate = document.getElementById('labelTasaBCVDate');
+                                    console.log('Elemento labelTasaBCVDate:', labelDate);
+                                    console.log('Fecha recibida:', data.exchange_rate.fecha_tasa);
+                                    
+                                    if (labelDate && data.exchange_rate.fecha_tasa) {
+                                        // Asumimos formato YYYY-MM-DD o timestamp
+                                        const fechaObj = new Date(data.exchange_rate.fecha_tasa);
+                                        // Ajustar zona horaria si es necesario o usar UTC para evitar desfases de día
+                                        // Usando toLocaleDateString con configuración local de VE
+                                        const fechaStr = fechaObj.toLocaleDateString('es-VE', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            timeZone: 'UTC' // Asumiendo que la fecha viene pura sin hora
+                                        });
+                                        labelDate.textContent = `(${fechaStr})`;
+                                        labelDate.className = 'text-success fw-bold';
+                                    }
                                 } else {
                                     // Fallback
                                     useFallbackRate(montoUSD, montoBS);
@@ -5410,6 +5430,13 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                          const tasaInput = document.getElementById('presupuestoTasaBCV');
                          if (tasaInput) {
                              tasaInput.value = window.presupuestoTasaCambio.toFixed(2) + ' (Promedio)';
+                         }
+                         
+                         // Actualizar etiqueta en fallback
+                         const labelDate = document.getElementById('labelTasaBCVDate');
+                         if (labelDate) {
+                             labelDate.textContent = '(Promedio)';
+                             labelDate.className = 'text-warning fw-bold';
                          }
                     }
                     
@@ -5495,7 +5522,8 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                                 const numValue = parseFloat(value);
                                 if (!isNaN(numValue)) {
                                     input.value = numValue.toFixed(2);
-                            calcularDiferenciaPresupuesto();
+                                    // ✅ Pasar true para mostrar la alerta si es negativo
+                                    calcularDiferenciaPresupuesto(true);
                                 }
                             }
                         }
@@ -5724,7 +5752,7 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
 }
 
 // Función para calcular la diferencia del presupuesto
-function calcularDiferenciaPresupuesto() {
+function calcularDiferenciaPresupuesto(showAlert = false) {
     const montoTaller = parseFloat(document.getElementById('presupuestoMontoTaller').value) || 0;
     const montoPagadoUSD = window.presupuestoMontoPagadoUSD || 0;
     const tasaCambio = window.presupuestoTasaCambio || 0;
@@ -5757,6 +5785,44 @@ function calcularDiferenciaPresupuesto() {
         } else {
             diferenciaUSDInput.classList.add('bg-danger', 'text-white');
             diferenciaBSInput.classList.add('bg-danger', 'text-white');
+            
+            // ✅ Mostrar alerta si es negativo y se solicitó mostrar alerta
+            if (showAlert) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ajuste Requerido',
+                    html: `
+                        <div class="text-center">
+                            <p class="mb-3 text-muted">El pago del cliente supera el monto del presupuesto.</p>
+                            
+                            <div class="d-flex justify-content-center mb-3">
+                                <div class="p-3 bg-light rounded border border-danger">
+                                    <span class="d-block text-secondary small text-uppercase fw-bold">Diferencia a favor</span>
+                                    <span class="d-block text-danger fw-bold fs-4">${Math.abs(diferenciaUSD).toFixed(2)} USD</span>
+                                </div>
+                            </div>
+                            
+                            <p class="small text-muted mb-0">
+                                Por favor, ajuste el <b>Monto Total de Taller</b> hasta que la diferencia sea $0.00.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#ffc107',
+                    confirmButtonText: '<span style="color: #000; font-weight: bold;">Entendido</span>',
+                    cancelButtonColor: '#d33',
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    },
+                    backdrop: `
+                        rgba(0,0,123,0.1)
+                        left top
+                        no-repeat
+                    `
+                });
+            }
         }
     }
 }
