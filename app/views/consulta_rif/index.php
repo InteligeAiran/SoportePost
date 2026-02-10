@@ -17,22 +17,15 @@ function mi_navbar() {}
         <!-- Nucleo Icons -->
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
 
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css"/>
-
-
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
-
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
+        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
 
         <style>
@@ -803,6 +796,16 @@ function mi_navbar() {}
                 font-size: 1.2rem;
                 margin-top: 4px;
             }
+
+            #rifCountTable {
+                white-space: nowrap !important;
+            }
+
+            /* Ajuste para que el contenedor de DataTables respete el ancho */
+            .dataTables_scrollBody {
+                overflow-x: auto !important;
+                width: 100% !important;
+            }
         </style>
     </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -854,8 +857,7 @@ function mi_navbar() {}
                         </div><br>
                         <div class="card" style="display: none;">
                             <div class="row">
-                                <div class="col-12">
-                                    <table id="rifCountTable" class="table table-bordered" style="width: 100%">
+                                        <table id="rifCountTable" class="table table-bordered" style="width: 100%">
                                         <thead>
                                             <tr>
                                                 <th style="width: 5%; height: 10px;">ID cliente</th>
@@ -878,7 +880,6 @@ function mi_navbar() {}
                                             </tr>
                                         </tbody>
                                     </table>
-                                </div>
                             </div>
                             <div id="ModalSerial" class="modal">
                                 <div id="ModalSerial-content" class="modal-content" style="max-height: 80vh; overflow-y: auto;">
@@ -1512,16 +1513,15 @@ function mi_navbar() {}
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
-
-        <script type="text/javascript" src="<?php echo APP; ?>DataTable/dataTables.bootstrap.js"></script>
-        <script type="text/javascript" src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
-        <script type="text/javascript" src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
-        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
+        <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
+
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>

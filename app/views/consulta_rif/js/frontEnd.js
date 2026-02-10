@@ -6820,9 +6820,11 @@ function SendRif() {
           }
           $("#rifCountTable").DataTable({
 
-            responsive: false,
             pagingType: "simple_numbers",
-            lengthMenu: [5],
+            scrollX: '60vh',
+            scrollY: '60vh',
+            scrollCollapse: true,
+            fixedHeader: true,
             autoWidth: false,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
@@ -7384,13 +7386,12 @@ function SendSerial() {
 
 
           $(newTable).DataTable({
-            responsive: false,
-            fixedHeader: true,
-            data: data,
-            columns: columnsConfig,
             pagingType: "simple_numbers",
-            lengthMenu: [5],
-            autoWidth: false,
+              scrollX: '60vh',
+              scrollY: '60vh',
+              scrollCollapse: true,
+              fixedHeader: true,
+              autoWidth: false,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -8010,15 +8011,17 @@ function SendRazon() {
                   }, delay);
               },
             }, ],
-            responsive: false,
-            pagingType: "simple_numbers",
-            lengthMenu: [5, 10, 20, 50], // Opciones del length menu
-            pageLength: 5, // Página por defecto
-            scrollY: '400px', // Altura fija para el scroll vertical
-            scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
-            fixedHeader: true, // Fija el encabezado durante el scroll
-            autoWidth: false,
-            fixedHeader: true,
+              pagingType: "simple_numbers",
+              scrollX: '60vh',
+              scrollY: '60vh',
+              scrollCollapse: true,
+              fixedHeader: true,
+              autoWidth: false, // Altura fija para el scroll vertical
+            //scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
+            //fixedHeader: true, // Fija el encabezado durante el scroll
+            //autoWidth: false,
+            //fixedHeader: true,
+
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
