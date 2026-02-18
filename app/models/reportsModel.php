@@ -619,9 +619,9 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
                 $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
                 $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
 
-                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
-                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
-                }
+                    if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                        $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                    }
 
                 $id_accion_ticket = 'NULL';
                 $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
