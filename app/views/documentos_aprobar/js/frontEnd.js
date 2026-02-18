@@ -2801,7 +2801,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     const paymentValidationContainer = document.getElementById("paymentValidationContainer");
     
     // ✅ Verificar si el documento está aprobado (id_status_payment = 6)
-    const isDocumentApproved = idStatusPayment === 6;
+    const isDocumentApproved = parseInt(idStatusPayment) === 6;
 
     // LIMPIEZA COMPLETA Y FORZADA
     if (mediaViewerContainer) {
