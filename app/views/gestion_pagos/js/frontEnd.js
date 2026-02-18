@@ -399,7 +399,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function getTicketDataCoordinator() {
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketData`);
+  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataPagos`);
 
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
 
@@ -3513,22 +3513,17 @@ function validateBudget(showModal = false) {
     if (remaining <= 0.001) {
          if (btnGuardar) {
              btnGuardar.disabled = true;
-             // Maintain "Pagado Completo" style from loadTotalPaid potentially, or reinforce it
          }
          return;
     }
     
-    // Logic: If input > remaining, it's an overrun.
-    // Floating point precision handling recommended but simple comparison usually works for JS numbers
-    // Use a small epsilon if needed, but strict > is likely requested.
-    
-    const isOverBudget = inputAmount > (remaining + 0.001); // Epsilon for safety
+    const isOverBudget = inputAmount > (remaining + 0.001);
 
     if (isOverBudget) {
         // DISABLE BUTTON
         if (btnGuardar) {
             btnGuardar.disabled = true;
-            btnGuardar.title = "Pago Excede presupuesto"; // Tooltip requested
+            btnGuardar.title = "Pago Excede presupuesto";
             btnGuardar.classList.remove('btn-primary');
             btnGuardar.classList.add('btn-secondary');
             btnGuardar.style.background = '#6c757d'; 
@@ -3539,77 +3534,128 @@ function validateBudget(showModal = false) {
         montoRefInput.style.borderColor = "#dc3545";
         montoRefInput.style.backgroundColor = "#fff5f5";
 
-        // SHOW MODAL (Only on blur or explicit check)
         if (showModal) {
-            Swal.fire({
-                title: 'Excede el Presupuesto',
-                // CUSTOM ICON HTML (SVG)
-                iconHtml: `
-                    <div class="premium-icon-wrapper">
-                        <svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg" class="premium-icon-svg">
-                            <defs>
-                                <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#f06595;stop-opacity:1" />
-                                </linearGradient>
-                            </defs>
-                            <g transform="translate(0, 1600) scale(1, -1)">
-                                <path d="M768 1408q209 0 385.5 -103t279.5 -279.5t103 -385.5t-103 -385.5t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103zM896 161v190q0 14 -9 23.5t-22 9.5h-192q-13 0 -23 -10t-10 -23v-190q0 -13 10 -23t23 -10h192q13 0 22 9.5t9 23.5zM894 505l18 621q0 12 -10 18q-10 8 -24 8h-220q-14 0 -24 -8q-10 -6 -10 -18l17 -621q0 -10 10 -17.5t24 -7.5h185q14 0 23.5 7.5t10.5 17.5z" fill="url(#premiumGradient)"></path>
-                            </g>
-                        </svg>
-                    </div>
-                `,
-                html: `
-                    <div style="text-align: left; padding: 0 10px;">
-                        <p style="color: #666; font-size: 0.95rem;">No se puede agregar este pago porque excede el monto total del presupuesto.</p>
-                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="font-weight: 600; color: #444;">Presupuesto Total:</span>
-                                <span>$${window.currentBudgetAmount.toFixed(2)}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="font-weight: 600; color: #444;">Total Abonado:</span>
-                                <span>$${window.currentTotalPaid.toFixed(2)}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 4px;">
-                                <span style="font-weight: 600; color: #444;">Restante Real:</span>
-                                <span style="color: #28a745; font-weight: 600;">$${remaining.toFixed(2)}</span>
-                            </div>
-                             <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                                <span style="font-weight: 600; color: #d63384;">Nuevo Pago:</span>
-                                <span style="font-weight: 600; color: #d63384;">$${inputAmount.toFixed(2)}</span>
-                            </div>
-                        </div>
-                        <div style="margin-top: 12px; text-align: right;">
-                             <span style="color: #dc3545; font-weight: 700;">Excedente: $${(inputAmount - remaining).toFixed(2)}</span>
-                        </div>
-                    </div>
-                `,
-                // Remove standard icon
-                icon: null, 
-                confirmButtonText: 'Entendido',
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'swal-premium-popup',
-                    title: 'swal-premium-title',
-                    confirmButton: 'swal-premium-confirm',
-                    icon: 'border-0' // Remove default border ring if present
-                }
-            });
+            showOverBudgetAlert(inputAmount, remaining);
         }
     } else {
-        // VALID STATE
+        // ENABLE BUTTON
         if (btnGuardar) {
             btnGuardar.disabled = false;
             btnGuardar.title = "";
             btnGuardar.classList.remove('btn-secondary');
             btnGuardar.classList.add('btn-primary');
             btnGuardar.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-             btnGuardar.style.cursor = 'pointer';
+            btnGuardar.style.cursor = 'pointer';
         }
-        montoRefInput.style.borderColor = ""; // Reset
-        montoRefInput.style.backgroundColor = "#fff";
+        
+        // CLEAR VISUAL ERROR
+        montoRefInput.style.borderColor = "";
+        montoRefInput.style.backgroundColor = "";
     }
+}
+
+/**
+ * Validates budget while EDITING a payment.
+ * Adjusts remaining budget by adding back the original amount of the payment.
+ */
+function validateEditBudget(showModal = false) {
+    const montoRefInput = document.getElementById("edit_montoRef");
+    const btnUpdate = document.getElementById("btnUpdatePayment");
+    
+    // Only valid if we have budget data
+    if (typeof window.currentBudgetAmount === 'undefined' || window.currentBudgetAmount <= 0) {
+        if(btnUpdate) btnUpdate.disabled = false;
+        return true;
+    }
+
+    const inputAmount = parseFloat(montoRefInput.value) || 0;
+    const currentRemaining = window.currentRemaining || 0;
+    const originalAmount = window.currentOldAmount || 0;
+    
+    // The "True Remaining" for THIS edit is (Current Remaining + Original Amount of this record)
+    const effectiveRemaining = currentRemaining + originalAmount;
+    
+    const isOverBudget = inputAmount > (effectiveRemaining + 0.001);
+
+    if (isOverBudget) {
+        if (btnUpdate) {
+            btnUpdate.disabled = true;
+            btnUpdate.title = "Pago Excede presupuesto";
+        }
+        montoRefInput.style.borderColor = "#dc3545";
+        montoRefInput.style.backgroundColor = "#fff5f5";
+
+        if (showModal) {
+            showOverBudgetAlert(inputAmount, effectiveRemaining, true);
+        }
+        return false;
+    } else {
+        if (btnUpdate) {
+            btnUpdate.disabled = false;
+            btnUpdate.title = "";
+        }
+        montoRefInput.style.borderColor = "";
+        montoRefInput.style.backgroundColor = "";
+        return true;
+    }
+}
+
+function showOverBudgetAlert(inputAmount, available, isEdit = false) {
+    Swal.fire({
+        title: 'Excede el Presupuesto',
+        iconHtml: `
+            <div class="premium-icon-wrapper">
+                <svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg" class="premium-icon-svg">
+                    <defs>
+                        <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#f06595;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <g transform="translate(0, 1600) scale(1, -1)">
+                        <path d="M768 1408q209 0 385.5 -103t279.5 -279.5t103 -385.5t-103 -385.5t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103zM896 161v190q0 14 -9 23.5t-22 9.5h-192q-13 0 -23 -10t-10 -23v-190q0 -13 10 -23t23 -10h192q13 0 22 9.5t9 23.5zM894 505l18 621q0 12 -10 18q-10 8 -24 8h-220q-14 0 -24 -8q-10 -6 -10 -18l17 -621q0 -10 10 -17.5t24 -7.5h185q14 0 23.5 7.5t10.5 17.5z" fill="url(#premiumGradient)"></path>
+                    </g>
+                </svg>
+            </div>
+        `,
+        html: `
+            <div style="text-align: left; padding: 0 10px;">
+                <p style="color: #666; font-size: 0.95rem;">No se puede ${isEdit ? 'actualizar' : 'agregar'} este pago porque excede el monto total del presupuesto.</p>
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-weight: 600; color: #444;">Presupuesto Total:</span>
+                        <span>$${window.currentBudgetAmount.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span style="font-weight: 600; color: #444;">${isEdit ? 'Monto Disponible:' : 'Total Abonado:'}</span>
+                        <span>$${isEdit ? available.toFixed(2) : window.currentTotalPaid.toFixed(2)}</span>
+                    </div>
+                    ${!isEdit ? `
+                    <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 4px;">
+                        <span style="font-weight: 600; color: #444;">Restante Real:</span>
+                        <span style="color: #28a745; font-weight: 600;">$${available.toFixed(2)}</span>
+                    </div>
+                    ` : ''}
+                     <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                        <span style="font-weight: 600; color: #d63384;">${isEdit ? 'Monto Editado:' : 'Nuevo Pago:'}</span>
+                        <span style="font-weight: 600; color: #d63384;">$${inputAmount.toFixed(2)}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; text-align: right;">
+                     <span style="color: #dc3545; font-weight: 700;">Excedente: $${(inputAmount - available).toFixed(2)}</span>
+                </div>
+            </div>
+        `,
+        icon: null, 
+        confirmButtonText: 'Entendido',
+        buttonsStyling: false,
+        customClass: {
+            popup: 'swal-premium-popup',
+            title: 'swal-premium-title',
+            confirmButton: 'swal-premium-confirm',
+            icon: 'border-0'
+        }
+    });
 }
 
 function updateMontoEquipo() {
@@ -4086,6 +4132,10 @@ window.editPayment = function(recordNumber) {
                     $('#edit_montoBs').val(p.amount_bs);
                     $('#edit_montoRef').val(p.reference_amount);
                     
+                    // Store Original Context for updates
+                    window.currentOldAmount = parseFloat(p.reference_amount) || 0;
+                    window.currentEditSerial = p.serial_pos || "";
+                    
                     if ($('#edit_formaPago option').length <= 1) {
                         $('#formaPago option').clone().appendTo('#edit_formaPago');
                     }
@@ -4109,6 +4159,9 @@ window.editPayment = function(recordNumber) {
                     // Populate Mobile Payment Fields if visible (and if data exists)
                      if(p.origen_rif_numero) $('#edit_origenRifNumero').val(p.origen_rif_numero);
                      if(p.origen_telefono) $('#edit_origenTelefono').val(p.origen_telefono);
+
+                    // Initialize Validation
+                    validateEditBudget();
 
                     // 3. Show Modal
                     var el = document.getElementById('editPaymentModal');
@@ -4223,13 +4276,34 @@ $('#btnUpdatePayment').click(function() {
     const id = $('#edit_payment_id').val();
     const ticketId = $('#ticketIdPago').val();
 
+    // Perform final budget validation
+    if (!validateEditBudget(true)) {
+        return;
+    }
+
+    // Recalculate record_number dynamically
+    let calculatedRecordNumber = "Pago";
+    const ref = $('#edit_referencia').val();
+    const serial = window.currentEditSerial || "";
+    
+    if (ref && ref.length >= 4) {
+        calculatedRecordNumber += ref.slice(-4);
+    } else {
+        calculatedRecordNumber += id; // Fallback to ID if reference is too short
+    }
+    
+    if (serial && serial.length >= 4) {
+        calculatedRecordNumber += "_" + serial.slice(-4);
+    }
+
     const data = {
         id_payment: id,
         payment_method: $('#edit_formaPago option:selected').text().trim(),
         currency: $('#edit_moneda').val().toUpperCase(),
         amount_bs: $('#edit_montoBs').val(),
         reference_amount: $('#edit_montoRef').val(),
-        payment_reference: $('#edit_referencia').val(),
+        payment_reference: ref,
+        record_number: calculatedRecordNumber, // Send the updated record_number
         depositor: $('#edit_depositante').val(),
         origen_bank: $('#edit_bancoOrigen').val(),
         destination_bank: $('#edit_bancoDestino').val(),
@@ -4485,12 +4559,19 @@ $('#edit_montoBs').on('input keyup', function() {
     if ($('#edit_moneda').val().toLowerCase() === 'bs') {
         calculateEditBsToUsd();
     }
+    validateEditBudget();
 });
 
 $('#edit_montoRef').on('input keyup', function() {
     if ($('#edit_moneda').val().toLowerCase().includes('usd')) {
         calculateEditUsdToBs();
     }
+    validateEditBudget();
+});
+
+$('#edit_referencia').on('input', function() {
+    // Record number will be recalculated automatically on save
+    console.log("Reference changed, record_number will be synced on save.");
 });
 
 console.log("frontEnd.js fully loaded with editPayment logic");

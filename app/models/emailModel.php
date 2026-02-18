@@ -289,8 +289,8 @@ class emailModel extends Model{
         try{
             $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
             $sql = "SELECT *, 
-                           (SELECT SUM(reference_amount) FROM payment_records WHERE nro_ticket = p.nro_ticket) as total_reference_amount,
-                           (SELECT SUM(amount_bs) FROM payment_records WHERE nro_ticket = p.nro_ticket) as total_amount_bs
+                           (SELECT SUM(reference_amount) FROM payment_records WHERE nro_ticket = p.nro_ticket AND (is_substituted IS NULL OR is_substituted = FALSE)) as total_reference_amount,
+                           (SELECT SUM(amount_bs) FROM payment_records WHERE nro_ticket = p.nro_ticket AND (is_substituted IS NULL OR is_substituted = FALSE)) as total_amount_bs
                     FROM payment_records p 
                     WHERE nro_ticket = " . $escaped_nro_ticket . " 
                     ORDER BY id_payment_record DESC LIMIT 1;";

@@ -238,24 +238,24 @@ BEGIN
     ) AS latest_tecnico_n2 ON TRUE
     LEFT JOIN users usr_n2_latest ON usr_n2_latest.id_user = latest_tecnico_n2.id_tecnico_n2
 
-    -- DBLINK para obtener datos del cliente (razón social, fecha instalación, estatus)
     LEFT JOIN dblink(
         v_dblink_conn_string_intelipunto,
-        'SELECT DISTINCT ON (clie.coddocumento)
+        'SELECT DISTINCT ON (invt.serialpos)
             clie.razonsocial,
             clie.coddocumento,
             invt.fechainstalacion,
-            stintel.desc_estatus
+            stintel.desc_estatus,
+            invt.serialpos
         FROM
             clie_tblclientepotencial clie
         INNER JOIN tblinventariopos invt ON invt.id_cliente::integer = clie.id_consecutivo
         INNER JOIN tblestatusinteliservices stintel ON stintel.idestatus = invt.idestatusinteliservices
         ORDER BY
-            clie.coddocumento,
+            invt.serialpos,
             invt.fechainstalacion DESC,
             stintel.desc_estatus DESC'
-    ) AS t1(razonsocial name, remote_rif text, fechainstalacion date, desc_estatus character varying)
-    ON tik.rif = t1.remote_rif
+    ) AS t1(razonsocial name, remote_rif text, fechainstalacion date, desc_estatus character varying, remote_serial text)
+    ON tik.serial_pos = t1.remote_serial
 
     -- USAR LA MISMA FUNCIÓN QUE getdataticketbyidaccion
     LEFT JOIN LATERAL public.verifingbranches_serial(tik.serial_pos) AS vb ON TRUE

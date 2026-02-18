@@ -900,7 +900,7 @@ class consulta_rifModel extends Model
             }
 
             $sql = sprintf(
-                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type, record_number) VALUES (%s, %s, %s, %s, %s, %d, %d, %s, %s);",
+                "INSERT INTO public.archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type, record_number) VALUES (%s, %s, %s, %s, %s, %d, %d, %s, %s)",
                 $escaped_Nr_ticket, 
                 $escaped_original_filename,
                 $escaped_stored_filename,
@@ -910,14 +910,30 @@ class consulta_rifModel extends Model
                 (int) $uploaded_by_user_id,
                 $escaped_document_type,
                 $escaped_record_number
-            );
+            ) . " RETURNING id;";
 
-            $result = $this->db->pgquery($sql);
+            $db_conn = $this->db->getConnection();
+            $result_insert = pg_query($db_conn, $sql);
 
-            if ($result === false) {
+            if (!$result_insert) {
                 error_log("Error al insertar archivo adjunto: " . pg_last_error($db_conn) . " Query: " . $sql);
                 return ['error' => 'Error al guardar el archivo adjunto en la base de datos.'];
             }
+            
+            $new_img_id = pg_fetch_result($result_insert, 0, 0);
+            error_log("saveArchivoAdjunto: New Image ID: " . $new_img_id);
+
+            // Vínculo Documento-a-Documento (Solicitud Usuario)
+            // Si hay un documento anterior rechazado, vincularlo al ID de la nueva imagen
+            $sqlUpdateOldDoc = "UPDATE archivos_adjuntos 
+                               SET substituted_by_id_payment_record = $new_img_id 
+                               WHERE nro_ticket = $escaped_Nr_ticket 
+                               AND document_type = $escaped_document_type 
+                               AND rechazado = TRUE";
+            
+            error_log("saveArchivoAdjunto: Linkage Query: " . $sqlUpdateOldDoc);
+            $resLink = pg_query($db_conn, $sqlUpdateOldDoc);
+            error_log("saveArchivoAdjunto: Linkage Affected Rows: " . pg_affected_rows($resLink));
 
             // PATRÓN saveDocument2: Determinación de estatus e historial
             $id_status_payment = $this->determineStatusPayment($Nr_ticket, $document_type);
@@ -1310,7 +1326,7 @@ class consulta_rifModel extends Model
 
         try {
 
-            $sql = "SELECT * FROM getdataticketpagos(" . $id_user . ")";
+            $sql = "SELECT * FROM GetDataTicketByIdAccion(" . $id_user . ")";
 
             $result = Model::getResult($sql, $this->db);
 
@@ -1322,6 +1338,24 @@ class consulta_rifModel extends Model
 
         }
 
+    }
+
+    public function GetTicketDataPagos($id_user)
+    {
+
+        try {
+
+            $sql = "SELECT * FROM getdataticketpagos(" . $id_user . ")";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            // Manejar excepciones
+
+        }
     }
 
 
@@ -5344,6 +5378,11 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
             $db_conn = $this->db->getConnection();
             
+            // Allow 'Pago' or 'pago' to use 'Anticipo' reasons
+            if ($documentType === 'Pago' || $documentType === 'pago') {
+                $documentType = 'Anticipo';
+            }
+
             $escaped_document_type = pg_escape_literal($db_conn, $documentType);
 
             $sql = "SELECT * FROM get_motivos_rechazo(".$escaped_document_type.")";
@@ -5400,381 +5439,202 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
-    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type) {
+   public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record = null) {
+    try {
+        $db_conn = $this->db->getConnection();
+
+        // ✅ VALIDACIÓN DE ID_TICKET VS NRO_TICKET
+        
+            $sqlid_ticket =  "SELECT id_ticket FROM tickets WHERE nro_ticket = '".$nro_ticket."';";
+            $result = pg_query($db_conn, $sqlid_ticket);
+            if ($result && pg_num_rows($result) > 0) {
+                $resolved_id = pg_fetch_result($result, 0, 'id_ticket');
+                $id_ticket = $resolved_id;
+            }
+        
+
+        // 1. Obtener datos iniciales del ticket
+        $status_payment_status_sql = "SELECT id_status_payment, id_status_ticket, id_accion_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket;
+        $status_payment_status_result = pg_query($db_conn, $status_payment_status_sql);
+        $ticket_data = ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) 
+                        ? pg_fetch_assoc($status_payment_status_result, 0) : null;
+
+        // Definir nuevo status según documento
+        if ($document_type === 'Envio') {
+            $id_new_status_payment = 14;
+        } else if (in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago'])) {
+            $id_new_status_payment = 13;
+        } else if ($document_type === 'Exoneracion') {
+            $id_new_status_payment = 12;
+        } else if ($document_type === 'convenio_firmado') {
+            $id_new_status_payment = ($ticket_data) ? $ticket_data['id_status_payment'] : 'NULL';
+            if($id_new_status_payment === 'NULL' || $id_new_status_payment === null) {
+                $new_status_domiciliacion = 7;
+            }
+        }
+
+        // Escapar valores
+        $escaped_id_ticket = pg_escape_literal($db_conn, $id_ticket);
+        $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+        $escaped_document_type = pg_escape_literal($db_conn, $document_type);
+
+        // 2. ACTUALIZAR payment_records Y archivos_adjuntos
+        $record_number_rechazado = null;
+        $is_payment_document = in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago']);
+
+        if ($is_payment_document && !empty($nro_ticket)) {
+            $status_rechazado = 13;
+            
+            // Obtener record_number
+            if ($id_payment_record) {
+                $sqlGetRecord = "SELECT record_number FROM payment_records WHERE id_payment_record = " . (int)$id_payment_record;
+            } else {
+                $sqlGetRecord = "SELECT record_number FROM payment_records WHERE nro_ticket = $escaped_nro_ticket ORDER BY id_payment_record DESC LIMIT 1";
+            }
+            $resRecord = pg_query($db_conn, $sqlGetRecord);
+            if ($resRecord && pg_num_rows($resRecord) > 0) {
+                $record_number_rechazado = pg_fetch_result($resRecord, 0, 'record_number');
+            }
+
+            // Actualizar payment_records
+            $whereClause = $id_payment_record ? "id_payment_record = " . (int)$id_payment_record : "id_payment_record = (SELECT id_payment_record FROM payment_records WHERE nro_ticket = $escaped_nro_ticket ORDER BY id_payment_record DESC LIMIT 1)";
+            $sqlUpdatePayment = "UPDATE payment_records SET payment_status = $status_rechazado, confirmation_number = false, updated_by = " . (int)$id_user . ", updated_at = NOW() WHERE $whereClause";
+            
+            if (!pg_query($db_conn, $sqlUpdatePayment)) {
+                error_log("Error actualizando payment_records: " . pg_last_error($db_conn));
+                return false;
+            }
+
+            // Actualizar archivos_adjuntos
+            if ($record_number_rechazado) {
+                $escaped_record = pg_escape_literal($db_conn, $record_number_rechazado);
+                $sqlAdjuntos = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE record_number = $escaped_record";
+                $resAdj = pg_query($db_conn, $sqlAdjuntos);
+                
+                // Fallback si no afectó filas
+                if ($resAdj && pg_affected_rows($resAdj) === 0) {
+                    $sqlFallback = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE nro_ticket = $escaped_nro_ticket AND document_type = $escaped_document_type AND (record_number IS NULL OR record_number = '')";
+                    pg_query($db_conn, $sqlFallback);
+                }
+            }
+        } else {
+            // Otros documentos
+            $sqlOther = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE id = (SELECT id FROM archivos_adjuntos WHERE nro_ticket = $escaped_nro_ticket AND document_type = $escaped_document_type ORDER BY uploaded_at DESC LIMIT 1)";
+            if (!Model::getResult($sqlOther, $this->db)) return false;
+        }
+
+        // 3. ACTUALIZAR ESTADO DEL TICKET (Si aplica)
+        if (empty($id_payment_record) && !$is_payment_document) {
+            if ($document_type !== 'convenio_firmado') {
+                $sqlTicket = "UPDATE tickets SET id_status_payment = $id_new_status_payment WHERE id_ticket = $escaped_id_ticket";
+            } else {
+                $sqlTicket = "UPDATE tickets_status_domiciliacion SET id_status_domiciliacion = $new_status_domiciliacion WHERE id_ticket = $escaped_id_ticket";
+            }
+            if (!Model::getResult($sqlTicket, $this->db)) return false;
+        }
+
+        // Determinar status final para el historial
+        if (!empty($id_payment_record) || $is_payment_document) {
+             // Re-verificar status actual para consistencia quirúrgica
+             $checkResult = pg_query($db_conn, "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket);
+             if ($checkResult && pg_num_rows($checkResult) > 0) {
+                 $id_new_status_payment_for_history = (int)pg_fetch_result($checkResult, 0, 'id_status_payment');
+             } else {
+                 $id_new_status_payment_for_history = ($ticket_data) ? $ticket_data['id_status_payment'] : $id_new_status_payment;
+             }
+        } else {
+            $id_new_status_payment_for_history = $id_new_status_payment;
+        }
+
+        // 4. LOGICA DE COORDINADOR (AQUÍ ESTABA LA DUPLICIDAD)
+        // Obtenemos el rol
+        $resRol = pg_query($db_conn, "SELECT id_rolusr FROM users WHERE id_user = " . (int)$id_user);
+        $id_rol = ($resRol && pg_num_rows($resRol) > 0) ? (int)pg_fetch_result($resRol, 0, 'id_rolusr') : 0;
+
+        // Si no es admin/super (rol 5), asignamos el coordinador al ticket si no tiene
+        if ($id_rol != 5) {
+            $sqlUpdateCoord = "UPDATE users_tickets SET id_coordinador = $id_user WHERE id_ticket = $escaped_id_ticket AND (id_coordinador IS NULL OR id_coordinador = 0)";
+            if (!Model::getResult($sqlUpdateCoord, $this->db)) return false;
+        }
+
+        // 5. RECOPILAR DATOS PARA HISTORIAL (Centralizado, se ejecuta UNA sola vez)
+        
+        // Status Lab
+        $resLab = pg_query($db_conn, "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$id_ticket);
+        $id_status_lab = ($resLab && pg_num_rows($resLab) > 0) ? ((int)pg_fetch_result($resLab, 0, 'id_status_lab') ?: 0) : 0;
+
+        // Status Domiciliacion
+        $resDom = pg_query($db_conn, "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$id_ticket);
+        $new_status_domiciliacion = ($resDom && pg_num_rows($resDom) > 0) ? ((int)pg_fetch_result($resDom, 0, 'id_status_domiciliacion') ?: 'NULL') : 'NULL';
+
+        // Status Ticket
+        $resTik = pg_query($db_conn, "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket);
+        $id_status_ticket = ($resTik && pg_num_rows($resTik) > 0) ? ((int)pg_fetch_result($resTik, 0, 'id_status_ticket') ?: 'NULL') : 'NULL';
+
+        // Accion Ticket
+        $resAcc = pg_query($db_conn, "SELECT id_accion_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket);
+        $id_accion_ticket = ($resAcc && pg_num_rows($resAcc) > 0) ? ((int)pg_fetch_result($resAcc, 0, 'id_accion_ticket') ?: 'NULL') : 'NULL';
+
+        // Coordinador final
+        $resCoord = pg_query($db_conn, "SELECT id_coordinador FROM users_tickets WHERE id_ticket = " . (int)$id_ticket);
+        $id_coordinador = ($resCoord && pg_num_rows($resCoord) > 0) ? ((int)pg_fetch_result($resCoord, 0, 'id_coordinador') ?: 'NULL') : 'NULL';
+
+
+        // 6. INSERTAR EN HISTORIAL
+        $sqlInsertHistory = sprintf(
+            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
+            (int)$id_ticket,
+            (int)$id_user,
+            $id_status_ticket,
+            $id_accion_ticket,
+            $id_status_lab,
+            $id_new_status_payment_for_history,
+            $new_status_domiciliacion,
+            $id_coordinador,
+            $id_payment_record ? (int)$id_payment_record : 'NULL'
+        );
+
+        if (!pg_query($db_conn, $sqlInsertHistory)) {
+            error_log("Error insertando historial ticket ID: {$id_ticket}: " . pg_last_error($db_conn));
+            return false;
+        }
+
+        return true;
+
+    } catch (Throwable $e) {
+        error_log("Excepción en RechazarDocumentos: " . $e->getMessage());
+        return false;
+    }
+    }
+
+    public function getTicketIdByNumber($nro_ticket)
+    {
 
         try {
 
             $db_conn = $this->db->getConnection();
 
+            $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
 
-            if ($document_type === 'Envio') {
+            $sql = "SELECT id_ticket FROM tickets WHERE nro_ticket = ".$escaped_nro.";";
+            var_dump("No se encontró id_ticket para nro_ticket:", $nro_ticket, $sql);
 
-                $id_new_status_payment = 14;
-
-            } else if ($document_type === 'Anticipo') {
-
-                $id_new_status_payment = 13;
-
-            }else if($document_type === 'Exoneracion'){
-
-                $id_new_status_payment = 12; // Valor por defecto
-
-            }else if($document_type === 'convenio_firmado'){
-                
-                $id_new_status_payment = 'NULL';
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-                    $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment')!== null? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
-                }
-                $new_status_domiciliacion = 7;
-            }
-            // Escapar los valores para prevenir inyecciones SQL
-
-            $escaped_id_ticket = pg_escape_literal($db_conn, $id_ticket);
-
-            $escaped_id_motivo = pg_escape_literal($db_conn, $id_motivo);
-
-            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
-
-            $escaped_document_type = pg_escape_literal($db_conn, $document_type);
-
-
-
-            // 2. Actualizar el archivo adjunto más reciente del ticket
-
-            $sql = "UPDATE archivos_adjuntos 
-
-            SET id_motivo_rechazo = $id_motivo, rechazado = 'TRUE' 
-
-            WHERE id = (
-
-                SELECT id 
-
-                FROM archivos_adjuntos 
-
-                WHERE nro_ticket = ".$escaped_nro_ticket." 
-
-                AND document_type = ".$escaped_document_type."
-
-                ORDER BY uploaded_at DESC 
-
-                LIMIT 1
-
-            );";
-            
             $result = Model::getResult($sql, $this->db);
 
+            if (!empty($result['row'])) {
 
-
-            // Si la primera actualización falla, no continuar
-
-            if(!$result) {
-
-                error_log("Error al actualizar archivos_adjuntos: ". pg_last_error($db_conn));
-
-                return false;
+                return $result['row']['id_ticket'];
 
             }
 
 
-
-            // 3. Actualizar el estado de pago del ticket
-
-            if($document_type !== 'convenio_firmado'){
-                $sql1 = "UPDATE tickets SET id_status_payment = ".$id_new_status_payment." WHERE id_ticket = ".$escaped_id_ticket.";";
-            }else{
-                $sql1 = "UPDATE tickets_status_domiciliacion SET id_status_domiciliacion = ".$new_status_domiciliacion." WHERE id_ticket = ".$escaped_id_ticket.";";
-            }
-            $result1 = Model::getResult($sql1, $this->db);
-
-
-
-            // Si la segunda actualización falla, no continuar
-
-            if (!$result1) {
-
-                error_log("Error al actualizar tickets: ". pg_last_error($db_conn));
-
-                return false;
-
-            }
-
-            
-            
-            // 4. Obtener el rol del usuario (esto puede ser útil para futuras validaciones)
-
-            $id_rolusr_sql = "SELECT usr.id_rolusr FROM users usr WHERE usr.id_user = ".$id_user.";";
-
-            $result_idrolusr = pg_query($this->db->getConnection(), $id_rolusr_sql);
-
-            $id_rol = ($result_idrolusr && pg_num_rows($result_idrolusr) > 0) ? (int)pg_fetch_result($result_idrolusr, 0, 'id_rolusr') : 0;
-
-            
-            
-            // 5. Actualizar el coordinador si el rol no es 5
-
-            if ($id_rol != 5) {
-
-                $sqlgetcoordinador = "UPDATE users_tickets SET id_coordinador = $id_user WHERE id_ticket = ".$escaped_id_ticket." AND (id_coordinador IS NULL OR id_coordinador = 0);";
-
-                $result2 = Model::getResult($sqlgetcoordinador, $this->db);
-
-
-
-                if (!$result2) {
-
-                    error_log("Error al actualizar id_coordinador: ". pg_last_error($db_conn));
-
-                    return false;
-
-                }
-
-
-
-                  // 6. Obtener valores para el historial, centralizando las consultas
-
-                $id_status_lab = 0;
-
-                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
-
-                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-
-                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
-
-                }
-
-
-
-                $new_status_domiciliacion = 'NULL';
-
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
-
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-
-                    $new_status_domiciliacion = (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') ?? 'NULL';
-
-                }
-
-
-
-                $id_status_ticket = 'NULL';
-
-                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-
-                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
-
-                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
-
-                    $id_status_ticket = (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') ?? 'NULL';
-
-                }
-
-
-
-                $id_accion_ticket = 'NULL';
-
-                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-
-                $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
-
-                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
-
-                    $id_accion_ticket = (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') ?? 'NULL';
-
-                }
-
-                
-                
-                $id_coordinador = 0;
-
-                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
-
-                $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
-                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
-                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                    $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
-                }
-
-
-
-                // 7. Insertar en el historial de estado del ticket (esto se hace siempre)
-
-                $sqlInsertHistory = sprintf(
-
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
-                    (int)$id_ticket,
-
-                    (int)$id_user,
-
-                    (int)$id_status_ticket,
-
-                    (int)$id_accion_ticket,
-
-                    $id_status_lab,
-
-                    $id_new_status_payment,
-
-                    $new_status_domiciliacion,
-
-                    $id_coordinador
-
-                );
-
-                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
-
-
-
-                if(!$resultsqlInsertHistory){
-
-                    error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
-
-                    return false;
-
-                }
-
-
-
-                // Si todo fue exitoso
-
-                return true;
-
-            }
-
-
-
-            // 6. Obtener valores para el historial, centralizando las consultas
-
-            $id_status_lab = 0;
-
-            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
-
-            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-
-                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
-
-            }
-
-
-
-            $new_status_domiciliacion = 'NULL';
-
-            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
-
-            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-
-            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-
-                $new_status_domiciliacion = (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') ?? 'NULL';
-
-            }
-
-
-
-            $id_status_ticket = 'NULL';
-
-            $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-
-            $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
-
-            if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
-
-                $id_status_ticket = (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') ?? 'NULL';
-
-            }
-
-
-
-            $id_accion_ticket = 'NULL';
-
-            $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
-
-            $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
-
-            if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
-
-                $id_accion_ticket = (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') ?? 'NULL';
-
-            }
-
-            
-            
-            $id_coordinador = 0;
-
-            $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
-
-            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
-            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
-                $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
-            }
-
-
-
-            // 7. Insertar en el historial de estado del ticket (esto se hace siempre)
-
-            $sqlInsertHistory = sprintf(
-
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
-                (int)$id_ticket,
-
-                (int)$id_user,
-
-                (int)$id_status_ticket,
-
-                (int)$id_accion_ticket,
-
-                $id_status_lab,
-
-                $id_new_status_payment,
-
-                $new_status_domiciliacion,
-
-                $id_coordinador
-
-            );
-
-            $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
-
-
-
-            if(!$resultsqlInsertHistory){
-
-                error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
-
-                return false;
-
-            }
-
-
-
-            // Si todo fue exitoso
-
-            return true;
-
-
+            return null;
 
         } catch (Throwable $e) {
 
-            error_log("Excepción en RechazarDocumentos: ". $e->getMessage());
+            error_log("Error en getTicketIdByNumber: " . $e->getMessage());
 
-            return false;
+            return null;
 
         }
 
@@ -5782,9 +5642,34 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
-   public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = '') {
-    try {
-        $db_conn = $this->db->getConnection();
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = '', $id_payment_record = null, $amount_verified = '')
+    {
+
+        try {
+
+            $db_conn = $this->db->getConnection();
+
+
+
+            // ✅ VALIDACIÓN DE ID_TICKET VS NRO_TICKET
+
+            // Si el id_ticket recibido es en realidad el nro_ticket (valor grande)
+
+            $sqlid_ticket =  "SELECT id_ticket FROM tickets WHERE nro_ticket = '".$nro_ticket."';";
+            $result = pg_query($db_conn, $sqlid_ticket);
+            if ($result && pg_num_rows($result) > 0) {
+                $resolved_id = pg_fetch_result($result, 0, 'id_ticket');
+                $id_ticket = $resolved_id;
+            }
+
+        // 1. Obtener los valores actuales del ticket para mantenerlos si no se actualizan
+        $current_status_sql = "SELECT id_status_payment, id_status_ticket, id_accion_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket;
+        $current_status_result = pg_query($this->db->getConnection(), $current_status_sql);
+        
+        $ticket_data = null;
+        if ($current_status_result && pg_num_rows($current_status_result) > 0) {
+            $ticket_data = pg_fetch_assoc($current_status_result);
+        }
 
         // ✅ MANEJAR CONVENIO_FIRMADO DE FORMA ESPECIAL
         if ($document_type === 'convenio_firmado') {
@@ -5800,25 +5685,20 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 return false;
             }
             
-            // Obtener el id_status_payment actual del ticket (sin cambiarlo)
-            $current_payment_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket;
-            $current_payment_result = pg_query($this->db->getConnection(), $current_payment_sql);
+            // Mantener el status de pago actual
+            $id_new_status_payment = ($ticket_data) ? $ticket_data['id_status_payment'] : 'NULL';
             
-            if ($current_payment_result && pg_num_rows($current_payment_result) > 0) {
-                $id_new_status_payment = pg_fetch_result($current_payment_result, 0, 'id_status_payment');
-            } else {
-                $id_new_status_payment = 'NULL';
-            }
-            
-            // Obtener el nuevo status de domiciliación (7)
+            // Nuevo status de domiciliación
             $new_status_domiciliacion = 6;
             
         } else {
             // ✅ LÓGICA NORMAL PARA OTROS DOCUMENTOS
             if ($document_type === 'Exoneracion') {
                 $id_new_status_payment = 4;
-            } else if ($document_type === 'Anticipo') {
+            } else if (in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago'])) {
                 $id_new_status_payment = 6;
+            } else {
+                $id_new_status_payment = ($ticket_data) ? $ticket_data['id_status_payment'] : 'NULL';
             }
             
             // Obtener el status de domiciliación actual (sin cambiarlo)
@@ -5832,8 +5712,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             }
         }
 
-        // ✅ ACTUALIZAR SOLO SI NO ES CONVENIO_FIRMADO
-        if ($document_type !== 'convenio_firmado') {
+        // ✅ ACTUALIZAR SOLO SI NO ES CONVENIO_FIRMADO NI PAGO INDIVIDUAL
+        // El usuario solicitó no actualizar el ticket automáticamente al aprobar pagos individuales
+        if ($document_type !== 'convenio_firmado' && empty($id_payment_record)) {
             $sql1 = "UPDATE tickets SET id_status_payment = " . $id_new_status_payment . " WHERE id_ticket = " . $id_ticket;
             $result1 = Model::getResult($sql1, $this->db);
 
@@ -5841,10 +5722,16 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 error_log("Error al aprobar documentos: " . pg_last_error($db_conn));
                 return false;
             }
+        } else if (!empty($id_payment_record)) {
+            // Si es un pago individual, el status de pago que irá al historial del TICKET 
+            // debería ser el actual del ticket, ya que el ticket en sí no ha cambiado de status.
+            $id_new_status_payment_for_history = ($ticket_data) ? $ticket_data['id_status_payment'] : $id_new_status_payment;
+        } else {
+            $id_new_status_payment_for_history = $id_new_status_payment;
         }
         
-        // ✅ ACTUALIZAR payment_records SI ES ANTICIPO
-        if ($document_type === 'Anticipo' && !empty($nro_ticket)) {
+        // ✅ ACTUALIZAR payment_records SI ES ANTICIPO O PAGO
+        if (in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago']) && !empty($nro_ticket)) {
             // Construir la consulta UPDATE dinámicamente según los campos que tengan valores
             $updateFields = [];
             
@@ -5853,6 +5740,10 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
             // Actualizar id_status_payment a 6 (Aprobado)
             $updateFields[] = "payment_status = 6";
+            
+            // ✅ Auditoria: Quién aprobó
+            $updateFields[] = "updated_by = " . (int)$id_user;
+            $updateFields[] = "updated_at = NOW()";
             
             // Agregar campos verificados si tienen valores
             if (!empty($nro_payment_reference_verified)) {
@@ -5864,18 +5755,30 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $escaped_date = pg_escape_literal($db_conn, $payment_date_verified);
                 $updateFields[] = "payment_date_verified = " . $escaped_date;
             }
+
+            if (!empty($amount_verified)) {
+                $escaped_amount = pg_escape_literal($db_conn, $amount_verified);
+                $updateFields[] = "amount_verified = " . $escaped_amount;
+            }
             
             // Construir y ejecutar la consulta UPDATE usando subconsulta para obtener el id más reciente
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
-            $sqlUpdatePayment = "UPDATE payment_records 
-                                SET " . implode(", ", $updateFields) . "
-                                WHERE id_payment_record = (
-                                    SELECT id_payment_record 
-                                    FROM payment_records 
-                                    WHERE nro_ticket = " . $escaped_nro_ticket . "
-                                    ORDER BY id_payment_record DESC
-                                    LIMIT 1
-                                );";
+            
+            if ($id_payment_record) {
+                $sqlUpdatePayment = "UPDATE payment_records 
+                                    SET " . implode(", ", $updateFields) . "
+                                    WHERE id_payment_record = " . (int)$id_payment_record;
+            } else {
+                $sqlUpdatePayment = "UPDATE payment_records 
+                                    SET " . implode(", ", $updateFields) . "
+                                    WHERE id_payment_record = (
+                                        SELECT id_payment_record 
+                                        FROM payment_records 
+                                        WHERE nro_ticket = " . $escaped_nro_ticket . "
+                                        ORDER BY id_payment_record DESC
+                                        LIMIT 1
+                                    );";
+            }
             
             $resultUpdatePayment = pg_query($db_conn, $sqlUpdatePayment);
             
@@ -5928,15 +5831,16 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
         // ✅ INSERTAR HISTORIAL CON LOS VALORES CORRECTOS
         $sqlInsertHistory = sprintf(
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
+            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
             (int)$id_ticket,
             (int)$id_user,
-            (int)$id_status_ticket,
-            (int)$id_accion_ticket,
+            $id_status_ticket,
+            $id_accion_ticket,
             $id_status_lab,
-            $id_new_status_payment,
+            isset($id_new_status_payment_for_history) ? $id_new_status_payment_for_history : $id_new_status_payment,
             $new_status_domiciliacion,
-            $id_coordinador
+            $id_coordinador !== null && $id_coordinador !== 'NULL' ? (int)$id_coordinador : 'NULL',
+            $id_payment_record ? (int)$id_payment_record : 'NULL'
         );
 
         $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
@@ -5946,11 +5850,157 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             return false;
         }
 
-        return true;
+            return true;
 
         } catch (Throwable $e) {
             error_log("Error al aprobar documentos: " . $e->getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Finaliza la revisión de un ticket, permitiendo que avance su curso
+     * Cambia el id_status_payment a 1 (Conciliado/Aprobado Final)
+     */
+    public function FinalizarRevisionTicket($nro_ticket, $id_user) {
+        $db_conn = $this->db->getConnection();
+        
+        try {
+            // 1. Obtener el id_ticket por número
+            $id_ticket = $this->getTicketIdByNumber($nro_ticket);
+            if (!$id_ticket) {
+                return ["success" => false, "message" => "Ticket no encontrado: " . $nro_ticket];
+            }
+
+            // 2. Verificar el estado de TODOS los pagos del ticket
+            $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $sql_check_payments = "SELECT payment_status, COUNT(*) as count 
+                                   FROM payment_records 
+                                   WHERE nro_ticket = " . $escaped_nro_ticket . "
+                                   GROUP BY payment_status";
+            
+            $result_payments = pg_query($db_conn, $sql_check_payments);
+            
+            if (!$result_payments) {
+                return ["success" => false, "message" => "Error al consultar los pagos: " . pg_last_error($db_conn)];
+            }
+            
+            $approved_count = 0;
+            $rejected_count = 0;
+            $total_count = 0;
+            $payment_statuses = [];
+            
+            while ($row = pg_fetch_assoc($result_payments)) {
+                $total_count += $row['count'];
+                $payment_statuses[] = $row['payment_status'];
+                
+                if ($row['payment_status'] == 6) {
+                    $approved_count = $row['count'];
+                } else if ($row['payment_status'] == 13) {
+                    $rejected_count = $row['count'];
+                }
+            }
+            
+            
+            // Si no hay pagos registrados, usar el comportamiento por defecto (status 6)
+            if ($total_count == 0) {
+                $id_new_status_payment_val = 6;
+            } else {
+                // Determinar el nuevo estado del ticket basado en los pagos
+                if ($approved_count == $total_count) {
+                    // Todos los pagos están aprobados
+                    $id_new_status_payment_val = 6; // Pago Anticipo Aprobado
+                } else if ($rejected_count == $total_count) {
+                    // Todos los pagos están rechazados
+                    $id_new_status_payment_val = 13; // Documento de Anticipo Rechazado
+                } else {
+                    // Hay pagos con estados mixtos o pendientes
+                    // El botón ya está deshabilitado en el frontend, pero por seguridad
+                    // usamos el status aprobado por defecto
+                    $id_new_status_payment_val = 6;
+                }
+            }
+
+            // 3. Actualizar el estado del ticket
+            $sql_update = "UPDATE tickets SET id_status_payment = $id_new_status_payment_val WHERE id_ticket = " . (int)$id_ticket;
+            $result3 = pg_query($db_conn, $sql_update);
+            
+            if (!$result3) {
+                return ["success" => false, "message" => "Error al actualizar el estatus del ticket: " . pg_last_error($db_conn)];
+            }
+
+            // 4. Obtener todos los datos necesarios para el historial (Patrón robusto del usuario)
+            if ($result3) {
+                $id_status_lab = 0;
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$id_ticket . ";";
+                $status_lab_result = pg_query($db_conn, $status_lab_sql);
+
+                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+                }
+
+                $new_status_domiciliacion = 'NULL';
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$id_ticket . ";";
+                $status_domiciliacion_result = pg_query($db_conn, $status_domiciliacion_sql);
+
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                }
+
+                $id_status_ticket = 'NULL';
+                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+                $status_ticket_result = pg_query($db_conn, $status_ticket_sql);
+
+                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') !== null ? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                }
+
+                $id_accion_ticket = 'NULL';
+                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+                $accion_ticket_result = pg_query($db_conn, $accion_ticket_sql);
+
+                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                    $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') !== null ? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                }
+
+                $id_new_status_payment = 'NULL';
+                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+                $status_payment_status_result = pg_query($db_conn, $status_payment_status_sql);
+                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                    $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
+                }
+
+                $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                $resultcoordinador = pg_query($db_conn, $sqlgetcoordinador);
+                if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                    $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                    $id_coordinador = (int)$row_coordinador['id_coordinador'];
+                    pg_free_result($resultcoordinador);
+                } else {
+                    $id_coordinador = 'NULL';
+                }
+
+                // 5. Insertar Historial
+                $sql_history = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
+                    (int)$id_ticket,
+                    (int)$id_user,
+                    $id_status_ticket,
+                    $id_accion_ticket,
+                    $id_status_lab,
+                    $id_new_status_payment,
+                    $new_status_domiciliacion,
+                    $id_coordinador
+                );
+
+                pg_query($db_conn, $sql_history);
+            }
+
+            return ["success" => true, "message" => "Ticket finalizado correctamente. Ahora seguirá su curso."];
+
+        } catch (Throwable $e) {
+            error_log("Error en FinalizarRevisionTicket: " . $e->getMessage());
+            return ["success" => false, "message" => "Excepción: " . $e->getMessage()];
         }
     }
 
@@ -6687,16 +6737,30 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
-    public function GetPaymentData($nro_ticket){
+    public function GetPaymentData($nro_ticket, $id_payment_record = null, $payment_reference = null, $record_number = null){
 
         try {
 
-            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $db_conn = $this->db->getConnection();
+            $whereClause = "WHERE nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket);
+            
+            if ($id_payment_record) {
+                $whereClause .= " AND id_payment_record = " . (int)$id_payment_record;
+            }
+
+            if ($payment_reference) {
+                $whereClause .= " AND payment_reference = " . pg_escape_literal($db_conn, $payment_reference);
+            }
+
+            if ($record_number) {
+                $whereClause .= " AND record_number = " . pg_escape_literal($db_conn, $record_number);
+            }
+
             $sql = "SELECT *, 
-                           (SELECT SUM(reference_amount) FROM payment_records WHERE nro_ticket = p.nro_ticket) as total_reference_amount,
-                           (SELECT SUM(amount_bs) FROM payment_records WHERE nro_ticket = p.nro_ticket) as total_amount_bs
+                           (SELECT SUM(reference_amount) FROM payment_records WHERE nro_ticket = p.nro_ticket AND (is_substituted IS NULL OR is_substituted = FALSE) AND payment_status IN (1, 3, 4, 5, 6, 7, 17)) as total_reference_amount,
+                           (SELECT SUM(amount_bs) FROM payment_records WHERE nro_ticket = p.nro_ticket AND (is_substituted IS NULL OR is_substituted = FALSE) AND payment_status IN (1, 3, 4, 5, 6, 7, 17)) as total_amount_bs
                     FROM payment_records p 
-                    WHERE nro_ticket = " . $escaped_nro_ticket . " 
+                    " . $whereClause . " 
                     ORDER BY id_payment_record DESC LIMIT 1;";
 
             $result = Model::getResult($sql, $this->db);
@@ -6716,14 +6780,30 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         try {
             $db_conn = $this->db->getConnection();
             
-            // Escapar parámetros
+            // 1. Obtener el siguiente número de secuencia real desde la base de datos
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+            $countSql = "SELECT COUNT(*) as total FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket;
+            $countResult = $this->db->pgquery($countSql);
+            if ($countResult === false) {
+                error_log("Error al contar presupuestos: " . pg_last_error($db_conn));
+                $sequence = 1; // Fallback a 1 si falla la cuenta
+            } else {
+                $countRow = pg_fetch_assoc($countResult);
+                $sequence = intval($countRow['total']) + 1;
+                pg_free_result($countResult);
+            }
+            
+            // Formatear el número: PRES-TICKET-SEQ (ej: PRES-1302260001-001)
+            $seqFormatted = str_pad($sequence, 3, '0', STR_PAD_LEFT);
+            $final_presupuesto_numero = "PRES-" . $nro_ticket . "-" . $seqFormatted;
+            
+            // Escapar parámetros restantes
             $escaped_monto_taller = (float)$monto_taller;
             $escaped_diferencia_usd = (float)$diferencia_usd;
             $escaped_diferencia_bs = (float)$diferencia_bs;
             $escaped_descripcion = $descripcion_reparacion ? pg_escape_literal($db_conn, $descripcion_reparacion) : 'NULL';
             $escaped_fecha_presupuesto = pg_escape_literal($db_conn, $fecha_presupuesto);
-            $escaped_presupuesto_numero = $presupuesto_numero ? pg_escape_literal($db_conn, $presupuesto_numero) : 'NULL';
+            $escaped_final_numero = pg_escape_literal($db_conn, $final_presupuesto_numero);
             $escaped_user_creator = $user_creator ? (int)$user_creator : 'NULL';
             
             // Insertar en la tabla budgets
@@ -6744,7 +6824,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                     " . $escaped_diferencia_bs . ",
                     " . $escaped_descripcion . ",
                     " . $escaped_fecha_presupuesto . ",
-                    " . $escaped_presupuesto_numero . ",
+                    " . $escaped_final_numero . ",
                     " . $escaped_user_creator . "
                 ) RETURNING id_budget, presupuesto_numero;
             ";
@@ -6758,12 +6838,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
             $row = pg_fetch_assoc($result);
             $id_budget = (int)$row['id_budget'];
-            $presupuesto_numero = $row['presupuesto_numero'];
+            $presupuesto_numero_actual = $row['presupuesto_numero'];
             pg_free_result($result);
             
             return [
                 'id_budget' => $id_budget,
-                'presupuesto_numero' => $presupuesto_numero
+                'presupuesto_numero' => $presupuesto_numero_actual
             ];
             
         } catch (Throwable $e) {
@@ -7012,7 +7092,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                         COALESCE((SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as total_budget,
                         COALESCE((SELECT diferencia_usd FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as presupuesto_diferencia
                     FROM payment_records pr
-                    WHERE pr.nro_ticket = " . $escaped_nro_ticket;
+                    WHERE pr.nro_ticket = " . $escaped_nro_ticket . "
+                    AND (pr.is_substituted IS NULL OR pr.is_substituted = FALSE)
+                    AND pr.payment_status IN (1, 3, 4, 5, 6, 7, 17)";
             
             $result = Model::getResult($sql, $this->db);
             
@@ -7073,9 +7155,13 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $existingCount = intval($checkRow['count']);
             }
 
-            // Determine Status using centralized logic
+            // Determine Status: use provided status if available, elsewhere use centralized logic
+        if (isset($data['payment_status']) && !empty($data['payment_status'])) {
+            $payment_status = intval($data['payment_status']);
+        } else {
             // We treat a payment insertion as an 'Anticipo' document upload event for status purposes
             $payment_status = $this->determineStatusPayment($nro_ticket_val, 'Anticipo');
+        }
 
             // CONFIRMATION NUMBER defaults to FALSE
             $confirmation_number = 'false';
@@ -7134,12 +7220,17 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                         p.origen_bank,
                         p.destination_bank,
                         p.confirmation_number,
+                        p.payment_status,
+                        p.serial_pos,
+                        p.nro_ticket,
+                        a.file_path,
                         a.file_path as receipt_path,
                         a.mime_type as receipt_mime,
                         a.original_filename as receipt_name
                     FROM payment_records p
                     LEFT JOIN archivos_adjuntos a ON p.record_number = a.record_number
                     WHERE p.nro_ticket = " . $escaped_nro_ticket . "
+                    AND (p.is_substituted IS NULL OR p.is_substituted = FALSE)
                     ORDER BY p.payment_date DESC";
             
             $result = Model::getResult($sql, $this->db);
@@ -7637,8 +7728,18 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $conn = $this->db->getConnection();
             $escaped_id = pg_escape_literal($conn, $id_payment);
             
-            // Build SET clause
+            // 1. Get current record_number to check if it changes
+            $sqlOld = "SELECT record_number FROM payment_records WHERE id_payment_record = $escaped_id";
+            $resOld = pg_query($conn, $sqlOld);
+            $oldRecordNumber = null;
+            if ($resOld && pg_num_rows($resOld) > 0) {
+                $rowOld = pg_fetch_assoc($resOld);
+                $oldRecordNumber = $rowOld['record_number'];
+            }
+
+            // 2. Build SET clause
             $sets = [];
+            $newRecordNumber = null;
             
             // Fields allowed to be updated
             $allowedFields = [
@@ -7652,11 +7753,16 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 'destination_bank',
                 'origen_rif_numero',
                 'origen_telefono',
-                'updated_by'
+                'record_number',
+                'updated_by',
+                'payment_status'
             ];
 
             foreach ($data as $key => $value) {
                 if (in_array($key, $allowedFields)) {
+                    if ($key === 'record_number') {
+                        $newRecordNumber = $value;
+                    }
                     $escaped_val = pg_escape_literal($conn, $value);
                     $sets[] = "$key = $escaped_val";
                 }
@@ -7668,7 +7774,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
             $setClause = implode(", ", $sets);
 
-            // Constraint: Only update if confirmation_number is NOT true/confirmed
+            // 3. Update payment_records
             $sql = "UPDATE payment_records 
                     SET $setClause, updated_at = NOW() 
                     WHERE id_payment_record = $escaped_id 
@@ -7678,6 +7784,18 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
             if ($result) {
                 $affected = pg_affected_rows($result);
+                
+                // 4. If record_number changed, sync with archivos_adjuntos
+                if ($affected > 0 && $newRecordNumber !== null && $oldRecordNumber !== null && $newRecordNumber !== $oldRecordNumber) {
+                    $escaped_new = pg_escape_literal($conn, $newRecordNumber);
+                    $escaped_old = pg_escape_literal($conn, $oldRecordNumber);
+                    
+                    $sqlSync = "UPDATE archivos_adjuntos 
+                                SET record_number = $escaped_new 
+                                WHERE record_number = $escaped_old";
+                    pg_query($conn, $sqlSync);
+                }
+                
                 return $affected > 0;
             }
             
@@ -7707,6 +7825,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                            uploaded_by_user_id, document_type, record_number
                     FROM archivos_adjuntos
                     WHERE record_number = $escaped_record_number
+                    ORDER BY uploaded_at DESC
                     LIMIT 1";
             
             $result = pg_query($conn, $sql);
@@ -7744,6 +7863,66 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         } catch (Throwable $e) {
             error_log("Error en GetPaymentAttachmentByRecordNumber: " . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Creates a new payment record to substitute a rejected one
+     * Marks the old record as substituted and returns the new ID
+     */
+    public function CreatePaymentSubstitution($id_payment_old, $data) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $id_payment_old = (int)$id_payment_old;
+
+            // 1. Fetch old record to clone common fields
+            $sqlOld = "SELECT * FROM payment_records WHERE id_payment_record = $id_payment_old";
+            $resOld = pg_query($db_conn, $sqlOld);
+            if (!$resOld || pg_num_rows($resOld) === 0) {
+                error_log("SubstitutePayment: Old record $id_payment_old not found");
+                return false;
+            }
+            $oldData = pg_fetch_assoc($resOld);
+
+            // 2. Prepare NEW data by merging old base with new corrections
+            $mergedData = $oldData;
+            foreach ($data as $key => $value) {
+                if (isset($data[$key]) && $data[$key] !== null) {
+                    $mergedData[$key] = $value;
+                }
+            }
+            
+            // Remove ID from merged data to ensure new insertion
+            unset($mergedData['id_payment_record']);
+            unset($mergedData['is_substituted']); // Ensure new record is NOT marked as substituted
+
+            // 3. Insert NEW record using existing InsertPaymentRecord logic
+            $new_id = $this->InsertPaymentRecord($mergedData);
+            
+            if ($new_id) {
+                error_log("SubstitutePayment: New ID created: $new_id to substitute Old ID: $id_payment_old");
+
+                // 4. Mark the OLD record as substituted and link to the NEW record
+                $sqlUpdate = "UPDATE payment_records 
+                             SET is_substituted = TRUE, 
+                                 substituted_by_id_payment_record = $new_id 
+                             WHERE id_payment_record = $id_payment_old";
+                $resUpdate = pg_query($db_conn, $sqlUpdate);
+                
+                if (!$resUpdate) {
+                    error_log("SubstitutePayment: Failed SQL Update: " . pg_last_error($db_conn));
+                } else {
+                    error_log("SubstitutePayment: payment_records updated. Affected: " . pg_affected_rows($resUpdate));
+                }
+                
+                return $new_id;
+            }
+            
+            return false;
+
+        } catch (Throwable $e) {
+            error_log("Error en CreatePaymentSubstitution: " . $e->getMessage());
+            return false;
         }
     }
 }

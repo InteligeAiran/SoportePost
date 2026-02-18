@@ -109,6 +109,10 @@ class reportes extends Controller {
                     $this->uploadDocumentTec();
                 break;
 
+                case 'uploadPaymentDocument':
+                    $this->uploadPaymentDocument();
+                break;
+
                 case 'getDocument':
                     $this->getDocument();
                 break;
@@ -509,6 +513,7 @@ class reportes extends Controller {
         $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
         $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
 
         //var_dump($id_ticket, $file, $document_type, $id_user, $nro_ticket);
 
@@ -595,7 +600,6 @@ class reportes extends Controller {
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
-                // 9. Llama al repositorio para guardar la información
                 $success = $repository->saveDocument(
                     $nro_ticket,
                     $originalDocumentName,
@@ -605,7 +609,8 @@ class reportes extends Controller {
                     $documentSize,
                     $id_user,
                     $document_type,
-                    $id_ticket
+                    $id_ticket,
+                    $record_number
                 );
 
                 if ($success) {
@@ -913,6 +918,119 @@ class reportes extends Controller {
             }
         } else {
             $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino.'], 500);
+        }
+    }
+
+    /**
+     * Upload payment document - Handles payment document uploads with record_number
+     */
+    public function uploadPaymentDocument(){
+        $repository = new ReportRepository();
+
+        // Get POST and FILES data
+        $id_ticket = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
+        $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
+        $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+
+        // Validation (id_ticket will be resolved in repository/model if not provided)
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user || !$nro_ticket) {
+            $errorMessage = 'Error en la subida: ';
+            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
+            if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
+            if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
+            if (!$nro_ticket) $errorMessage .= 'Número de ticket no proporcionado. ';
+            if ($file && $file['error'] !== UPLOAD_ERR_OK) {
+                $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
+            }
+            $this->response(['success' => false, 'message' => $errorMessage], 400);
+            return;
+        }
+        
+        // Process file information
+        $originalDocumentName = basename($file['name']);
+        $documentSize = $file['size'];
+        $documentType = $file['type'];
+        $mimeTypeFromFrontend = isset($_POST['mime_type']) ? $_POST['mime_type'] : $documentType;
+
+        // Get ticket serial
+        $ticketDetails = $repository->getTicketDetailsById($id_ticket);
+        if (!$ticketDetails || !isset($ticketDetails[0]['serial'])) {
+            $this->response(['success' => false, 'message' => 'No se pudo obtener el serial del ticket.'], 500);
+            return;
+        }
+        $serial = $ticketDetails[0]['serial'];
+
+        // Create folder structure
+        $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
+        $baseUploadDir = UPLOAD_BASE_DIR;
+        $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
+        $ticketUploadDir = $serialUploadDir . $nro_ticket . DIRECTORY_SEPARATOR;
+        $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
+        
+        // Create directories if they don't exist
+        if (!is_dir($documentTypeDir)) {
+            if (!mkdir($documentTypeDir, 0755, true)) {
+                $this->response(['success' => false, 'message' => 'No se pudo crear el directorio para el documento.'], 500);
+                return;
+            }
+        }
+        
+        // Generate unique filename
+        $info = pathinfo($originalDocumentName);
+        $nombreSinExtension = $info['filename'];
+        $extension = isset($info['extension']) ? '.' . $info['extension'] : '';
+        $cleanNombreSinExtension = preg_replace("/[^a-zA-Z0-9_\-.]/", "_", $nombreSinExtension);
+        $dateForFilename = date('Ymd_His');
+        $uniqueFileName = $document_type . '_' . $dateForFilename . '_' . uniqid() . '_' . $cleanNombreSinExtension . $extension;
+
+        // Full path for file system
+        $uploadPath = $documentTypeDir . $uniqueFileName;
+        
+        // Relative path for database
+        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
+        
+        // Move uploaded file
+        if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            try {
+                // Use saveDocument with record_number
+                $success = $repository->saveDocumentNewRecha(
+                    $nro_ticket,
+                    $originalDocumentName,
+                    $uniqueFileName,
+                    $filePathForDatabase,
+                    $mimeTypeFromFrontend,
+                    $documentSize,
+                    $id_user,
+                    $document_type,
+                    $id_ticket,
+                    $record_number
+                );
+
+                if ($success) {
+                    // Send emails if needed
+                    $this->sendEmailForDocumentUpload($id_ticket, $document_type, $serial, $nro_ticket);
+                    
+                    $this->response([
+                        'success' => true,
+                        'message' => 'Documento de pago subido exitosamente.',
+                        'ticket_id' => $id_ticket,
+                        'original_filename' => $originalDocumentName,
+                        'stored_filename' => $uniqueFileName,
+                        'file_path' => $filePathForDatabase
+                    ], 200);
+                } else {
+                    unlink($uploadPath);
+                    $this->response(['success' => false, 'message' => 'Error al registrar el documento en la base de datos.'], 500);
+                }
+            } catch (\Exception $e) {
+                unlink($uploadPath);
+                $this->response(['success' => false, 'message' => 'Error interno: ' . $e->getMessage()], 500);
+            }
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al mover el archivo subido.'], 500);
         }
     }
 

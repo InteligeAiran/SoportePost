@@ -1474,15 +1474,39 @@ function mi_navbar()
                         </strong>
                     </div>
                     <div class="modal-body">
+                        <!-- Sección de Selección de Documento -->
+                        <div id="documentSelectionContainer" style="display: none;">
+                            <p class="text-center mb-4">Seleccione el documento que desea visualizar:</p>
+                            <div class="d-flex justify-content-center gap-4">
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioEnvioDestino" value="Envio_Destino">
+                                    <label class="form-check-label fw-bold text-dark" for="radioEnvioDestino">
+                                        Envio a Destino
+                                    </label>
+                                </div>
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioPresupuesto" value="Presupuesto">
+                                    <label class="form-check-label fw-bold text-dark" for="radioPresupuesto">
+                                        Presupuesto
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Área de visualización del documento -->
-                        <div id="documentViewArea">
+                        <div id="documentViewArea" style="display: none;">
+                            <div class="text-center mb-2">
+                                <h6 id="NombreDocumento" class="fw-bold" style="color: black;"></h6>
+                            </div>
                             <div class="text-center" style="max-height: 80vh; overflow-y: auto;">
-                                <!-- El contenido se inyectará dinámicamente aquí -->
+                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización" style="display: none; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <div id="pdfViewViewer" style="width: 100%; height: 70vh; display: none;"></div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="btnCerrarViewModal" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnVisualizarDocumento" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">Visualizar</button>
+                        <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>

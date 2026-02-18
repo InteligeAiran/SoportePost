@@ -312,7 +312,8 @@ document.addEventListener("DOMContentLoaded", function () {
   originalFileChosenSpans.forEach((span) => {
     span.remove();
   });
-});
+
+  });
 
 function inicializeModal() {
   var modal = $("#miModal"); // Modal Nivel 2
@@ -7913,9 +7914,9 @@ function SendRazon() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
-            const presupuestoCell = row.insertCell();
-            const abonadoCell = row.insertCell();
-            const deudaCell = row.insertCell();
+            //const presupuestoCell = row.insertCell();
+            //const abonadoCell = row.insertCell();
+            //const deudaCell = row.insertCell();
 
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
@@ -7988,9 +7989,9 @@ function SendRazon() {
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
-            presupuestoCell.textContent = item.total_presupuesto || '0';
-            abonadoCell.textContent = item.total_abonado || '0';
-            deudaCell.textContent = item.deuda || '0';
+            //presupuestoCell.textContent = item.total_presupuesto || '0';
+            //abonadoCell.textContent = item.total_abonado || '0';
+            //deudaCell.textContent = item.deuda || '0';
 
             // Asegurar color de texto blanco para los links si la fila es roja
             if (parseFloat(item.deuda) > 0) {
@@ -8033,10 +8034,12 @@ function SendRazon() {
           }
           $("#rifCountTable").DataTable({
             dom: '<"text-center"B>lfrtip',
+
+            responsive: false,
             scrollX: true,
             scrollY: "500px",
             scrollCollapse: true,
-            autoWidth: true,
+            autoWidth: false,
             columnDefs: [
               { targets: 10, width: "120px" },  // Estado
               { targets: 11, width: "120px" }   // Municipio
