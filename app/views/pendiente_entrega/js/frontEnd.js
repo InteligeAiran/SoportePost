@@ -285,33 +285,41 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
     // Función para mostrar un documento
     function displayDocument(filePath, fileName, isImage) {
         // Ocultar selección y mostrar área de visualización
-        documentSelectionContainer.style.display = "none";
-        documentViewArea.style.display = "block";
+        if (documentSelectionContainer) documentSelectionContainer.style.display = "none";
+        if (documentViewArea) documentViewArea.style.display = "block";
         // Ocultar botón de visualizar cuando se muestra el documento
         if (btnVisualizarDocumento) btnVisualizarDocumento.style.display = "none";
 
         // Limpiar vistas anteriores
-        imageViewPreview.style.display = "none";
-        pdfViewViewer.style.display = "none";
-        messageContainer.textContent = "";
-        messageContainer.classList.add("hidden");
+        if (imageViewPreview) imageViewPreview.style.display = "none";
+        if (pdfViewViewer) pdfViewViewer.style.display = "none";
+        if (messageContainer) {
+            messageContainer.textContent = "";
+            messageContainer.classList.add("hidden");
+        }
 
         if (!filePath) {
-            messageContainer.textContent = "No hay documento disponible.";
-            messageContainer.classList.remove("hidden");
-            nombreDocumento.textContent = "";
+            if (messageContainer) {
+                messageContainer.textContent = "No hay documento disponible.";
+                messageContainer.classList.remove("hidden");
+            }
+            if (nombreDocumento) nombreDocumento.textContent = "";
             return;
         }
 
         const fullUrl = cleanFilePath(filePath);
-        nombreDocumento.textContent = fileName || "Documento";
+        if (nombreDocumento) nombreDocumento.textContent = fileName || "Documento";
 
         if (isImage) {
-            imageViewPreview.src = fullUrl;
-            imageViewPreview.style.display = "block";
+            if (imageViewPreview) {
+                imageViewPreview.src = fullUrl;
+                imageViewPreview.style.display = "block";
+            }
         } else {
-            pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-            pdfViewViewer.style.display = "block";
+            if (pdfViewViewer) {
+                pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+                pdfViewViewer.style.display = "block";
+            }
         }
     }
 
@@ -348,8 +356,8 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
         // Siempre mostrar la selección primero si hay al menos un documento
         if (hasEnvio || hasPresupuestoDoc) {
             // Hay al menos un documento, mostrar selección
-            documentSelectionContainer.style.display = "block";
-            documentViewArea.style.display = "none";
+            if (documentSelectionContainer) documentSelectionContainer.style.display = "block";
+            if (documentViewArea) documentViewArea.style.display = "none";
             // Mostrar botón de visualizar en el footer
             if (btnVisualizarDocumento) {
                 btnVisualizarDocumento.style.display = "block";
@@ -366,13 +374,15 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
             }
         } else {
             // No hay documentos
-            documentSelectionContainer.style.display = "none";
-            documentViewArea.style.display = "block";
+            if (documentSelectionContainer) documentSelectionContainer.style.display = "none";
+            if (documentViewArea) documentViewArea.style.display = "block";
             // Ocultar botón de visualizar
             if (btnVisualizarDocumento) btnVisualizarDocumento.style.display = "none";
-            messageContainer.textContent = "No hay documentos disponibles para este ticket.";
-            messageContainer.classList.remove("hidden");
-            nombreDocumento.textContent = "";
+            if (messageContainer) {
+                messageContainer.textContent = "No hay documentos disponibles para este ticket.";
+                messageContainer.classList.remove("hidden");
+            }
+            if (nombreDocumento) nombreDocumento.textContent = "";
         }
 
         // Event listener para el botón "Visualizar Documento"
@@ -1469,9 +1479,9 @@ function getTicketDataFinaljs() {
                               const filterConfigs = [
                                   {
                                       button: "btn-por-asignar",
-                                      term: "^En espera de confirmar recibido en el Rosal$|^En espera de Confirmar Devolución$",
+                                      term: "^En espera de confirmar recibido en el Rosal$|^En espera de Confirmar Devolución$|^Pago Anticipo Pendiente por Revision$|^Anticipo Pendiente por Revision$|^Rechazado$",
                                       status: "En proceso",
-                                      action: ["En espera de confirmar recibido en el Rosal", "En espera de Confirmar Devolución"],
+                                      action: ["En espera de confirmar recibido en el Rosal", "En espera de Confirmar Devolución", "Pago Anticipo Pendiente por Revision", "Rechazado"],
                                       adjustColumns: () => {
                                           dataTableInstance.column(17).visible(false);
                                           dataTableInstance.column(18).visible(true);
@@ -5175,9 +5185,12 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
     
     // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", no cargar datos de pago
     if (isFallaSinPago) {
-        // Establecer fecha de hoy (no editable)
+        // Establecer fecha de hoy (no editable) - Versión Local para evitar desfases UTC
         const today = new Date();
-        const fechaFormateada = today.toISOString().split('T')[0];
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const fechaFormateada = `${year}-${month}-${day}`;
         document.getElementById('presupuestoFecha').value = fechaFormateada;
         
         // Limpiar descripción
@@ -5225,18 +5238,33 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                         }
                     };
                     
+                    // Determinar el método de pago para control de visibilidad
+                    const metodoPagoLower = (paymentData.payment_method || '').toLowerCase().trim();
+                    const isPagoMovil = metodoPagoLower.includes('móvil') || metodoPagoLower.includes('movil');
+                    const isTransferencia = metodoPagoLower.includes('transferencia');
+
                     // Llenar campos del modal
-                    const montoUSD = paymentData.reference_amount ? parseFloat(paymentData.reference_amount) : 0;
-                    const montoBS = paymentData.amount_bs ? parseFloat(paymentData.amount_bs) : 0;
+                    // IMPORTANTE: Usar total_reference_amount para obtener la SUMA de todos los pagos del ticket
+                    const montoUSD = paymentData.total_reference_amount ? parseFloat(paymentData.total_reference_amount) : 
+                                    (paymentData.reference_amount ? parseFloat(paymentData.reference_amount) : 0);
+                    const montoBS = paymentData.total_amount_bs ? parseFloat(paymentData.total_amount_bs) : 
+                                   (paymentData.amount_bs ? parseFloat(paymentData.amount_bs) : 0);
                     
                     document.getElementById('presupuestoMontoUSD').value = montoUSD.toFixed(2);
                     document.getElementById('presupuestoMoneda').value = paymentData.currency === 'bs' ? 'Bolívares (Bs)' : (paymentData.currency === 'usd' ? 'Dólares (USD)' : paymentData.currency || 'N/A');
                     document.getElementById('presupuestoMetodoPago').value = paymentData.payment_method || 'N/A';
                     document.getElementById('presupuestoMontoBS').value = montoBS.toFixed(2);
                     
-                    // Campos condicionales - Transferencia (Bancos)
-                    toggleField('presupuestoBancoOrigenContainer', 'presupuestoBancoOrigen', paymentData.origen_bank);
-                    toggleField('presupuestoBancoDestinoContainer', 'presupuestoBancoDestino', paymentData.destination_bank);
+                    // Campos condicionales - Transferencia (Bancos) - Solo mostrar si el método es Transferencia
+                    if (isTransferencia) {
+                        toggleField('presupuestoBancoOrigenContainer', 'presupuestoBancoOrigen', paymentData.origen_bank);
+                        toggleField('presupuestoBancoDestinoContainer', 'presupuestoBancoDestino', paymentData.destination_bank);
+                    } else {
+                        const boContainer = document.getElementById('presupuestoBancoOrigenContainer');
+                        const bdContainer = document.getElementById('presupuestoBancoDestinoContainer');
+                        if (boContainer) boContainer.style.display = 'none';
+                        if (bdContainer) bdContainer.style.display = 'none';
+                    }
                     
                     // Campos condicionales - Referencia, Depositante, Fecha
                     toggleField('presupuestoReferenciaContainer', 'presupuestoReferencia', paymentData.payment_reference);
@@ -5258,7 +5286,8 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                                             paymentData.origen_telefono || paymentData.origen_banco;
                     
                     if (pagoMovilContainer) {
-                        if (hasPagoMovilData) {
+                        // ACTUALIZACIÓN: Solo mostrar si el método es estrictamente Pago Móvil
+                        if (isPagoMovil) {
                             pagoMovilContainer.style.display = '';
                             
                             // Destino - RIF
@@ -5341,15 +5370,97 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                         }
                     }
                     
+                    // Establecer fecha de hoy (no editable) - Versión Local para evitar desfases UTC
+                    const today = new Date();
+                    const year = today.getFullYear();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    const fechaFormateada = `${year}-${month}-${day}`;
+                    const fechaInput = document.getElementById('presupuestoFecha');
+                    if (fechaInput) {
+                        fechaInput.value = fechaFormateada;
+                    }
+
                     // Guardar datos para cálculos
                     document.getElementById('presupuestoMontoPagadoUSD').value = montoUSD.toFixed(2);
                     window.presupuestoMontoPagadoUSD = montoUSD;
-                    window.presupuestoTasaCambio = montoUSD > 0 ? (montoBS / montoUSD) : 0;
                     
-                    // Establecer fecha de hoy (no editable)
-                    const today = new Date();
-                    const fechaFormateada = today.toISOString().split('T')[0];
-                    document.getElementById('presupuestoFecha').value = fechaFormateada;
+                    // ✅ NUEVO: Cargar tasa del BCV usando XMLHttpRequest y la fecha del campo
+                    const xhrTasa = new XMLHttpRequest();
+                    xhrTasa.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExchangeRateByDate`);
+                    xhrTasa.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    
+                    xhrTasa.onload = function() {
+                        if (xhrTasa.status >= 200 && xhrTasa.status < 300) {
+                            try {
+                                const data = JSON.parse(xhrTasa.responseText);
+                                if (data.success && data.exchange_rate) {
+                                    window.presupuestoTasaCambio = parseFloat(data.exchange_rate.tasa_dolar);
+                                    console.log('Tasa BCV cargada:', window.presupuestoTasaCambio);
+                                    
+                                    // ✅ Mostrar la tasa en el nuevo campo de la UI
+                                    const tasaInput = document.getElementById('presupuestoTasaBCV');
+                                    if (tasaInput) {
+                                        tasaInput.value = window.presupuestoTasaCambio.toFixed(2);
+                                    }
+                                    
+                                    // ✅ NUEVO: Actualizar la etiqueta con la fecha real de la tasa
+                                    const labelDate = document.getElementById('labelTasaBCVDate');
+                                    console.log('Elemento labelTasaBCVDate:', labelDate);
+                                    console.log('Fecha recibida:', data.exchange_rate.fecha_tasa);
+                                    
+                                    if (labelDate && data.exchange_rate.fecha_tasa) {
+                                        // Asumimos formato YYYY-MM-DD o timestamp
+                                        const fechaObj = new Date(data.exchange_rate.fecha_tasa);
+                                        // Ajustar zona horaria si es necesario o usar UTC para evitar desfases de día
+                                        // Usando toLocaleDateString con configuración local de VE
+                                        const fechaStr = fechaObj.toLocaleDateString('es-VE', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            timeZone: 'UTC' // Asumiendo que la fecha viene pura sin hora
+                                        });
+                                        labelDate.textContent = `(${fechaStr})`;
+                                        labelDate.className = 'text-success fw-bold';
+                                    }
+                                } else {
+                                    // Fallback
+                                    useFallbackRate(montoUSD, montoBS);
+                                }
+                            } catch (error) {
+                                console.error('Error parseando tasa:', error);
+                                useFallbackRate(montoUSD, montoBS);
+                            }
+                        } else {
+                            console.error('Error HTTP al cargar tasa:', xhrTasa.status);
+                            useFallbackRate(montoUSD, montoBS);
+                        }
+                        calcularDiferenciaPresupuesto();
+                    };
+                    
+                    xhrTasa.onerror = function() {
+                        console.error('Error de red al cargar tasa');
+                        useFallbackRate(montoUSD, montoBS);
+                        calcularDiferenciaPresupuesto();
+                    };
+                    
+                    function useFallbackRate(usd, bs) {
+                         window.presupuestoTasaCambio = usd > 0 ? (bs / usd) : 0;
+                         const tasaInput = document.getElementById('presupuestoTasaBCV');
+                         if (tasaInput) {
+                             tasaInput.value = window.presupuestoTasaCambio.toFixed(2) + ' (Promedio)';
+                         }
+                         
+                         // Actualizar etiqueta en fallback
+                         const labelDate = document.getElementById('labelTasaBCVDate');
+                         if (labelDate) {
+                             labelDate.textContent = '(Promedio)';
+                             labelDate.className = 'text-warning fw-bold';
+                         }
+                    }
+                    
+                    // Enviar con action GetExchangeRateByDate y la fecha
+                    xhrTasa.send(`action=GetExchangeRateByDate&fecha=${encodeURIComponent(fechaFormateada)}`);
                     
                     // Limpiar descripción
                     document.getElementById('presupuestoDescripcion').value = '';
@@ -5430,7 +5541,8 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
                                 const numValue = parseFloat(value);
                                 if (!isNaN(numValue)) {
                                     input.value = numValue.toFixed(2);
-                            calcularDiferenciaPresupuesto();
+                                    // ✅ Pasar true para mostrar la alerta si es negativo
+                                    calcularDiferenciaPresupuesto(true);
                                 }
                             }
                         }
@@ -5659,10 +5771,17 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
 }
 
 // Función para calcular la diferencia del presupuesto
-function calcularDiferenciaPresupuesto() {
+function calcularDiferenciaPresupuesto(showAlert = false) {
     const montoTaller = parseFloat(document.getElementById('presupuestoMontoTaller').value) || 0;
     const montoPagadoUSD = window.presupuestoMontoPagadoUSD || 0;
     const tasaCambio = window.presupuestoTasaCambio || 0;
+    
+    // ✅ Actualizar el Monto en Bolívares del Anticipo con la tasa actual
+    const montoPagadoBS = montoPagadoUSD * tasaCambio;
+    const montoPagadoBSInput = document.getElementById('presupuestoMontoBS');
+    if (montoPagadoBSInput) {
+        montoPagadoBSInput.value = montoPagadoBS.toFixed(2);
+    }
     
     const diferenciaUSD = montoTaller - montoPagadoUSD;
     const diferenciaBS = diferenciaUSD * tasaCambio;
@@ -5682,9 +5801,63 @@ function calcularDiferenciaPresupuesto() {
         if (diferenciaUSD >= 0) {
             diferenciaUSDInput.classList.add('bg-success', 'text-white');
             diferenciaBSInput.classList.add('bg-success', 'text-white');
+            
+            // ✅ Habilitar botón de previsualización si la diferencia es válida
+            const previewBtn = document.getElementById('previewPresupuestoPDFBtn');
+            if (previewBtn) {
+                previewBtn.disabled = false;
+                previewBtn.style.opacity = '1';
+                previewBtn.style.cursor = 'pointer';
+            }
         } else {
             diferenciaUSDInput.classList.add('bg-danger', 'text-white');
             diferenciaBSInput.classList.add('bg-danger', 'text-white');
+            
+            // ❌ Deshabilitar botón de previsualización si hay monto pagado en exceso
+            const previewBtn = document.getElementById('previewPresupuestoPDFBtn');
+            if (previewBtn) {
+                previewBtn.disabled = true;
+                previewBtn.style.opacity = '0.5';
+                previewBtn.style.cursor = 'not-allowed';
+            }
+            
+            // ✅ Mostrar alerta si es negativo y se solicitó mostrar alerta
+            if (showAlert) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ajuste Requerido',
+                    html: `
+                        <div class="text-center">
+                            <p class="mb-3 text-muted">El pago del cliente supera el monto del presupuesto.</p>
+                            
+                            <div class="d-flex justify-content-center mb-3">
+                                <div class="p-3 bg-light rounded border border-danger">
+                                    <span class="d-block text-secondary small text-uppercase fw-bold">Monto Pagado en Exceso</span>
+                                    <span class="d-block text-danger fw-bold fs-4">${Math.abs(diferenciaUSD).toFixed(2)} USD</span>
+                                </div>
+                            </div>
+                            
+                            <p class="small text-muted mb-0">
+                                Por favor, ajuste el <b>Monto Total de Taller</b> hasta que la diferencia sea $0.00.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#ffc107',
+                    confirmButtonText: '<span style="color: #000; font-weight: bold;">Entendido</span>',
+                    cancelButtonColor: '#d33',
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    },
+                    backdrop: `
+                        rgba(0,0,123,0.1)
+                        left top
+                        no-repeat
+                    `
+                });
+            }
         }
     }
 }
@@ -5775,113 +5948,77 @@ document.addEventListener('click', function(event) {
                             
                             // Esperar a que el iframe cargue completamente
                             setTimeout(() => {
-                                // PRIMERO: Mostrar alerta para verificar información antes de guardar
+                                // 🔄 FLUJO SIMPLIFICADO: Guardar directamente en BD
+                                // Mostrar modal de carga mientras se guarda
                                 Swal.fire({
-                                    icon: 'info',
-                                    title: 'Verificar Información',
-                                    text: 'Por favor, verifique la información antes de guardar el documento.',
-                                    showCancelButton: true,
-                                    confirmButtonText: 'Continuar',
-                                    cancelButtonText: 'Cancelar',
-                                    confirmButtonColor: '#003594',
-                                    cancelButtonColor: '#808080',
-                                    color: 'black'
-                                }).then((verifyResult) => {
-                                    // Si el usuario confirma la verificación, mostrar el modal de guardado
-                                    if (verifyResult.isConfirmed) {
-                                        // Mostrar SweetAlert con opciones (SIN guardar aún en BD)
-                                        Swal.fire({
-                                            icon: 'success',
-                                            title: 'Presupuesto',
-                                            text: 'El archivo se generó correctamente. ¿Deseas guardarlo como PDF?',
-                                            showCancelButton: false,
-                                            confirmButtonText: 'Guardar',
-                                            confirmButtonColor: '#003594',
-                                            color: 'black'
-                                        }).then((result) => {
-                                            // Si el usuario presiona "Guardar", ENTONCES guardar en BD
-                                            if (result.isConfirmed) {
-                                                // Mostrar modal de carga mientras se guarda
-                                                Swal.fire({
-                                                    title: 'Guardando presupuesto...',
-                                                    html: 'Por favor, espere mientras se guarda el presupuesto.',
-                                                    allowOutsideClick: false,
-                                                    allowEscapeKey: false,
-                                                    showConfirmButton: false,
-                                                    didOpen: () => {
-                                                        Swal.showLoading();
-                                                    }
-                                                });
-                                                
-                                                // AHORA SÍ guardar presupuesto en la base de datos
-                                                saveBudgetToDatabaseWithCallback(presupuestoDataComplete, function(success, message, idBudget, presupuestoNumero) {
-                                            Swal.close();
+                                    title: 'Guardando presupuesto...',
+                                    html: 'Por favor, espere mientras se guarda el presupuesto.',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    showConfirmButton: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+                                
+                                // Guardar presupuesto en la base de datos
+                                saveBudgetToDatabaseWithCallback(presupuestoDataComplete, function(success, message, idBudget, presupuestoNumero) {
+                                    Swal.close();
+                                    
+                                    if (success && presupuestoNumero) {
+                                        // Guardar el id_budget para usarlo en el modal de carga de PDF
+                                        window.lastSavedBudgetId = idBudget;
+                                        window.lastSavedBudgetNroTicket = nroTicket;
+                                        
+                                        // Actualizar el HTML con el número real de presupuesto
+                                        presupuestoDataComplete.presupuestoNumero = presupuestoNumero;
+                                        const htmlReal = buildPresupuestoHTML(presupuestoDataComplete);
+                                        let htmlWithBaseReal = htmlReal.replace('<head>', `<head><base href="${baseHref}">`);
+                                        
+                                        // Actualizar el iframe con el número real
+                                        previewDoc.open();
+                                        previewDoc.write(htmlWithBaseReal);
+                                        previewDoc.close();
+                                        
+                                        // Enviar correo con datos de anticipo y presupuesto
+                                        sendAnticipoPresupuestoEmail(nroTicket);
+                                        
+                                        // Esperar un momento para que se actualice el iframe
+                                        setTimeout(() => {
+                                            // Generar nombre del archivo usando el número de registro real
+                                            const fileName = `${presupuestoNumero}.pdf`;
                                             
-                                            if (success && presupuestoNumero) {
-                                                // Guardar el id_budget para usarlo en el modal de carga de PDF
-                                                window.lastSavedBudgetId = idBudget;
-                                                window.lastSavedBudgetNroTicket = nroTicket;
-                                                
-                                                // Actualizar el HTML con el número real de presupuesto
-                                                presupuestoDataComplete.presupuestoNumero = presupuestoNumero;
-                                                const htmlReal = buildPresupuestoHTML(presupuestoDataComplete);
-                                                let htmlWithBaseReal = htmlReal.replace('<head>', `<head><base href="${baseHref}">`);
-                                                
-                                                // Actualizar el iframe con el número real
-                                                previewDoc.open();
-                                                previewDoc.write(htmlWithBaseReal);
-                                                previewDoc.close();
-                                                
-                                                // Enviar correo con datos de anticipo y presupuesto
-                                                sendAnticipoPresupuestoEmail(nroTicket);
-                                                
-                                                // Esperar un momento para que se actualice el iframe
-                                                setTimeout(() => {
-                                                    // Generar nombre del archivo usando el número de registro real
-                                                    const fileName = `${presupuestoNumero}.pdf`;
-                                                    
-                                                    // Guardar títulos originales
-                                                    const originalIframeTitle = previewDoc.title || '';
-                                                    const originalWindowTitle = window.document.title || '';
-                                                    
-                                                    // Asignar el nombre del archivo al título
-                                                    previewDoc.title = fileName;
-                                                    window.document.title = fileName;
-                                                    
-                                                    // Llamar a la función de impresión del navegador
-                                                    previewIframe.contentWindow.focus();
-                                                    previewIframe.contentWindow.print();
+                                            // Guardar títulos originales
+                                            const originalIframeTitle = previewDoc.title || '';
+                                            const originalWindowTitle = window.document.title || '';
                                             
-                                                    // Restaurar títulos después de un momento
-                                                    setTimeout(() => {
-                                                        previewDoc.title = originalIframeTitle;
-                                                        window.document.title = originalWindowTitle;
-                                                        
-                                                        // Recargar la página solo después de guardar
-                                                        window.location.reload();
-                                                    }, 500);
-                                                }, 300);
-                                            } else {
-                                                // Error al guardar - mostrar modal de error
-                                                Swal.fire({
-                                                    icon: 'error',
-                                                    title: 'Error al guardar',
-                                                    text: message || 'Hubo un error al guardar el presupuesto. Por favor, intente nuevamente.',
-                                                    confirmButtonText: 'Aceptar',
-                                                    confirmButtonColor: '#dc3545',
-                                                    color: 'black'
-                                                });
-                                            }
-                                                });
-                                            } else {
-                                                // Si el usuario presiona "Cerrar", NO guardar en BD y NO recargar
-                                                // El modal permanece abierto para que pueda intentar guardar de nuevo
-                                                console.log('Usuario canceló el guardado. El presupuesto NO se guardó en la base de datos.');
-                                            }
-                                        });
+                                            // Asignar el nombre del archivo al título
+                                            previewDoc.title = fileName;
+                                            window.document.title = fileName;
+                                            
+                                            // Llamar a la función de impresión del navegador
+                                            previewIframe.contentWindow.focus();
+                                            previewIframe.contentWindow.print();
+                                    
+                                            // Restaurar títulos después de un momento
+                                            setTimeout(() => {
+                                                previewDoc.title = originalIframeTitle;
+                                                window.document.title = originalWindowTitle;
+                                                
+                                                // Recargar la página solo después de guardar
+                                                window.location.reload();
+                                            }, 500);
+                                        }, 300);
                                     } else {
-                                        // Si el usuario cancela la verificación, no hacer nada
-                                        console.log('Usuario canceló la verificación.');
+                                        // Error al guardar - mostrar modal de error
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error al guardar',
+                                            text: message || 'Hubo un error al guardar el presupuesto. Por favor, intente nuevamente.',
+                                            confirmButtonText: 'Aceptar',
+                                            confirmButtonColor: '#dc3545',
+                                            color: 'black'
+                                        });
                                     }
                                 });
                             }, 500);
@@ -6074,6 +6211,18 @@ function previewPresupuestoPDF() {
     const data = getPresupuestoData();
     const nroTicket = data.nroTicket;
     
+    // Mostrar modal de carga mientras se procesa
+    Swal.fire({
+        title: 'Procesando presupuesto...',
+        html: 'Por favor, espere mientras se guardan los datos.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
     // Obtener datos del cliente
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
@@ -6087,7 +6236,7 @@ function previewPresupuestoPDF() {
                 if (response.success && response.data) {
                     const clienteData = response.data;
                     
-                    // Obtener datos del modal
+                    // Preparar datos para el presupuesto
                     const presupuestoData = {
                         nroTicket: nroTicket,
                         fechaPresupuesto: data.fechaPresupuesto,
@@ -6102,28 +6251,81 @@ function previewPresupuestoPDF() {
                         cliente: clienteData
                     };
                     
-                    // Generar HTML del presupuesto
-                    const html = buildPresupuestoHTML(presupuestoData);
-                    
-                    // Mostrar en el iframe del modal de PDF
-                    const iframe = document.getElementById('presupuestoPDFPreview');
-                    const doc = iframe.contentDocument || iframe.contentWindow.document;
-                    const baseHref = `${window.location.origin}/SoportePost/`;
-                    let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
-                    
-                    doc.open();
-                    doc.write(htmlWithBase);
-                    doc.close();
-                    
-                    // NO guardar aquí - solo previsualización
-                    // El guardado se hará solo cuando se imprima
-                    
-                    // Abrir modal de previsualización
-                    if (bsPresupuestoPDFModal) {
-                        bsPresupuestoPDFModal.show();
-                    }
+                    // 1. GUARDAR PRESUPUESTO EN BD PRIMERO
+                    saveBudgetToDatabaseWithCallback(presupuestoData, function(success, message, idBudget, presupuestoNumero) {
+                        Swal.close(); // Cerrar el "Procesando..."
+                        
+                        if (success && presupuestoNumero) {
+                            // Guardar el número real en los datos
+                            presupuestoData.presupuestoNumero = presupuestoNumero;
+                            
+                            // 2. PREGUNTAR SI DESEA VISUALIZAR
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Presupuesto Guardado',
+                                text: 'El presupuesto se ha guardado correctamente. ¿Desea visualizar el documento?',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ver PDF',
+                                cancelButtonText: 'Cerrar',
+                                confirmButtonColor: '#003594',
+                                cancelButtonColor: '#808080',
+                                reverseButtons: true,
+                                color: 'black'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Generar HTML con el número real
+                                    const html = buildPresupuestoHTML(presupuestoData);
+                                    const baseHref = `${window.location.origin}/SoportePost/`;
+                                    let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
+                                    
+                                    // Abrir en nueva ventana / pestaña
+                                    const previewWindow = window.open('', '_blank');
+                                    if (previewWindow) {
+                                        previewWindow.document.open();
+                                        
+                                        // Generar HTML con el header de instrucciones
+                                        const htmlWithHeader = buildPresupuestoHTML(presupuestoData, true);
+                                        const baseHref = `${window.location.origin}/SoportePost/`;
+                                        let htmlWithBase = htmlWithHeader.replace('<head>', `<head><base href="${baseHref}">`);
+                                        
+                                        // Generar nombre de archivo para el PDF (Exactamente el número de presupuesto)
+                                        const filename = `${presupuestoNumero}`;
+                                        
+                                        previewWindow.document.write(htmlWithBase);
+                                        previewWindow.document.title = filename; // <--- ESTO CAMBIA EL NOMBRE AL GUARDAR
+                                        previewWindow.document.close();
+                                        previewWindow.focus();
+                                    } else {
+                                        Swal.fire({
+                                            icon: 'warning',
+                                            title: 'Bloqueador de ventanas',
+                                            text: 'Su navegador bloqueó la apertura del presupuesto. Por favor, permita las ventanas emergentes.',
+                                            confirmButtonColor: '#003594',
+                                            color: 'black'
+                                        }).then(() => {
+                                            window.location.reload();
+                                        });
+                                    }
+                                } else {
+                                    // Si elige NO visualizar, solo recarga para ver los cambios
+                                    window.location.reload();
+                                }
+                            });
+                            
+                        } else {
+                            // Error al guardar
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error al guardar',
+                                text: message || 'No se pudo guardar el presupuesto.',
+                                confirmButtonColor: '#dc3545',
+                                color: 'black'
+                            });
+                        }
+                    });
                     
                 } else {
+                    Swal.close();
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -6134,6 +6336,7 @@ function previewPresupuestoPDF() {
                     });
                 }
             } catch (error) {
+                Swal.close();
                 console.error('Error al parsear la respuesta JSON:', error);
                 Swal.fire({
                     icon: 'error',
@@ -6145,6 +6348,7 @@ function previewPresupuestoPDF() {
                 });
             }
         } else {
+            Swal.close();
             console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
             Swal.fire({
                 icon: 'error',
@@ -6158,6 +6362,7 @@ function previewPresupuestoPDF() {
     };
     
     xhr.onerror = function() {
+        Swal.close();
         console.error('Error de red al intentar obtener los datos del cliente');
         Swal.fire({
             icon: 'error',
@@ -6526,29 +6731,16 @@ function setupAutoScrollInputs() {
     });
 }
 
-// Función para generar número de presupuesto en formato PRES-TICKET-SEQ
+// Función para generar número de presupuesto (Obsoleto: El servidor ahora lo genera)
 function generatePresupuestoNumero(nroTicket) {
-    const storageKey = `presupuesto_count_${nroTicket}`;
-    let sequence = 1;
-    
-    // Intentar obtener el contador desde localStorage
-    const storedCount = localStorage.getItem(storageKey);
-    if (storedCount) {
-        sequence = parseInt(storedCount, 10) + 1;
-    }
-    
-    // Guardar el nuevo contador
-    localStorage.setItem(storageKey, sequence.toString());
-    
-    // Formato: PRES-TICKET-SEQ (ejemplo: PRES-1812250001-001)
-    const seqFormatted = String(sequence).padStart(3, '0');
-    return `PRES-${nroTicket}-${seqFormatted}`;
+    // Retornamos un placeholder temporal, el servidor asignará el real al guardar
+    return `PRES-${nroTicket}-...`;
 }
 
 // Función para guardar el presupuesto en la base de datos
 function saveBudgetToDatabase(presupuestoData) {
-    // Obtener el número de presupuesto generado
-    const presupuestoNumero = generatePresupuestoNumero(presupuestoData.nroTicket);
+    // El servidor generará el número real
+    const presupuestoNumero = '';
     
     // Preparar datos para enviar
     const data = new URLSearchParams();
@@ -6600,8 +6792,8 @@ function saveBudgetToDatabase(presupuestoData) {
 
 // Función para guardar el presupuesto en la base de datos (versión con callback)
 function saveBudgetToDatabaseWithCallback(presupuestoData, callback) {
-    // Obtener el número de presupuesto generado
-    const presupuestoNumero = generatePresupuestoNumero(presupuestoData.nroTicket);
+    // El servidor generará el número real, enviamos nulo o vacío
+    const presupuestoNumero = '';
     
     // Preparar datos para enviar
     const data = new URLSearchParams();
@@ -6659,7 +6851,7 @@ function saveBudgetToDatabaseWithCallback(presupuestoData, callback) {
 }
 
 // Función para construir el HTML del presupuesto (basada en buildDeliveryNoteHtml)
-function buildPresupuestoHTML(d) {
+function buildPresupuestoHTML(d, isNewWindow = false) {
   const safe = (s) => (s || '').toString();
   const formatCurrency = (amount) => {
     return parseFloat(amount || 0).toFixed(2);
@@ -6667,10 +6859,23 @@ function buildPresupuestoHTML(d) {
   const formatDate = (dateString) => {
     if (!dateString) return new Date().toLocaleDateString('es-ES');
     try {
-      const date = new Date(dateString);
+      let date;
+      if (typeof dateString === 'string' && dateString.includes('-')) {
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          // Crear fecha usando componentes locales: Año, Mes (0-11), Día
+          date = new Date(parts[0], parts[1] - 1, parts[2]);
+        } else {
+          date = new Date(dateString);
+        }
+      } else {
+        date = new Date(dateString);
+      }
+
       if (isNaN(date.getTime())) {
         return new Date().toLocaleDateString('es-ES');
       }
+
       return date.toLocaleDateString('es-ES', {
         year: 'numeric',
         month: '2-digit',
@@ -6690,7 +6895,7 @@ function buildPresupuestoHTML(d) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuesto</title>
+    <title>${presupuestoNumero}</title>
         <style>
         * {
             margin: 0;
@@ -6704,10 +6909,50 @@ function buildPresupuestoHTML(d) {
             line-height: 1.2;
             color: #333;
             background: #fff;
-            padding: 20px 10px 10px 10px;
+            padding: ${isNewWindow ? '0' : '20px 10px 10px 10px'};
             max-width: 100%;
             margin: 0 auto;
             overflow-x: hidden;
+        }
+
+        .no-print {
+            background: #003594;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            display: ${isNewWindow ? 'block' : 'none'};
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .no-print h4 { margin: 0 0 8px 0; font-size: 16px; font-weight: 600; }
+        .no-print p { margin: 0 0 12px 0; font-size: 13px; opacity: 0.9; }
+        
+        .btn-download-pdf {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .btn-download-pdf:hover { background: #ffca2c; transform: translateY(-1px); }
+        .btn-download-pdf svg { margin-right: 8px; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 8px !important; }
         }
         
         .top-header {
@@ -7237,6 +7482,19 @@ function buildPresupuestoHTML(d) {
     </style>
     </head>
     <body>
+    <!-- Header de instrucciones para el usuario (Solo visible en pantalla) -->
+    <div class="no-print">
+        <h4>📄 Presupuesto Generado Correctamente</h4>
+        <p>Para guardar este documento en su computadora o imprimirlo, presione el botón de abajo y seleccione <b>"Guardar como PDF"</b>.</p>
+        <button class="btn-download-pdf" onclick="window.print()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            GUARDAR O IMPRIMIR PDF
+        </button>
+    </div>
+
     <!-- Header superior con logo y RIF -->
     <div class="top-header">
       <div class="top-header-left">

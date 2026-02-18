@@ -1,4 +1,7 @@
-<?php namespace App\Repositories; // Usar namespaces para organizar tus clases
+<?php 
+
+namespace App\Repositories;
+
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
 use \DateTime;
@@ -279,6 +282,23 @@ class TechnicalConsultionRepository
 
     public function GetTicketData($id_user){
         $result = $this->model->GetTicketData($id_user);
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetTicketDataPagos($id_user){
+        $result = $this->model->GetTicketDataPagos($id_user);
         if ($result) {
             //var_dump($result);  
             $ticket = [];
@@ -816,14 +836,18 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type){
-        $result = $this->model->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
+    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record = null){
+        $result = $this->model->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record);
         return $result;
     }
 
-    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = ''){
-        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = '', $id_payment_record = null, $amount_verified = ''){
+        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified, $id_payment_record, $amount_verified);
         return $result;
+    }
+
+    public function FinalizarRevisionTicket($nro_ticket, $id_user){
+        return $this->model->FinalizarRevisionTicket($nro_ticket, $id_user);
     }
 
     public function GetEstatusTicket(){
@@ -1071,8 +1095,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function GetPaymentData($nro_ticket){
-        $result = $this->model->GetPaymentData($nro_ticket);
+    public function GetPaymentData($nro_ticket, $id_payment_record = null, $payment_reference = null, $record_number = null){
+        $result = $this->model->GetPaymentData($nro_ticket, $id_payment_record, $payment_reference, $record_number);
         if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
             $payment_data = pg_fetch_assoc($result['query'], 0);
             pg_free_result($result['query']);
@@ -1303,6 +1327,10 @@ class TechnicalConsultionRepository
 
     public function UpdatePayment($id_payment, $data) {
         return $this->model->UpdatePayment($id_payment, $data);
+    }
+
+    public function CreatePaymentSubstitution($id_payment_old, $data) {
+        return $this->model->CreatePaymentSubstitution($id_payment_old, $data);
     }
 
     /**

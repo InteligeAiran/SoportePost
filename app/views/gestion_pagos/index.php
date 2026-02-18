@@ -873,10 +873,24 @@ function mi_navbar() {}
                             <input type="hidden" id="id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
                          
                             <!-- MONTO ABONADO SECTION -->
-                            <div class="payment-summary-card mb-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);">
-                                <h6 style="color: white; margin-bottom: 10px; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Abonado</h6>
-                                <h3 id="montoAbonado" style="color: white; font-size: 2rem; font-weight: 700; margin: 0;">$0.00</h3>
-                                <small id="montoRestante" style="color: rgba(255, 255, 255, 0.9); font-size: 0.85rem; display: block; margin-top: 8px;">Restante: $0.00</small>
+                            <!-- MONTO ABONADO SECTION -->
+                            <div class="row mb-3">
+                                <!-- Card: Monto del Presupuesto -->
+                                <div class="col-6">
+                                    <div class="payment-summary-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3); height: 100%;">
+                                        <h6 style="color: white; margin-bottom: 10px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Presupuesto</h6>
+                                        <h3 id="montoPresupuestoDisplay" style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0;">$0.00</h3>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card: Monto Abonado -->
+                                <div class="col-6">
+                                    <div class="payment-summary-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); height: 100%;">
+                                        <h6 style="color: white; margin-bottom: 10px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Abonado</h6>
+                                        <h3 id="montoAbonado" style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0;">$0.00</h3>
+                                        <small id="montoRestante" style="color: rgba(255, 255, 255, 0.9); font-size: 0.75rem; display: block; margin-top: 8px;">Restante: $0.00</small>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- BLOQUE 1: INFORMACIÓN DEL CLIENTE -->

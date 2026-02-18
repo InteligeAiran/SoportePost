@@ -1474,15 +1474,39 @@ function mi_navbar()
                         </strong>
                     </div>
                     <div class="modal-body">
+                        <!-- Sección de Selección de Documento -->
+                        <div id="documentSelectionContainer" style="display: none;">
+                            <p class="text-center mb-4">Seleccione el documento que desea visualizar:</p>
+                            <div class="d-flex justify-content-center gap-4">
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioEnvioDestino" value="Envio_Destino">
+                                    <label class="form-check-label fw-bold text-dark" for="radioEnvioDestino">
+                                        Envio a Destino
+                                    </label>
+                                </div>
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioPresupuesto" value="Presupuesto">
+                                    <label class="form-check-label fw-bold text-dark" for="radioPresupuesto">
+                                        Presupuesto
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Área de visualización del documento -->
-                        <div id="documentViewArea">
+                        <div id="documentViewArea" style="display: none;">
+                            <div class="text-center mb-2">
+                                <h6 id="NombreDocumento" class="fw-bold" style="color: black;"></h6>
+                            </div>
                             <div class="text-center" style="max-height: 80vh; overflow-y: auto;">
-                                <!-- El contenido se inyectará dinámicamente aquí -->
+                                <img id="imageViewPreview" class="img-fluid" src="#" alt="Previsualización" style="display: none; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <div id="pdfViewViewer" style="width: 100%; height: 70vh; display: none;"></div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" id="btnCerrarViewModal" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" id="btnVisualizarDocumento" style="display: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">Visualizar</button>
+                        <button type="button" class="btn btn-secondary" id="modalCerrarshow" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -1786,6 +1810,20 @@ function mi_navbar()
                                 <div class="input-group">
                                     <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">$</span>
                                     <input type="text" id="presupuestoDiferenciaUSD" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; transition: all 0.3s ease; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-exchange me-1" viewBox="0 0 16 16">
+                                        <path d="M4.854 14.854a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V3.5A2.5 2.5 0 0 1 6.5 1h8a.5.5 0 0 1 0 1h-8A1.5 1.5 0 0 0 5 3.5v9.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4z"/>
+                                        <path d="M11.146 1.146a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L12 2.707V12.5A2.5 2.5 0 0 1 9.5 15h-8a.5.5 0 0 1 0-1h8A1.5 1.5 0 0 0 11 12.5V2.707l-3.146 3.147a.5.5 0 0 1-.708-.708l4-4z"/>
+                                    </svg>
+                                    Tasa BCV <span id="labelTasaBCVDate" class="text-primary">(Cargando...)</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">Bs/$</span>
+                                    <input type="text" id="presupuestoTasaBCV" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; background-color: #f5f5f5; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly placeholder="Cargando...">
                                 </div>
                             </div>
                             

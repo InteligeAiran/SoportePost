@@ -2,10 +2,19 @@ let currentSelectedTicket = null;
 let currentTicketNroForImage = null;
 let paymentAgreementModalInstance = null;
 let detailedPaymentModalInstance = null;
+let currentIdPaymentRecord = null; // Para seguimiento de aprobación individual
+let currentTicketIdForImage = null; // Variable global para el ID del ticket en el visor de imágenes
+let viewedPayments = new Set(); // Para rastrear pagos ya visualizados por el usuario
+let modalAgregarDatosPagoInstance = null; // Instancia global para el modal de carga de pagos
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const approveTicketFromImageBtn = document.getElementById('approveTicketFromImage');
     paymentAgreementModalInstance = new bootstrap.Modal(document.getElementById("paymentAgreementModal"));
+    const modalPagoEl = document.getElementById("modalAgregarDatosPago");
+    if (modalPagoEl) {
+        modalAgregarDatosPagoInstance = new bootstrap.Modal(modalPagoEl);
+    }
     
     if (approveTicketFromImageBtn) {
         approveTicketFromImageBtn.addEventListener('click', handleTicketApprovalFromImage);
@@ -22,7 +31,68 @@ document.addEventListener('DOMContentLoaded', function() {
         setupFormaPagoListener();
     }
     // ----------------------------------------
+
+    // Listener para restaurar el modal de detalles al cerrar el de imagen
+    const imageApprovalModalElement = document.getElementById("imageApprovalModal");
+    if (imageApprovalModalElement) {
+        imageApprovalModalElement.addEventListener('hidden.bs.modal', function () {
+            // Ya no es necesario restaurar manualmente porque ahora usamos modales apilados (stacked)
+            console.log('Imagen cerrada, el modal de detalles debería seguir visible debajo.');
+        });
+    }
+
+    // Listener para los botones cerrar del modal de detalles de pagos (la X y el botón Cerrar)
+    const modalPagosDetalleElement = document.getElementById('modalPagosDetalle');
+    if (modalPagosDetalleElement) {
+        const closeButtons = modalPagosDetalleElement.querySelectorAll('.btn-close, [data-bs-dismiss="modal"]');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (detailedPaymentModalInstance) {
+                    detailedPaymentModalInstance.hide();
+                }
+            });
+        });
+
+        // Al ocultar el modal de detalles, resetear el seguimiento de pago individual
+        modalPagosDetalleElement.addEventListener('hidden.bs.modal', function() {
+            currentIdPaymentRecord = null;
+        });
+    }
 });
+
+// Función centralizada para validar campos de corrección de pago si están visibles
+function validatePaymentCorrectionFields() {
+    const missingFields = [];
+    
+    // Validar Referencia
+    const referenceCorrectionField = document.getElementById('referenceCorrectionField');
+    if (referenceCorrectionField && window.getComputedStyle(referenceCorrectionField).display !== 'none') {
+        const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+        if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
+            missingFields.push('Nro de Referencia Correcto');
+        }
+    }
+    
+    // Validar Fecha
+    const dateCorrectionField = document.getElementById('dateCorrectionField');
+    if (dateCorrectionField && window.getComputedStyle(dateCorrectionField).display !== 'none') {
+        const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+        if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
+            missingFields.push('Fecha de Pago Correcta');
+        }
+    }
+
+    // Validar Monto
+    const amountCorrectionField = document.getElementById('amountCorrectionField');
+    if (amountCorrectionField && window.getComputedStyle(amountCorrectionField).display !== 'none') {
+        const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+        if (!amountCorrectOnly || amountCorrectOnly.value.trim() === '') {
+            missingFields.push('Monto de Pago Correcto');
+        }
+    }
+    
+    return missingFields;
+}
 
 function handleTicketApprovalFromImage() {
     const nro_ticket = document.getElementById('currentTicketIdDisplay').textContent;
@@ -98,12 +168,13 @@ function handleTicketApprovalFromImage() {
         keydownListenerCapture: true,
         didOpen: () => {
             // Aplicar estilos personalizados después de que se abra el modal
-            const backdrop = document.querySelector('.swal2-backdrop-show');
+            const container = document.querySelector('.swal2-container');
             const popup = document.querySelector('.swal2-popup');
             
-            if (backdrop) {
-                backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
-                backdrop.style.backdropFilter = 'blur(8px)';
+            if (container) {
+                container.style.zIndex = '2060';
+                container.style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                container.style.backdropFilter = 'blur(8px)';
             }
             
             if (popup) {
@@ -115,33 +186,11 @@ function handleTicketApprovalFromImage() {
         }
     }).then((result) => {
         if (result.isConfirmed) {
-            // Si es documento de Anticipo, validar campos antes de aprobar
-            if (documentType === 'Anticipo') {
-                const referenceCorrectionField = document.getElementById('referenceCorrectionField');
-                const dateCorrectionField = document.getElementById('dateCorrectionField');
-                
-                // Verificar si los campos están visibles
-                const isReferenceFieldVisible = referenceCorrectionField && 
-                                               window.getComputedStyle(referenceCorrectionField).display !== 'none';
-                const isDateFieldVisible = dateCorrectionField && 
-                                          window.getComputedStyle(dateCorrectionField).display !== 'none';
-                
-                // Validar campos visibles
-                const missingFields = [];
-                
-                if (isReferenceFieldVisible) {
-                    const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
-                    if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
-                        missingFields.push('Nro de Referencia Correcto');
-                    }
-                }
-                
-                if (isDateFieldVisible) {
-                    const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
-                    if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
-                        missingFields.push('Fecha de Pago Correcta');
-                    }
-                }
+            // Si es un tipo de pago, validar campos antes de aprobar
+            const isPaymentDoc = ['Anticipo', 'pago', 'Pago', 'comprobante_pago'].includes(documentType);
+            
+            if (isPaymentDoc) {
+                const missingFields = validatePaymentCorrectionFields();
                 
                 // Si hay campos visibles vacíos, mostrar alerta y detener
                 if (missingFields.length > 0) {
@@ -151,20 +200,35 @@ function handleTicketApprovalFromImage() {
                         html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
                         confirmButtonText: 'Ok',
                         confirmButtonColor: '#003594',
-                        color: 'black'
+                        color: 'black',
+                        didOpen: () => {
+                            const container = document.querySelector('.swal2-container');
+                            if (container) {
+                                container.style.zIndex = '2060';
+                            }
+                        }
                     });
                     return; // Detener la ejecución
                 }
             }
             
+            // Caputrar datos verificados
+            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+            const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+            
+            const refVerified = referenceCorrectOnly ? referenceCorrectOnly.value.trim() : '';
+            const dateVerified = dateCorrectOnly ? dateCorrectOnly.value.trim() : '';
+            const amountVerifiedValue = amountCorrectOnly ? amountCorrectOnly.value.trim() : '';
+
             // Si llegamos aquí, los campos están completos o no son visibles, realizar la aprobación
-            approveTicket(nro_ticket, documentType, id_ticket);
+            approveTicket(nro_ticket, documentType, id_ticket, refVerified, dateVerified, amountVerifiedValue);
         }
     });
 }
 
 // Función para enviar la solicitud de aprobación
-function approveTicket(nro_ticket, documentType, id_ticket) {
+function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', datePassed = '', amountPassed = '') {
     const id_user = document.getElementById('userId').value;
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/approve-document`);
@@ -182,7 +246,13 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                         html: `El documento de  <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${documentType}</span> asociado al Nro Ticket <span style = "border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nro_ticket}</span> ha sido aprobado correctamente.`,
                         confirmButtonText: 'Ok',
                         confirmButtonColor: '#003594',
-                        color: 'black'
+                        color: 'black',
+                        didOpen: () => {
+                            const container = document.querySelector('.swal2-container');
+                            if (container) {
+                                container.style.zIndex = '2060';
+                            }
+                        }
                     }).then(() => {
                        window.location.reload();
                         
@@ -198,7 +268,13 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                         text: response.message || 'Error al aprobar el documento',
                         confirmButtonText: 'Ok',
                         color: 'black',
-                        confirmButtonColor: '#dc3545'
+                        confirmButtonColor: '#dc3545',
+                        didOpen: () => {
+                            const container = document.querySelector('.swal2-container');
+                            if (container) {
+                                container.style.zIndex = '2060';
+                            }
+                        }
                     });
                 }
             } catch (error) {
@@ -209,7 +285,13 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                     text: 'Error al procesar la respuesta del servidor',
                     confirmButtonText: 'Ok',
                     color: 'black',
-                    confirmButtonColor: '#dc3545'
+                    confirmButtonColor: '#dc3545',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container');
+                        if (container) {
+                            container.style.zIndex = '2060';
+                        }
+                    }
                 });
             }
         } else {
@@ -220,7 +302,13 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                 text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
                 confirmButtonText: 'Ok',
                 color: 'black',
-                confirmButtonColor: '#dc3545'
+                confirmButtonColor: '#dc3545',
+                didOpen: () => {
+                    const container = document.querySelector('.swal2-container');
+                    if (container) {
+                        container.style.zIndex = '2060';
+                    }
+                }
             });
         }
     };
@@ -233,16 +321,23 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
             text: 'Error de conexión con el servidor',
             confirmButtonText: 'Ok',
             color: 'black',
-            confirmButtonColor: '#dc3545'
+            confirmButtonColor: '#dc3545',
+            didOpen: () => {
+                const container = document.querySelector('.swal2-container');
+                if (container) {
+                    container.style.zIndex = '2060';
+                }
+            }
         });
     };
 
     // Si es documento de Anticipo, validar y obtener los datos verificados
-    let verifiedReference = '';
-    let verifiedDate = '';
+    let verifiedReference = refPassed;
+    let verifiedDate = datePassed;
+    let verifiedAmount = amountPassed;
     
-    if (documentType === 'Anticipo') {
-        console.log('Documento es Anticipo, validando campos verificados...');
+    if (documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago' || documentType === 'comprobante_pago') {
+        console.log('Documento es de tipo Pago/Anticipo, validando campos verificados...');
         
         // Verificar si hay datos en los campos de corrección individuales
         const referenceCorrectNo = document.getElementById('referenceCorrectNo');
@@ -275,6 +370,17 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                 missingFields.push('Fecha de Pago Correcta');
             }
         }
+
+        const amountCorrectNo = document.getElementById('amountCorrectNo');
+        const amountCorrectionField = document.getElementById('amountCorrectionField');
+        const isAmountFieldVisible = amountCorrectionField && window.getComputedStyle(amountCorrectionField).display !== 'none';
+        
+        if (isAmountFieldVisible) {
+            const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+            if (!amountCorrectOnly || amountCorrectOnly.value.trim() === '') {
+                missingFields.push('Monto de Pago Correcto');
+            }
+        }
         
         // Si hay campos visibles vacíos, mostrar alerta y detener
         if (missingFields.length > 0) {
@@ -284,7 +390,13 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
                 html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
                 confirmButtonText: 'Ok',
                 confirmButtonColor: '#003594',
-                color: 'black'
+                color: 'black',
+                didOpen: () => {
+                    const container = document.querySelector('.swal2-container');
+                    if (container) {
+                        container.style.zIndex = '2060';
+                    }
+                }
             });
             return; // Detener la ejecución
         }
@@ -308,19 +420,35 @@ function approveTicket(nro_ticket, documentType, id_ticket) {
             }
         }
         
-        console.log('Datos verificados finales - Referencia:', verifiedReference, 'Fecha:', verifiedDate);
+        // Si el radio de monto está en "No", usar el valor corregido
+        if (amountCorrectNo && amountCorrectNo.checked) {
+            const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+            if (amountCorrectOnly && amountCorrectOnly.value.trim() !== '') {
+                verifiedAmount = amountCorrectOnly.value.trim();
+                console.log('Monto de pago verificado capturado:', verifiedAmount);
+            }
+        }
+        
+        console.log('Datos verificados finales - Referencia:', verifiedReference, 'Fecha:', verifiedDate, 'Monto:', verifiedAmount);
     }
     
     // Enviar los datos
     let data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
     
-    // Agregar datos verificados si es Anticipo y hay valores
-    if (documentType === 'Anticipo') {
+    if (typeof currentIdPaymentRecord !== 'undefined' && currentIdPaymentRecord !== null) {
+        data += `&id_payment_record=${encodeURIComponent(currentIdPaymentRecord)}`;
+    }
+    
+    // Agregar datos verificados si es un tipo de pago y hay valores
+    if (documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago' || documentType === 'comprobante_pago') {
         if (verifiedReference) {
             data += `&nro_payment_reference_verified=${encodeURIComponent(verifiedReference)}`;
         }
         if (verifiedDate) {
             data += `&payment_date_verified=${encodeURIComponent(verifiedDate)}`;
+        }
+        if (verifiedAmount) {
+            data += `&amount_verified=${encodeURIComponent(verifiedAmount)}`;
         }
         console.log('Datos a enviar:', data);
     }
@@ -347,14 +475,14 @@ function getTicketAprovalDocument() {
         rif: "RIF",
         razonsocial_cliente: "Razón Social",
         serial_pos: "Serial POS",
-        name_status_payment: "Estatus Pago",
-        id_status_payment: "Id Estatus Pago",
+        //name_status_payment: "Estatus Pago",
         name_status_domiciliacion: "Estatus Domiciliación",
         id_status_domiciliacion: "Id Estatus Domiciliacion",
-        document_type: "Tipo Documento",
+        //document_type: "Tipo Documento",
         original_filename: "Nombre Archivo",
-        motivo_rechazo: "Motivo Rechazo",
-        uploaded_at: "Fecha Subida"
+        //motivo_rechazo: "Motivo Rechazo",
+        uploaded_at: "Fecha Subida",
+        info: "Info"
     };
 
     xhr.onload = function () {
@@ -390,6 +518,7 @@ function getTicketAprovalDocument() {
                         if (allDataKeys.includes('id_status_payment')) {
                             columnsConfig.push({
                                 data: 'id_status_payment',
+                                name: 'id_status_payment', // ✅ AÑADIR NOMBRE
                                 title: 'ID Status Payment',
                                 visible: false, // ✅ OCULTA PERO DISPONIBLE PARA BÚSQUEDA
                                 searchable: true
@@ -399,8 +528,9 @@ function getTicketAprovalDocument() {
                         if (allDataKeys.includes('id_status_domiciliacion')) {
                             columnsConfig.push({
                                 data: 'id_status_domiciliacion',
+                                name: 'id_status_domiciliacion', // ✅ AÑADIR NOMBRE
                                 title: 'ID Status Domiciliación',
-                                visible: false, // ✅ OCULTA PERO DISPONIBLE PARA BÚSQUEDA
+                                visible: false,
                                 searchable: true
                             });
                         }
@@ -423,19 +553,54 @@ function getTicketAprovalDocument() {
 
                                 const columnDef = {
                                     data: key,
+                                    name: key, // ✅ AÑADIR NOMBRE
                                     title: columnTitles[key],
                                     defaultContent: "",
                                     visible: isVisible,
-                                    // --- NUEVO: AGREGAR RENDER PARA TRUNCAMIENTO ---
                                     render: function (data, type, row) {
-                                        if (type === 'display' && data) {
-                                            const displayLength = 25;
-                                            const fullText = String(data);
+                                        if (type === 'display') {
+                                            // Lógica especial para Estatus Pago
+                                            if (key === 'name_status_payment') {
+                                                const idStatus = parseInt(row.id_status_payment);
+                                                const hasRejectedDocs = row.ticket_tiene_documentos_rechazados === 'Sí';
+                                                
+                                                if (idStatus === 12 || idStatus === 13 || idStatus === 14 || hasRejectedDocs) { // Rechazado
+                                                    return `<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>${hasRejectedDocs ? 'Documento Rechazado' : data}</span>`;
+                                                } else if (idStatus === 6) { // Aprobado
+                                                    return `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>${data}</span>`;
+                                                } else if (idStatus === 17) { // Pendiente por Revisión
+                                                    return `<span class="badge bg-info text-dark"><i class="fas fa-clock me-1"></i>${data}</span>`;
+                                                } else {
+                                                    return `<span class="badge bg-warning text-dark">${data}</span>`;
+                                                }
+                                            }
+
+                                            // Lógica para columnas Sí/No y Rechazos
+                                            if (['pago', 'exoneracion', 'envio', 'envio_destino', 'ticket_tiene_documentos_rechazados', 'anticipo_rechazado', 'exoneracion_rechazado', 'envio_rechazado', 'envio_destino_rechazado'].includes(key)) {
+                                                if (data === 'Sí') {
+                                                    const isRedBadge = key.includes('rechazado') || key === 'ticket_tiene_documentos_rechazados';
+                                                    return `<span class="badge ${isRedBadge ? 'bg-danger' : 'bg-success'}">${data}</span>`;
+                                                } else {
+                                                    return `<span class="badge bg-secondary text-white">${data}</span>`;
+                                                }
+                                            }
+
+                                            // Lógica para Garantías y Confirmaciones (booleanos -> Sí/No)
+                                            if (['garantia_instalacion', 'garantia_reingreso', 'confirmcoord', 'confirmtecn'].includes(key)) {
+                                                const val = (data === true || data === 'true' || data === 't' || data === 1);
+                                                return `<span class="badge ${val ? 'bg-success' : 'bg-secondary'}">${val ? 'Sí' : 'No'}</span>`;
+                                            }
                                             
-                                            if (fullText.length > displayLength) {
-                                                return `<span class="truncated-cell" data-full-text="${fullText.replace(/"/g, '&quot;')}">${fullText.substring(0, displayLength)}...</span>`;
-                                            } else {
-                                                return `<span class="expanded-cell" data-full-text="${fullText.replace(/"/g, '&quot;')}">${fullText}</span>`;
+                                            // Truncamiento para otras columnas
+                                            if (data) {
+                                                const displayLength = 25;
+                                                const fullText = String(data);
+                                                
+                                                if (fullText.length > displayLength) {
+                                                    return `<span class="truncated-cell" data-full-text="${fullText.replace(/"/g, '&quot;')}">${fullText.substring(0, displayLength)}...</span>`;
+                                                } else {
+                                                    return `<span class="expanded-cell" data-full-text="${fullText.replace(/"/g, '&quot;')}">${fullText}</span>`;
+                                                }
                                             }
                                         }
                                         return data || '';
@@ -472,34 +637,32 @@ function getTicketAprovalDocument() {
                                 const isRejected = idMotivoRechazo !== null && motivoRechazo !== null;
                                 
                                 if (row.name_status_payment === "Pendiente Por Cargar Documentos") {
-                                    actionButtons = `<button class="btn btn-secondary btn-sm" title="Pendiente Por Cargar Documentos" disabled>Cargue Documentos</button>
-                                                    <i class="fas fa-file-upload"></i>
-                                                </button>`;
+                                    actionButtons = `<button class="btn btn-secondary btn-sm" title="Pendiente Por Cargar Documentos" disabled>
+                                                        Cargue Documentos <i class="fas fa-file-upload"></i>
+                                                     </button>`;
                                 } else {
-                                    actionButtons = `
-                                    <button class="btn btn-info btn-sm view-image-btn" 
-                                            data-serial-pos="${serial_pos}" 
-                                            data-nro-ticket="${nro_ticket}" 
-                                            data-id="${idTicket}" 
-                                            data-envio="${envio}" 
-                                            data-exoneracion="${exoneracion}" 
-                                            data-anticipo="${pago}"
-                                            data-document-type="${documentType || ''}"
-                                            data-original-filename="${originalFilename || ''}"
-                                            data-motivo-rechazo="${motivoRechazo || ''}"
-                                            data-uploaded-at="${uploadedAt || ''}"
-                                            data-id-motivo-rechazo="${idMotivoRechazo || ''}"
-                                            data-id-status-payment="${idStatusPayment}"
-                                            data-rechazado="${isRejected ? 'true' : 'false'}"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#visualizarImagenModal" 
-                                            title="Visualizar Imágenes">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
-                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                                            <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                                        </svg>
-                                    </button>
-                                `;
+                                    actionButtons = '';
+                                
+                                // AGREGAR BOTÓN DE INFO SI ES ANTICIPO (O SIEMPRE SI SE PREFIERE)
+                                if (documentType === 'Anticipo' || pago === 'Sí') {
+                                    const rif = row.rif || '';
+                                    const razonSocial = row.razonsocial_cliente || '';
+                                    
+                                    actionButtons += `
+                                        <button class="btn btn-secondary btn-sm view-payments-info-btn ms-1" 
+                                                data-nro-ticket="${nro_ticket}" 
+                                                data-rif="${rif}"
+                                                data-razon-social="${razonSocial}"
+                                                data-serial-pos="${serial_pos || ''}"
+                                                data-id-status-payment="${idStatusPayment}"
+                                                data-estatus-pos="${row.estatus_inteliservices || 'No disponible'}"
+                                                title="Detalle de Pagos">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
+                                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
+                                            </svg>
+                                        </button>
+                                    `;
+                                }
                                 const isRejectedStatus = [12, 13].includes(parseInt(idStatusPayment));
                                 
                                 if (isRejectedStatus) {
@@ -510,6 +673,7 @@ function getTicketAprovalDocument() {
                                                 data-serial-pos="${serial_pos}"
                                                 data-document-type="${documentType || ''}"
                                                 data-motivo-rechazo="${motivoRechazo || ''}"
+                                                data-estatus-pos="${row.estatus_inteliservices || 'No disponible'}"
                                                 title="Subir Nuevo Documento">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cloud-arrow-up-fill" viewBox="0 0 16 16">
                                                 <path d="M8 2a5.53 5.53 0 0 0-3.594 1.342c-.766.66-1.321 1.52-1.464 2.383C1.266 6.095 0 7.555 0 9.318 0 11.366 1.708 13 3.781 13h8.906C14.502 13 16 11.57 16 9.773c0-1.636-1.242-2.969-2.834-3.194C12.923 3.999 10.69 2 8 2m2.354 5.146a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0z"/>
@@ -619,10 +783,9 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
-                                    /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 6 (Operaciones) || id_rol = 4 (Coordinador) */
+                                       /* id_area = 3 (Taller Boleita) || id_rol = 5 (Administrativo) */ /* id_area = 1 (Finanzas) || id_rol = 6 (Analista Financiero) */
                                 } else if ((id_area == 3 && id_rol == 5) || (id_area == 1 && id_rol == 6)) {
                                     // Filtros de Exoneración (OCULTOS POR SOLICITUD)
-                                    /*
                                       buttonsHtml += `
                                     <button id="btn-recibidos" class="btn btn-secondary me-2" title="Exoneraciones Pendientes"> <!-- Título asumido, ajustar si es necesario -->
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
@@ -642,7 +805,6 @@ function getTicketAprovalDocument() {
                                         </svg>
                                     </button>
                                     `;
-                                    */
                                 } else {
                                     // Default behavior: Show Anticipos (or maybe nothing? Staying safe and showing Anticipos as fallback or if user matches neither but has access)
                                     // For now, let's show Anticipos as default to avoid empty UI for other roles, or hide everything if strict?
@@ -701,7 +863,7 @@ function getTicketAprovalDocument() {
                                     // 2. Configurar el filtro por tipo de documento si aplica
                                     let allowedTypes = [];
                                     if (["btn-por-asignar", "btn-anticipos-aprobados", "btn-asignados"].includes(buttonId)) {
-                                        allowedTypes = ['Anticipo', 'Pago'];
+                                        allowedTypes = ['Anticipo', 'Pago', 'Envio', 'Envio_Destino'];
                                     } else if (["btn-recibidos", "btn-aprobado_exoneracion", "btn-rechazado_exoneracion"].includes(buttonId)) {
                                         allowedTypes = ['Exoneracion'];
                                     }
@@ -716,25 +878,26 @@ function getTicketAprovalDocument() {
 
                                     // 3. Aplicar filtros de estatus específicos por botón
                                     if (buttonId === "btn-por-asignar") {
-                                        api.column(1).search('^7$|^17$', true, false, true);
-                                        api.column(11).visible(false);
+                                        // Incluir 7 (Pendiente), 17 (Pago Pendiente) y 13 (Rechazado)
+                                        api.column('id_status_payment:name').search('^7$|^17$|^13$', true, false, true);
+                                        api.column('original_filename:name').visible(false);
                                     } else if (buttonId === "btn-anticipos-aprobados") {
-                                        api.column(1).search('^6$', true, false, true);
-                                        api.column(11).visible(false);
+                                        api.column('id_status_payment:name').search('^6$', true, false, true);
+                                        api.column('original_filename:name').visible(false);
                                     } else if (buttonId === "btn-recibidos") {
-                                        api.column(1).search('^5$', true, false, true);
-                                        api.column(11).visible(false);
+                                        api.column('id_status_payment:name').search('^5$', true, false, true);
+                                        api.column('original_filename:name').visible(false);
                                     } else if (buttonId === "btn-aprobado_exoneracion") {
-                                        api.column(1).search('^4$', true, false, true);
-                                        api.column(11).visible(false);
+                                        api.column('id_status_payment:name').search('^4$', true, false, true);
+                                        api.column('original_filename:name').visible(false);
                                     } else if (buttonId === "btn-rechazado_exoneracion") {
-                                        api.column(1).search('^12$', true, false, true);
-                                        api.column(11).visible(true);
+                                        api.column('id_status_payment:name').search('^12$', true, false, true);
+                                        api.column('motivo_rechazo:name').visible(true);
                                     } else if (buttonId === "btn-asignados") {
-                                        api.column(11).visible(true);
-                                        api.column(12).visible(true);
-                                        api.column(10).visible(true);
-                                        api.column(9).visible(true);
+                                        api.column('motivo_rechazo:name').visible(true);
+                                        api.column('original_filename:name').visible(true);
+                                        api.column('document_type:name').visible(true);
+                                        api.column('id_status_payment:name').visible(false);
                                         
                                         // Modificar el filtro de búsqueda para incluir lógica de rechazados
                                         const originalSearch = $.fn.dataTable.ext.search.pop(); // Sacar el de tipos para combinarlo
@@ -742,9 +905,10 @@ function getTicketAprovalDocument() {
                                             if (settings.nTable.id !== 'tabla-ticket') return true;
                                             
                                             const idPayment = parseInt(rowData.id_status_payment || searchData[1]);
-                                            const isRejected = idPayment === 13;
+                                            const hasRejectedDocs = rowData.ticket_tiene_documentos_rechazados === 'Sí';
+                                            const isRejected = idPayment === 13 || hasRejectedDocs;
                                             const docType = rowData.document_type;
-                                            const isAllowedType = ['Anticipo', 'Pago'].includes(docType);
+                                            const isAllowedType = ['Anticipo', 'Pago', 'Envio', 'Envio_Destino'].includes(docType);
 
                                             return isRejected && isAllowedType;
                                         });
@@ -764,7 +928,7 @@ function getTicketAprovalDocument() {
                                 // Definir tipos permitidos para este botón
                                 let allowedTypes = [];
                                 if (["btn-por-asignar", "btn-anticipos-aprobados", "btn-asignados"].includes(buttonId)) {
-                                    allowedTypes = ['Anticipo', 'Pago'];
+                                    allowedTypes = ['Anticipo', 'Pago', 'Envio', 'Envio_Destino'];
                                 } else if (["btn-recibidos", "btn-aprobado_exoneracion", "btn-rechazado_exoneracion"].includes(buttonId)) {
                                     allowedTypes = ['Exoneracion'];
                                 }
@@ -780,9 +944,9 @@ function getTicketAprovalDocument() {
                                 let hasData = false;
                                 searchTerms.forEach(searchTerm => {
                                     if (searchTerm.column === 'id_status_payment') {
-                                        api.column(1).search(searchTerm.value, true, false, true).draw();
+                                        api.column('id_status_payment:name').search(searchTerm.value, true, false, true).draw();
                                         if (api.rows({ filter: 'applied' }).count() > 0) hasData = true;
-                                        api.column(1).search('').draw(false);
+                                        api.column('id_status_payment:name').search('').draw(false);
                                     }
                                 });
                                 
@@ -796,7 +960,7 @@ function getTicketAprovalDocument() {
                                 const searchConfigs = [
                                     { 
                                         button: "btn-por-asignar", 
-                                        searchTerms: [{ column: 'id_status_payment', value: '^7$|^17$' }]
+                                        searchTerms: [{ column: 'id_status_payment', value: '^7$|^17$|^13$' }]
                                     },
                                     { 
                                         button: "btn-anticipos-aprobados", 
@@ -833,7 +997,7 @@ function getTicketAprovalDocument() {
                                 
                                 // Si no hay datos, mostrar mensaje
                                 api.columns().search('').draw(false);
-                                api.column(1).search("NO_DATA_FOUND").draw();
+                                api.column('id_status_payment:name').search("NO_DATA_FOUND").draw();
 
                                 const tbody = document.querySelector("#tabla-ticket tbody");
                                 if (tbody) {
@@ -892,7 +1056,8 @@ function getTicketAprovalDocument() {
                                 nroTicket: $(this).data("nro-ticket"),
                                 serialPos: $(this).data("serial-pos"),
                                 documentType: $(this).data("document-type"),
-                                motivoRechazo: $(this).data("motivo-rechazo")
+                                motivoRechazo: $(this).data("motivo-rechazo"),
+                                estatusPos: $(this).data("estatus-pos")
                             };
                             
                             currentSelectedTicket = ticketData.id;
@@ -902,10 +1067,10 @@ function getTicketAprovalDocument() {
                                     openDetailedPaymentModal(this);
                                 } else {
                                     // Fallback si no está definida aún
-                                    showUploadNewDocumentModal(ticketData.id, ticketData.nroTicket, ticketData.serialPos, ticketData.documentType, ticketData.motivoRechazo);
+                                    showUploadNewDocumentModal(ticketData.id, ticketData.nroTicket, ticketData.serialPos, ticketData.documentType, ticketData.motivoRechazo, ticketData.estatusPos);
                                 }
                             } else {
-                                showUploadNewDocumentModal(ticketData.id, ticketData.nroTicket, ticketData.serialPos, ticketData.documentType, ticketData.motivoRechazo);
+                                showUploadNewDocumentModal(ticketData.id, ticketData.nroTicket, ticketData.serialPos, ticketData.documentType, ticketData.motivoRechazo, ticketData.estatusPos);
                             }
                         });
 
@@ -995,15 +1160,24 @@ function getTicketAprovalDocument() {
                             });
 
                         $("#tabla-ticket tbody").on("click", ".view-image-btn", function () {
-                            const ticketId = $(this).data("id");
-                            const nroTicket = $(this).data("nro-ticket");
-                            const serialPos = $(this).data("serial-pos");
-                            const documentoRechazado = $(this).data("rechazado") === true || $(this).data("rechazado") === 'true';
-                            const idStatusPayment = $(this).data("id-status-payment");
+                            // Obtener la instancia de DataTable
+                            const table = $('#tabla-ticket').DataTable();
+                            const tr = $(this).closest('tr');
+                            const row = table.row(tr);
+                            const rowData = row.data();
+
+                            const ticketId = rowData.id_ticket; // Obtener ID directo de los datos
+                            const nroTicket = rowData.nro_ticket;
+                            const serialPos = rowData.serial_pos;
+                            const documentoRechazado = rowData.motivo_rechazo !== null;
+                            const idStatusPayment = rowData.id_status_payment;
                             
                             const envioValor = $(this).data("envio");
                             const exoValor = $(this).data("exoneracion");
                             const pagoValor = $(this).data("anticipo");
+                            
+                            // Resetear ID de pago individual por si venimos del botón de la tabla principal
+                            currentIdPaymentRecord = null;
 
                             if (envioValor === 'No' && exoValor === 'No' && pagoValor === 'No') {
                                 Swal.fire({
@@ -1023,6 +1197,7 @@ function getTicketAprovalDocument() {
 
                             const VizualizarImage = document.getElementById('visualizarImagenModal');
                             VizualizarImage.setAttribute('data-ticket-id', nroTicket);
+                            VizualizarImage.setAttribute('data-ticket-pk', ticketId);
                             VizualizarImage.setAttribute('data-serial-pos', serialPos);
                             VizualizarImage.setAttribute('data-rechazado', documentoRechazado ? 'true' : 'false');
                             VizualizarImage.setAttribute('data-id-status-payment', idStatusPayment || '');
@@ -1034,13 +1209,13 @@ function getTicketAprovalDocument() {
                             const ExoLabelModal = document.getElementById('labelExo');
                             const PagoInputModal = document.getElementById('imagenPago');
                             const PagoLabelModal = document.getElementById('labelPago');
-                            const botonCerrarVizualizacion = document.getElementById('closeImagevisualizarModalBtn');
-
-                            if(botonCerrarVizualizacion) {
-                                botonCerrarVizualizacion.addEventListener('click', function() {
+                            const VizualizarImageElement = document.getElementById('visualizarImagenModal');
+                            const closeVizButtons = VizualizarImageElement.querySelectorAll('.btn-close, [data-bs-dismiss="modal"]');
+                            closeVizButtons.forEach(btn => {
+                                btn.addEventListener('click', function() {
                                     visualizarImagenModal.hide();
                                 });
-                            }
+                            });
 
                             if (envioValor === 'Sí') {
                                 EnvioLabelModal.style.display = 'block';
@@ -1165,7 +1340,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (typeof setupFormaPagoListener === 'function') setupFormaPagoListener();
 });
 
-function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo) {
+function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType, motivoRechazo, estatusPos = 'No disponible') {
     // Obtener elementos del modal
     const modal = document.getElementById('uploadDocumentModal');
     const modalTicketIdSpan = document.getElementById('modalTicketId');
@@ -1403,14 +1578,16 @@ function showUploadNewDocumentModal(ticketId, nroTicket, serialPos, documentType
             }, 100);
         }
     });
-    uploadFileBtn.addEventListener('click', handleUploadClick);
+    // COMENTADO: Este event listener está vacío y bloquea el real que está en la línea 2497
+    // uploadFileBtn.addEventListener('click', handleUploadClick);
     cerrarBoton.addEventListener('click', handleCerrarClick);
 
     // Limpiar al cerrar el modal
     modal.addEventListener('hidden.bs.modal', function() {
         // Remover event listeners usando jQuery
         $(documentFileInput).off("change");
-        uploadFileBtn.removeEventListener('click', handleUploadClick);
+        // COMENTADO: Corresponde al listener comentado arriba
+        // uploadFileBtn.removeEventListener('click', handleUploadClick);
         cerrarBoton.removeEventListener('click', handleCerrarClick);
         
         // Limpiar formulario y estados de validación
@@ -1487,17 +1664,59 @@ document.addEventListener('DOMContentLoaded', function () {
     // La lógica es: cerrar el modal actual y luego abrir el nuevo.
     if (rechazoDocumentoBtn) {
         rechazoDocumentoBtn.addEventListener('click', function () {
-        // Cierra el modal de visualización
-        visualizarImagenModal.hide();
+            // Validar campos de corrección si es un documento de pago
+            const currentDocumentType = document.getElementById('currentImageTypeDisplay').textContent;
+            const isPaymentDoc = ['Anticipo', 'pago', 'Pago', 'comprobante_pago'].includes(currentDocumentType);
+            
+            if (isPaymentDoc) {
+                const missingFields = validatePaymentCorrectionFields();
+                if (missingFields.length > 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Campos Requeridos',
+                        html: `Por favor, complete los siguientes campos antes de rechazar:<br><strong>${missingFields.join('<br>')}</strong>`,
+                        confirmButtonText: 'Ok',
+                        confirmButtonColor: '#003594',
+                        color: 'black',
+                        didOpen: () => {
+                            const container = document.querySelector('.swal2-container');
+                            if (container) {
+                                container.style.zIndex = '2060';
+                            }
+                        }
+                    });
+                    return; // Detener si hay campos vacíos
+                }
+            }
 
-        // Abre el modal de rechazo
-        modalRechazoInstance.show();
+            // Cierra el modal de visualización
+            visualizarImagenModal.hide();
+
+            // Obtener el tipo de documento actual y llamar a getMotivos
+            console.log("RechazoDocumento click - calling getMotivos with:", currentDocumentType);
+            getMotivos(currentDocumentType);
+
+            // Abre el modal de rechazo
+            document.getElementById('modalRechazo').style.zIndex = '2055';
+            modalRechazoInstance.show();
+            
+            // Ajustamos también el backdrop
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                if (backdrops.length > 0) {
+                    backdrops[backdrops.length - 1].style.zIndex = '2050';
+                }
+            }, 100);
         });
     }
 
-    if(modalConfirmacionRechazoBtn){
-        modalConfirmacionRechazoBtn.addEventListener('click', function () {
-        confirmarRechazoModal.hide();
+    const modalConfirmacionRechazoElement = document.getElementById('modalConfirmacionRechazo');
+    if (modalConfirmacionRechazoElement) {
+        const closeConfButtons = modalConfirmacionRechazoElement.querySelectorAll('.btn-close, [data-bs-dismiss="modal"]');
+        closeConfButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                confirmarRechazoModal.hide();
+            });
         });
     }
 
@@ -1510,11 +1729,14 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
     });
 
-    if (botonCerrarmotivo) {
-        botonCerrarmotivo.addEventListener('click', function () {
-        // Ocultar el modal de rechazo
-        modalRechazoInstance.hide();
-        })
+    const modalRechazoElement = document.getElementById('modalRechazo');
+    if (modalRechazoElement) {
+        const closeRechazoButtons = modalRechazoElement.querySelectorAll('.btn-close, [data-bs-dismiss="modal"]');
+        closeRechazoButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                modalRechazoInstance.hide();
+            });
+        });
     }
 
     // Evento click para el botón "Confirmar Rechazo"
@@ -1534,7 +1756,20 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
       const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
       document.getElementById("motivoSeleccionadoTexto").textContent = motivoSeleccionadoTexto;
+      
+      // Forzar z-index superior para el modal de confirmación
+      const modalElement = document.getElementById('modalConfirmacionRechazo');
+      modalElement.style.zIndex = '2060';
+      
       confirmarRechazoModal.show();
+      
+      // Ajustar backdrop
+      setTimeout(() => {
+          const backdrops = document.querySelectorAll('.modal-backdrop');
+          if (backdrops.length > 0) {
+              backdrops[backdrops.length - 1].style.zIndex = '2059';
+          }
+      }, 100);
     }
   });
   
@@ -1578,8 +1813,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         const fileName = document.original_filename;
 
                         // Mostrar el documento en el modal de aprobación
-                        showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment);
-                        getMotivos(selectedOption);
+                        try {
+                            showApprovalModal(ticketId, selectedOption, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment);
+                        } catch (e) {
+                            console.error("Error in showApprovalModal:", e);
+                        }
+                        
+                        try {
+                            getMotivos(selectedOption);
+                        } catch (e) {
+                            console.error("Error in getMotivos:", e);
+                        }
 
                         // Ocultar el modal de selección
                         visualizarImagenModal.hide();
@@ -1685,14 +1929,26 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             icon: 'error',
             title: 'Error',
             text: 'Datos incompletos para el rechazo.',
-            confirmButtonColor: '#003594'
+            confirmButtonColor: '#003594',
+            didOpen: () => {
+                const container = document.querySelector('.swal2-container');
+                if (container) {
+                    container.style.zIndex = '2060';
+                }
+            }
         });
         return;
     }
 
     const xhr = new XMLHttpRequest();
-    const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
+    // ✅ Agregamos currentIdPaymentRecord para que el rechazo sea quirúrgico
+    let datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`;
+    
+    if (typeof currentIdPaymentRecord !== 'undefined' && currentIdPaymentRecord) {
+        datos += `&id_payment_record=${encodeURIComponent(currentIdPaymentRecord)}`;
+    }
+
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); 
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
     xhr.onload = function () {
@@ -1741,7 +1997,13 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                         allowOutsideClick: false,
                         allowEscapeKey: false,
                         keydownListenerCapture: true,
-                        color: 'black'
+                        color: 'black',
+                        didOpen: () => {
+                            const container = document.querySelector('.swal2-container');
+                            if (container) {
+                                container.style.zIndex = '2060';
+                            }
+                        }
                     }).then(() => {
                         window.location.reload();
                     });
@@ -1750,7 +2012,13 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                         icon: 'error',
                         title: 'Error',
                         text: response.message,
-                        confirmButtonColor: '#003594'
+                        confirmButtonColor: '#003594',
+                        didOpen: () => {
+                            const container = document.querySelector('.swal2-container');
+                            if (container) {
+                                container.style.zIndex = '2060';
+                            }
+                        }
                     });
                 }
             } catch (error) {
@@ -1759,7 +2027,13 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                     icon: 'error',
                     title: 'Error',
                     text: 'Respuesta del servidor no válida.',
-                    confirmButtonColor: '#003594'
+                    confirmButtonColor: '#003594',
+                    didOpen: () => {
+                        const container = document.querySelector('.swal2-container');
+                        if (container) {
+                            container.style.zIndex = '2060';
+                        }
+                    }
                 });
             }
         } else {
@@ -1768,7 +2042,13 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
                 icon: 'error',
                 title: 'Error de conexión',
                 text: 'Hubo un problema al conectar con el servidor.',
-                confirmButtonColor: '#003594'
+                confirmButtonColor: '#003594',
+                didOpen: () => {
+                    const container = document.querySelector('.swal2-container');
+                    if (container) {
+                        container.style.zIndex = '2060';
+                    }
+                }
             });
         }
     };
@@ -1778,7 +2058,13 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
             icon: 'error',
             title: 'Error de red',
             text: 'Verifique su conexión a internet.',
-            confirmButtonColor: '#003594'
+            confirmButtonColor: '#003594',
+            didOpen: () => {
+                const container = document.querySelector('.swal2-container');
+                if (container) {
+                    container.style.zIndex = '2060';
+                }
+            }
         });
     };
     xhr.send(datos);
@@ -2290,9 +2576,10 @@ $(document).ready(function () {
             const uploadMessage = document.getElementById("uploadMessage");
             const file = documentFileInput.files[0];
             
-            const idTicketElement = document.getElementById("id_ticket");
-            if (!idTicketElement) {
-                console.error("Elemento id_ticket no encontrado");
+            // Usar la variable global currentSelectedTicket en lugar de buscar en el DOM
+            const id_ticket = currentSelectedTicket;
+            if (!id_ticket) {
+                console.error("No hay ticket seleccionado");
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -2303,7 +2590,6 @@ $(document).ready(function () {
                 });
                 return;
             }
-            const id_ticket = idTicketElement.value;
             
             const documentTypeElement = document.getElementById("document_type");
             if (!documentTypeElement) {
@@ -2497,7 +2783,9 @@ $(document).ready(function () {
   }
 });
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0) {
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0, paymentReference = null, recordNumber = null) {
+    console.log("showApprovalModal called with ticketId (Display/ID):", ticketId);
+    currentTicketIdForImage = ticketId; // Usar el ID recibido (puede ser el nro_ticket, el backend lo resolverá si es necesario)
     // Obtener elementos del modal de aprobación
     const imageApprovalModalElement = document.getElementById("imageApprovalModal");
     const currentTicketIdDisplay = document.getElementById("currentTicketIdDisplay");
@@ -2631,13 +2919,13 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
         if (rejectDocumentBtn) {
             rejectDocumentBtn.style.display = 'none';
         }
-    } else if (documentType === 'Anticipo') {
-        console.log('Es documento de Anticipo, cargando datos de pago...');
+    } else if (documentType === 'Anticipo' || documentType === 'Pago' || documentType === 'pago') {
+        console.log('Es documento de Anticipo/Pago, cargando datos de pago...');
         // El ticketId que viene aquí es el nro_ticket (se establece en el atributo data-ticket-id)
         // Asegurarse de que sea el nro_ticket correcto
         const nroTicketToUse = ticketId || currentTicketIdDisplay.textContent;
         console.log('nroTicketToUse para consulta:', nroTicketToUse);
-        loadPaymentDataForEnvio(nroTicketToUse);
+        loadPaymentDataForEnvio(nroTicketToUse, currentIdPaymentRecord, paymentReference, recordNumber);
         
         // Mostrar botones de acción si no está aprobado
         if (approveTicketFromImageBtn) {
@@ -2661,19 +2949,34 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
         }
     }
     
-    // Mostrar el modal de aprobación
+    // Mostrar el modal de aprobacin
     const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
     
+    // Mostrar el modal de aprobación
+    // Forzamos un z-index más alto para que aparezca sobre el modal de detalles
+    imageApprovalModalElement.style.zIndex = '2000';
+    imageApprovalModal.show();
+    
+    // Ajustar el backdrop (el fondo oscuro) para que también esté sobre el primer modal
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 1) {
+            // El último backdrop creado es el de este modal
+            backdrops[backdrops.length - 1].style.zIndex = '1999';
+        }
+    }, 50);
+    
     // LIMPIAR Y AGREGAR EVENT LISTENERS
-    if (closeImageApprovalModalBtn) {
-        // Remover listeners previos
-        const newCloseBtn = closeImageApprovalModalBtn.cloneNode(true);
-        closeImageApprovalModalBtn.parentNode.replaceChild(newCloseBtn, closeImageApprovalModalBtn);
+    const closeImageApprovalModalBtns = imageApprovalModalElement.querySelectorAll('.btn-close, [data-bs-dismiss="modal"], #closeImageApprovalModalBtn');
+    closeImageApprovalModalBtns.forEach(btn => {
+        // Remover listeners previos clonando (si es necesario forzar limpieza, aunque para listeners simples no siempre es crucial)
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
         
-        newCloseBtn.addEventListener('click', function() {
+        newBtn.addEventListener('click', function() {
             imageApprovalModal.hide();
         });
-    }
+    });
     
     // Agregar event listeners para los radio buttons de validación de pago
     setupPaymentValidationListeners();
@@ -2709,6 +3012,10 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
         if (paymentDateOriginal) paymentDateOriginal.value = '';
         if (paymentReferenceCorrectOnly) paymentReferenceCorrectOnly.value = '';
         if (paymentDateCorrectOnly) paymentDateCorrectOnly.value = '';
+        const paymentAmountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+        if (paymentAmountCorrectOnly) paymentAmountCorrectOnly.value = '';
+        const paymentAmountOriginal = document.getElementById('paymentAmountOriginal');
+        if (paymentAmountOriginal) paymentAmountOriginal.value = '';
         
         // Desmarcar todos los radio buttons
         const referenceCorrectYes = document.getElementById('referenceCorrectYes');
@@ -2720,6 +3027,10 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
         if (referenceCorrectNo) referenceCorrectNo.checked = false;
         if (dateCorrectYes) dateCorrectYes.checked = false;
         if (dateCorrectNo) dateCorrectNo.checked = false;
+        const amountCorrectYes = document.getElementById('amountCorrectYes');
+        const amountCorrectNo = document.getElementById('amountCorrectNo');
+        if (amountCorrectYes) amountCorrectYes.checked = false;
+        if (amountCorrectNo) amountCorrectNo.checked = false;
         
         // Ocultar campos de corrección
         const referenceCorrectionField = document.getElementById('referenceCorrectionField');
@@ -2727,6 +3038,8 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
         
         if (referenceCorrectionField) referenceCorrectionField.style.display = 'none';
         if (dateCorrectionField) dateCorrectionField.style.display = 'none';
+        const amountCorrectionField = document.getElementById('amountCorrectionField');
+        if (amountCorrectionField) amountCorrectionField.style.display = 'none';
         
         imageApprovalModalElement.removeEventListener('hidden.bs.modal', cleanupHandler);
     };
@@ -2734,12 +3047,13 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
 }
 
 // Función para cargar los datos de pago cuando el documento es de tipo "Anticipo" (pago)
-function loadPaymentDataForEnvio(nroTicket) {
-    console.log('loadPaymentDataForEnvio llamado con nroTicket:', nroTicket);
+function loadPaymentDataForEnvio(nroTicket, idPaymentRecord = null, paymentReference = null, recordNumber = null) {
+    console.log('loadPaymentDataForEnvio llamado con nroTicket:', nroTicket, 'idPaymentRecord:', idPaymentRecord, 'paymentReference:', paymentReference, 'recordNumber:', recordNumber);
     
     const paymentValidationContainer = document.getElementById('paymentValidationContainer');
     const paymentReferenceOriginal = document.getElementById('paymentReferenceOriginal');
     const paymentDateOriginal = document.getElementById('paymentDateOriginal');
+    const paymentAmountOriginal = document.getElementById('paymentAmountOriginal');
     
     if (!paymentValidationContainer) {
         console.error('paymentValidationContainer no encontrado');
@@ -2762,6 +3076,7 @@ function loadPaymentDataForEnvio(nroTicket) {
     // Mostrar mensaje de carga
     paymentReferenceOriginal.value = 'Cargando...';
     paymentDateOriginal.value = 'Cargando...';
+    if (paymentAmountOriginal) paymentAmountOriginal.value = 'Cargando...';
     
     // Llamar a la API para obtener los datos de pago
     const xhr = new XMLHttpRequest();
@@ -2800,6 +3115,17 @@ function loadPaymentDataForEnvio(nroTicket) {
                     // Mostrar los datos en los campos
                     paymentReferenceOriginal.value = paymentReference || 'No disponible';
                     paymentDateOriginal.value = formattedDate || 'No disponible';
+                    if (paymentAmountOriginal) paymentAmountOriginal.value = paymentRecord.amount_bs || 'No disponible';
+                    
+                    // Seleccionar "Sí" por defecto en todos los radio buttons
+                    const amountCorrectYes = document.getElementById('amountCorrectYes');
+                    const amountCorrectNo = document.getElementById('amountCorrectNo');
+                    if (amountCorrectYes) amountCorrectYes.checked = true;
+                    if (amountCorrectNo) amountCorrectNo.checked = false;
+                    const amountCorrectionField = document.getElementById('amountCorrectionField');
+                    if (amountCorrectionField) amountCorrectionField.style.display = 'none';
+                    const paymentAmountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+                    if (paymentAmountCorrectOnly) paymentAmountCorrectOnly.value = '';
                     
                     // Seleccionar "Sí" por defecto en ambos radio buttons
                     const referenceCorrectYes = document.getElementById('referenceCorrectYes');
@@ -2855,7 +3181,16 @@ function loadPaymentDataForEnvio(nroTicket) {
         paymentValidationContainer.style.display = 'block';
     };
     
-    const data = `nro_ticket=${encodeURIComponent(nroTicket)}`;
+    let data = `nro_ticket=${encodeURIComponent(nroTicket)}`;
+    if (idPaymentRecord) {
+        data += `&id_payment_record=${encodeURIComponent(idPaymentRecord)}`;
+    }
+    if (paymentReference) {
+        data += `&payment_reference=${encodeURIComponent(paymentReference)}`;
+    }
+    if (recordNumber) {
+        data += `&record_number=${encodeURIComponent(recordNumber)}`;
+    }
     console.log('Enviando datos a GetPaymentData:', data);
     xhr.send(data);
 }
@@ -2900,6 +3235,26 @@ function setupPaymentValidationListeners() {
         dateCorrectNo.addEventListener('change', function() {
             if (this.checked) {
                 dateCorrectionField.style.display = 'block';
+            }
+        });
+    }
+    // Radio: ¿Monto de pago correcto?
+    const amountCorrectYes = document.getElementById('amountCorrectYes');
+    const amountCorrectNo = document.getElementById('amountCorrectNo');
+    const amountCorrectionField = document.getElementById('amountCorrectionField');
+    
+    if (amountCorrectYes && amountCorrectNo && amountCorrectionField) {
+        amountCorrectYes.addEventListener('change', function() {
+            if (this.checked) {
+                amountCorrectionField.style.display = 'none';
+                const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+                if (amountCorrectOnly) amountCorrectOnly.value = '';
+            }
+        });
+        
+        amountCorrectNo.addEventListener('change', function() {
+            if (this.checked) {
+                amountCorrectionField.style.display = 'block';
             }
         });
     }
@@ -6212,7 +6567,6 @@ function openDetailedPaymentModal(element) {
 
     // Obtener y establecer el estatus del pago
     getPagoEstatus(nroTicket, documentType);
-    
     // Configurar ayudas visuales
     setupAutoRegistrationNumber();
     setupNumericValidation();
@@ -6267,22 +6621,114 @@ function getPagoEstatus(nroTicket, documentType = null) {
     xhr.send(`action=GetEstatusPagoAutomatizado&nro_ticket=${encodeURIComponent(nroTicket || "")}`);
 }
 
-function setupAutoRegistrationNumber() {
-    const ref = document.getElementById("referencia");
-    const serial = document.getElementById("serialPosPago");
-    const reg = document.getElementById("registro");
-    if (!ref || !serial || !reg) return;
+// Función para generar número de registro único
+// Opciones de formato disponibles:
+// 1. Pago{4 últimos de referencia}_{4 últimos de serial} (formato actual: Pago0945_4354)
+// 2. REG-{4 últimos de referencia}-{4 últimos de serial}
+// 3. {Año}-{4 últimos de referencia}-{4 últimos de serial}
+// 4. {Fecha YYYYMMDD}-{4 últimos de referencia}-{4 últimos de serial}
+// 5. PA-{Timestamp corto}-{4 últimos de serial}
+function generateRegistrationNumber(formatType = 1) {
+    const referenciaInput = document.getElementById("referencia");
+    const serialPosPagoInput = document.getElementById("serialPosPago");
+    const registroInput = document.getElementById("registro");
+    
+    if (!referenciaInput || !serialPosPagoInput || !registroInput) {
+        return;
+    }
 
-    const updateReg = () => {
-        const rVal = ref.value.trim();
-        const sVal = serial.value.trim();
-        if (rVal.length >= 4 && sVal.length >= 4) {
-            const cleanRef = rVal.slice(-4).replace(/\D/g, '').padStart(4, '0');
-            const cleanSerial = sVal.slice(-4);
-            reg.value = `Pago${cleanRef}_${cleanSerial}`;
-        }
+    const referencia = referenciaInput.value.trim();
+    const serial = serialPosPagoInput.value.trim();
+
+    // Validar que ambos campos tengan al menos 4 caracteres
+    if (!referencia || referencia.length < 4) {
+        return;
+    }
+
+    if (!serial || serial.length < 4) {
+        return;
+    }
+
+    // Obtener los últimos 4 dígitos/caracteres de referencia y serial
+    // Para referencia: solo números, rellenar con ceros a la izquierda si es necesario
+    const ultimos4Referencia = referencia.slice(-4).replace(/\D/g, ''); // Solo números
+    const refFinal = ultimos4Referencia.length >= 4 
+        ? ultimos4Referencia 
+        : ultimos4Referencia.padStart(4, '0'); // Rellenar con ceros si tiene menos de 4 dígitos
+    
+    // Para serial: últimos 4 caracteres (pueden ser números o letras)
+    const ultimos4Serial = serial.slice(-4);
+
+    let numeroRegistro = "";
+
+    switch(formatType) {
+        case 1: // Pago{4 últimos de referencia}_{4 últimos de serial}
+            numeroRegistro = `Pago${refFinal}_${ultimos4Serial}`;
+            break;
+        case 2: // REG-{4 últimos de referencia}-{4 últimos de serial}
+            numeroRegistro = `REG-${refFinal}-${ultimos4Serial}`;
+            break;
+        case 3: // {Año}-{4 últimos de referencia}-{4 últimos de serial}
+            const año = new Date().getFullYear();
+            numeroRegistro = `${año}-${refFinal}-${ultimos4Serial}`;
+            break;
+        case 4: // {Fecha YYYYMMDD}-{4 últimos de referencia}-{4 últimos de serial}
+            const fecha = new Date();
+            const fechaStr = fecha.getFullYear() + 
+                            String(fecha.getMonth() + 1).padStart(2, '0') + 
+                            String(fecha.getDate()).padStart(2, '0');
+            numeroRegistro = `${fechaStr}-${refFinal}-${ultimos4Serial}`;
+            break;
+        case 5: // PA-{Timestamp corto}-{4 últimos de serial}
+            const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos del timestamp
+            numeroRegistro = `PA-${timestamp}-${ultimos4Serial}`;
+            break;
+        default:
+            numeroRegistro = `Pago${refFinal}_${ultimos4Serial}`;
+    }
+
+    registroInput.value = numeroRegistro;
+}
+
+// Configurar generación automática del número de registro
+function setupAutoRegistrationNumber() {
+    const referenciaInput = document.getElementById("referencia");
+    const serialPosPagoInput = document.getElementById("serialPosPago");
+    
+    if (!referenciaInput || !serialPosPagoInput) {
+        return;
+    }
+
+    // Función que se ejecuta cuando cambian los campos
+    const updateRegistrationNumber = () => {
+        // Usar formato 1 por defecto (Pago{ref}_{serial})
+        // Cambiar este número (1-5) para usar otro formato
+        generateRegistrationNumber(1);
     };
-    ref.addEventListener("input", updateReg);
+
+    // Agregar listeners a los campos
+    referenciaInput.addEventListener("input", updateRegistrationNumber);
+    referenciaInput.addEventListener("blur", updateRegistrationNumber);
+    serialPosPagoInput.addEventListener("input", updateRegistrationNumber);
+    serialPosPagoInput.addEventListener("blur", updateRegistrationNumber);
+
+    // También generar cuando el modal se muestra si ya hay valores
+    const modal = document.getElementById("modalAgregarDatosPago");
+    if (modal) {
+        modal.addEventListener("shown.bs.modal", function() {
+            // Cargar la tasa de cambio del día de hoy cuando se abre el modal
+            if (typeof loadExchangeRateToday === 'function') {
+                loadExchangeRateToday();
+            }
+            
+            // Pequeño delay para asegurar que los valores estén cargados
+            setTimeout(() => {
+                if (referenciaInput.value && serialPosPagoInput.value) {
+                    updateRegistrationNumber();
+                }
+            }, 100);
+        });
+    }
 }
 
 function setupNumericValidation() {
@@ -6304,31 +6750,69 @@ async function savePayment() {
     for (const id of required) {
         const el = document.getElementById(id);
         if (!el || !el.value || (el.disabled && el.value === '')) { // Check for disabled fields with empty values
-            Swal.fire({ icon: 'warning', title: 'Atención', text: `El campo ${id} es obligatorio.` });
+            Swal.fire({ 
+                icon: 'warning', 
+                title: 'Atención', 
+                text: `El campo ${id} es obligatorio.`,
+                target: document.getElementById('modalAgregarDatosPago'),
+                customClass: { container: 'payment-alert-modal' }
+            });
             return;
         }
     }
 
     const fileInput = document.getElementById("documentFileDetailed");
     if (!fileInput || !fileInput.files.length) {
-        Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe cargar el comprobante de pago.' });
+        Swal.fire({ 
+            icon: 'warning', 
+            title: 'Atención', 
+            text: 'Debe cargar el comprobante de pago.',
+            target: document.getElementById('modalAgregarDatosPago'),
+            customClass: { container: 'payment-alert-modal' }
+        });
         return;
     }
 
     const idMethod = parseInt(document.getElementById("formaPago").value);
     if (idMethod === 2) { // Transferencia
         if (!document.getElementById("bancoOrigen").value || !document.getElementById("bancoDestino").value) {
-            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar los bancos de origen y destino.' });
+            Swal.fire({ 
+                icon: 'warning', 
+                title: 'Atención', 
+                text: 'Debe seleccionar los bancos de origen y destino.',
+                target: document.getElementById('modalAgregarDatosPago'),
+                customClass: { container: 'payment-alert-modal' }
+            });
             return;
         }
     } else if (idMethod === 5) { // Pago Móvil
         if (!document.getElementById("origenBanco").value || !document.getElementById("destinoBanco").value) {
-            Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe seleccionar los bancos para el Pago Móvil.' });
+            Swal.fire({ 
+                icon: 'warning', 
+                title: 'Atención', 
+                text: 'Debe seleccionar los bancos para el Pago Móvil.',
+                target: document.getElementById('modalAgregarDatosPago'),
+                customClass: { container: 'payment-alert-modal' }
+            });
             return;
         }
     }
 
-    Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    // --- NUEVO: Validación de Presupuesto antes de Guardar ---
+    if (!validateEditBudget(true)) {
+        return;
+    }
+    // ---------------------------------------------------------
+
+    Swal.fire({
+        title: 'Guardando datos...', 
+        allowOutsideClick: false, 
+        target: document.getElementById('modalAgregarDatosPago'),
+        customClass: { container: 'payment-alert-modal' },
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
     // 2. Preparar datos para SavePayment
     const getValue = (id) => {
@@ -6367,15 +6851,73 @@ async function savePayment() {
         dataPayment.append("destination_bank", document.getElementById("destinoBanco").options[document.getElementById("destinoBanco").selectedIndex].text);
     }
 
+    const idPaymentRecord = getValue("id_payment_record_loading");
+    const isUpdate = (idPaymentRecord && idPaymentRecord !== "");
+
     try {
-        // PASO 1: Guardar metadatos
-        const resSave = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SavePayment`, {
-            method: 'POST',
-            body: dataPayment.toString(),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
-        const dataSave = await resSave.json();
-        if (!dataSave.success) throw new Error(dataSave.message || "Error al guardar el pago.");
+        let id_payment_record_result = null;
+
+        if (isUpdate) {
+            // FLUJO ACTUALIZACIÓN (Sustitución de rechazo)
+            Swal.update({ title: 'Actualizando datos del pago...' });
+            
+            const dataUpdate = new URLSearchParams();
+            dataUpdate.append("id_payment", idPaymentRecord);
+            dataUpdate.append("amount_bs", getValue("montoBs"));
+            dataUpdate.append("reference_amount", getValue("montoRef"));
+            dataUpdate.append("payment_method", (formaPagoEl && formaPagoEl.selectedIndex >= 0) ? formaPagoEl.options[formaPagoEl.selectedIndex].text : '');
+            dataUpdate.append("currency", getValue("moneda") === 'bs' ? 'BS' : 'USD');
+            dataUpdate.append("payment_reference", getValue("referencia"));
+            dataUpdate.append("depositor", getValue("depositante"));
+            if (recordNumber) {
+                dataUpdate.append("record_number", recordNumber);
+            }
+
+            // ---------------------------------------------------------
+            // ACTUALIZACIÓN DE ESTATUS AUTOMÁTICA (Solicitud Usuario)
+            // ---------------------------------------------------------
+            // Si se está corrigiendo un pago (Update), se debe cambiar el estatus 
+            // de rechazo (13) a pendiente (7 u 17) según el tipo.
+            const docTypeForStatus = getValue("document_type_pago");
+            let newStatus = 17; // Por defecto: Pago Pendiente por Revisión
+            
+            if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo') {
+                newStatus = 7; // Anticipo Pendiente por Revisión
+            }
+            
+            dataUpdate.append("payment_status", newStatus);
+            // ---------------------------------------------------------
+            
+            // Si es transferencia/pago movil, actualizar bancos también (si el repositorio lo permite)
+            if (idMethod === 2) {
+                dataUpdate.append("origen_bank", document.getElementById("bancoOrigen").options[document.getElementById("bancoOrigen").selectedIndex].text);
+                dataUpdate.append("destination_bank", document.getElementById("bancoDestino").options[document.getElementById("bancoDestino").selectedIndex].text);
+            } else if (idMethod === 5) {
+                dataUpdate.append("origen_bank", document.getElementById("origenBanco").options[document.getElementById("origenBanco").selectedIndex].text);
+                dataUpdate.append("destination_bank", document.getElementById("destinoBanco").options[document.getElementById("destinoBanco").selectedIndex].text);
+            }
+
+            const resUpdate = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SubstitutePayment`, {
+                method: 'POST',
+                body: dataUpdate.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            const dataUpdateRes = await resUpdate.json();
+            if (!dataUpdateRes.success) throw new Error(dataUpdateRes.message || "Error al actualizar el pago.");
+            
+            id_payment_record_result = dataUpdateRes.id_payment_record;
+        } else {
+            // FLUJO INSERCIÓN (Nuevo pago)
+            const resSave = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SavePayment`, {
+                method: 'POST',
+                body: dataPayment.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            const dataSave = await resSave.json();
+            if (!dataSave.success) throw new Error(dataSave.message || "Error al guardar el pago.");
+            
+            id_payment_record_result = dataSave.id_payment_record || dataSave.data;
+        }
 
         // PASO 2: Subir documento
         Swal.update({ title: 'Subiendo comprobante...' });
@@ -6397,7 +6939,9 @@ async function savePayment() {
                 icon: 'success',
                 title: '¡Éxito!',
                 text: 'Pago y comprobante registrados correctamente.',
-                confirmButtonColor: '#003594'
+                confirmButtonColor: '#003594',
+                target: document.getElementById('modalAgregarDatosPago'),
+                customClass: { container: 'payment-alert-modal' }
             }).then(() => {
                 if (detailedPaymentModalInstance) detailedPaymentModalInstance.hide();
                 location.reload();
@@ -6406,19 +6950,41 @@ async function savePayment() {
             throw new Error(dataUpload.message || "Error al subir el comprobante.");
         }
     } catch (e) {
-        Swal.fire({ icon: 'error', title: 'Error', text: e.message });
+        Swal.fire({ 
+            icon: 'error', 
+            title: 'Error', 
+            text: e.message,
+            target: document.getElementById('modalAgregarDatosPago'),
+            customClass: { container: 'payment-alert-modal' }
+        });
     }
 }
 
 function limpiarFormularioDatosPago() {
     const form = document.getElementById("formAgregarDatosPago");
     if (form) form.reset();
+
+    // Limpiar campos ocultos de control
+    const idRec = document.getElementById("id_payment_record_loading");
+    if (idRec) idRec.value = "";
+    
+    const regNum = document.getElementById("registro");
+    if (regNum) regNum.value = "";
+
+    const nroTicketPago = document.getElementById("nro_ticket_pago");
+    if (nroTicketPago) nroTicketPago.value = "";
+
+    const docTypePago = document.getElementById("document_type_pago");
+    if (docTypePago) docTypePago.value = "";
     const pmFields = document.getElementById("pagoMovilFieldsContainer");
     const bFields = document.getElementById("bancoFieldsContainer");
     if (pmFields) pmFields.style.display = "none";
     if (bFields) bFields.style.display = "none";
     const display = document.getElementById("montoEquipo");
     if (display) display.textContent = "$0.00";
+
+    // Reset validation context
+    window.currentOldAmount = 0;
 
     // Re-enable moneda select and clear monto fields
     const monedaSelect = document.getElementById('moneda');
@@ -6438,8 +7004,19 @@ function limpiarFormularioDatosPago() {
         montoRefInput.readOnly = true;
         montoRefInput.disabled = true;
         montoRefInput.style.backgroundColor = '#e9ecef';
+        montoRefInput.style.borderColor = ""; // Reset border color
         montoRefInput.value = '';
     }
+    if (montoBsInput) {
+        montoBsInput.readOnly = true;
+        montoBsInput.disabled = true;
+        montoBsInput.style.backgroundColor = '#e9ecef';
+        montoBsInput.style.borderColor = ""; // Reset border color
+        montoBsInput.value = '';
+    }
+
+    // Reset Soporte Digital UI
+    if (typeof resetDocumentoPagoUI === 'function') resetDocumentoPagoUI();
 }
 
 // Listeners finales
@@ -6448,9 +7025,31 @@ $(document).on("click", "#btnGuardarDatosPago", function(e) {
     savePayment();
 });
 
-$(document).on("click", "#btnCancelarModalPagoFooter", function() {
-    if (detailedPaymentModalInstance) {
-        detailedPaymentModalInstance.hide();
+// Asegurar limpieza total al cerrar el modal por cualquier medio (Cancel, X, clicking outside, ESC)
+$(document).on('hidden.bs.modal', '#modalAgregarDatosPago', function () {
+    if (typeof limpiarFormularioDatosPago === 'function') {
+        limpiarFormularioDatosPago();
+    }
+});
+
+// Listener para los botones cancelar/cerrar del modal de agregar pago
+$(document).on("click", "#modalAgregarDatosPago .btn-close, #btnCancelarModalPagoFooter, #btnCerrarModalPagoHeader", function() {
+    const modalPagoElement = document.getElementById('modalAgregarDatosPago');
+    if (modalPagoElement) {
+        // Limpiar formulario antes de cerrar
+        if (typeof limpiarFormularioDatosPago === 'function') {
+            limpiarFormularioDatosPago();
+        }
+        
+        if (modalAgregarDatosPagoInstance) {
+            modalAgregarDatosPagoInstance.hide();
+        } else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modalPagoInstance = new bootstrap.Modal(modalPagoElement);
+            modalPagoInstance.hide();
+        } else {
+            // Fallback para versiones antiguas o si bootstrap no está global
+            $(modalPagoElement).modal('hide');
+        }
     }
 });
 
@@ -6496,5 +7095,772 @@ $(document).on('input', '#montoBs, #montoRef', function() {
         const val = parseFloat(ref.value) || 0;
         bs.value = (val * rate).toFixed(2);
         if (display) display.textContent = `$${val.toFixed(2)}`;
+    }
+});
+
+/**
+ * Muestra el detalle de todos los pagos asociados a un ticket
+ */
+function showPaymentsDetail(nroTicket, payments, serialPos = 'Sin posición', idStatusPayment = null, clientInfo = null, budgetData = null, estatusPos = 'No disponible') {
+    console.log('showPaymentsDetail called with:', { nroTicket, serialPos, clientInfo, budgetData });
+    const modalElement = document.getElementById('modalPagosDetalle');
+    const ticketLabel = document.getElementById('paymentDetailTicketNro');
+    const tableBody = document.getElementById('bodyPagosDetalle');
+    
+    // Nuevos elementos
+    const razSocialElem = document.getElementById('detailRazonSocial');
+    const rifElem = document.getElementById('detailRif');
+    const serialElem = document.getElementById('detailSerialPos');
+    const budgetElem = document.getElementById('detailMontoPresupuesto');
+    const paidElem = document.getElementById('detailMontoAbonado');
+    const remainingElem = document.getElementById('detailMontoRestante');
+
+    if (!modalElement || !ticketLabel || !tableBody) {
+        console.error('Elementos del modal de detalle de pagos no encontrados');
+        return;
+    }
+
+    ticketLabel.textContent = nroTicket;
+    tableBody.innerHTML = '';
+
+    // Llenar información del cliente si está disponible
+    if (clientInfo) {
+        if (razSocialElem) razSocialElem.textContent = clientInfo.razonSocial || '-';
+        if (rifElem) rifElem.textContent = clientInfo.rif || '-';
+        if (serialElem) serialElem.textContent = serialPos || '-';
+    } else {
+        if (serialElem) serialElem.textContent = serialPos || '-';
+    }
+
+    // Llenar resumen de montos si está disponible
+    if (budgetData) {
+        const totalBudget = parseFloat(budgetData.total_budget || 0);
+        const totalPaid = parseFloat(budgetData.total_paid || 0);
+        // Si no hay presupuesto cargado, el restante es 0 según solicitud del usuario
+        const diff = totalBudget > 0 ? (totalBudget - totalPaid) : 0;
+
+        if (budgetElem) budgetElem.textContent = `$${totalBudget.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        if (paidElem) paidElem.textContent = `$${totalPaid.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        if (remainingElem) {
+            remainingElem.textContent = `Restante: $${diff.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            // Cambiar color según el restante: verde solo si hay presupuesto y está pagado/excedido
+            if (totalBudget > 0 && diff <= 0) {
+                remainingElem.style.color = '#38ef7d';
+            } else {
+                remainingElem.style.color = 'rgba(255, 255, 255, 0.9)';
+            }
+        }
+    }
+    
+    // Parsear payments si vienen como string (por el atributo data-payments)
+    let paymentsObj = payments;
+    
+    // Si es un string, intentar parsear. Manejar posible doble-stringificación.
+    if (typeof paymentsObj === 'string') {
+        try {
+            // Limpiar posibles escapes de comillas dobles si viene de un atributo HTML mangled
+            let cleanStr = paymentsObj.trim();
+            if (cleanStr.startsWith('"') && cleanStr.endsWith('"')) {
+                cleanStr = JSON.parse(cleanStr); // Unescape una vez
+            }
+            
+            if (typeof cleanStr === 'string' && (cleanStr.startsWith('[') || cleanStr.startsWith('{'))) {
+                paymentsObj = JSON.parse(cleanStr);
+            } else if (typeof cleanStr === 'object') {
+                paymentsObj = cleanStr;
+            }
+        } catch (e) {
+            console.error('Error al parsear pagos en showPaymentsDetail:', e, paymentsObj);
+            paymentsObj = [];
+        }
+    }
+    
+    // Asegurar que sea un array
+    if (!Array.isArray(paymentsObj)) {
+        console.warn('paymentsObj no era un array, forzando a array vacío:', paymentsObj);
+        paymentsObj = [];
+    }
+    
+    if (!paymentsObj || paymentsObj.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">No hay pagos registrados para este ticket</td></tr>';
+    } else {
+        paymentsObj.forEach(p => {
+            const isRejectedStatus = p.payment_status == 12 || p.payment_status == 13 || p.payment_status == 14;
+            const statusBadge = p.payment_status == 6 ? '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Aprobado</span>' : 
+                               isRejectedStatus ? '<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Rechazado</span>' : 
+                               '<span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Pendiente</span>';
+            
+            const isViewed = p.id_payment_record && viewedPayments.has(String(p.id_payment_record));
+            const viewedClass = isViewed ? 'viewed' : '';
+            
+            let actionBtn = '';
+            
+            if (isRejectedStatus) {
+                 actionBtn = `
+                <button class="btn btn-outline-danger btn-sm reupload-payment-btn" 
+                        data-nro-ticket="${nroTicket}"
+                        data-serial-pos="${serialPos}"
+                        data-razon-social="${clientInfo ? (clientInfo.razonSocial || '') : ''}"
+                        data-rif="${clientInfo ? (clientInfo.rif || '') : ''}"
+                        data-estatus-pos="${estatusPos}"
+                        data-id-payment-record="${p.id_payment_record}"
+                        data-record-number="${p.record_number || ''}"
+                        data-document-type="${p.document_type || ''}"
+                        data-reference-amount="${p.reference_amount || 0}"
+                        data-payment-status="${p.payment_status}"
+                        title="Corregir Pago / Subir Nuevo Comprobante"
+                        style="width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; padding: 0;">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </button>`;
+            } else if (p.file_path) {
+                actionBtn = `
+                <button class="btn btn-outline-primary btn-sm view-individual-payment-btn ${viewedClass}" 
+                        data-payment-data='${JSON.stringify(p).replace(/'/g, "&apos;")}' 
+                        data-serial-pos="${serialPos}"
+                        title="Ver Comprobante"
+                        style="width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; padding: 0;">
+                    <i class="fas fa-eye"></i>
+                </button>`;
+            } else {
+                actionBtn = `
+                <button class="btn btn-outline-secondary btn-sm view-individual-payment-fallback-btn ${viewedClass}" 
+                        data-record-number="${p.record_number}" 
+                        data-payment-status="${p.payment_status}"
+                        data-nro-ticket="${nroTicket}"
+                        data-serial-pos="${serialPos}"
+                        data-id-payment-record="${p.id_payment_record}"
+                        title="Buscar Comprobante"
+                        style="width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; padding: 0;">
+                    <i class="fas fa-search"></i>
+                </button>`;
+            }
+
+            const row = `
+                <tr>
+                    <td class="fw-medium">${p.payment_reference || 'N/A'}</td>
+                    <td class="text-center text-muted">${p.payment_date || 'N/A'}</td>
+                    <td class="text-end fw-bold">${p.amount_bs ? p.amount_bs + ' Bs' : '0.00 Bs'}</td>
+                    <td class="text-end fw-bold text-primary">${p.reference_amount ? '$' + p.reference_amount : '$0.00'}</td>
+                    <td class="text-center">${statusBadge}</td>
+                    <td class="text-center">${actionBtn}</td>
+                </tr>
+            `;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+    
+    // ✅ Habilitar/Deshabilitar botón de Finalizar Revisión
+    const btnFinalizar = document.getElementById('btnFinalizarRevision');
+    if (btnFinalizar) {
+        // Si el ticket ya tiene estatus 6 (Anticipo aprobado), ocultamos el botón
+        if (idStatusPayment == 6) {
+            btnFinalizar.style.display = 'none';
+        } else {
+            btnFinalizar.style.display = 'inline-block'; 
+
+            const totalBudget = budgetData ? parseFloat(budgetData.total_budget || 0) : 0;
+            const totalPaid = budgetData ? parseFloat(budgetData.total_paid || 0) : 0;
+
+            // NUEVA LÓGICA: Un pago se considera "revisado" si ya no está en estatus Pendiente.
+            // Los iconos de advertencia (reloj) aparecen cuando el estatus no es 6 (Aprobado) 
+            // ni uno de los de rechazo (12, 13, 14).
+            const allReviewed = paymentsObj.length > 0 && paymentsObj.every(p => {
+                const isApproved = p.payment_status == 6;
+                const isRejected = p.payment_status == 12 || p.payment_status == 13 || p.payment_status == 14;
+                return isApproved || isRejected;
+            });
+
+            // Se habilita solo si se ha pagado el total del presupuesto con pagos APROBADOS
+            // y TODOS los registros han sido revisados (sin iconos de advertencia).
+            const isFullyPaid = totalBudget > 0 && totalPaid >= totalBudget;
+            
+            btnFinalizar.disabled = !(allReviewed && isFullyPaid);
+            btnFinalizar.setAttribute('data-nro-ticket', nroTicket);
+            
+            if (!allReviewed) {
+                btnFinalizar.title = "Todos los pagos deben ser revisados (Aprobados o Rechazados) para finalizar";
+            } else if (!isFullyPaid) {
+                btnFinalizar.title = `El presupuesto ($${totalBudget.toFixed(2)}) debe estar cubierto por pagos APROBADOS para finalizar`;
+            } else {
+                btnFinalizar.title = "Finalizar revisión y permitir que el ticket siga su curso";
+            }
+        }
+    }
+    
+    if (!detailedPaymentModalInstance) {
+        detailedPaymentModalInstance = new bootstrap.Modal(modalElement);
+    }
+    detailedPaymentModalInstance.show();
+}
+
+/**
+ * Evento para finalizar la revisión global del ticket
+ */
+$(document).on('click', '#btnFinalizarRevision', function() {
+    const nroTicket = $(this).attr('data-nro-ticket');
+    const id_user = document.getElementById('userId').value;
+
+    if (!nroTicket || !id_user) {
+        Swal.fire('Error', 'No se pudo identificar el ticket o el usuario', 'error');
+        return;
+    }
+
+    const customQuestionSvg = `
+    <div class="custom-icon-wrapper" style="margin-bottom: 20px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#003594" class="bi bi-question-circle-fill custom-icon-animation" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.24-2.673-2.24-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+        </svg>
+    </div>`;
+
+    Swal.fire({
+        title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+                    <div class="custom-modal-header-content">¿Finalizar Revisión?</div>
+                </div>`,
+        html: `
+            ${customQuestionSvg}
+            <div style="font-size: 1.1rem; color: #495057; margin-top: 15px;">
+                Esta acción cambiará el estatus del ticket <span style="font-weight: bold; color: #003594; background: rgba(0, 53, 148, 0.1); padding: 2px 8px; border-radius: 4px;">${nroTicket}</span> 
+                para que pueda seguir su curso.
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#003594',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="fas fa-check-circle me-2"></i> Finalizar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true,
+        color: 'black',
+        backdrop: `rgba(0, 0, 0, 0.4)`,
+        allowOutsideClick: false,
+        didOpen: () => {
+            const container = document.querySelector('.swal2-container');
+            const popup = document.querySelector('.swal2-popup');
+            const htmlContainer = document.querySelector('.swal2-html-container');
+            
+            if (container) {
+                container.style.zIndex = '2060';
+                container.style.backdropFilter = 'blur(8px)';
+            }
+            
+            if (popup) {
+                popup.style.background = 'rgba(255, 255, 255, 0.95)';
+                popup.style.backdropFilter = 'blur(10px)';
+                popup.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                popup.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+                popup.style.borderRadius = '16px';
+            }
+
+            if (htmlContainer) {
+                htmlContainer.style.setProperty('overflow', 'hidden', 'important');
+                htmlContainer.style.setProperty('overflow-y', 'hidden', 'important');
+                htmlContainer.style.paddingRight = '0';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Procesando...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                url: `${ENDPOINT_BASE}${APP_PATH}api/consulta/finalizarRevisionTicket`,
+                type: 'POST',
+                data: { nroTicket: nroTicket, id_user: id_user },
+                dataType: 'json',
+                success: function(response) {
+                    Swal.close();
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Finalizado!',
+                            text: response.message,
+                            confirmButtonColor: '#003594',
+                            color: 'black'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', response.message || 'Error al finalizar la revisión', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.close();
+                    Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+                }
+            });
+        }
+    });
+});
+
+/**
+ * Eventos para manejar la interacción con los nuevos botones
+ */
+$(document).ready(function() {
+    // Botón de Info en la tabla principal
+    $(document).on('click', '.view-payments-info-btn', async function() {
+        // Usar la API de DataTable para obtener los datos de la fila de forma segura
+        const table = $('#tabla-ticket').DataTable();
+        const rowData = table.row($(this).closest('tr')).data();
+        
+        if (!rowData) {
+            console.error('No se pudo obtener la data de la fila');
+            const nroTicketAttr = $(this).attr('data-nro-ticket');
+            if (nroTicketAttr) {
+                // Fallback a los atributos si falla la API
+                fetchDataAndShowModal(nroTicketAttr, 
+                    $(this).attr('data-rif'), 
+                    $(this).attr('data-razon-social'), 
+                    $(this).attr('data-serial-pos') || 'Sin posición',
+                    $(this).attr('data-id-status-payment'),
+                    $(this).attr('data-estatus-pos') || 'No disponible');
+            }
+            return;
+        }
+
+        const nroTicket = rowData.nro_ticket;
+        const rif = rowData.rif;
+        const razonSocial = rowData.razonsocial_cliente;
+        const serialPos = rowData.serial_pos || 'Sin posición';
+        const estatusPos = rowData.estatus_inteliservices || 'No disponible';
+        const idStatusPayment = rowData.id_status_payment;
+        
+        console.log('Detalle de Pagos Clicked (DataTable Data):', { nroTicket, rif, razonSocial, serialPos, estatusPos });
+        
+        if (!nroTicket) {
+            Swal.fire('Error', 'No se pudo obtener el número de ticket', 'error');
+            return;
+        }
+
+        fetchDataAndShowModal(nroTicket, rif, razonSocial, serialPos, idStatusPayment, estatusPos);
+    });
+
+    async function fetchDataAndShowModal(nroTicket, rif, razonSocial, serialPos, idStatusPayment, estatusPos = 'No disponible') {
+        // Mostrar loading
+        Swal.fire({
+            title: 'Cargando información...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            // Parallel fetch for payments and budget data
+            const [respPayments, respBudget] = await Promise.all([
+                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentsByTicket`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `nro_ticket=${encodeURIComponent(nroTicket)}`
+                }),
+                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/handleGetTotalPaidByTicket`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `nro_ticket=${encodeURIComponent(nroTicket)}`
+                })
+            ]);
+
+            const resultPayments = await respPayments.json();
+            const resultBudget = await respBudget.json();
+            
+            Swal.close();
+
+            if (resultPayments.success && resultPayments.payments) {
+                // Extract serial_pos from first payment record if available, fallback to provided data
+                const serialPosFromApi = resultPayments.payments.length > 0 && resultPayments.payments[0].serial_pos 
+                    ? resultPayments.payments[0].serial_pos 
+                    : serialPos;
+                
+                // Convert resultPayments.payments to standardized payments array
+                const payments = resultPayments.payments.map(p => ({
+                    id_payment_record: p.id_payment_record,
+                    record_number: p.record_number,
+                    payment_date: p.payment_date,
+                    payment_method: p.payment_method,
+                    currency: p.currency,
+                    amount_bs: p.amount_bs,
+                    reference_amount: p.reference_amount,
+                    payment_reference: p.payment_reference,
+                    depositor: p.depositor,
+                    origen_bank: p.origen_bank,
+                    destination_bank: p.destination_bank,
+                    confirmation_number: p.confirmation_number,
+                    payment_status: p.payment_status,
+                    file_path: p.file_path || p.receipt_path,
+                    mime_type: p.receipt_mime,
+                    original_filename: p.receipt_name,
+                    nro_ticket: nroTicket,
+                    document_type: p.document_type
+                }));
+
+                const clientInfo = { rif, razonSocial };
+                const budgetData = resultBudget.success ? {
+                    total_paid: resultBudget.total_paid,
+                    total_budget: resultBudget.total_budget,
+                    presupuesto_diferencia: resultBudget.presupuesto_diferencia
+                } : null;
+
+                // Store global context for validation
+                if (budgetData) {
+                    window.currentBudgetAmount = parseFloat(budgetData.total_budget || 0);
+                    // Remaining for NEW payments is total_budget - total_paid
+                    window.currentRemaining = window.currentBudgetAmount > 0 
+                        ? (window.currentBudgetAmount - parseFloat(budgetData.total_paid || 0)) 
+                        : 0;
+                } else {
+                    window.currentBudgetAmount = 0;
+                    window.currentRemaining = 0;
+                }
+
+                showPaymentsDetail(nroTicket, payments, serialPosFromApi, idStatusPayment, clientInfo, budgetData, estatusPos);
+            } else {
+                Swal.fire('Error', 'No se pudieron cargar los pagos', 'error');
+            }
+        } catch (error) {
+            Swal.close();
+            console.error('Error fetching data:', error);
+            Swal.fire('Error', 'Error al cargar la información: ' + error.message, 'error');
+        }
+    }
+
+    // Botón de Ver Comprobante dentro del modal de detalle
+    $(document).on('click', '.view-individual-payment-btn', function() {
+        const p = JSON.parse($(this).attr('data-payment-data'));
+        const serialPos = $(this).attr('data-serial-pos');
+        
+        // Marcar como visualizado
+        if (p.id_payment_record) {
+            viewedPayments.add(String(p.id_payment_record));
+            $(this).addClass('viewed');
+        }
+        
+        // Establecer ID global para la aprobación itemizada
+        currentIdPaymentRecord = p.id_payment_record;
+        currentTicketNroForImage = p.nro_ticket;
+        
+        if (typeof showApprovalModal === 'function') {
+            showApprovalModal(
+                p.nro_ticket, 
+                p.document_type || 'Anticipo', 
+                p.file_path, 
+                p.mime_type || 'image/jpeg', 
+                p.original_filename, 
+                serialPos || 'Sin posicin', 
+                p.payment_status == 13, 
+                p.payment_status
+            );
+        } else {
+            Swal.fire('Error', 'No se pudo cargar el visor de imágenes', 'error');
+        }
+    });
+
+    // Botón de Búsqueda Fallback dentro del modal de detalle
+    $(document).on('click', '.view-individual-payment-fallback-btn', function() {
+        const recordNumber = $(this).attr('data-record-number');
+        const paymentStatus = $(this).attr('data-payment-status');
+        const nroTicket = $(this).attr('data-nro-ticket');
+        const serialPos = $(this).attr('data-serial-pos');
+        const idPaymentRecord = $(this).attr('data-id-payment-record');
+
+        // Marcar como visualizado
+        if (idPaymentRecord) {
+            viewedPayments.add(String(idPaymentRecord));
+            $(this).addClass('viewed');
+        }
+
+        Swal.fire({
+            title: 'Buscando comprobante...',
+            text: 'Espere un momento, por favor.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        $.ajax({
+            url: `${ENDPOINT_BASE}get-payment-attachment`,
+            type: 'POST',
+            data: { record_number: recordNumber },
+            dataType: 'json',
+            success: function(response) {
+                Swal.close();
+                if (response.success && response.data) {
+                    const att = response.data;
+                    
+                    // Actualizar ID global para la aprobación
+                    currentIdPaymentRecord = att.id_payment_record || null;
+                    currentTicketNroForImage = nroTicket;
+
+                    if (typeof showApprovalModal === 'function') {
+                        showApprovalModal(
+                            nroTicket,
+                            att.document_type || 'Anticipo',
+                            att.file_path,
+                            att.mime_type || 'image/jpeg',
+                            att.original_filename,
+                            serialPos || 'Sin posicin',
+                            paymentStatus == 13,
+                            paymentStatus
+                        );
+                    }
+                } else {
+                    Swal.fire('No encontrado', response.message || 'No se encontró el archivo adjunto para este registro.', 'warning');
+                }
+            },
+            error: function(err) {
+                Swal.fire('Error', 'Error al realizar la búsqueda del comprobante', 'error');
+                console.error('Error fallback search:', err);
+            }
+        });
+    });
+
+    // Listener para el botón de Re-upload / Corregir Pago (Status 12)
+    // Listener para el botón de Re-upload / Corregir Pago (Status 12)
+    $(document).on('click', '.reupload-payment-btn', function() {
+        // Reset the form first to clear previous values
+        const form = document.getElementById('formAgregarDatosPago');
+        if (form) form.reset();
+
+        const nroTicket = $(this).attr('data-nro-ticket');
+        const serialPos = $(this).attr('data-serial-pos');
+        const documentType = $(this).attr('data-document-type');
+        const razonSocial = $(this).attr('data-razon-social');
+        const rif = $(this).attr('data-rif');
+        
+        // Store Original Context for validation
+        window.currentOldAmount = parseFloat($(this).attr('data-reference-amount')) || 0;
+        window.currentOldStatus = parseInt($(this).attr('data-payment-status')) || 0;
+        
+        // 1. Llenar los campos del modal
+        const serialInput = document.getElementById('serialPosPago');
+        if (serialInput) serialInput.value = serialPos || '';
+
+        const ticketInput = document.getElementById('nro_ticket_pago');
+        if (ticketInput) ticketInput.value = nroTicket || '';
+
+        const docTypeInput = document.getElementById('document_type_pago');
+        if (docTypeInput && documentType) docTypeInput.value = documentType;
+
+        const idRecInput = document.getElementById('id_payment_record_loading');
+        const idRec = $(this).attr('data-id-payment-record');
+        if (idRecInput) idRecInput.value = idRec || '';
+
+        const recordNumberInput = document.getElementById('registro');
+        const recordNumber = $(this).attr('data-record-number');
+        if (recordNumberInput) recordNumberInput.value = recordNumber || '';
+
+        // Poblar sección de Información del Cliente
+        const razorSocialInput = document.getElementById('displayRazonSocial');
+        if (razorSocialInput) razorSocialInput.value = razonSocial || '';
+
+        const rifInput = document.getElementById('displayRif');
+        if (rifInput) rifInput.value = rif || '';
+
+        const estatusPosInput = document.getElementById('displayEstatusPos');
+        const estatusPosValue = $(this).attr('data-estatus-pos');
+        if (estatusPosInput) estatusPosInput.value = estatusPosValue || 'No disponible';
+
+        // Depositante por defecto es la razón social
+        const depositanteInput = document.getElementById('depositante');
+        if (depositanteInput && razonSocial) depositanteInput.value = razonSocial;
+        
+        // 2. Abrir el modal
+        const modalElement = document.getElementById('modalAgregarDatosPago');
+        
+        // Cargar listas desplegables
+        if (typeof loadPaymentMethods === 'function') loadPaymentMethods();
+        if (typeof loadBancos === 'function') loadBancos();
+
+        // Establecer estatus dinámicamente
+        if (typeof getPagoEstatus === 'function') {
+            getPagoEstatus(nroTicket, documentType);
+        } else {
+             const estatusInput = document.getElementById('estatus');
+             if (estatusInput) estatusInput.value = 'Por Aprobar'; // Fallback
+        }
+
+        // --- NUEVO: Setear Fecha de Carga (Hoy) ---
+        const fechaCargaInput = document.getElementById('fechaCarga');
+        if (fechaCargaInput) {
+            const today = new Date().toISOString().split('T')[0];
+            fechaCargaInput.value = today;
+        }
+        // -----------------------------------------
+
+        if (modalElement) {
+            // FIX: Forzar z-index superior para que se vea sobre el otro modal
+            modalElement.style.zIndex = '2060';
+            
+            if (modalAgregarDatosPagoInstance) {
+                modalAgregarDatosPagoInstance.show();
+            } else {
+                const modalInstance = new bootstrap.Modal(modalElement);
+                modalInstance.show();
+            }
+
+            // Ajustar el backdrop que se crea dinámicamente
+            setTimeout(() => {
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                if (backdrops.length > 1) {
+                    // El último backdrop creado (para este modal) debe estar justo debajo del modal (2059)
+                    // Bootstrap usa 1050 por defecto.
+                    backdrops[backdrops.length - 1].style.zIndex = '2059';
+                }
+            }, 100);
+        } else {
+            console.error('Modal modalAgregarDatosPago no encontrado en el DOM');
+            Swal.fire('Error', 'No se puede abrir el formulario de carga. Contacte soporte.', 'error');
+        }
+    });
+
+    // Configurar generación automática del número de registro cuando el DOM esté listo
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", function() {
+            setupAutoRegistrationNumber();
+            setupNumericValidation();
+            setupBudgetValidationListeners();
+        });
+    } else {
+        setupAutoRegistrationNumber();
+        setupNumericValidation();
+        setupBudgetValidationListeners();
+    }
+
+});
+
+// --- BUDGET VALIDATION LOGIC FOR SUBSTITUTIONS ---
+
+function setupBudgetValidationListeners() {
+    $('#montoBs, #montoRef').on('input keyup change', function() {
+        validateEditBudget();
+    });
+}
+
+function showOverBudgetAlert(inputAmount, limit, isEdit = false) {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Límite de Presupuesto Excedido',
+        html: `
+            <div style="text-align: left;">
+                <p>El monto ingresado <b>($${inputAmount.toFixed(2)})</b> excede el presupuesto disponible.</p>
+                <p><b>Presupuesto Disponible:</b> $${limit.toFixed(2)}</p>
+                <hr>
+                <small>Por favor, ajuste el monto para continuar.</small>
+            </div>
+        `,
+        confirmButtonColor: '#003594',
+        target: document.getElementById('modalAgregarDatosPago'),
+        customClass: { container: 'payment-alert-modal' }
+    });
+}
+
+function validateEditBudget(showModal = false) {
+    const montoRefInput = document.getElementById("montoRef");
+    const btnGuardar = document.getElementById("btnGuardarDatosPago");
+    
+    // Only valid if we have budget data
+    if (typeof window.currentBudgetAmount === 'undefined' || window.currentBudgetAmount <= 0) {
+        if(btnGuardar) btnGuardar.disabled = false;
+        return true;
+    }
+
+    const inputAmount = parseFloat(montoRefInput.value) || 0;
+    const currentRemaining = window.currentRemaining || 0;
+    
+    // Check if we are in "Substitute" mode (have an old amount)
+    const idRec = document.getElementById("id_payment_record_loading") ? document.getElementById("id_payment_record_loading").value : "";
+    
+    // --- LÓGICA CRÍTICA: Definir si sumamos el originalAmount al presupuesto disponible ---
+    // El backend (total_paid) ya suma los estatus: 1, 3, 4, 5, 6, 7, 17.
+    // Si el pago que estamos sustituyendo YA estaba en uno de esos estatus, debemos sumarlo 
+    // al "restante efectivo" porque lo estamos reemplazando.
+    // Si era un estatus RECHAZADO (12, 13, 14), el backend NO lo sumó, así que NO debemos sumarlo aquí.
+    const accountedStatuses = [1, 3, 4, 5, 6, 7, 17];
+    const wasAccounted = accountedStatuses.includes(window.currentOldStatus);
+    
+    const originalAmount = (idRec && idRec !== "" && wasAccounted) ? (window.currentOldAmount || 0) : 0;
+    
+    // The "True Remaining" for THIS edit/substitute is (Current Remaining + Original Amount of this record if it was paid)
+    const effectiveRemaining = currentRemaining + originalAmount;
+    
+    const isOverBudget = inputAmount > (effectiveRemaining + 0.001);
+
+    if (isOverBudget) {
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.title = "El monto excede el presupuesto disponible";
+        }
+        montoRefInput.style.borderColor = "#dc3545";
+        montoRefInput.style.backgroundColor = "#fff5f5";
+
+        if (showModal) {
+            showOverBudgetAlert(inputAmount, effectiveRemaining, true);
+        }
+        return false;
+    } else {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.title = "";
+        }
+        montoRefInput.style.borderColor = "";
+        montoRefInput.style.backgroundColor = "";
+        return true;
+    }
+}
+
+/**
+ * Función para resetear la interfaz de Soporte Digital
+ */
+function resetDocumentoPagoUI() {
+    const input = document.getElementById("documentFileDetailed");
+    const fileNameDisplay = document.getElementById("fileNameDocumentFileDetailed");
+    const textDisplay = document.getElementById("textDocumentFileDetailed");
+    const iconDisplay = document.getElementById("iconDocumentFileDetailed");
+    const labelDisplay = document.getElementById("labelDocumentFileDetailed");
+    
+    if (input) input.value = "";
+    
+    if (fileNameDisplay) {
+        fileNameDisplay.textContent = "";
+        fileNameDisplay.classList.add("d-none");
+    }
+    if (textDisplay) textDisplay.classList.remove("d-none");
+    
+    if (iconDisplay) {
+        iconDisplay.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-camera text-secondary" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>';
+    }
+    if (labelDisplay) {
+        labelDisplay.style.borderColor = "#cbd5e0"; 
+        labelDisplay.style.backgroundColor = "#f8f9fa";
+    }
+}
+
+// Escuchador para el input de archivo de Soporte Digital
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'documentFileDetailed') {
+        const fileNameDisplay = document.getElementById("fileNameDocumentFileDetailed");
+        const textDisplay = document.getElementById("textDocumentFileDetailed");
+        const iconDisplay = document.getElementById("iconDocumentFileDetailed");
+        const labelDisplay = document.getElementById("labelDocumentFileDetailed");
+        
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            if (fileNameDisplay) {
+                fileNameDisplay.textContent = file.name;
+                fileNameDisplay.classList.remove("d-none");
+            }
+            if (textDisplay) textDisplay.classList.add("d-none");
+            
+            if (iconDisplay) {
+                iconDisplay.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-check-circle text-success" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>';
+            }
+            if (labelDisplay) {
+                labelDisplay.style.borderColor = "#28a745";
+                labelDisplay.style.backgroundColor = "#e8f5e9";
+            }
+        } else {
+            resetDocumentoPagoUI();
+        }
     }
 });

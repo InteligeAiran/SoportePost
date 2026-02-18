@@ -625,6 +625,319 @@ function mi_navbar() {}
             cursor: pointer;
             padding: 10px 20px;
         }
+
+        /* ==========================================================================
+           ESTILOS PREMIUM Y 3D PARA EL MODAL DE DETALLE DE PAGOS
+           ========================================================================== */
+        #modalPagosDetalle {
+            z-index: 1000 !important;
+        }
+
+        #modalPagosDetalle .modal-content {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* 3D Card Style for Information Sections */
+        .info-card-3d {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card-3d:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 53, 148, 0.12), 0 6px 12px rgba(0, 0, 0, 0.08);
+            border-color: #003594;
+        }
+
+        .info-card-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #003594, #0056b3, #003594);
+            background-size: 200% 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .info-card-3d:hover::before {
+            opacity: 1;
+            animation: shimmerEffect 2s infinite;
+        }
+
+        @keyframes shimmerEffect {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Summary Cards 3D */
+        .summary-card-3d {
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: default;
+            height: 100%;
+        }
+
+        .summary-card-3d:hover {
+            transform: perspective(1000px) rotateX(5deg) translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Overlay effect for cards */
+        .summary-card-3d .card-overlay {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+            transition: transform 0.5s ease;
+            pointer-events: none;
+        }
+
+        .summary-card-3d:hover .card-overlay {
+            transform: translate(10%, 10%);
+        }
+
+        #modalPagosDetalle .modal-header {
+            background: linear-gradient(135deg, #001f54 0%, #003594 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: none;
+        }
+
+        #modalPagosDetalle .modal-title {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #modalPagosDetalle .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+            opacity: 0.8;
+            transition: all 0.2s ease;
+            box-shadow: none !important;
+        }
+
+        #modalPagosDetalle .modal-header .btn-close:hover,
+        #modalPagosDetalle .modal-header .btn-close:focus {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            box-shadow: none !important;
+            border-radius: 50%;
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        #modalPagosDetalle .modal-body {
+            padding: 2rem;
+            background-color: #f8fafc;
+        }
+
+        #modalPagosDetalle .table-responsive {
+            border-radius: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+
+        #modalPagosDetalle .table {
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        #modalPagosDetalle .table thead th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* Anchos específicos para asegurar visibilidad */
+        #modalPagosDetalle .table th:nth-child(1) { width: 25%; text-align: left; } /* Ref */
+        #modalPagosDetalle .table th:nth-child(2) { width: 20%; } /* Fecha */
+        #modalPagosDetalle .table th:nth-child(3) { width: 15%; text-align: right; } /* Bs */
+        #modalPagosDetalle .table th:nth-child(4) { width: 15%; text-align: right; } /* Ref */
+        #modalPagosDetalle .table th:nth-child(5) { width: 15%; } /* Estatus */
+        #modalPagosDetalle .table th:nth-child(6) { width: 10%; } /* Acción */
+
+        #modalPagosDetalle .table thead th:first-child { text-align: left; }
+        #modalPagosDetalle .table thead th:nth-child(3), 
+        #modalPagosDetalle .table thead th:nth-child(4) { text-align: right; }
+
+        #modalPagosDetalle .table tbody td {
+            padding: 1rem 0.75rem;
+            font-size: 0.9rem;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            transition: background-color 0.2s;
+        }
+
+        #modalPagosDetalle .table td:nth-child(1) { text-align: left; }
+        #modalPagosDetalle .table td:nth-child(2) { text-align: center; color: #64748b; }
+        #modalPagosDetalle .table td:nth-child(3),
+        #modalPagosDetalle .table td:nth-child(4) { text-align: right; }
+        #modalPagosDetalle .table td:nth-child(5),
+        #modalPagosDetalle .table td:nth-child(6) { text-align: center; }
+
+        #modalPagosDetalle .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        #modalPagosDetalle .table tbody tr:hover td {
+            background-color: #f1f7ff;
+        }
+
+        #modalPagosDetalle .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        /* Estado de los Badges en el modal */
+        #modalPagosDetalle .badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        #modalPagosDetalle .bg-success {
+            background-color: #dcfce7 !important;
+            color: #15803d !important;
+        }
+
+        #modalPagosDetalle .bg-danger {
+            background-color: #fee2e2 !important;
+            color: #b91c1c !important;
+        }
+
+        #modalPagosDetalle .bg-warning {
+            background-color: #fef9c3 !important;
+            color: #a16207 !important;
+        }
+
+        /* Botones personalizados */
+        #modalPagosDetalle .btn-secondary {
+            background-color: #64748b;
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #modalPagosDetalle .btn-secondary:hover {
+            background-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+        }
+
+        #modalPagosDetalle #btnFinalizarRevision {
+            background: linear-gradient(135deg, #003594 0%, #0056b3 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(0, 53, 148, 0.25);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #detailMontoRestante{
+            font-size: 0.9rem;
+            color: black;
+            font-weight: 500;
+            background-color: aliceblue;
+        }
+
+        #modalPagosDetalle #btnFinalizarRevision:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 53, 148, 0.4);
+            filter: brightness(1.1);
+        }
+
+        #modalPagosDetalle #btnFinalizarRevision:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Clase personalizada para alertas de pago (z-index superior al modal de detalles) */
+        /* ID personalizado para alertas de pago (z-index máximo para superar cualquier modal) */
+        #paymentAlertModal {
+            z-index: 9999 !important;
+        }
+
+        #modalPagosDetalle .view-individual-payment-btn,
+        #modalPagosDetalle .view-individual-payment-fallback-btn {
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+        }
+
+        #modalPagosDetalle .view-individual-payment-btn.viewed,
+        #modalPagosDetalle .view-individual-payment-fallback-btn.viewed {
+            background-color: #003594;
+            color: white;
+            border-color: #003594;
+            box-shadow: 0 4px 8px rgba(0, 53, 148, 0.2);
+        }
+
+        #modalPagosDetalle .view-individual-payment-btn:hover,
+        #modalPagosDetalle .view-individual-payment-fallback-btn:hover {
+            background: #f1f5f9;
+            color: #003594;
+            border-color: #003594;
+            transform: scale(1.1);
+        }
     /* ==========================================================================
        ESTILOS PARA BOTONES DE EXONERACIÓN (NUEVOS)
        ========================================================================== */
@@ -1247,7 +1560,7 @@ function mi_navbar() {}
                         </label>
                         </div>
                         <div class="form-check">
-                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="Anticipo">
+                        <input class="form-check-input" type="radio" name="opcionImagen" id="imagenPago" value="pago">
                         <label class="form-check-label" for="imagenPago" id="labelPago">
                             Documento de Pago
                         </label>
@@ -1294,7 +1607,7 @@ function mi_navbar() {}
                                 
                                 <!-- Datos originales del pago -->
                                 <div class="row mb-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#003594" class="bi bi-hash me-1" viewBox="0 0 16 16">
                                                 <path d="M8.39 12.648a1.32 1.32 0 0 0-.015.18c0 .305.21.508.5.508.266 0 .492-.172.555-.477l.554-2.703h1.204c.421 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-.74l-.1-1.054h.73c.467 0 .684-.235.684-.547 0-.312-.217-.547-.684-.547h-.73l-.188-1.053h.74c.421 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-1.204l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H7.617l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H5.492c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h.74l.1 1.054h-.73c-.467 0-.684.235-.684.547 0 .312.217.547.684.547h.73l.188 1.053h-.74c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h1.204l.555 2.703c.03.16.09.242.21.242.12 0 .18-.083.21-.242l.554-2.703h2.242l.555 2.703c.03.16.09.242.21.242.12 0 .18-.083.21-.242l.554-2.703h1.7c.42 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-1.204l-.1-1.054h1.204c.42 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547h-1.204l-.188-1.053h1.204c.42 0 .617-.234.617-.547 0-.312-.196-.547-.617-.547H9.817l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H7.243l-.555-2.684c-.03-.159-.09-.242-.21-.242-.12 0-.18.083-.21.242l-.554 2.684H4.492c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h.74l.1 1.054h-.73c-.467 0-.684.235-.684.547 0 .312.217.547.684.547h.73l.188 1.053h-.74c-.42 0-.617.234-.617.547 0 .312.196.547.617.547h1.204l.555 2.703c.03.16.09.242.21.242.12 0 .18-.083.21-.242l.554-2.703h2.242z"/>
@@ -1303,7 +1616,7 @@ function mi_navbar() {}
                                         </label>
                                         <input type="text" id="paymentReferenceOriginal" class="form-control" readonly style="background-color: #ffffff; border: 2px solid #dee2e6; border-radius: 8px; padding: 10px; font-weight: 500; color: #495057;">
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#003594" class="bi bi-calendar3 me-1" viewBox="0 0 16 16">
                                                 <path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z"/>
@@ -1312,6 +1625,13 @@ function mi_navbar() {}
                                             Fecha de Pago:
                                         </label>
                                         <input type="text" id="paymentDateOriginal" class="form-control" readonly style="background-color: #ffffff; border: 2px solid #dee2e6; border-radius: 8px; padding: 10px; font-weight: 500; color: #495057;">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
+                                            <i class="fas fa-money-bill-wave me-1 text-primary"></i>
+                                            Monto:
+                                        </label>
+                                        <input type="text" id="paymentAmountOriginal" class="form-control" readonly style="background-color: #ffffff; border: 2px solid #dee2e6; border-radius: 8px; padding: 10px; font-weight: 500; color: #495057;">
                                     </div>
                                 </div>
                                 
@@ -1366,7 +1686,7 @@ function mi_navbar() {}
                                 </div>
                                 
                                 <!-- Campo para corregir solo la fecha de pago -->
-                                <div id="dateCorrectionField" style="display: none;" class="mb-3">
+                                <div id="dateCorrectionField" style="display: none;" class="mb-4">
                                     <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#28a745" class="bi bi-calendar-check me-1" viewBox="0 0 16 16">
                                             <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
@@ -1376,10 +1696,41 @@ function mi_navbar() {}
                                     </label>
                                     <input type="date" id="paymentDateCorrectOnly" class="form-control" style="border: 2px solid #28a745; border-radius: 8px; padding: 10px;">
                                 </div>
+
+                                <!-- Radio: ¿Monto del pago correcto? -->
+                                <div class="mb-4" style="background-color: #ffffff; padding: 15px; border-radius: 8px; border-left: 4px solid #003594;">
+                                    <label class="form-label mb-3" style="font-weight: 600; color: #003594; font-size: 15px; display: block;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-question-circle me-2" viewBox="0 0 16 16" style="vertical-align: middle;">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.326 0-2.786.647-2.754 2.533zm1.25 5.762a.25.25 0 1 1-.5 0 .25.25 0 0 1 .5 0"/>
+                                        </svg>
+                                        ¿Monto de pago correcto?
+                                    </label>
+                                    <div class="form-check mb-2" style="padding-left: 2rem;">
+                                        <input class="form-check-input" type="radio" name="amountCorrect" id="amountCorrectYes" value="yes" checked>
+                                        <label class="form-check-label" for="amountCorrectYes" style="font-weight: 500; color: #495057; cursor: pointer;">Sí</label>
+                                    </div>
+                                    <div class="form-check" style="padding-left: 2rem;">
+                                        <input class="form-check-input" type="radio" name="amountCorrect" id="amountCorrectNo" value="no">
+                                        <label class="form-check-label" for="amountCorrectNo" style="font-weight: 500; color: #495057; cursor: pointer;">No</label>
+                                    </div>
+                                </div>
+
+                                <!-- Campo para corregir solo el monto de pago -->
+                                <div id="amountCorrectionField" style="display: none;" class="mb-3">
+                                    <label class="form-label mb-2" style="font-weight: 600; color: #495057; font-size: 14px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#28a745" class="bi bi-cash-stack me-1" viewBox="0 0 16 16">
+                                            <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+                                            <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/>
+                                        </svg>
+                                        Monto de Pago Correcto:
+                                    </label>
+                                    <input type="number" step="0.01" id="paymentAmountCorrectOnly" class="form-control" placeholder="Ingrese el monto correcto" style="border: 2px solid #28a745; border-radius: 8px; padding: 10px;">
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn">Cerrar</button>
+                            <button type="button" class="btn btn-secondary" id="closeImageApprovalModalBtn" data-bs-dismiss="modal">Cerrar</button>
                             <button type="button" class="btn btn-success" id="approveTicketFromImage">Aprobar Documento</button>
                             <button type="button" class="btn btn-danger" id="RechazoDocumento">Rechazar Documento</button>
                         </div>
@@ -1448,14 +1799,20 @@ function mi_navbar() {}
                                 <h5 class="modal-title mb-0" id="modalAgregarDatosPagoLabel" style="font-weight: 600; font-size: 1.3rem;">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cash-stack me-2" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>Agregar Datos de Pago
                                 </h5>
-                                <div class="card border-0 shadow-sm" style="background: rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 10px 15px; min-width: 180px;">
-                                    <div class="d-flex align-items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-dollar me-2" viewBox="0 0 16 16"><path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.051zm1.591 2.103c1.396.336 1.906.908 1.906 1.712 0 .932-.704 1.704-2.004 1.86V8.718l.1.026z"/></svg>
-                                        <div>
-                                            <small style="opacity: 0.9; font-size: 0.75rem; display: block;">Monto del Anticipo</small>
-                                            <h5 class="mb-0 fw-bold" id="montoEquipo" style="font-size: 1.1rem;">$0.00</h5>
+                                <div class="d-flex align-items-center">
+                                    <div class="card border-0 shadow-sm me-3" style="background: rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 10px 15px; min-width: 180px;">
+                                        <div class="d-flex align-items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-dollar me-2" viewBox="0 0 16 16"><path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.051zm1.591 2.103c1.396.336 1.906.908 1.906 1.712 0 .932-.704 1.704-2.004 1.86V8.718l.1.026z"/></svg>
+                                            <div>
+                                                <small style="opacity: 0.9; font-size: 0.75rem; display: block;">Monto del Anticipo</small>
+                                                <h5 class="mb-0 fw-bold" id="montoEquipo" style="font-size: 1.1rem;">$0.00</h5>
+                                            </div>
                                         </div>
                                     </div>
+                                    <!-- Botón de Cerrar Premium (FontAwesome) -->
+                                    <button type="button" class="btn border-0 p-0 text-white" id="btnCerrarModalPagoHeader" data-bs-dismiss="modal" style="font-size: 1.5rem; line-height: 1; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1463,20 +1820,41 @@ function mi_navbar() {}
                             <!-- Formulario -->
                             <form id="formAgregarDatosPago">
                                 <input type="hidden" id="id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
-                                <!-- Sección: Información del Equipo -->
+                                <!-- Sección: Información del Cliente -->
                                 <div class="form-section">
                                     <div class="form-section-header">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-display me-2" viewBox="0 0 16 16"><path d="M0 4s0-2 2-2h12s2 0 2 2v6s0 2-2 2h-4q0 1 .25 1.5H11a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1h.75Q6 13 6 12H2s-2 0-2-2zm1.398-.855a.76.76 0 0 0-.254.302A1.5 1.5 0 0 0 1 4.01V10c0 .325.078.502.145.602.07.105.17.188.302.254a1.5 1.5 0 0 0 .538.143L2.01 11H14c.325 0 .502-.078.602-.145a.76.76 0 0 0 .254-.302 1.5 1.5 0 0 0 .143-.538L15 9.99V4c0-.325-.078-.502-.145-.602a.76.76 0 0 0-.302-.254A1.5 1.5 0 0 0 13.99 3H2c-.325 0-.502.078-.602.145"/></svg>
-                                        <h6 class="form-section-title">Información del Equipo</h6>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-circle me-2" viewBox="0 0 16 16"><path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/></svg>
+                                        <h6 class="form-section-title">Información del Cliente</h6>
                                     </div>
                                     <div class="row g-2">
-                                        <div class="col-md-12 mb-2">
+                                        <div class="col-md-6 mb-2">
+                                            <label for="displayRazonSocial" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-building me-1 text-primary" viewBox="0 0 16 16"><path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 8.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 11.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/><path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/></svg>Razón Social
+                                            </label>
+                                            <input type="text" class="form-control" id="displayRazonSocial" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label for="displayRif" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-card-list me-1 text-primary" viewBox="0 0 16 16"><path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/><path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A1.5 1.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>RIF
+                                            </label>
+                                            <input type="text" class="form-control" id="displayRif" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                        </div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6 mb-2">
                                             <label for="serialPosPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-barcode me-1 text-primary" viewBox="0 0 16 16"><path d="M1 11.107V4.893C1 4.4 1.398 4 1.889 4H14.11C14.6 4 15 4.398 15 4.893v6.214C15 11.6 14.602 12 14.111 12H1.89C1.4 12 1 11.602 1 11.107ZM1.889 5v6h12.222V5H1.889Z"/><path d="M2 5v6h1V5H2Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1ZM11 5v6h1V5h-1Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1Z"/></svg>Serial POS
                                             </label>
-                                            <input type="text" class="form-control" id="serialPosPago" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px;">
+                                            <input type="text" class="form-control" id="serialPosPago" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
                                             <input type="hidden" id="nro_ticket_pago">
                                             <input type="hidden" id="document_type_pago">
+                                            <input type="hidden" id="id_payment_record_loading">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label for="displayEstatusPos" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-broadcast-pin me-1 text-primary" viewBox="0 0 16 16"><path d="M3.05 3.05a7 7 0 0 0 0 9.9.5.5 0 0 1-.707.707 8 8 0 0 1 0-11.314.5.5 0 0 1 .707.707m2.122 2.122a4 4 0 0 0 0 5.656.5.5 0 1 1-.708.708 5 5 0 0 1 0-7.072.5.5 0 0 1 .708.708m5.656 0a.5.5 0 0 1 .708 0 5 5 0 0 1 0 7.072.5.5 0 0 1-.708-.708 4 4 0 0 0 0-5.656.5.5 0 0 1 0-.708m2.122-2.122a.5.5 0 0 1 .707 0 8 8 0 0 1 0 11.314.5.5 0 0 1-.707-.707 7 7 0 0 0 0-9.9.5.5 0 0 1 0-.707zM6 8a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"/></svg>Estatus POS
+                                            </label>
+                                            <input type="text" class="form-control" id="displayEstatusPos" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
                                         </div>
                                     </div>
                                 </div>
@@ -1687,19 +2065,30 @@ function mi_navbar() {}
                                     </div>
                                 </div>
 
-                                <!-- Sección: Archivo de Soporte -->
+                                <!-- Sección: Soporte Digital -->
                                 <div class="form-section">
                                     <div class="form-section-header">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-file-earmark-arrow-up" viewBox="0 0 16 16"><path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z"/><path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A2 2 0 0 0 13.293 3.293L10.707.707A2 2 0 0 0 9.293 0H4zm0 1h5.293A1 1 0 0 1 10 1.293L12.707 4a1 1 0 0 1 .293.707V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/></svg>
-                                        <h6 class="form-section-title">Archivo de Soporte</h6>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cloud-upload me-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.508 4.56a4.5 4.5 0 1 1-1.122 8.835l.23-.974a3.5 3.5 0 1 0-.965-6.837l-.234.027c-.046-.01-.09-.022-.132-.033-.424-.111-.83-.166-1.226-.166-1.554 0-2.83 1.054-3.15 2.454l-.234.027a3 3 0 0 0-2.43 2.502H3a1 1 0 0 0-1-1c0-.422.25-.78.614-.945a.5.5 0 1 0-.414-.91A2 2 0 0 1 3 13.5h.341l.23-.974H3a1.5 1.5 0 0 1 0-3h.341l.23-.974A3.5 3.5 0 0 1 4.406 1.342Z"/><path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/></svg>
+                                        <h6 class="form-section-title">Soporte Digital</h6>
                                     </div>
                                     <div class="row g-2">
-                                        <div class="col-md-12 mb-2">
-                                            <label for="documentFileDetailed" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-file-earmark-image me-1 text-primary" viewBox="0 0 16 16"><path d="M6.502 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"/><path d="M14 14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zM4 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1zM13 14H3V2h5v1a2 2 0 0 0 2 2h3z"/></svg>Seleccionar Comprobante <span style="color: #dc3545;">*</span>
+                                        <div class="col-12">
+                                            <label class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-file-earmark-diff me-1 text-primary" viewBox="0 0 16 16"><path d="M8 5a.5.5 0 0 1 .5.5V7H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V8H6a.5.5 0 0 1 0-1h1.5V5.5A.5.5 0 0 1 8 5m-2.5 6.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>Documento de Pago <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <input type="file" class="form-control" id="documentFileDetailed" accept="image/jpg, image/png, image/gif, application/pdf" required style="font-size: 0.95rem; padding: 8px 12px;">
-                                            <small class="text-muted">Formatos permitidos: JPG, PNG, GIF o PDF</small>
+                                            <div class="upload-container text-center" style="position: relative;">
+                                                <input type="file" class="form-control" id="documentFileDetailed" name="documentFileDetailed" accept="image/jpg, image/png, image/gif, application/pdf" style="display: none;" required>
+                                                <label for="documentFileDetailed" class="d-block p-4 border rounded bg-light" style="border: 2px dashed #cbd5e0 !important; cursor: pointer; transition: all 0.3s ease; width: 100%;" id="labelDocumentFileDetailed">
+                                                    <div class="mb-2" id="iconDocumentFileDetailed">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-camera text-secondary" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>
+                                                    </div>
+                                                    <span class="text-muted fw-medium d-block" id="textDocumentFileDetailed">Adjunte el Documento de Pago</span>
+                                                    <span class="text-success fw-bold d-none" id="fileNameDocumentFileDetailed"></span>
+                                                </label>
+                                                <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>Formatos permitidos: JPG, PNG, GIF o PDF (Máx. 5MB)
+                                                </small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1736,7 +2125,7 @@ function mi_navbar() {}
                             </form>
                         </div>
                         <div class="modal-footer" style="background: #f8f9fa; border-radius: 0 0 12px 12px; padding: 15px 25px; border-top: 1px solid #dee2e6; flex-shrink: 0;">
-                            <button type="button" class="btn btn-secondary px-4" id="btnCancelarModalPagoFooter" style="font-size: 0.95rem; padding: 8px 20px;">
+                            <button type="button" class="btn btn-secondary px-4" id="btnCancelarModalPagoFooter" data-bs-dismiss="modal" style="font-size: 0.95rem; padding: 8px 20px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg me-2" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>Cancelar
                             </button>
                             <button type="button" class="btn btn-primary px-4" id="btnGuardarDatosPago" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; font-size: 0.95rem; padding: 8px 20px;">
@@ -1748,6 +2137,121 @@ function mi_navbar() {}
             </div>
         <!--END MODAL AGREGAR DATOS DE PAGO-->
 
+        <!--MODAL DETALLE DE PAGOS-->
+        <div class="modal fade" id="modalPagosDetalle" tabindex="-1" role="dialog" aria-labelledby="modalPagosDetalleLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalPagosDetalleLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-credit-card-2-front me-2" viewBox="0 0 16 16">
+                                <path d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2z"/>
+                                <path d="M2 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                            Detalle de Pagos - Ticket <span id="paymentDetailTicketNro" class="fw-bold"></span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- SECCIÓN: INFORMACIÓN DEL CLIENTE Y TICKET (DISTRIBUCIÓN MEJORADA) -->
+                        <div class="info-card-3d">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 32px; height: 32px; background: linear-gradient(135deg, #003594 0%, #001f54 100%) !important;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-person-badge" viewBox="0 0 16 16">
+                                        <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                        <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2.5z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="mb-0 fw-bold text-dark" style="letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.85rem;">Identificación del Comercio</h6>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-primary shadow-sm h-100 transition-hover">
+                                        <label class="small text-muted text-uppercase fw-bold mb-0 d-block" style="font-size: 0.70rem; letter-spacing: 0.5px;">Razón Social</label>
+                                        <div id="detailRazonSocial" class="fw-bold text-dark" style="font-size: 0.76rem; line-height: 1.2;">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-info shadow-sm h-100 transition-hover">
+                                        <label class="small text-muted text-uppercase fw-bold mb-0 d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">RIF / CI</label>
+                                        <div id="detailRif" class="fw-bold text-dark" style="font-size: 0.76rem;">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-success shadow-sm h-100 transition-hover">
+                                        <label class="small text-muted text-uppercase fw-bold mb-0 d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Serial POS</label>
+                                        <div id="detailSerialPos" class="fw-bold text-dark" style="font-size: 0.76rem;">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN: RESUMEN FINANCIERO (DISTRIBUCIÓN MÁS COMPACTA) -->
+                        <div class="row g-3 mb-4 justify-content-center">
+                            <div class="col-md-5">
+                                <div class="summary-card-3d shadow" style="background: linear-gradient(135deg, #1d976c 0%, #93f9b9 100%);">
+                                    <div class="card-overlay"></div>
+                                    <div class="position-relative">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="text-uppercase small fw-bold" style="opacity: 0.9; letter-spacing: 1px; font-size: 0.7rem;">Presupuesto Total</div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-wallet2" viewBox="0 0 16 16" style="opacity: 0.6;">
+                                                <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+                                            </svg>
+                                        </div>
+                                        <h2 id="detailMontoPresupuesto" class="mb-0 fw-bold" style="font-size: 1.3rem;">$0.00</h2>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="summary-card-3d shadow" style="background: linear-gradient(135deg, #003594 0%, #00b4db 100%);">
+                                    <div class="card-overlay"></div>
+                                    <div class="position-relative">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <div class="text-uppercase small fw-bold" style="opacity: 0.9; letter-spacing: 1px; font-size: 0.7rem;">Monto Abonado</div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-stack" viewBox="0 0 16 16" style="opacity: 0.6;">
+                                                <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                                                <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="d-flex align-items-baseline gap-2">
+                                            <h2 id="detailMontoAbonado" class="mb-0 fw-bold" style="font-size: 1.3rem;">$0.00</h2>
+                                            <span id="detailMontoRestante" class="badge rounded-pill text-primary fw-bold px-2 py-1" style="font-size: 0.6rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">Restante: $0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table" id="tablePagosDetalle">
+                                <thead>
+                                    <tr>
+                                        <th>Ref.</th>
+                                        <th>Fecha</th>
+                                        <th>Monto (Bs)</th>
+                                        <th>Monto (Ref.)</th>
+                                        <th>Estatus</th>
+                                        <th>Vizualizar Imagen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bodyPagosDetalle">
+                                    <!-- Se poblará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg me-1" viewBox="0 0 16 16"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>Cerrar
+                        </button>
+                        <button type="button" id="btnFinalizarRevision" class="btn btn-primary" disabled>
+                            <i class="fas fa-check-double me-1"></i> Finalizar Revisión
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--END MODAL DETALLE DE PAGOS-->
+
         <input type="hidden" id="userId" value="<?php echo $_SESSION['id_user']; ?>">
     <input type="hidden" id="id_area" value="<?php echo $_SESSION['id_area'] ?? ''; ?>">
     <input type="hidden" id="id_rol" value="<?php echo $_SESSION['id_rol'] ?? ''; ?>">
@@ -1757,7 +2261,7 @@ function mi_navbar() {}
         <script async defer src="https://buttons.github.io/buttons.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.min.js"></script>
-        <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
+         <script src="<?php echo APP; ?>app/plugins/NewDataTable/datatables.js"></script>
 
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/jquery/jquery-3.5.1.js"></script>
@@ -1786,7 +2290,8 @@ function mi_navbar() {}
         <?php
             if (isset($this->js)) {
                 foreach ($this->js as $js) {
-                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+                    $version = time();
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '?v=' . $version . '"></script>';
                 }
             }
         ?>
