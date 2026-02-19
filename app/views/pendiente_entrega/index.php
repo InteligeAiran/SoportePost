@@ -1447,7 +1447,7 @@ function mi_navbar()
                             </div>
 
                             <div class="col-12">
-                                <button type="button" class="btn btn-secondary" id="previewHtmlTemplateBtn">Previsualizar</button>
+                                <button type="button" class="btn btn-secondary" id="previewHtmlTemplateBtn">Guardar</button>
                                 <button type="button" class="btn btn-success" id="printHtmlTemplateBtn">Imprimir / Guardar PDF</button>
                             </div>
                             <div class="col-12" style="height: 400px;">

@@ -1007,11 +1007,11 @@ function getTicketDataCoordinator() {
                   });
                   return;
                 }
-                if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
+                /*if (ticketRechazado === true || ticketRechazado === 't' || ticketRechazado === 'true') {
                   BotonRechazo.style.display = 'none';
                 } else {
                   BotonRechazo.style.display = 'block';
-                }
+                }*/
                 getMotivos(selectedOption);
                 fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
                   method: 'POST',

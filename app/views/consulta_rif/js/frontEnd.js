@@ -1840,6 +1840,8 @@ function verificarTicketEnProceso(serial) {
 }
 
 function SendDataFailure2(idStatusPayment) {
+  console.log("DEBUG SendDataFailure2 globals:", { globalRazon, globalIdClient, globalIdIntelipunto }); // DEBUG
+
   // AHORA: Obtener el valor (ID) y el texto de la falla
   const fallaSelect = document.getElementById("FallaSelect2");
   const descrpFailure_id = fallaSelect.value; // El valor (ID) de la falla
@@ -2246,6 +2248,9 @@ function SendDataFailure2(idStatusPayment) {
     formData.append("id_user", id_user);
     formData.append("rif", rif);
     formData.append("coordinadorNombre", coordinadorNombre);
+    formData.append("razonsocial", globalRazon || ""); // NUEVO
+    formData.append("id_client", globalIdClient || ""); // NUEVO
+    formData.append("id_intelipunto", globalIdIntelipunto || ""); // NUEVO
 
     // Usar uploadNowRadioLocal que se obtuvo al inicio de la función
     if (uploadNowRadioLocal && uploadNowRadioLocal.checked) {
@@ -6129,6 +6134,9 @@ function SendDataFailure1() {
                 },
                 allowOutsideClick: false,
                 allowEscapeKey: false,
+                didClose: () => {
+                  window.location.reload();
+                }
               }); // Este cierra el .then()
             },
           });
@@ -6228,7 +6236,7 @@ function SendDataFailure1() {
     });
   };
   const rif = document.getElementById("InputRif1").value;
-  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}&descrpFailure_text=${encodeURIComponent(descrpFailure_text)}`;
+  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}&descrpFailure_text=${encodeURIComponent(descrpFailure_text)}&razonsocial=${encodeURIComponent(globalRazon || "")}&id_client=${encodeURIComponent(globalIdClient || "")}&id_intelipunto=${encodeURIComponent(globalIdIntelipunto || "")}`;
   xhr.send(datos);
   }
 }
@@ -6757,8 +6765,9 @@ function SendRif() {
             const modalSerial = document.getElementById("ModalSerial");
             const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
+              console.log("DEBUG Click Serial:", item); // DEBUG
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -7784,7 +7793,7 @@ function SendSerial() {
             const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
             const modalSerial = document.getElementById("ModalSerial");
             modalSerial.style.display = "block";
-            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial);
+            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm);
           });
         } else {
           // Si no hay datos, mostrar un mensaje y la imagen de bienvenida
@@ -7943,7 +7952,7 @@ function SendRazon() {
             const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -8444,13 +8453,16 @@ window.onclick = function (event) {
   }
 };
 
-function fetchSerialData(serial, rif,razonsocial) {
+function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
+  // console.log("fetchSerialData Inputs:", { serial, rif, razonsocial, id_client, cod_adm }); // DEBUG
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
   globalSerial = serial;
   globalRif = rif;
   globalRazon = razonsocial;
+  globalIdClient = id_client; 
+  globalIdIntelipunto = cod_adm; // Mapeamos cod_adm a globalIdIntelipunto para envío
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   const tbody = document
     .getElementById("serialCountTable")
@@ -8465,6 +8477,18 @@ function fetchSerialData(serial, rif,razonsocial) {
         const response = JSON.parse(xhr.responseText);
         if (response.success && response.serial && response.serial.length > 0) {
           const serialData = response.serial[0];
+          console.log("DEBUG fetchSerialData response:", serialData); // DEBUG
+
+          // Update globals if missing
+          if (!globalIdIntelipunto && serialData.cod_adm) {
+             globalIdIntelipunto = serialData.cod_adm;
+             console.log("Updated globalIdIntelipunto from serialData:", globalIdIntelipunto);
+          }
+          if (!globalIdIntelipunto && serialData.id) {
+             globalIdIntelipunto = serialData.id;
+             console.log("Updated globalIdIntelipunto from serialData (id):", globalIdIntelipunto);
+          }
+
 
           // Construye la tabla vertical, omitiendo las propiedades vacías
           for (const key in serialData) {

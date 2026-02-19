@@ -131,11 +131,11 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla)
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto)
     {
         // Llama al método SaveDataFalla del modelo.
         // Este método ahora devolverá el array con 'idTicketCreado' y 'status_info'.
-        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla,  $id_user, $rif, $Nr_ticket, $descripcion_falla);
+        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla,  $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto);
         return $result_from_model;
     }
 
@@ -232,7 +232,7 @@ class TechnicalConsultionRepository
     }
 
     
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket){
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket, $razonsocial, $id_client, $id_intelipunto){
         try {
             // El modelo SaveDataFalla2 ahora devuelve un array con 'success', 'id_ticket_creado', y 'status_info'.
             $result = $this->model->SaveDataFalla2(
@@ -243,7 +243,10 @@ class TechnicalConsultionRepository
                 $id_status_payment,
                 $id_user,
                 $rif,
-                $Nr_ticket
+                $Nr_ticket, // Se pasa el número de ticket
+                $razonsocial,
+                $id_client,
+                $id_intelipunto
             );
             
             // CORRECCIÓN: Asegurar que se retorne el ID real de la BD

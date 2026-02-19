@@ -823,6 +823,9 @@ class Consulta extends Controller
     $falla_text = isset($_POST['falla_text']) ? $_POST['falla_text'] : '';
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
     $descripcion_falla = isset($_POST['descrpFailure_text']) ? $_POST['descrpFailure_text'] : '';
+    $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : ''; // NUEVO
+    $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
+    $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
 
     $repository = new technicalConsultionRepository();
 
@@ -871,7 +874,7 @@ class Consulta extends Controller
         // **Paso clave:** Llama al SaveDataFalla del REPOSITORIO
         // Este $result ahora es el array que el Model::SaveDataFalla devuelve,
         // conteniendo 'idTicketCreado' y 'status_info'.
-        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket, $descripcion_falla);
+        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto);
 
         // Verifica si la operación fue exitosa y si el array de resultado es válido
         if ($result && isset($result['success']) && $result['success'] === true) {
@@ -932,8 +935,12 @@ class Consulta extends Controller
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
     $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
+    $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
     // NUEVO: Obtener record_number para Anticipo
     $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+    $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
+    $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
+    $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : ''; // NUEVO
     
     // Ahora estas variables se pasarán por referencia a la función auxiliar
     $archivoEnvioInfo = null;
@@ -998,7 +1005,10 @@ class Consulta extends Controller
         $id_status_payment,
         $id_user,
         $rif,
-        $Nr_ticket
+        $Nr_ticket,
+        $razonsocial, // NUEVO
+        $id_client,   // NUEVO
+        $id_intelipunto // NUEVO
     );
 
     if (isset($result['success']) && $result['success']) {
