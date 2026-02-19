@@ -6295,6 +6295,9 @@ function previewPresupuestoPDF() {
                                         previewWindow.document.title = filename; // <--- ESTO CAMBIA EL NOMBRE AL GUARDAR
                                         previewWindow.document.close();
                                         previewWindow.focus();
+                                        
+                                        // RELOAD PAGE AS REQUESTED
+                                        window.location.reload();
                                     } else {
                                         Swal.fire({
                                             icon: 'warning',

@@ -105,6 +105,13 @@ BEGIN
 			ROW_NUMBER() OVER (
 				PARTITION BY aa.nro_ticket	
 				ORDER BY	
+					CASE
+						-- Prioridad 1: Si el status es 5 (Exoneracion), priorizar Exoneracion
+						WHEN EXISTS (SELECT 1 FROM tickets t WHERE t.nro_ticket = aa.nro_ticket AND t.id_status_payment = 5) AND aa.document_type = 'Exoneracion' THEN 0
+						-- Prioridad 1: Si el status es 7 o 17 (Pago), priorizar Anticipo/Pago
+						WHEN EXISTS (SELECT 1 FROM tickets t WHERE t.nro_ticket = aa.nro_ticket AND t.id_status_payment IN (7, 17)) AND aa.document_type IN ('Anticipo', 'Pago', 'pago', 'comprobante_pago') THEN 0
+						ELSE 1
+					END,
 					CASE	
 						-- Si el ticket está en status 5 o 7 (pendiente de revisión), priorizar documentos NO rechazados
 						WHEN EXISTS (

@@ -642,6 +642,23 @@ function getTicketAprovalDocument() {
                                                      </button>`;
                                 } else {
                                     actionButtons = '';
+
+                                    // AGREGAR BOTÓN DE VISUALIZAR PARA EXONERACION (SI NO ESTÁ RECHAZADO)
+                                    // El usuario solicitó "visualizar para aprobar"
+                                    if (documentType === 'Exoneracion' && ![12, 13].includes(parseInt(idStatusPayment))) {
+                                        actionButtons += `
+                                            <button class="btn btn-primary btn-sm view-image-btn ms-1" 
+                                                    data-envio="${envio}" 
+                                                    data-exoneracion="${exoneracion}" 
+                                                    data-anticipo="${pago}"
+                                                    title="Visualizar para Aprobar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
+                                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                                                    <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                                                </svg>
+                                            </button>
+                                        `;
+                                    }
                                 
                                 // AGREGAR BOTÓN DE INFO SI ES ANTICIPO (O SIEMPRE SI SE PREFIERE)
                                 if (documentType === 'Anticipo' || pago === 'Sí') {
@@ -871,7 +888,7 @@ function getTicketAprovalDocument() {
                                     if (allowedTypes.length > 0) {
                                         $.fn.dataTable.ext.search.push(function(settings, searchData, index, rowData) {
                                             if (settings.nTable.id !== 'tabla-ticket') return true;
-                                            const docType = rowData.document_type; 
+                                            const docType = rowData.document_type;
                                             return allowedTypes.includes(docType);
                                         });
                                     }
@@ -2801,7 +2818,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     const paymentValidationContainer = document.getElementById("paymentValidationContainer");
     
     // ✅ Verificar si el documento está aprobado (id_status_payment = 6)
-    const isDocumentApproved = idStatusPayment === 6;
+    const isDocumentApproved = parseInt(idStatusPayment) === 6;
 
     // LIMPIEZA COMPLETA Y FORZADA
     if (mediaViewerContainer) {
