@@ -5580,7 +5580,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
 
             $sql = "SELECT id_ticket FROM tickets WHERE nro_ticket = ".$escaped_nro.";";
-            var_dump("No se encontró id_ticket para nro_ticket:", $nro_ticket, $sql);
+
 
             $result = Model::getResult($sql, $this->db);
 
