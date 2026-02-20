@@ -1130,7 +1130,9 @@ function getTicketDataFinaljs() {
                       const idStatusTicket = row.id_status_ticket ? parseInt(row.id_status_ticket) : null;
                       const idStatusPayment = row.id_status_payment ? parseInt(row.id_status_payment) : null;
                       const isEnProceso = idStatusTicket === 2;
-                      const isGarantia = idStatusPayment === 1 || idStatusPayment === 3;
+                       const isGarantia = idStatusPayment === 1 || idStatusPayment === 3 || 
+                                          row.garantia_instalacion === true || row.garantia_instalacion === 't' ||
+                                          row.garantia_reingreso === true || row.garantia_reingreso === 't';
 
                       let actionButton = '';
 

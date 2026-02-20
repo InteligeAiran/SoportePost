@@ -2979,7 +2979,7 @@ class Consulta extends Controller
         $loadpayment_date = isset($_POST['loadpayment_date']) && $_POST['loadpayment_date'] !== '' ? trim($_POST['loadpayment_date']) : date('Y-m-d H:i:s');
         $raw_confirmation = isset($_POST['confirmation_number']) ? $_POST['confirmation_number'] : 'false';
         $confirmation_number = ($raw_confirmation === 'true' || $raw_confirmation === 'TRUE' || $raw_confirmation === '1' || $raw_confirmation === true);
-        $payment_status = isset($_POST['payment_id']) && $_POST['payment_id'] !== '' ? (int)$_POST['payment_id'] : 1;
+        $payment_status = isset($_POST['payment_id']) && $_POST['payment_id'] !== '' ? (int)$_POST['payment_id'] : 7;
         
         // ============================================
         // 5. OBTENER DATOS DEL POST - Pago Móvil (Destino)
