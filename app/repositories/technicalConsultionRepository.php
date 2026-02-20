@@ -529,7 +529,7 @@ class TechnicalConsultionRepository
 
                 // Genera la URL para el submódulo
                 $submodule_url = $this->getUrlForMenuItem($submodule_row['desc_submodulo']);
-                var_dump($submodule_url);
+
                 $current_submodule = [
                     'id_submodulo' => $submodule_row['id_submodulo'],
                     'desc_submodulo' => $submodule_row['desc_submodulo'],
