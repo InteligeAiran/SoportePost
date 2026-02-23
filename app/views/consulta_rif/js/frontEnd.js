@@ -1320,7 +1320,25 @@ let isInitialLoad = true;
 function getDiffMonths(date1, date2) {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
-  return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  
+  // Diferencia básica en meses
+  let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  
+  // Ajustar si el día actual es menor al día de inicio (mes incompleto)
+  if (d2.getDate() < d1.getDate()) {
+    months--;
+    // Cálculo fraccional: días restantes del mes anterior + días del mes actual
+    const lastMonthDay = new Date(d2.getFullYear(), d2.getMonth(), 0).getDate();
+    const fraction = (lastMonthDay - d1.getDate() + d2.getDate()) / lastMonthDay;
+    return months + fraction;
+  } else if (d2.getDate() > d1.getDate()) {
+    // Cálculo fraccional: diferencia de días sobre total de días del mes actual
+    const currentMonthDays = new Date(d2.getFullYear(), d2.getMonth() + 1, 0).getDate();
+    const fraction = (d2.getDate() - d1.getDate()) / currentMonthDays;
+    return months + fraction;
+  }
+  
+  return months; // Exactamente el mismo día del mes
 }
 
 function validarGarantiaReingreso(fechaUltimoTicket) {
@@ -7396,9 +7414,9 @@ function SendSerial() {
             { data: "direccion_instalacion", title: "Dirección Instalación" },
             { data: "estado", title: "Estado" },
             { data: "municipio", title: "Municipio" },
-            { data: "total_presupuesto", title: "Presupuesto" },
-            { data: "total_abonado", title: "Abonado" },
-            { data: "deuda", title: "Deuda" },
+            /*{ data: "total_presupuesto", title: "Presupuesto", render: (data) => data || '0' },
+            { data: "total_abonado", title: "Abonado", render: (data) => data || '0' },
+            { data: "deuda", title: "Deuda", render: (data) => data || '0' },*/
           ];
 
             // Lógica para crear las columnas y el thead
@@ -7923,10 +7941,9 @@ function SendRazon() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
-            //const presupuestoCell = row.insertCell();
-            //const abonadoCell = row.insertCell();
-            //const deudaCell = row.insertCell();
-
+            /*const presupuestoCell = row.insertCell();
+            const abonadoCell = row.insertCell();
+            const deudaCell = row.insertCell();*/
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;

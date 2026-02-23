@@ -6,13 +6,14 @@ function formatTicketDetailsPanel(d) {
   const initialImageAlt = "Cargando imagen del dispositivo...";
 
   // Determina el mensaje de garantía
-  let garantiaMessage = '';
-  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+  const idStatusPayment = d.id_status_payment ? parseInt(d.id_status_payment) : null;
+  
+  if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't') {
     garantiaMessage = 'Aplica Garantía de Instalación';
-  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+  } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't') {
     garantiaMessage = 'Aplica Garantía por Reingreso';
   } else {
-    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
+    garantiaMessage = 'No aplica Garantía';
   }
 
   return `
