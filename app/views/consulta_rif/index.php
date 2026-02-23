@@ -877,7 +877,7 @@ function mi_navbar() {}
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td colspan="3">No hay datos</td>
+                                                <td colspan="15">No hay datos</td>
                                             </tr>
                                         </tbody>
                                     </table>

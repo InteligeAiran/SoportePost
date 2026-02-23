@@ -1110,12 +1110,12 @@ function getTicketDataFinaljs() {
                       const name_accion_ticket = (row.name_accion_ticket || "").trim();
                       const name_status_domiciliacion = (row.name_status_domiciliacion || "").trim();
                       const nombre_estado_cliente = (row.nombre_estado_cliente || "").trim();
-                      
-                      // Identificar fallas especiales (id_failure = 9: Actualización de Software, id_failure = 12: Sin Llaves/Dukpt Vacío)
-                      const idFailure = row.id_failure ? parseInt(row.id_failure) : null;
-                      const isActualizacionSoftware = idFailure === 9;
-                      const isSinLlavesDukpt = idFailure === 12;
-                      const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+
+                      // Identificar fallas especiales (id_failure = 9: Actualización de Software, id_failure = 12: Sin LLaves/Dukpt Vacío)
+                      const idFailure = row.id_failure ? parseInt(row.id_failure) : (row.idFailure ? parseInt(row.idFailure) : null);
+                      const isFallaSinPago = (idFailure === 9 || idFailure === 12);
+                      const isActualizacionSoftware = (idFailure === 9);
+                      const isSinLlavesDukpt = (idFailure === 12);
 
                       // Identificar si es región central
                       const isCentralRegion = (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas");
@@ -1128,7 +1128,8 @@ function getTicketDataFinaljs() {
                                        (row.id_budget && row.id_budget !== null && row.id_budget !== '') ||
                                        (row.pdf_path_presupuesto && row.pdf_path_presupuesto.trim() !== '');
                       const idStatusTicket = row.id_status_ticket ? parseInt(row.id_status_ticket) : null;
-                      const idStatusPayment = row.id_status_payment ? parseInt(row.id_status_payment) : null;
+                      const idStPay = row.id_status_payment || row.idStatusPayment || null;
+                      const idStatusPayment = idStPay ? parseInt(idStPay) : null;
                       const isEnProceso = idStatusTicket === 2;
                        const isGarantia = idStatusPayment === 1 || idStatusPayment === 3 || 
                                           row.garantia_instalacion === true || row.garantia_instalacion === 't' ||
@@ -1204,6 +1205,8 @@ function getTicketDataFinaljs() {
                                                   data-id-failure="${idFailure || ''}"
                                                   data-status-lab="${currentStatusLab || ''}"
                                                   data-id-status-payment="${idStatusPayment || ''}"
+                                                  data-garantia-instalacion="${row.garantia_instalacion === true || row.garantia_instalacion === 't' ? 'true' : 'false'}"
+                                                  data-garantia-reingreso="${row.garantia_reingreso === true || row.garantia_reingreso === 't' ? 'true' : 'false'}"
                                                   data-is-actualizacion-software="${isFallaSinPago ? 'true' : 'false'}">
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
                                                     <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
@@ -2168,51 +2171,63 @@ function getTicketDataFinaljs() {
                     const nroTicket = $(this).data("nro-ticket");
                     const regionName = $(this).data("region-name");
                     
-                    // Obtener id_failure para validar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-                    const idFailure = $(this).data("id-failure") ? parseInt($(this).data("id-failure")) : null;
-                    const isActualizacionSoftware = idFailure === 9;
-                    const isSinLlavesDukpt = idFailure === 12;
-                    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+                     // Usar coerción de tipos flexible (==) y múltiples fuentes de datos
+                    const rawIdFailure = $(this).attr("data-id-failure");
+                    const rawIdStatusPayment = $(this).attr("data-id-status-payment");
+                    const rawStatusLab = ($(this).attr("data-status-lab") || "").trim();
+                    const rawGarantiaInst = $(this).attr("data-garantia-instalacion");
+                    const rawGarantiaRein = $(this).attr("data-garantia-reingreso");
 
-                    const idStatusPayment = $(this).data("id-status-payment") ? parseInt($(this).data("id-status-payment")) : null;
-                    const isGarantia = idStatusPayment === 1 || idStatusPayment === 3;
+                    const idFailure = parseInt(rawIdFailure) || null;
+                    const idStatusPayment = parseInt(rawIdStatusPayment) || null;
                     
-                    // Obtener el PDF del presupuesto directamente del atributo data del botón
-                    const pdfPathPresupuesto = $(this).data("pdf-presupuesto") || '';
-                    const hasPresupuestoPDF = pdfPathPresupuesto && pdfPathPresupuesto.trim() !== '';
+                    const isGarantiaInst = rawGarantiaInst === 'true' || rawGarantiaInst === 't';
+                    const isGarantiaRein = rawGarantiaRein === 'true' || rawGarantiaRein === 't';
                     
-                    // Validación: Si no hay PDF del presupuesto Y NO es "Actualización de Software" ni "Sin Llaves/Dukpt Vacío", mostrar alerta y detener
-                    // Para "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12), no se requiere presupuesto
-                    // TAMPOCO se requiere si el estatus es "Gestión Comercial (Irreparable)"
-                    const statusLab = $(this).data("status-lab");
-                    const isIrreparable = (statusLab === "Gestión Comercial (Irreparable)");
-
-                    if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable && !isGarantia) {
-                        Swal.fire({
-                            title: 'Documento de Presupuesto Requerido',
-                            html: `
-                                <div style="text-align: center;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="bi bi-exclamation-triangle-fill mb-3" viewBox="0 0 16 16">
-                                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                                    </svg>
-                                    <p class="h5 mb-3" style="color: black;">
-                                        No se puede enviar el ticket a la región sin el documento de presupuesto.
-                                    </p>
-                                    <p class="mb-3" style="color: #6c757d;">
-                                        Por favor, cargue el documento de presupuesto antes de enviar el ticket a la región.
-                                    </p>
-                                    <p class="text-muted" style="font-size: 0.9rem;">
-                                        Ticket: <strong>${nroTicket}</strong>
-                                    </p>
-                                </div>
-                            `,
-                            confirmButtonText: 'Entendido',
-                            confirmButtonColor: '#003594',
-                            color: 'black',
-                            allowOutsideClick: false,
-                            allowEscapeKey: true
-                        });
-                        return; // Detener la ejecución
+                    const isFallaSinPago = (idFailure == 9 || idFailure == 12);
+                    const isGarantia = (idStatusPayment == 1 || idStatusPayment == 3 || isGarantiaInst || isGarantiaRein);
+                    const isIrreparable = (rawStatusLab === "Gestión Comercial (Irreparable)");
+                    
+                    // Obtener si tiene presupuesto PDF desde el atributo data
+                    const pdfPathPresupuesto = $(this).attr("data-pdf-presupuesto") || "";
+                    const hasPresupuestoPDF = pdfPathPresupuesto.trim() !== "" && pdfPathPresupuesto !== "null";
+                
+                    
+                    // MANTENER FLUJO SEGÚN SOLICITUD DEL USUARIO (Orden de validación)
+                    // "si alguna de esa es true no me puede salir el alerta"
+                    
+                    if (isIrreparable || isGarantia || isFallaSinPago) {
+                        // Si es Irreparable, Garantía o Falla 9/12, permitimos el paso directamente
+                        console.log("Paso directo concedido por excepción (Garantía/Falla/Irreparable)");
+                    } else {
+                        // Si NO es ninguna de las anteriores, validamos el presupuesto obligatoriamente
+                        if (!hasPresupuestoPDF) {
+                            Swal.fire({
+                                title: 'Documento de Presupuesto Requerido',
+                                html: `
+                                    <div style="text-align: center;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="bi bi-exclamation-triangle-fill mb-3" viewBox="0 0 16 16">
+                                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                        </svg>
+                                        <p class="h5 mb-3" style="color: black;">
+                                            No se puede enviar el ticket a la región sin el documento de presupuesto.
+                                        </p>
+                                        <p class="mb-3" style="color: #6c757d;">
+                                            Por favor, cargue el documento de presupuesto antes de enviar el ticket a la región.
+                                        </p>
+                                        <p class="text-muted" style="font-size: 0.9rem;">
+                                            Ticket: <strong>${nroTicket}</strong>
+                                        </p>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#003594',
+                                color: 'black',
+                                allowOutsideClick: false,
+                                allowEscapeKey: true
+                            });
+                            return; // Bloquear el flujo
+                        }
                     }
 
                     const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
