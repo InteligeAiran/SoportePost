@@ -6755,9 +6755,9 @@ function SendRif() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
-            const presupuestoCell = row.insertCell();
+            /*const presupuestoCell = row.insertCell();
             const abonadoCell = row.insertCell();
-            const deudaCell = row.insertCell();
+            const deudaCell = row.insertCell();*/
 
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
@@ -6831,9 +6831,9 @@ function SendRif() {
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
-            presupuestoCell.textContent = item.total_presupuesto || '0';
+            /*presupuestoCell.textContent = item.total_presupuesto || '0';
             abonadoCell.textContent = item.total_abonado || '0';
-            deudaCell.textContent = item.deuda || '0';
+            deudaCell.textContent = item.deuda || '0';*/
 
             // Asegurar color de texto blanco para los links si la fila es roja
             if (parseFloat(item.deuda) > 0) {
