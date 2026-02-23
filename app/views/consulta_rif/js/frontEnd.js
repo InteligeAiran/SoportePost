@@ -862,7 +862,8 @@ function updateDocumentTypeVisibility() {
   } else {
     // Mostrar los radio buttons si no es Actualización de Software ni Sin Llaves/Dukpt Vacío
     checkExoneracionContainer.style.display = '';
-    checkAnticipoContainer.style.display = '';
+    // checkAnticipoContainer.style.display = ''; // Original - Comentado por petición del usuario
+    checkAnticipoContainer.style.display = 'none'; // Forzar oculto siempre
   }
   
   // Actualizar UpdateGuarantees para recalcular el id_status_payment
@@ -1377,10 +1378,12 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       const checkAnticipo = document.getElementById("checkAnticipoContainer");
       const checkEnvio = document.getElementById("checkEnvioContainer");
       if (checkExoneracion) checkExoneracion.style.display = "block";
-      if (checkAnticipo) checkAnticipo.style.display = "block";
+      // if (checkAnticipo) checkAnticipo.style.display = "block"; // Original
+      if (checkAnticipo) checkAnticipo.style.display = "none"; // Forzar oculto
       if (checkEnvio) checkEnvio.style.display = "block";
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
-      if (botonAnticipo) botonAnticipo.style.display = "inline-block";
+      // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
+      if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
     }
   }
@@ -1419,9 +1422,11 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
       const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
       if (checkExoneracionContainer) checkExoneracionContainer.style.display = "block";
-      if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block";
+      // if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block"; // Original
+      if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none"; // Forzar oculto
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
-      if (botonAnticipo) botonAnticipo.style.display = "inline-block";
+      // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
+      if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
     }
   }
@@ -1655,10 +1660,12 @@ function VerificarSucursales(rif) {
                         if (checkEnvioContainer) {
                             checkEnvioContainer.style.display = "none";
                             checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de exoneración
-                            checkAnticipoContainer.style.display = "block"; // Ocultar el checkbox de antic
+                            // checkAnticipoContainer.style.display = "block"; // Original
+                            checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         }
                       }else{
-                        checkAnticipoContainer.style.display = "block"; // Ocultar el checkbox de anticipo
+                        // checkAnticipoContainer.style.display = "block"; // Original
+                        checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de ex
                         checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
                       }
@@ -2872,8 +2879,8 @@ document.addEventListener("DOMContentLoaded", function () {
         uploadNowChecked && exoneracionChecked ? "flex" : "none";
     }
     if (botonCargaAnticipo) {
-    botonCargaAnticipo.style.display =
-        uploadNowChecked && checkAnticipo && checkAnticipo.checked ? "flex" : "none";
+        // botonCargaAnticipo.style.display = uploadNowChecked && checkAnticipo && checkAnticipo.checked ? "flex" : "none"; // Original
+        botonCargaAnticipo.style.display = "none"; // Forzar oculto siempre (Petición del usuario)
     }
     
     // Actualizar el estado del botón de anticipo cuando se muestra (siempre habilitado)

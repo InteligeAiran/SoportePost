@@ -1100,7 +1100,8 @@ function mi_navbar() {}
                                             <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
                                             <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Exoneración</label>
                                         </div>
-                                        <div id="checkAnticipoContainer" class="form-check">
+                                        <!-- <div id="checkAnticipoContainer" class="form-check"> --> <!-- Original -->
+                                        <div id="checkAnticipoContainer" class="form-check" style="display: none !important;">
                                             <input class="form-check-input" type="radio" id="checkAnticipo" name="documentType" value="anticipo">
                                             <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Anticipo</label>
                                         </div>
@@ -1125,7 +1126,8 @@ function mi_navbar() {}
                                             <div id="exoneracionStatus"></div>
                                         </div><br>
 
-                                        <div style="display: flex; align-items: center; margin-top: 15px; margin-bottom: 2%; display: none; position: relative;"
+                                        <!-- Original: <div style="display: flex; align-items: center; margin-top: 15px; margin-bottom: 2%; display: none; position: relative;" id="botonCargaAnticipo"> -->
+                                        <div style="display: none !important; align-items: center; margin-top: 15px; margin-bottom: 2%; position: relative;"
                                             id="botonCargaAnticipo">
                                             <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">
                                                 <span>Adjunte Documento Anticipo</span>
