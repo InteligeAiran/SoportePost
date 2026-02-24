@@ -904,6 +904,8 @@ function getTicketDataFinaljs() {
                     data-nro-ticket="${nroTicket}"
                     data-total-paid="${totalPaid}"
                     data-total-budget="${totalBudget}"
+                    data-total-pending-review="${row.total_pending_review || 0}"
+                    data-total-rejected="${row.total_rejected || 0}"
                     data-debt="${debt}"
                     data-has_devolution="${HasDevolution}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check-fill" viewBox="0 0 16 16">
@@ -1306,6 +1308,8 @@ function getTicketDataFinaljs() {
 
                   if (isBlocked) {
                     const totalPaid = Number(btn.data("total-paid")) || 0;
+                    const totalPending = Number(btn.data("total-pending-review")) || 0;
+                    const totalRejected = Number(btn.data("total-rejected")) || 0;
                     const totalBudget = Number(btn.data("total-budget")) || 0;
                     const debt = Number(btn.data("debt")) || 0;
                     const nroTicket = btn.data("nro-ticket");
@@ -1326,9 +1330,11 @@ function getTicketDataFinaljs() {
                           <p class="h4 mb-3" style="color: black;">El ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #ffebee; color: #c62828;">${nroTicket}</span> tiene pagos pendientes.</p>
                           <div class="p-3 mb-3" style="background-color: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6;">
                             <table class="table table-sm mb-0">
-                              <tr><td class="text-start border-0"><strong>Monto Abonado:</strong></td><td class="text-end border-0">$${totalPaid.toFixed(2)}</td></tr>
+                              <tr><td class="text-start border-0"><strong>Aprobado:</strong></td><td class="text-end border-0 text-success"><strong>$${totalPaid.toFixed(2)}</strong></td></tr>
+                              <tr><td class="text-start border-0"><strong>En Revisión:</strong></td><td class="text-end border-0 text-warning"><strong>$${totalPending.toFixed(2)}</strong></td></tr>
+                              <tr><td class="text-start border-0"><strong>Rechazado:</strong></td><td class="text-end border-0 text-danger"><strong>$${totalRejected.toFixed(2)}</strong></td></tr>
                               <tr><td class="text-start border-0"><strong>Presupuesto Taller:</strong></td><td class="text-end border-0">$${totalBudget.toFixed(2)}</td></tr>
-                              <tr style="border-top: 2px solid #dee2e6;"><td class="text-start border-0"><strong class="text-danger">Saldo Pendiente:</strong></td><td class="text-end border-0"><strong class="text-danger" style="font-size: 1.2em;">$${debt.toFixed(2)}</strong></td></tr>
+                              <tr style="border-top: 2px solid #dee2e6;"><td class="text-start border-0"><strong class="text-danger">Aun Pendiente:</strong></td><td class="text-end border-0"><strong class="text-danger" style="font-size: 1.2em;">$${debt.toFixed(2)}</strong></td></tr>
                             </table>
                           </div>
                           <p class="h5" style="padding: 0.5rem; border-radius: 0.3rem; background-color: #fff3e0; color: #ef6c00; font-size: 85%;">Debe completar el pago para proceder con la entrega.</p>
