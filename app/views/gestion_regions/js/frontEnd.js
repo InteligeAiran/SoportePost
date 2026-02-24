@@ -887,10 +887,24 @@ function getTicketDataFinaljs() {
                     </svg>
                   </button>`;
                 } else {
-                  actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn" title = "Entregar a cliente"
+                  const totalPaid = Number(row.total_paid) || 0;
+                  const totalBudget = Number(row.total_budget) || 0;
+                  const debt = Math.max(0, totalBudget - totalPaid);
+                  const isBlocked = debt > 0.01;
+
+                  const tooltipText = isBlocked 
+                    ? `Pago pendiente: $${debt.toFixed(2)} (Click para ver detalle)`
+                    : 'Entregar a cliente';
+
+                  actionButton = `<button type="button" class="btn ${isBlocked ? 'btn-secondary' : 'btn-primary'} btn-sm deliver-ticket-btn" 
+                    ${isBlocked ? 'data-is-blocked="true"' : ''}
+                    title="${tooltipText}"
                     data-id-ticket="${idTicket}"
                     data-serial-pos="${serialPos}"
                     data-nro-ticket="${nroTicket}"
+                    data-total-paid="${totalPaid}"
+                    data-total-budget="${totalBudget}"
+                    data-debt="${debt}"
                     data-has_devolution="${HasDevolution}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bag-check-fill" viewBox="0 0 16 16">
                       <path fill-rule="evenodd" d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0m-.646 5.354a.5.5 0 0 0-.708-.708L7.5 10.793 6.354 9.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
@@ -921,13 +935,14 @@ function getTicketDataFinaljs() {
                 const envioUrl = row.envio_document_url;
                 const exoneracionUrl = row.exoneracion_document_url;
                 const pagoUrl = row.pago_document_url;
+                const presupuestoUrl = row.presupuesto_document_url;
 
                 if (hasEnvioDestinoDocument) {
                   // Se asume que el estatus "En la región" significa que el documento ya fue subido y puede ser visto
                   if(row.name_accion_ticket === "En la región" || row.name_accion_ticket === "Entregado a Cliente"){
                     // Verificar si hay al menos un documento disponible
                      
-                    const hasAnyDocument = envioUrl || exoneracionUrl || pagoUrl;
+                    const hasAnyDocument = envioUrl || exoneracionUrl || pagoUrl || presupuestoUrl;
                   // ... existing code ...
                  if (hasAnyDocument) {
                     return `<button type="button" class="btn btn-success btn-sm btn-document-actions-modal" title = "Vizualizar Documentos"
@@ -942,6 +957,8 @@ function getTicketDataFinaljs() {
                         data-exoneracion-filename="${row.exoneracion_original_filename || ''}"
                         data-pago-url="${row.pago_document_url || ''}"
                         data-pago-filename="${row.pago_original_filename || ''}"
+                        data-presupuesto-url="${row.presupuesto_document_url || ''}"
+                        data-presupuesto-filename="${row.presupuesto_original_filename || ''}"
                         data-envio-destino="${row.envio_destino_document_url || ''}"
                         data-envio-destino-filename="${row.envio_destino_original_filename || ''}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
@@ -1284,9 +1301,52 @@ function getTicketDataFinaljs() {
               });
 
              $(document).on("click", ".deliver-ticket-btn", function () {
-                  const idTicket = $(this).data("id-ticket");
-                  const nroTicket = $(this).data("nro-ticket"); 
-                  const serialPos = $(this).data("serial-pos"); 
+                  const btn = $(this);
+                  const isBlocked = btn.data("is-blocked") === true;
+
+                  if (isBlocked) {
+                    const totalPaid = Number(btn.data("total-paid")) || 0;
+                    const totalBudget = Number(btn.data("total-budget")) || 0;
+                    const debt = Number(btn.data("debt")) || 0;
+                    const nroTicket = btn.data("nro-ticket");
+
+                    const customDebtSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#dc3545" class="bi bi-exclamation-octagon-fill custom-icon-animation" viewBox="0 0 16 16">
+                      <path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353L11.46.146zM8 4c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995A.905.905 0 0 1 8 4zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>`;
+
+                    Swal.fire({
+                      title: `<div class="custom-modal-header-title bg-gradient-danger text-white">
+                        <div class="custom-modal-header-content">Detalle de Deuda Pendiente</div>
+                      </div>`,
+                      html: `
+                        <div class="custom-modal-body-content">
+                          <div class="mb-4">
+                            ${customDebtSvg}
+                          </div>
+                          <p class="h4 mb-3" style="color: black;">El ticket <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #ffebee; color: #c62828;">${nroTicket}</span> tiene pagos pendientes.</p>
+                          <div class="p-3 mb-3" style="background-color: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6;">
+                            <table class="table table-sm mb-0">
+                              <tr><td class="text-start border-0"><strong>Monto Abonado:</strong></td><td class="text-end border-0">$${totalPaid.toFixed(2)}</td></tr>
+                              <tr><td class="text-start border-0"><strong>Presupuesto Taller:</strong></td><td class="text-end border-0">$${totalBudget.toFixed(2)}</td></tr>
+                              <tr style="border-top: 2px solid #dee2e6;"><td class="text-start border-0"><strong class="text-danger">Saldo Pendiente:</strong></td><td class="text-end border-0"><strong class="text-danger" style="font-size: 1.2em;">$${debt.toFixed(2)}</strong></td></tr>
+                            </table>
+                          </div>
+                          <p class="h5" style="padding: 0.5rem; border-radius: 0.3rem; background-color: #fff3e0; color: #ef6c00; font-size: 85%;">Debe completar el pago para proceder con la entrega.</p>
+                        </div>
+                      `,
+                      confirmButtonText: "Entendido",
+                      color: "black",
+                      confirmButtonColor: "#c62828",
+                      focusConfirm: false,
+                      allowOutsideClick: false,
+                      width: '500px'
+                    });
+                    return;
+                  }
+
+                  const idTicket = btn.data("id-ticket");
+                  const nroTicket = btn.data("nro-ticket"); 
+                  const serialPos = btn.data("serial-pos"); 
                   const customDeliverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
                   const id_user = document.getElementById('userId').value;
                   const devolution = $(this).data("has_devolution"); 
@@ -1698,6 +1758,9 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
     const Envio_DestinoUrl = $(this).data('envio-destino');
     const EnvioDestinoName = $(this).data('envio-destino-filename');
 
+    const PresupuestoUrl = $(this).data('presupuesto-url');
+    const PresupuestoName = $(this).data('presupuesto-filename');
+
     const nro_ticket = $(this).data('nro-ticket');
 
     const estado_cliente = $(this).data('nombre_estado');
@@ -1717,67 +1780,46 @@ document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
     let modalButtonsHTML = '';
 
-    if (pdfZoomUrl && imgExoneracionUrl && Envio_DestinoUrl ) {
-        // Solo Envío, Exoneración y Envio_Destino
-        modalButtonsHTML = `
-            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
+    // Botones base que siempre se evalúan
+    if (pdfZoomUrl) {
+        modalButtonsHTML += `
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Envio
-            </button>
-            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Exoneración
-            </button>
-            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio a Destino
             </button>
         `;
-    } else if (pdfZoomUrl && pdfPagoUrl) {
-        // Solo Envío y Pago
-        modalButtonsHTML = `
-            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
+    }
+
+    if (PresupuestoUrl) {
+        modalButtonsHTML += `
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="presupuesto" data-file-url="${PresupuestoUrl}" data-file-name="${PresupuestoName}" data-nro-ticket="${nro_ticket}">
+                Ver Documento de Presupuesto
             </button>
-            <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
+        `;
+    }
+
+    if (pdfPagoUrl) {
+        modalButtonsHTML += `
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Pago
             </button>
         `;
- 
-    }else if (pdfZoomUrl && imgExoneracionUrl) {
-        // Solo Envío y Exoneración
-        modalButtonsHTML = `
-            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
-            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
+    }
+
+    if (imgExoneracionUrl) {
+        modalButtonsHTML += `
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Exoneración
             </button>
         `;
-    } else if (pdfZoomUrl && Envio_DestinoUrl && pdfPagoUrl) {
-        // Solo Envío, Envio_Destino y Pago
-         modalButtonsHTML = `
-            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
-            <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Pago
-            </button>
-            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
+    }
+
+    if (Envio_DestinoUrl) {
+        modalButtonsHTML += `
+            <button class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Envio a Destino
             </button>
         `;
-    }else if (pdfZoomUrl && Envio_DestinoUrl) {
-        // Solo Envío
-        modalButtonsHTML = `
-            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
-
-            <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="envio_estino" data-file-url="${Envio_DestinoUrl}" data-file-name="${EnvioDestinoName}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio a Destino
-            </button>
-        `;
-
-
-    } 
+    }
 
     buttonsContainer.html(modalButtonsHTML);
 
