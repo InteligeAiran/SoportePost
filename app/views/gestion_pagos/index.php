@@ -392,7 +392,7 @@ function mi_navbar() {}
         }
 
         #modalConfirmacionRechazo .modal-title::before {
-            content: '⚠️';
+            content: 'âš ï¸';
             font-size: 1.5rem;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
@@ -702,7 +702,7 @@ function mi_navbar() {}
                 <div class="col-md-5 h-100 d-flex flex-column border-start ps-4">
                     <h3 class="mb-3">Detalles del Ticket</h3>
                     <div id="ticket-details-panel" class="flex-grow-1 overflow-auto p-3 bg-light rounded">
-                        <strong><p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p></strong>
+                        <strong><p>Selecciona un ticket de la tabla para ver sus detalles Aquí.</p></strong>
                     </div>
                 </div>
             </div>
@@ -1193,14 +1193,21 @@ function mi_navbar() {}
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-file-earmark-diff me-1 text-primary" viewBox="0 0 16 16"><path d="M8 5a.5.5 0 0 1 .5.5V7H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V8H6a.5.5 0 0 1 0-1h1.5V5.5A.5.5 0 0 1 8 5m-2.5 6.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>Documento de Pago
                                         </label>
                                         <div class="upload-container text-center" style="position: relative;">
-                                            <input type="file" class="form-control" id="documentoPago" name="documentoPago" accept="image/*,.pdf" style="display: none;">
-                                            <label for="documentoPago" class="d-block p-4 border rounded bg-light" style="border: 2px dashed #cbd5e0 !important; cursor: pointer; transition: all 0.3s ease; width: 100%;" id="labelDocumentoPago">
+                                            <input type="file" class="form-control" id="pago_documentFile" name="documentoPago" accept="image/*,.pdf" style="display: none;">
+                                            <label for="pago_documentFile" class="d-block p-4 border rounded bg-light" style="border: 2px dashed #cbd5e0 !important; cursor: pointer; transition: all 0.3s ease; width: 100%;" id="pago_fileDropZone">
                                                 <div class="mb-2" id="iconDocumentoPago">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-camera text-secondary" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>
                                                 </div>
                                                 <span class="text-muted fw-medium d-block" id="textDocumentoPago">Adjunte el Documento de Pago</span>
-                                                <span class="text-success fw-bold d-none" id="fileNameDocumentoPago"></span>
                                             </label>
+                                            <div id="pago_fileStatusContainer" class="d-none" style="margin-top: 10px; padding: 15px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; cursor: pointer;">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <div id="pago_fileIconDisplay">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                                                    </div>
+                                                    <span class="fw-bold" id="pago_fileNameText" style="color: #16a34a; font-size: 0.95rem;"></span>
+                                                </div>
+                                            </div>
                                             <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>Archivos permitidos: JPG, JPEG, PNG, PDF (Máx. 5MB)
                                             </small>
@@ -1228,12 +1235,13 @@ function mi_navbar() {}
                                                 <th style="padding: 8px; white-space: nowrap;">Monto Ref</th>
                                                 <th style="padding: 8px; white-space: nowrap;">Referencia</th>
                                                 <th style="padding: 8px; white-space: nowrap;">Depositante</th>
+                                                 <th style="padding: 8px; white-space: nowrap;">Estatus</th>
                                                 <th style="padding: 8px; white-space: nowrap;">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody id="paymentHistoryBody">
                                             <tr>
-                                                <td colspan="9" class="text-center text-muted" style="padding: 20px;">
+                                                <td colspan="11" class="text-center text-muted" style="padding: 20px;">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>No hay pagos registrados
                                                 </td>
                                             </tr>
@@ -1477,6 +1485,246 @@ function mi_navbar() {}
     <!--button type="button" class="btn btn-primary" id="reassignTicketBtn" data-ticket-id="2">
         <i class="bi bi-person-gear"></i> Reasignar Ticket
     </button-->
+
+    <!-- MODAL SUSTITUIR DATOS DE PAGO (Reemplazo completo - mismo flujo que Tecnico) -->
+    <div class="modal fade" id="modalSustituirPago" tabindex="-1" aria-labelledby="modalSustituirPagoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content" style="border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-height: 95vh; display: flex; flex-direction: column;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #e8850a, #f6a623); color: white; border-radius: 12px 12px 0 0; padding: 15px 25px; flex-shrink: 0;">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <h5 class="modal-title mb-0" id="modalSustituirPagoLabel" style="font-weight: 600; font-size: 1.3rem;">
+                            <i class="fas fa-money-bill-wave me-2"></i>Sustituir Datos de Pago
+                        </h5>
+                        <div class="card border-0 shadow-sm" style="background: rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 10px 15px; min-width: 180px;">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                <div>
+                                    <small style="opacity: 0.9; font-size: 0.75rem; display: block;">Monto Referencia</small>
+                                    <h5 class="mb-0 fw-bold" id="sust_montoEquipo" style="font-size: 1.1rem;">$0.00</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding: 20px; background: #f8f9fa; overflow-y: auto; flex: 1;">
+                    <form id="formSustituirPago">
+                        <input type="hidden" id="sust_id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
+                        <input type="hidden" id="sust_nro_ticket_pago" name="nro_ticket_pago">
+                        <input type="hidden" id="sust_id_ticket_pago" name="id_ticket_pago">
+                        <input type="hidden" id="sust_id_payment_record_loading" name="id_payment_record_loading">
+                        <input type="hidden" id="sust_document_type_pago" name="document_type_pago">
+                        <input type="hidden" id="sust_registro" name="registro">
+
+                        <!-- Sección: Información del Cliente -->
+                        <div class="form-section shadow-sm mb-4" style="background: #fff; border-radius: 8px; border-left: 4px solid #f6a623; padding: 15px;">
+                            <div class="form-section-header" style="border-bottom: 2px solid #f0f0f0; margin-bottom: 15px; padding-bottom: 10px;">
+                                <i class="fas fa-user-circle" style="color: #667eea; margin-right: 8px;"></i>
+                                <h6 class="form-section-title d-inline-block m-0 fw-bold" style="color: #495057;">Información del Cliente</h6>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_displayRazonSocial" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-building me-1 text-primary"></i>Razón Social
+                                    </label>
+                                    <input type="text" class="form-control bg-light" id="sust_displayRazonSocial" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_displayRif" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-id-card me-1 text-primary"></i>RIF
+                                    </label>
+                                    <input type="text" class="form-control bg-light" id="sust_displayRif" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_serialPosPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-barcode me-1 text-primary"></i>Serial POS
+                                    </label>
+                                    <input type="text" class="form-control bg-light" id="sust_serialPosPago" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_displayEstatusPos" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-signal me-1 text-primary"></i>Estatus POS
+                                    </label>
+                                    <input type="text" class="form-control bg-light" id="sust_displayEstatusPos" readonly style="font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Información de Pago -->
+                        <div class="form-section shadow-sm mb-4" style="background: #fff; border-radius: 8px; border-left: 4px solid #f6a623; padding: 15px;">
+                            <div class="form-section-header" style="border-bottom: 2px solid #f0f0f0; margin-bottom: 15px; padding-bottom: 10px;">
+                                <i class="fas fa-money-bill-wave" style="color: #667eea; margin-right: 8px;"></i>
+                                <h6 class="form-section-title d-inline-block m-0 fw-bold" style="color: #495057;">Información de Pago</h6>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_fechaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-calendar-alt me-1 text-primary"></i>Fecha Pago <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" id="sust_fechaPago" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_formaPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-credit-card me-1 text-primary"></i>Forma pago <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <select class="form-select" id="sust_formaPago" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_moneda" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-coins me-1 text-primary"></i>Moneda <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <select class="form-select" id="sust_moneda" required style="font-size: 0.95rem; padding: 8px 12px;">
+                                        <option value="">Seleccionar</option>
+                                        <option value="bs">Bolívares (Bs)</option>
+                                        <option value="usd">Dólares (USD)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_estatus_pago_visual" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-info-circle me-1 text-primary"></i>Estatus
+                                    </label>
+                                    <input type="text" class="form-control" id="sust_estatus_pago_visual" placeholder="Estatus del pago" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef;">
+                                </div>
+                            </div>
+                            <!-- Banco Fields (Transferencia) -->
+                            <div class="row g-2" id="sust_bancoFieldsContainer" style="display: none;">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_bancoOrigen" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-university me-1 text-primary"></i>Banco Origen
+                                    </label>
+                                    <select class="form-select" id="sust_bancoOrigen" style="font-size: 0.95rem; padding: 8px 12px;">
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_bancoDestino" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-building me-1 text-primary"></i>Banco Destino
+                                    </label>
+                                    <select class="form-select" id="sust_bancoDestino" style="font-size: 0.95rem; padding: 8px 12px;">
+                                        <option value="">Seleccione</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Montos y Referencias -->
+                        <div class="form-section shadow-sm mb-4" style="background: #fff; border-radius: 8px; border-left: 4px solid #f6a623; padding: 15px;">
+                            <div class="form-section-header d-flex justify-content-between align-items-center" style="border-bottom: 2px solid #f0f0f0; margin-bottom: 15px; padding-bottom: 10px;">
+                                <div>
+                                    <i class="fas fa-exchange-alt" style="color: #667eea; margin-right: 8px;"></i>
+                                    <h6 class="form-section-title d-inline-block m-0 fw-bold" style="color: #495057;">Montos y Referencias</h6>
+                                </div>
+                                <div class="tasa-display" style="background: linear-gradient(135deg, #e8850a, #f6a623); padding: 5px 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(232, 133, 10, 0.3);">
+                                    <div class="text-end text-white">
+                                        <small id="sust_fechaTasaDisplay" style="font-size: 0.75rem; opacity: 0.9;">Tasa: --</small>
+                                        <h5 class="mb-0 fw-bold tasa-value" id="sust_tasaDisplayValue" style="font-size: 1.1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">Cargando...</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_montoBs" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">Monto Bs</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="sust_montoBs" step="0.01" placeholder="0.00" style="font-size: 0.95rem;" readonly>
+                                        <span class="input-group-text" style="font-size: 0.85rem; background-color: #f8f9fa;">Bs</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_montoRef" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">Monto REF</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="sust_montoRef" step="0.01" placeholder="0.00" style="font-size: 0.95rem;" readonly>
+                                        <span class="input-group-text" style="font-size: 0.85rem; background-color: #f8f9fa;">USD</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_referencia" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">Referencia <span style="color: #dc3545;">*</span></label>
+                                    <input type="text" class="form-control" id="sust_referencia" placeholder="Número de referencia" required style="font-size: 0.95rem;">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_depositante" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">Depositante <span style="color: #dc3545;">*</span></label>
+                                    <input type="text" class="form-control" id="sust_depositante" placeholder="Nombre del depositante" required style="font-size: 0.95rem;">
+                                </div>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_registro_visual" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-book me-1 text-primary"></i>Registro
+                                    </label>
+                                    <input type="text" class="form-control" id="sust_registro_visual" placeholder="Generado autom." readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef;">
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <label for="sust_fechaCarga" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <i class="fas fa-calendar-check me-1 text-primary"></i>Fecha carga <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="sust_fechaCarga" readonly style="font-size: 0.95rem; padding: 8px 12px; background-color: #e9ecef;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Soporte Digital -->
+                        <div class="form-section shadow-sm mb-4" style="background: #fff; border-radius: 8px; border-left: 4px solid #f6a623; padding: 15px;">
+                            <div class="form-section-header" style="border-bottom: 2px solid #f0f0f0; margin-bottom: 15px; padding-bottom: 10px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#667eea" class="bi bi-cloud-arrow-up me-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/><path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/></svg>
+                                <h6 class="form-section-title d-inline-block m-0 fw-bold" style="color: #495057;">Nuevo Comprobante de Pago</h6>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-12 mb-2">
+                                    <label for="sust_documentFileDetailed" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-file-earmark-arrow-up me-1 text-primary" viewBox="0 0 16 16"><path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>
+                                        Nuevo Documento de Pago <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <div id="sust_fileDropZone" style="border: 2px dashed #cbd5e0; border-radius: 8px; padding: 30px; text-align: center; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#a0aec0" class="bi bi-camera mb-2" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>
+                                        <p style="color: #4a5568; font-size: 1rem; margin: 10px 0 5px 0; font-weight: 500;">Adjunte el Nuevo Comprobante de Pago</p>
+                                        <small style="color: #a0aec0; font-size: 0.85rem;">Formatos permitidos: JPG, PNG, GIF o PDF (Máx. 5MB)</small>
+                                    </div>
+                                    <input type="file" class="d-none" id="sust_documentFile" accept="image/jpg, image/png, image/gif, application/pdf" required>
+                                    <div id="sust_fileStatusContainer" style="display: none; margin-top: 10px; padding: 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; cursor: pointer;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div id="sust_fileIconDisplay">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                                            </div>
+                                            <span id="sust_fileNameText" style="color: #16a34a; font-weight: 500; font-size: 0.95rem;"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Observaciones -->
+                        <div class="form-section shadow-sm mb-4" style="background: #fff; border-radius: 8px; border-left: 4px solid #f6a623; padding: 15px;">
+                            <div class="form-section-header" style="border-bottom: 2px solid #f0f0f0; margin-bottom: 15px; padding-bottom: 10px;">
+                                <i class="fas fa-info-circle" style="color: #667eea; margin-right: 8px;"></i>
+                                <h6 class="form-section-title d-inline-block m-0 fw-bold" style="color: #495057;">Información Adicional</h6>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-md-12 mb-2">
+                                    <label for="sust_obsAdministracion" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">Obs. Administración</label>
+                                    <textarea class="form-control" id="sust_obsAdministracion" rows="2" placeholder="Observaciones de administración" style="font-size: 0.95rem; resize: vertical;"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="background: #f8f9fa; border-radius: 0 0 12px 12px; padding: 15px 25px;">
+                    <button type="button" class="btn btn-secondary px-4" id="btnCancelarSustituirPago">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-warning px-4" id="btnGuardarSustituirPago" style="background: linear-gradient(135deg, #f6a623 0%, #e8850a 100%); border: none; color: white;">
+                        <i class="fas fa-exchange-alt me-2"></i>Sustituir Pago
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL SUSTITUIR DATOS DE PAGO -->
 
     <input type="hidden" id="id_user" value="<?php echo $_SESSION['id_user'] ?? ''; ?>"/>
 

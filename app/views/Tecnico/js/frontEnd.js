@@ -1196,12 +1196,15 @@ function getTicketData() {
                         data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
                         Cargar Documento de Exoneración
                     </button>
+                    /* 
+                    OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
                     <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
                         data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
                         data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
                         data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
                         Cargar Documento de Pago
                     </button>
+                    */
                 `;
             }
         } else {
@@ -1218,13 +1221,8 @@ function getTicketData() {
                     data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
                     data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Anticipo" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
-                    Cargar Documento de Pago
                 </button>`;
+                 // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
             }
         }
     } else if (imgExoneracionUrl) {
@@ -1289,12 +1287,15 @@ function getTicketData() {
                         data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
                         Cargar Documento de Exoneración
                     </button>
+                    /* 
+                    OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
                     <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
                         data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
                         data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
                         data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
                         Cargar Documento de Pago
                     </button>
+                    */
                 `;
             }
         } else {
@@ -1314,13 +1315,8 @@ function getTicketData() {
                     data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
                     data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Anticipo" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
-                    Cargar Documento de Pago
                 </button>`;
+                // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
             }
         }
     }
@@ -1341,16 +1337,7 @@ function getTicketData() {
 
     // Botón especial para pago rechazado (Estatus 13 o documento marcado como rechazado)
     if (statusPayment == 13 || hasRejectedDocument) {
-        modalButtonsHTML += `
-            <button id="PagoBotonRechazado" class="btn btn-danger btn-block btn-pago-pdf mb-2" 
-                data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                data-status-payment="${statusPayment}" data-document-type="Anticipo"
-                data-id-payment-record="${idPaymentRecord}"
-                data-motivo="${motivoRechazoPago}"
-                data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
-                <i class="fas fa-exclamation-triangle me-1"></i> Corregir Pago Rechazado
-            </button>`;
+        // OCULTADO POR SOLICITUD - La corrección de pagos la realizará Administración
     }
 
     buttonsContainer.html(modalButtonsHTML);

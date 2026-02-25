@@ -4111,7 +4111,8 @@ HTML;
             'record_number',
             'payment_status',
             'confirmation_number',
-            'payment_date'
+            'payment_date',
+            'document_type'
         ];
 
         foreach ($possibleFields as $field) {
