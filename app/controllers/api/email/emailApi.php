@@ -102,6 +102,11 @@ class email extends Controller {
                     $this->handleSendAnticipoPresupuestoEmail();
                 break;
 
+                case 'send_payment_notification':
+                    // Manejo del envío de notificación de nuevo pago para Tesorería
+                    $this->handleSendPaymentRegistrationEmail();
+                break;
+
                 default:
                     $this->response(['error' => 'Acción no encontrada en email'], 404);
                 break;
@@ -929,12 +934,12 @@ class email extends Controller {
     } else {
         $this->response(['success' => false, 'message' => 'Error al enviar ambos correos.', 'color' => 'red']);
     }
-}
+    }
 
     public function handleSendDevolutionTicket() {
         $repository = new EmailRepository();
 
-        // EMAIL DEL AREA
+        // 1. Obtener ID del coordinador desde el POST y sus datos
         $result_email_area = $repository->GetEmailArea();
 
         // Si no se encuentra información del coordinador, no podemos continuar
@@ -3316,8 +3321,11 @@ HTML;
         // Formatear datos del presupuesto
         $presupuesto_numero = htmlspecialchars($presupuestoData['presupuesto_numero'] ?? 'N/A');
         $monto_taller = isset($presupuestoData['monto_taller']) ? number_format((float)$presupuestoData['monto_taller'], 2, ',', '.') : '0,00';
-        $diferencia_usd = isset($presupuestoData['diferencia_usd']) ? number_format((float)$presupuestoData['diferencia_usd'], 2, ',', '.') : '0,00';
-        $diferencia_bs = isset($presupuestoData['diferencia_bs']) ? number_format((float)$presupuestoData['diferencia_bs'], 2, ',', '.') : '0,00';
+        $diferencia_usd_float = isset($presupuestoData['diferencia_usd']) ? (float)$presupuestoData['diferencia_usd'] : 0.0;
+        $diferencia_usd = number_format($diferencia_usd_float, 2, ',', '.');
+        
+        $diferencia_bs_float = isset($presupuestoData['diferencia_bs']) ? (float)$presupuestoData['diferencia_bs'] : 0.0;
+        $diferencia_bs = number_format($diferencia_bs_float, 2, ',', '.');
         $descripcion_reparacion = htmlspecialchars($presupuestoData['descripcion_reparacion'] ?? 'N/A');
         $fecha_presupuesto = isset($presupuestoData['fecha_presupuesto']) ? date('d/m/Y', strtotime($presupuestoData['fecha_presupuesto'])) : date('d/m/Y');
         
@@ -3780,6 +3788,202 @@ HTML;
         </div>
     </div>
         </body>
+</html>
+HTML;
+    }
+
+    /**
+     * Maneja el envío de correo de notificación de registro de pago para Tesorería.
+     */
+    public function handleSendPaymentRegistrationEmail() {
+        try {
+            $nro_ticket = $_POST['nro_ticket'] ?? '';
+            $serial = $_POST['serial_pos'] ?? '';
+            
+            if (empty($nro_ticket)) {
+                return;
+            }
+
+            $repository = new EmailRepository();
+            
+            // 1. Obtener datos del pago recién registrado
+            $paymentData = $repository->GetLastPaymentByTicket($nro_ticket);
+            if (!$paymentData) {
+                error_log("No se encontró el último pago para el ticket: " . $nro_ticket);
+                return;
+            }
+
+            // 2. Obtener datos de Tesorería (id_area = 2)
+            $tesoreria = $repository->GetEmailAreaTesoreria();
+            if (!$tesoreria) {
+                error_log("No se encontró el correo de Tesorería");
+                return;
+            }
+
+            $email_tesoreria = $tesoreria['email_area'];
+            $UserTesoreria = $repository->GetUserByArea($tesoreria['id_area']);
+            $adminName = $UserTesoreria ? $UserTesoreria['full_name'] : $tesoreria['name_area'];
+
+            // 3. Obtener datos del técnico y ticket para el contexto
+            // Reutilizamos GetDataTicket2 que trae la info básica del ticket y técnico
+            $ticketData = $repository->GetDataTicket2ByNro($nro_ticket);
+
+            // 4. Obtener datos complementarios
+            $ticket_data = $repository->GetTicketCompleteDataByNroTicket($nro_ticket);
+            $client_info = $repository->GetClientInfo($serial);          
+            $staff_info = $repository->GetTicketStaffDetails($nro_ticket, $paymentData['payment_reference']);
+
+            // 5. Generar cuerpo del correo
+            $subject = "💰 NOTIFICACIÓN DE PAGO - Ticket #$nro_ticket";
+            $body = $this->getPaymentRegistrationEmailBody($adminName, $paymentData, $ticketData, $client_info, $staff_info);
+
+            $embeddedImages = [];
+            if (defined('FIRMA_CORREO')) {
+                $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+            }
+
+            // 6. Enviar correo
+            error_log("Intentando enviar notificación de pago a Tesorería: " . $email_tesoreria);
+            $sent = $this->emailService->sendEmail($email_tesoreria, $subject, $body, [], $embeddedImages);
+
+            if ($sent) {
+                error_log("Correo enviado exitosamente a Tesorería.");
+            } else {
+                error_log("Error al enviar el correo a Tesorería.");
+            }
+
+        } catch (\Throwable $e) {
+            error_log("ERROR EN handleSendPaymentRegistrationEmail: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Genera el cuerpo HTML para el correo de notificación de nuevo pago.
+     */
+    private function getPaymentRegistrationEmailBody($adminName, $paymentData, $ticketData, $clientInfo, $staffInfo) {
+        $nro_ticket = htmlspecialchars($paymentData['nro_ticket']);
+        $rif = htmlspecialchars($clientInfo['coddocumento'] ?? $ticketData['rif'] ?? 'N/A');
+        $razon = htmlspecialchars($clientInfo['razonsocial'] ?? $ticketData['razonsocial'] ?? 'N/A');
+        $serial = htmlspecialchars($paymentData['serial_pos']);
+        $monto_bs = number_format($paymentData['amount_bs'], 2, ',', '.');
+        $monto_usd = isset($paymentData['reference_amount']) && $paymentData['reference_amount'] ? number_format($paymentData['reference_amount'], 2, ',', '.') : 'N/A';
+        $metodo = htmlspecialchars($paymentData['payment_method']);
+        $referencia = htmlspecialchars($paymentData['payment_reference']);
+        $fecha_pago = date('d/m/Y', strtotime($paymentData['payment_date'] ?? date('Y-m-d')));
+        $tecnico = htmlspecialchars($staffInfo['tecnico_gestion'] ?? $ticketData['full_name_tecnico'] ?? 'Técnico');
+        $region_tecnico = htmlspecialchars($staffInfo['region_tecnico_gestion'] ?? 'N/A');
+        $administrativo = htmlspecialchars($staffInfo['administrativo'] ?? 'N/A');
+        $currentYear = date("Y");
+        
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div style="text-align: center; margin-top: 30px;"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" style="width: 150px; height: auto; opacity: 0.8;"></div>';
+        }
+
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; padding: 0; background: #f5f5f5; font-family: 'Arial', 'Helvetica', sans-serif; }
+        .invoice { background: #ffffff; max-width: 600px; margin: 40px auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .invoice-header { background: #00897b; color: #ffffff; padding: 10px 20px 25px 20px; text-align: center; }
+        .logo-container { margin: 0; padding: 0; line-height: 0; }
+        .logo { width: 60%; max-width: 250px; display: inline-block; margin-bottom: -16% !important; margin-top: -20% !important;}
+        .invoice-header h1 { margin: 0; font-size: 24px; font-weight: bold; font-family: 'Arial', sans-serif; margin-top: 10px; }
+        .invoice-body { padding: 40px; }
+        .greeting { font-size: 16px; color: #00897b; margin-bottom: 20px; font-weight: bold; }
+        .message-text { font-size: 14px; color: #555; line-height: 1.5; margin-bottom: 30px; }
+        .message-text strong { color: #333; }
+        .amount-box { background: #e0f2f1; padding: 25px; text-align: center; border-radius: 4px; margin-bottom: 30px; }
+        .amount-label { font-size: 12px; color: #00897b; margin-bottom: 10px; }
+        .amount-value { font-size: 32px; color: #00897b; font-weight: bold; margin: 0 0 10px 0; }
+        .amount-usd { font-size: 13px; color: #00897b; margin: 0; }
+        .details-box { border-left: 4px solid #00897b; background: #fafafa; padding: 25px; margin-bottom: 30px; }
+        .detail-row { margin-bottom: 15px; border-bottom: 1px solid #eeeeee; padding-bottom: 10px; }
+        .detail-row:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        .detail-label { font-size: 11px; font-weight: bold; color: #00897b; text-transform: uppercase; margin-bottom: 5px; }
+        .detail-value { font-size: 14px; color: #333; }
+        .staff-box { background: #f4f6f9; padding: 25px; margin-bottom: 30px; border-left: 4px solid #0056b3; }
+        .staff-label { font-size: 11px; font-weight: bold; color: #0056b3; text-transform: uppercase; margin-bottom: 8px; }
+        .staff-value { font-size: 15px; color: #444; }
+        .invoice-footer { background: #f8f9fa; padding: 30px 40px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+        .invoice-footer p { margin: 8px 0; font-size: 13px; color: #8fa0b3; }
+        .invoice-footer strong { color: #8fa0b3; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="invoice">
+        <div class="invoice-header">
+            <h1>NOTIFICACIÓN DE PAGO</h1>
+        </div>
+        <div class="invoice-body">
+            <div class="greeting">
+                Hola, $adminName
+            </div>
+            <div class="message-text">
+                Se ha registrado un nuevo pago para el ticket <strong>#$nro_ticket</strong>. Por favor, proceda a su revisión y aprobación en el módulo correspondiente.
+            </div>
+            
+            <div class="amount-box">
+                <div class="amount-label">Monto Registrado (Bs.)</div>
+                <h2 class="amount-value">Bs. $monto_bs</h2>
+                <p class="amount-usd">Ref. USD: $monto_usd</p>
+            </div>
+
+            <div class="details-box">
+                <div class="detail-row">
+                    <div class="detail-label">CLIENTE:</div>
+                    <div class="detail-value">$razon</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">RIF:</div>
+                    <div class="detail-value">$rif</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">SERIAL POS:</div>
+                    <div class="detail-value">$serial</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">MÉTODO:</div>
+                    <div class="detail-value">$metodo</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">REFERENCIA:</div>
+                    <div class="detail-value">$referencia</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">FECHA PAGO:</div>
+                    <div class="detail-value">$fecha_pago</div>
+                </div>
+            </div>
+            
+            <div class="staff-box">
+                <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td width="50%" valign="top" style="padding-right: 15px;">
+                            <div class="staff-label">ADMINISTRATIVO (Registró el Pago):</div>
+                            <div class="staff-value">$administrativo</div>
+                        </td>
+                        <td width="50%" valign="top">
+                            <div class="staff-label">REGIÓN DEL TICKET:</div>
+                            <div class="staff-value">$region_tecnico</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            $logoHtml
+        </div>
+        <div class="invoice-footer">
+            <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; $currentYear InteliSoft. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
 </html>
 HTML;
     }

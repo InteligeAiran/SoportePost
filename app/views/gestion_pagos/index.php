@@ -871,6 +871,8 @@ function mi_navbar() {}
                     <div class="modal-body" style="padding: 20px; background: #f8f9fa; overflow-y: auto; overflow-x: hidden; flex: 1;">
                         <form id="formPagoPresupuesto">
                             <input type="hidden" id="id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
+                            <input type="hidden" id="pago_nro_ticket_hidden" name="nro_ticket">
+                            <input type="hidden" id="pago_serial_pos_hidden" name="serial_pos">
                          
                             <!-- MONTO ABONADO SECTION -->
                             <!-- MONTO ABONADO SECTION -->

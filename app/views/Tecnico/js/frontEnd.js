@@ -767,6 +767,38 @@ function getTicketData() {
                 return;
               }
 
+              // Validación de Gestión Comercial - Espera de Respuesta (id_status_domiciliacion = 3)
+              if (parseInt(id_domiciliacion) === 3) {
+                Swal.fire({
+                  icon: 'error',
+                  title: '<span style="color: #dc3545; font-size: 1.5em; font-weight: 700;">¡Acción Denegada!</span>',
+                  html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                        No se puede enviar el equipo al taller porque el cliente se encuentra en <strong style="color: #dc3545;">Gestión Comercial - Espera de Respuesta</strong> por deuda de domiciliación.
+                      </p>
+                      <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="color: #721c24; margin: 0; font-size: 1em; line-height: 1.6;">
+                          <strong>⚠️ Acción requerida:</strong><br>
+                          El cliente debe comunicarse para solventar la situación antes de poder proceder de forma operativa.
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: 'Entendido',
+                  confirmButtonColor: '#dc3545',
+                  color: 'black',
+                  width: '600px',
+                  padding: '2em',
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-container-custom'
+                  }
+                });
+                return;
+              }
+
               // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
               // Solo requiere documento de Envío, no anticipo ni exoneración
               if (isFallaSinPago) {
@@ -820,11 +852,31 @@ function getTicketData() {
                 if (showButton) {
                   Swal.fire({
                     icon: 'warning',
-                    title: '¡Advertencia!',
-                    text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
-                    confirmButtonText: 'Ok',
+                    iconColor: '#ff9800',
+                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Incompletos!</span>',
+                    html: `
+                      <div style="text-align: left; padding: 10px 0;">
+                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                          No es posible procesar el envío del equipo con la documentación actual.
+                        </p>
+                        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                            <strong>⚠️ Acción requerida:</strong><br>
+                            Antes de enviar el equipo al taller, es estrictamente necesario <strong>cargar todos los documentos correspondientes.</strong>
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                    confirmButtonText: 'Entendido',
                     confirmButtonColor: '#003594',
                     color: 'black',
+                    width: '600px',
+                    padding: '2em',
+                    customClass: {
+                      popup: 'swal2-popup-custom',
+                      title: 'swal2-title-custom',
+                      htmlContainer: 'swal2-html-container-custom'
+                    }
                   });
                   return;
                 }
@@ -834,21 +886,61 @@ function getTicketData() {
               if (id_document == 5 || id_document == 7) {
                 Swal.fire({
                   icon: 'warning',
-                  title: '¡Advertencia!',
-                  text: 'Se encuentran documentos pendientes por revisar.',
-                  confirmButtonText: 'Ok',
+                  iconColor: '#ff9800',
+                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Pendientes!</span>',
+                  html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                        El caso actual tiene <strong>documentos pendientes por revisar</strong> en el sistema.
+                      </p>
+                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                          <strong>⚠️ Acción requerida:</strong><br>
+                          Debe esperar a que Administración verifique y apruebe los documentos cargados antes de poder enviar el equipo a taller.
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: 'Entendido',
                   confirmButtonColor: '#003594',
                   color: 'black',
+                  width: '600px',
+                  padding: '2em',
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-container-custom'
+                  }
                 });
                 return;
               } else if (id_domiciliacion == 1) {
                 Swal.fire({
                   icon: 'warning',
-                  title: '¡Advertencia!',
-                  text: 'Debe revisar la domiciliación del cliente.',
-                  confirmButtonText: 'Ok',
+                  iconColor: '#ff9800',
+                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Revisión de Domiciliación!</span>',
+                  html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                        Aún no han verificado el <strong>estatus de domiciliación</strong> de este cliente.
+                      </p>
+                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                          <strong>⚠️ Acción requerida:</strong><br>
+                          Deben revisar primero el <strong>estatus de domiciliación</strong> del cliente antes de poder continuar con el envío a taller.
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: 'Entendido',
                   confirmButtonColor: '#003594',
                   color: 'black',
+                  width: '600px',
+                  padding: '2em',
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-container-custom'
+                  }
                 });
                 return;
               } else {

@@ -2045,8 +2045,24 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             // Recolectar datos
             const formData = new FormData();
             formData.append('action', 'InsertPaymentRecord');
-            formData.append('nro_ticket', window.currentNroTicket || '');
-            formData.append('serial_pos', window.currentSerialPos || '');
+            
+            // --- ROBUST TICKET & SERIAL RECOVERY (HIDDEN FIELDS) ---
+            const hTicket = document.getElementById("pago_nro_ticket_hidden");
+            const hSerial = document.getElementById("pago_serial_pos_hidden");
+            
+            let nroTicketToSubmit = hTicket ? hTicket.value : (window.currentNroTicket || '');
+            let serialPosToSubmit = hSerial ? hSerial.value : (window.currentSerialPos || '');
+
+            // Fallback to title if still empty (Ultra-robust)
+            if (!nroTicketToSubmit) {
+                const ticketTitle = document.getElementById("ticketNumeroPago");
+                if (ticketTitle) {
+                    nroTicketToSubmit = ticketTitle.textContent.replace('Ticket #', '').trim();
+                }
+            }
+            
+            formData.append('nro_ticket', nroTicketToSubmit);
+            formData.append('serial_pos', serialPosToSubmit);
             
             const userId = document.getElementById('id_user_pago') ? document.getElementById('id_user_pago').value : '';
             formData.append('user_loader', userId);
@@ -2570,6 +2586,17 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, razonSocial, rif, telefono, estatusPos, hasPresupuesto) {
     currentTicketId = ticketId;
     currentTicketNro = nroTicket;
+    
+    // Store context globally for save handler (IMPORTANT MUST BE SET ALWAYS)
+    window.currentNroTicket = nroTicket;
+    window.currentSerialPos = serialPos;
+
+    // --- POPULATE HIDDEN FIELDS IN FORM ---
+    const hTicket = document.getElementById("pago_nro_ticket_hidden");
+    if(hTicket) hTicket.value = nroTicket;
+    
+    const hSerial = document.getElementById("pago_serial_pos_hidden");
+    if(hSerial) hSerial.value = serialPos;
 
     // Limpiar formulario y resetear estado visual
     const formPago = document.getElementById("formPagoPresupuesto");
@@ -2669,10 +2696,6 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
         }
         currentBudgetAmount = parseFloat(cleanAmount);
         console.log("Parsed currentBudgetAmount:", currentBudgetAmount);
-        
-        // Store context globally for save handler
-        window.currentNroTicket = nroTicket;
-        window.currentSerialPos = serialPos;
         
         // Populate inputs
         const montoRefInput = document.getElementById("montoRef");
