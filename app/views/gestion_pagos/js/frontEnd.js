@@ -84,6 +84,7 @@ if (!document.getElementById('custom-swal-styles')) {
 // Variables globales para la reasignación de tickets
 let currentTicketNro = null;
 let currentTicketData = null;
+let TicketData = []; // Variable global para almacenar los tickets cargados
 let currentBudgetAmount = null; // New global variable for budget amount
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -98,6 +99,28 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Reset form on close
       modalPagoElement.addEventListener('hidden.bs.modal', resetFormPago);
+  }
+
+  // --- BLUR LISTENERS FOR BUDGET VALIDATION MODALS ---
+  const montoRefInput = document.getElementById("montoRef");
+  if (montoRefInput) {
+      montoRefInput.addEventListener("blur", function() {
+          validateBudget(true);
+      });
+  }
+
+  const sustMontoRefInput = document.getElementById("sust_montoRef");
+  if (sustMontoRefInput) {
+      sustMontoRefInput.addEventListener("blur", function() {
+          validateSustBudget(true);
+      });
+  }
+
+  const sustMontoBsInput = document.getElementById("sust_montoBs");
+  if (sustMontoBsInput) {
+      sustMontoBsInput.addEventListener("blur", function() {
+          validateSustBudget(true);
+      });
   }
 
   const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
@@ -418,7 +441,7 @@ function getTicketDataCoordinator() {
       try {
         const response = JSON.parse(xhr.responseText);
         if (response.success) {
-          const TicketData = response.ticket;
+          TicketData = response.ticket; // Asignación a la variable global (sin const)
           // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente)
           if (TicketData && TicketData.length > 0) {
             const firstTicket = TicketData[0];
@@ -882,6 +905,7 @@ function getTicketDataCoordinator() {
               const ticketId = rowData[0];
               const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
               if (selectedTicketDetails) {
+                currentTicketData = selectedTicketDetails; // Guardamos los datos del ticket seleccionado
                 detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
                 loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
                 if (selectedTicketDetails.serial_pos) {
@@ -1939,58 +1963,30 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
         resetFormPago();
     });
 
-    // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO
-    const documentoPagoInput = document.getElementById("documentoPago");
-    if (documentoPagoInput) {
-        documentoPagoInput.addEventListener("change", function(e) {
-            const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
-            const textDisplay = document.getElementById("textDocumentoPago");
-            const iconDisplay = document.getElementById("iconDocumentoPago");
-            const labelDisplay = document.getElementById("labelDocumentoPago");
-            
-            if (this.files && this.files.length > 0) {
-                const file = this.files[0];
-                if (fileNameDisplay) {
-                    fileNameDisplay.textContent = file.name;
-                    fileNameDisplay.classList.remove("d-none");
-                }
-                if (textDisplay) textDisplay.classList.add("d-none");
-                
-                if (iconDisplay) {
-                    iconDisplay.innerHTML = '<i class="fas fa-check-circle fa-2x text-success"></i>';
-                }
-                if (labelDisplay) {
-                    labelDisplay.style.borderColor = "#28a745";
-                    labelDisplay.style.backgroundColor = "#e8f5e9";
-                }
-            } else {
-                resetDocumentoPagoUI();
-            }
+    // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO (Regular)
+    const pagoFileInput = document.getElementById("pago_documentFile");
+    if (pagoFileInput) {
+        pagoFileInput.addEventListener("change", function(e) {
+            handleFileSelection(
+                this, 
+                "pago_fileStatusContainer", 
+                "pago_fileIconDisplay", 
+                "pago_fileNameText", 
+                "pago_fileDropZone", 
+                "btnGuardarPagoPresupuesto"
+            );
         });
     }
 
+    // Resetear al hacer click en el nombre (Regular modal)
+    $(document).on('click', '#pago_fileStatusContainer', function() {
+        resetFileUI("pago_documentFile", "pago_fileStatusContainer", "pago_fileIconDisplay", "pago_fileNameText", "pago_fileDropZone");
+        document.getElementById('pago_documentFile').click();
+    });
+
     function resetDocumentoPagoUI() {
-        const input = document.getElementById("documentoPago");
-        const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
-        const textDisplay = document.getElementById("textDocumentoPago");
-        const iconDisplay = document.getElementById("iconDocumentoPago");
-        const labelDisplay = document.getElementById("labelDocumentoPago");
-        
-        if (input) input.value = "";
-        
-        if (fileNameDisplay) {
-            fileNameDisplay.textContent = "";
-            fileNameDisplay.classList.add("d-none");
-        }
-        if (textDisplay) textDisplay.classList.remove("d-none");
-        
-        if (iconDisplay) {
-            iconDisplay.className = "fas fa-camera fa-2x text-secondary";
-        }
-        if (labelDisplay) {
-            labelDisplay.style.borderColor = "#cbd5e0"; 
-            labelDisplay.style.backgroundColor = "#f8f9fa";
-        }
+        resetFileUI("pago_documentFile", "pago_fileStatusContainer", "pago_fileIconDisplay", "pago_fileNameText", "pago_fileDropZone");
+        validateBudget(false);
     }
 
     // VALIDACION DE MONTO LIMITE (PRESUPUESTO)
@@ -2049,8 +2045,24 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             // Recolectar datos
             const formData = new FormData();
             formData.append('action', 'InsertPaymentRecord');
-            formData.append('nro_ticket', window.currentNroTicket || '');
-            formData.append('serial_pos', window.currentSerialPos || '');
+            
+            // --- ROBUST TICKET & SERIAL RECOVERY (HIDDEN FIELDS) ---
+            const hTicket = document.getElementById("pago_nro_ticket_hidden");
+            const hSerial = document.getElementById("pago_serial_pos_hidden");
+            
+            let nroTicketToSubmit = hTicket ? hTicket.value : (window.currentNroTicket || '');
+            let serialPosToSubmit = hSerial ? hSerial.value : (window.currentSerialPos || '');
+
+            // Fallback to title if still empty (Ultra-robust)
+            if (!nroTicketToSubmit) {
+                const ticketTitle = document.getElementById("ticketNumeroPago");
+                if (ticketTitle) {
+                    nroTicketToSubmit = ticketTitle.textContent.replace('Ticket #', '').trim();
+                }
+            }
+            
+            formData.append('nro_ticket', nroTicketToSubmit);
+            formData.append('serial_pos', serialPosToSubmit);
             
             const userId = document.getElementById('id_user_pago') ? document.getElementById('id_user_pago').value : '';
             formData.append('user_loader', userId);
@@ -2119,9 +2131,10 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             if(destinoTelefono) formData.append('destino_telefono', destinoTelefono.value);
             
             // Documento de Pago (Nuevo)
-            const documentoPagoInput = document.getElementById('documentoPago');
-            if (documentoPagoInput && documentoPagoInput.files.length > 0) {
-                formData.append('payment_doc', documentoPagoInput.files[0]);
+            // Adjuntar Documento de Pago (Opcional pero recomendado)
+            const pagoFileInput = document.getElementById('pago_documentFile');
+            if (pagoFileInput && pagoFileInput.files.length > 0) {
+                formData.append('payment_doc', pagoFileInput.files[0]);
             }
 
             // --- FRONTEND VALIDATION (PREMIUM STYLE) ---
@@ -2155,7 +2168,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             }
 
             // 6. Documento de Pago (Mandatory)
-            if (!documentoPagoInput || documentoPagoInput.files.length === 0) {
+            if (!pagoFileInput || pagoFileInput.files.length === 0) {
                 missingFieldsCreate.push("Adjunte El Documento");
             }
 
@@ -2195,7 +2208,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 
                     // --- LOGICA DE SUBIDA DE IMAGEN (INJECTED INTO FETCH) ---
                     console.log(">>> IMAGEN: Pago registrado. Verificando archivo para subir...");
-                    const fileInput = document.getElementById("documentoPago");
+                    const fileInput = document.getElementById("pago_documentFile");
                     
                     if (fileInput && fileInput.files.length > 0) {
                         console.log(">>> IMAGEN: Archivo detectado. Preparando subida...");
@@ -2291,7 +2304,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                         // LIMPIAR SOLO DATOS VARIABLES DE LA TRANSACCIÓN
                         const inputsToClear = [
                             "montoBs", "montoRef", "referencia", 
-                            "obsAdministracion", "registro", "documentoPago"
+                            "obsAdministracion", "registro", "pago_documentFile"
                         ];
                         inputsToClear.forEach(id => {
                             const el = document.getElementById(id);
@@ -2573,6 +2586,17 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
 function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, razonSocial, rif, telefono, estatusPos, hasPresupuesto) {
     currentTicketId = ticketId;
     currentTicketNro = nroTicket;
+    
+    // Store context globally for save handler (IMPORTANT MUST BE SET ALWAYS)
+    window.currentNroTicket = nroTicket;
+    window.currentSerialPos = serialPos;
+
+    // --- POPULATE HIDDEN FIELDS IN FORM ---
+    const hTicket = document.getElementById("pago_nro_ticket_hidden");
+    if(hTicket) hTicket.value = nroTicket;
+    
+    const hSerial = document.getElementById("pago_serial_pos_hidden");
+    if(hSerial) hSerial.value = serialPos;
 
     // Limpiar formulario y resetear estado visual
     const formPago = document.getElementById("formPagoPresupuesto");
@@ -2672,10 +2696,6 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
         }
         currentBudgetAmount = parseFloat(cleanAmount);
         console.log("Parsed currentBudgetAmount:", currentBudgetAmount);
-        
-        // Store context globally for save handler
-        window.currentNroTicket = nroTicket;
-        window.currentSerialPos = serialPos;
         
         // Populate inputs
         const montoRefInput = document.getElementById("montoRef");
@@ -2908,41 +2928,91 @@ function loadPaymentHistory(nroTicket) {
                         
                         // Check confirmation status
                         const rawConf = payment.confirmation_number;
-                        console.log("DEBUG Payment ID " + payment.id_payment_record + " ConfNum:", rawConf, "Type:", typeof rawConf);
-                        
-                        // Postgres might return 't'/'f' or boolean. Check for truthy confirmed state.
-                        // Postgres might return 't'/'f' or boolean. Check for truthy confirmed state.
                         let isConfirmed = (rawConf === true || rawConf === 't' || rawConf === 'true' || rawConf === 1 || rawConf === '1');
                         if (rawConf === 'f' || rawConf === 'false') {
                             isConfirmed = false;
                         }
+
+                        // ── DETECT PAYMENT STATUS ────────────────────────────────────────
+                        const ps = parseInt(payment.payment_status) || 0;
+                        const isRejected  = (ps === 13);
+                        const isApproved  = (ps === 6);
+                        const isPending   = (ps === 7 || ps === 17);
+
+                        // ── STATUS BADGE ─────────────────────────────────────────────────
+                        let statusBadge = '';
+                        if (isRejected) {
+                            statusBadge = `<span class="badge" style="background:#dc3545;font-size:0.75rem;padding:4px 8px;border-radius:6px;">
+                                            <i class="fas fa-times-circle me-1"></i>Rechazado
+                                          </span>`;
+                        } else if (isApproved) {
+                            statusBadge = `<span class="badge" style="background:#198754;font-size:0.75rem;padding:4px 8px;border-radius:6px;">
+                                            <i class="fas fa-check-circle me-1"></i>Aprobado
+                                          </span>`;
+                        } else {
+                            statusBadge = `<span class="badge" style="background:#fd7e14;font-size:0.75rem;padding:4px 8px;border-radius:6px;">
+                                            <i class="fas fa-clock me-1"></i>Pendiente
+                                          </span>`;
+                        }
+
+                        // ── ROW STYLE ─────────────────────────────────────────────────────
+                        const rowStyle = isRejected
+                            ? 'background-color:#fff5f5; color:#c0392b; border-left:3px solid #dc3545;'
+                            : '';
                         
+                        // ── ICONS / BUTTONS ──────────────────────────────────────────────
                         let actionBtn = '';
                         const viewIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
   <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
   <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
 </svg>`;
 
-                        // ALWAYS show the view button as requested by the user icon
-                        // Now using data from SQL JOIN (no extra AJAX needed)
-                        // CRITICAL: Normalize slashes HERE to prevent backslashes from being treated as escapes in onclick
+                        // CRITICAL: Normalize slashes to prevent backslash escaping issues
                         const receiptPath = (payment.receipt_path || '').replace(/\\/g, '/');
                         const receiptMime = payment.receipt_mime || '';
                         const receiptName = payment.receipt_name || 'Comprobante';
                         
-                        actionBtn += `<button type="button" class="btn btn-sm btn-link text-success p-0 m-0 me-2" onclick="viewPaymentReceipt('${receiptPath}', '${receiptMime}', '${receiptName}', '${payment.record_number}')" title="Ver Comprobante">${viewIcon}</button>`;
+                        // View button always shown
+                        const viewBtnColor = isRejected ? 'text-danger' : 'text-success';
+                        actionBtn += `<button type="button" class="btn btn-sm btn-link ${viewBtnColor} p-0 m-0 d-inline-flex align-items-center justify-content-center" onclick="viewPaymentReceipt('${receiptPath}', '${receiptMime}', '${receiptName}', '${payment.record_number}')" title="Ver Comprobante">${viewIcon}</button>`;
 
-                        if (!isConfirmed) {
-                             // Use type="button" to prevent form submission behavior
-                             const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                        if (isRejected) {
+                            // ── BOTÓN SUSTITUIR (pagos rechazados) ───────────────────────
+                            // Serialize payment data inline to pass to abrirModalSustituirPago
+                            const safePayment = JSON.stringify({
+                                id_payment_record: payment.id_payment_record,
+                                nro_ticket: payment.nro_ticket,
+                                id_ticket: payment.id_ticket || '',
+                                record_number: payment.record_number,
+                                payment_date: payment.payment_date || '',
+                                payment_method: payment.payment_method || '',
+                                currency: payment.currency || 'BS',
+                                amount_bs: payment.amount_bs || '',
+                                reference_amount: payment.reference_amount || '',
+                                payment_reference: payment.payment_reference || '',
+                                depositor: payment.depositor || '',
+                                observations: payment.observations || '',
+                                document_type: payment.document_type || 'Anticipo'
+                            }).replace(/'/g, "\\'");
+
+                            actionBtn += `<button type="button"
+                                class="btn btn-sm btn-warning px-2 py-1 d-inline-flex align-items-center justify-content-center"
+                                style="font-size:0.78rem;font-weight:600;border-radius:6px;background:linear-gradient(135deg,#f6a623,#e8850a);border:none;color:#fff;line-height:1;"
+                                onclick="abrirModalSustituirPago(${JSON.stringify(payment).replace(/'/g, "\\'").replace(/"/g, '&quot;')})"
+                                title="Sustituir Pago Rechazado">
+                                <i class="fas fa-exchange-alt me-1"></i>Sustituir
+                            </button>`;
+                        } else if (!isApproved) {
+                            // ── BOTÓN EDITAR (pagos pendientes no rechazados) ─────────────
+                            const editIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
   <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
   <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
 </svg>`;
-                             actionBtn += `<button type="button" class="btn btn-sm btn-link text-primary p-0 m-0" onclick="editPayment('${payment.record_number}')" title="Editar Pago">${editIcon}</button>`;
+                            actionBtn += `<button type="button" class="btn btn-sm btn-link text-primary p-0 m-0 d-inline-flex align-items-center justify-content-center" onclick="editPayment('${payment.record_number}')" title="Editar Pago">${editIcon}</button>`;
                         }
                         
                         rows += `
-                            <tr>
+                            <tr style="${rowStyle}">
                                 <td style="padding: 8px;">${index + 1}</td>
                                 <td style="padding: 8px;">${payment.record_number || 'N/A'}</td>
                                 <td style="padding: 8px;">${paymentDate}</td>
@@ -2952,7 +3022,12 @@ function loadPaymentHistory(nroTicket) {
                                 <td style="padding: 8px;">${refAmount}</td>
                                 <td style="padding: 8px;">${payment.payment_reference || 'N/A'}</td>
                                 <td style="padding: 8px;">${payment.depositor || 'N/A'}</td>
-                                <td style="padding: 8px; text-align: center;">${actionBtn}</td>
+                                <td style="padding: 8px; text-align: center;">${statusBadge}</td>
+                                <td style="padding: 8px;">
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        ${actionBtn}
+                                    </div>
+                                </td>
                             </tr>
                         `;
                     });
@@ -3483,8 +3558,39 @@ style.innerHTML = `
         width: 6rem;
         height: 6rem;
         animation: premium-pulse 2s infinite ease-in-out;
-        /* Ensure circle shape for potential background effects if desired */
         border-radius: 50%; 
+    }
+    .swal-premium-popup {
+        border-radius: 20px !important;
+        padding: 1.5rem !important;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+    }
+    .swal-premium-title {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+        font-size: 1.4rem !important;
+        margin-top: 10px !important;
+    }
+    .btn-premium-confirm {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        color: white !important;
+        padding: 12px 35px !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+        cursor: pointer !important;
+        margin-top: 10px !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-premium-confirm:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4) !important;
+        filter: brightness(1.1) !important;
+    }
+    .btn-premium-confirm:active {
+        transform: translateY(0) !important;
     }
 `;
 document.head.appendChild(style);
@@ -3554,10 +3660,6 @@ function validateBudget(showModal = false) {
     }
 }
 
-/**
- * Validates budget while EDITING a payment.
- * Adjusts remaining budget by adding back the original amount of the payment.
- */
 function validateEditBudget(showModal = false) {
     const montoRefInput = document.getElementById("edit_montoRef");
     const btnUpdate = document.getElementById("btnUpdatePayment");
@@ -3600,60 +3702,109 @@ function validateEditBudget(showModal = false) {
     }
 }
 
+/**
+ * Validates budget for SUBSTITUTING a payment.
+ */
+function validateSustBudget(showModal = false) {
+    const montoRefInput = document.getElementById("sust_montoRef");
+    const btnGuardar = document.getElementById("btnGuardarSustituirPago");
+    
+    // Only valid if we have budget data
+    if (typeof window.currentBudgetAmount === 'undefined' || window.currentBudgetAmount <= 0) {
+        if(btnGuardar) btnGuardar.disabled = false;
+        return true;
+    }
+
+    const inputAmount = parseFloat(montoRefInput.value) || 0;
+    const remaining = window.currentRemaining || 0;
+    
+    // Safety check: if remaining is 0 (Fully Paid), keep it disabled
+    // However, if we are substituting, maybe we want to allow it?
+    // But since rejected is not counted, remaining should be at least the room left.
+    if (remaining <= 0.001 && inputAmount > 0.001) {
+         if (btnGuardar) {
+             btnGuardar.disabled = true;
+             btnGuardar.title = "Presupuesto ya cubierto";
+         }
+         return false;
+    }
+    
+    const isOverBudget = inputAmount > (remaining + 0.001);
+
+    if (isOverBudget) {
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.title = "Pago Excede presupuesto";
+            btnGuardar.classList.remove('btn-primary');
+            btnGuardar.classList.add('btn-secondary');
+        }
+        
+        montoRefInput.style.borderColor = "#dc3545";
+        montoRefInput.style.backgroundColor = "#fff5f5";
+
+        if (showModal) {
+            showOverBudgetAlert(inputAmount, remaining, false); // false because it's like a new payment
+        }
+        return false;
+    } else {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.title = "";
+            btnGuardar.classList.remove('btn-secondary');
+            btnGuardar.classList.add('btn-primary');
+        }
+        
+        montoRefInput.style.borderColor = "";
+        montoRefInput.style.backgroundColor = "";
+        return true;
+    }
+}
+
 function showOverBudgetAlert(inputAmount, available, isEdit = false) {
     Swal.fire({
         title: 'Excede el Presupuesto',
         iconHtml: `
-            <div class="premium-icon-wrapper">
-                <svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg" class="premium-icon-svg">
-                    <defs>
-                        <linearGradient id="premiumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#f06595;stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                    <g transform="translate(0, 1600) scale(1, -1)">
-                        <path d="M768 1408q209 0 385.5 -103t279.5 -279.5t103 -385.5t-103 -385.5t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103zM896 161v190q0 14 -9 23.5t-22 9.5h-192q-13 0 -23 -10t-10 -23v-190q0 -13 10 -23t23 -10h192q13 0 22 9.5t9 23.5zM894 505l18 621q0 12 -10 18q-10 8 -24 8h-220q-14 0 -24 -8q-10 -6 -10 -18l17 -621q0 -10 10 -17.5t24 -7.5h185q14 0 23.5 7.5t10.5 17.5z" fill="url(#premiumGradient)"></path>
-                    </g>
+            <div class="premium-icon-wrapper" style="width: 80px; height: 80px; background: #fff1f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; box-shadow: 0 4px 12px rgba(255, 77, 77, 0.1);">
+                <svg viewBox="0 0 24 24" width="45" height="45" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </div>
         `,
         html: `
-            <div style="text-align: left; padding: 0 10px;">
-                <p style="color: #666; font-size: 0.95rem;">No se puede ${isEdit ? 'actualizar' : 'agregar'} este pago porque excede el monto total del presupuesto.</p>
-                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <span style="font-weight: 600; color: #444;">Presupuesto Total:</span>
-                        <span>$${window.currentBudgetAmount.toFixed(2)}</span>
+            <div style="text-align: center; padding: 0 10px;">
+                <p style="color: #666; font-size: 0.95rem; margin-bottom: 20px;">No se puede ${isEdit ? 'actualizar' : 'agregar'} este pago porque excede el monto total del presupuesto.</p>
+                
+                <div style="background: #fdfdfd; padding: 18px; border-radius: 12px; border: 1px solid #efefef; text-align: left; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #555;">
+                        <span style="font-weight: 500;">Presupuesto Total:</span>
+                        <span style="font-weight: 600; color: #333;">$${window.currentBudgetAmount.toFixed(2)}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <span style="font-weight: 600; color: #444;">${isEdit ? 'Monto Disponible:' : 'Total Abonado:'}</span>
-                        <span>$${isEdit ? available.toFixed(2) : window.currentTotalPaid.toFixed(2)}</span>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #555;">
+                        <span style="font-weight: 500;">Total Abonado:</span>
+                        <span style="font-weight: 600; color: #333;">$${window.currentTotalPaid.toFixed(2)}</span>
                     </div>
-                    ${!isEdit ? `
-                    <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 4px; margin-top: 4px;">
-                        <span style="font-weight: 600; color: #444;">Restante Real:</span>
-                        <span style="color: #28a745; font-weight: 600;">$${available.toFixed(2)}</span>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #555; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0;">
+                        <span style="font-weight: 500;">Restante Real:</span>
+                        <span style="font-weight: 700; color: #2ecc71;">$${available.toFixed(2)}</span>
                     </div>
-                    ` : ''}
-                     <div style="display: flex; justify-content: space-between; margin-top: 8px;">
-                        <span style="font-weight: 600; color: #d63384;">${isEdit ? 'Monto Editado:' : 'Nuevo Pago:'}</span>
-                        <span style="font-weight: 600; color: #d63384;">$${inputAmount.toFixed(2)}</span>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; color: #d63384;">
+                        <span style="font-weight: 600;">${isEdit ? 'Monto Editado:' : 'Nuevo Pago:'}</span>
+                        <span style="font-weight: 700;">$${inputAmount.toFixed(2)}</span>
                     </div>
                 </div>
-                <div style="margin-top: 12px; text-align: right;">
-                     <span style="color: #dc3545; font-weight: 700;">Excedente: $${(inputAmount - available).toFixed(2)}</span>
+
+                <div style="margin-top: 18px; text-align: right;">
+                    <span style="color: #ff4d4d; font-weight: 800; font-size: 1.15rem;">Excedente: $${(inputAmount - available).toFixed(2)}</span>
                 </div>
             </div>
         `,
-        icon: null, 
+        showCloseButton: false,
         confirmButtonText: 'Entendido',
         buttonsStyling: false,
         customClass: {
             popup: 'swal-premium-popup',
             title: 'swal-premium-title',
-            confirmButton: 'swal-premium-confirm',
-            icon: 'border-0'
+            confirmButton: 'btn-premium-confirm'
         }
     });
 }
@@ -3840,8 +3991,8 @@ function savePayment() {
     const bancoDestino = document.getElementById("bancoDestino");
 
     // Validations (Simplified)
-    const documentoPagoInput = document.getElementById('documentoPago');
-    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value || !documentoPagoInput || documentoPagoInput.files.length === 0) {
+    const pagoFileInput = document.getElementById('pago_documentFile');
+    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value || !pagoFileInput || pagoFileInput.files.length === 0) {
          Swal.fire("Campos Incompletos", "Por favor complete los campos obligatorios y Adjunte El Documento de pago.", "error");
          return;
     }
@@ -3918,8 +4069,8 @@ function savePayment() {
                     // --- LOGICA DE SUBIDA DE IMAGEN (DUPLICADA - COMENTADA) ---
                     /*
                     console.log("Pago registrado. Intentando subir imagen...");
-                    // CORRECCIÓN: El ID en el HTML es 'documentoPago', no 'soportePago'
-                    const fileInput = document.getElementById("documentoPago");
+                    // CORRECCIÓN: El ID en el HTML es 'pago_documentFile', no 'soportePago'
+                    const fileInput = document.getElementById("pago_documentFile");
                     
                     if (fileInput && fileInput.files.length > 0) {
                         // ... Logica movida al listener principal ...
@@ -3956,6 +4107,7 @@ function savePayment() {
 document.addEventListener("DOMContentLoaded", function() {
     setupCurrencyListener();
     initializeDocumentNameGenerator();
+    initializeSustDocumentNameGenerator();
     setupPaymentModalCloseListener();
 });
 
@@ -4018,6 +4170,39 @@ function initializeDocumentNameGenerator() {
 }
 
 /**
+ * Generador dinámico de número de registro para el modal de Sustituir Pago.
+ * Sigue el patrón: Pago[Ultimos4Ref]_[Ultimos4Serial]
+ */
+function initializeSustDocumentNameGenerator() {
+    const referenciaInput = document.getElementById("sust_referencia");
+    const registroInput = document.getElementById("sust_registro");
+    const registroVisualInput = document.getElementById("sust_registro_visual");
+    const serialPosInput = document.getElementById("sust_serialPosPago");
+    
+    if (referenciaInput && (registroInput || registroVisualInput)) {
+        referenciaInput.addEventListener("input", function() {
+            const refValue = this.value.trim();
+            const serialValue = serialPosInput ? serialPosInput.value.trim() : "";
+            
+            let newValue = "";
+            if (refValue && serialValue) {
+                // patterns: Pago + ref4digits + _ + serial4digits
+                const refLast4 = refValue.slice(-4);
+                const serialLast4 = serialValue.slice(-4);
+                newValue = `Pago${refLast4}_${serialLast4}`;
+            } else if (refValue) {
+                newValue = `${refValue}`;
+            }
+            
+            if (registroInput) registroInput.value = newValue;
+            if (registroVisualInput) {
+                registroVisualInput.value = newValue || "Generado autom.";
+            }
+        });
+    }
+}
+
+/**
  * Resets the Payment Form to its initial state.
  * Clears inputs, hides dynamic sections, and resets custom UI elements.
  */
@@ -4049,29 +4234,7 @@ function resetFormPago() {
     if (montoRestante) montoRestante.textContent = "Restante: $0.00";
     
     // Reset File Input UI
-    const docInput = document.getElementById("documentoPago");
-    const fileNameDisplay = document.getElementById("fileNameDocumentoPago");
-    const textDisplay = document.getElementById("textDocumentoPago");
-    const labelDisplay = document.getElementById("labelDocumentoPago");
-    
-    const iconDisplay = document.getElementById("iconDocumentoPago");
-    
-    if (docInput) docInput.value = "";
-    
-    if (fileNameDisplay) {
-        fileNameDisplay.textContent = "";
-        fileNameDisplay.classList.add("d-none");
-    }
-    if (textDisplay) textDisplay.classList.remove("d-none");
-    
-    if (iconDisplay) {
-        iconDisplay.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-camera text-secondary" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>';
-    }
-    
-    if (labelDisplay) {
-        labelDisplay.style.borderColor = "#cbd5e0"; 
-        labelDisplay.style.backgroundColor = "#f8f9fa";
-    }
+    resetDocumentoPagoUI();
 
     // Reset Currency Field
     const monedaSelect = document.getElementById("moneda");
@@ -4114,60 +4277,9 @@ window.editPayment = function(recordNumber) {
                 if (response.success && response.payment) {
                     const p = response.payment;
                     
-                    // 2. Populate Modal Fields
-                    $('#edit_payment_id').val(p.id_payment_record); // Still keep internal ID for update precision
-                    // Fix date format: Extract YYYY-MM-DD from YYYY-MM-DD HH:MM:SS
-                    let rawDate = p.payment_date || "";
-                    if (rawDate.includes(" ")) {
-                        rawDate = rawDate.split(" ")[0];
-                    }
-                    $('#edit_fechaPago').val(rawDate);
-                    
-                    // Load Exchange Rate for this date
-                    loadEditExchangeRate(rawDate);
-                    
-                    $('#edit_referencia').val(p.payment_reference);
-                    $('#edit_depositante').val(p.depositor);
-                    $('#edit_obsAdministracion').val(p.observations);
-                    $('#edit_montoBs').val(p.amount_bs);
-                    $('#edit_montoRef').val(p.reference_amount);
-                    
-                    // Store Original Context for updates
-                    window.currentOldAmount = parseFloat(p.reference_amount) || 0;
-                    window.currentEditSerial = p.serial_pos || "";
-                    
-                    if ($('#edit_formaPago option').length <= 1) {
-                        $('#formaPago option').clone().appendTo('#edit_formaPago');
-                    }
-                    // Select Payment Method by Text (since backend saves Name not ID)
-                    if (p.payment_method) {
-                        $('#edit_formaPago option').each(function() {
-                            if ($(this).text().trim().toLowerCase() === p.payment_method.trim().toLowerCase()) {
-                                $(this).prop('selected', true);
-                                return false; // break
-                            }
-                        });
-                    }
-
-                    // Moneda & Visibility
-                    $('#edit_moneda').val(p.currency.toLowerCase());
-                    handleEditMonedaChange(p.currency.toLowerCase());
-                    
-                    // Trigger Payment Method Change to show correct fields
-                    handleEditFormaPagoChange();
-
-                    // Populate Mobile Payment Fields if visible (and if data exists)
-                     if(p.origen_rif_numero) $('#edit_origenRifNumero').val(p.origen_rif_numero);
-                     if(p.origen_telefono) $('#edit_origenTelefono').val(p.origen_telefono);
-
-                    // Initialize Validation
-                    validateEditBudget();
-
-                    // 3. Show Modal
-                    var el = document.getElementById('editPaymentModal');
-                    // Store instance globally to control it later
-                    editPaymentModalInstance = new bootstrap.Modal(el);
-                    editPaymentModalInstance.show();
+                    // Abrir el modal de sustitución completa (mismo flujo que Técnico)
+                    // que incluye actualización de datos + subida de nuevo comprobante
+                    abrirModalSustituirPago(p);
                     
                 } else {
                     Swal.fire('Error', response.message || 'No se pudo cargar la información del pago.', 'error');
@@ -4187,6 +4299,7 @@ window.editPayment = function(recordNumber) {
     
     xhr.send(`record_number=${encodeURIComponent(recordNumber)}`);
 };
+
 
 // --- NEW HELPER FOR EDIT MODAL ---
 function handleEditFormaPagoChange() {
@@ -4575,3 +4688,666 @@ $('#edit_referencia').on('input', function() {
 });
 
 console.log("frontEnd.js fully loaded with editPayment logic");
+
+// ============================================================
+// MODAL SUSTITUIR PAGO - Lógica completa (paridad con Tecnico)
+// ============================================================
+
+let sustituirPagoModalInstance = null;
+let sustExchangeRate = 0;
+let sustPagoStatusToSave = 17; // Variable to track status ID to submit
+
+/**
+ * Abre el modal de sustitución con los datos del pago pre-cargados.
+ * Llamado desde editPayment() cuando el pago es candidato a sustitución.
+ */
+function abrirModalSustituirPago(paymentData) {
+    const p = paymentData;
+
+    // Poblar campos ocultos
+    document.getElementById('sust_id_payment_record_loading').value = p.id_payment_record || '';
+    document.getElementById('sust_nro_ticket_pago').value = p.nro_ticket || '';
+    document.getElementById('sust_id_ticket_pago').value = p.id_ticket || '';
+    // Poblar campos del cliente y POS
+    // Intentamos buscar los datos completos del ticket en el listado global
+    let t = (typeof TicketData !== 'undefined' && Array.isArray(TicketData)) 
+            ? TicketData.find(ticket => ticket.nro_ticket == p.nro_ticket) 
+            : null;
+    
+    // Si no lo encontramos por nro_ticket, usamos currentTicketData como respaldo
+    if (!t) t = currentTicketData;
+
+    if (t) {
+        const razonSocialEl = document.getElementById('sust_displayRazonSocial');
+        if (razonSocialEl) razonSocialEl.value = t.razonsocial_cliente || 'No disponible';
+
+        const rifEl = document.getElementById('sust_displayRif');
+        if (rifEl) rifEl.value = t.rif || 'No disponible';
+
+        const serialPosEl = document.getElementById('sust_serialPosPago');
+        if (serialPosEl) serialPosEl.value = t.serial_pos || 'No disponible';
+
+        const estatusPosEl = document.getElementById('sust_displayEstatusPos');
+        if (estatusPosEl) estatusPosEl.value = t.estatus_inteliservices || 'Sin estatus';
+    }
+
+    // Para que se regenere automáticamente, lo inicializamos vacío en el hidden
+    const registroHidden = document.getElementById('sust_registro');
+    if (registroHidden) registroHidden.value = '';
+    
+    // Poblar campos visuales de Registro y Fecha carga
+    const registroVisual = document.getElementById('sust_registro_visual');
+    if (registroVisual) registroVisual.value = 'Generado autom.';
+    
+    const fechaCargaEl = document.getElementById('sust_fechaCarga');
+    if (fechaCargaEl) {
+        const d = new Date();
+        const formattedDate = d.toLocaleDateString('es-VE', { 
+            day: '2-digit', month: '2-digit', year: 'numeric' 
+        });
+        fechaCargaEl.value = formattedDate;
+    }
+
+    document.getElementById('sust_document_type_pago').value = p.document_type || 'Anticipo';
+
+    // Poblar el monto de referencia en la cabecera del modal
+    const montoEquipoEl = document.getElementById('sust_montoEquipo');
+    if (montoEquipoEl) {
+        montoEquipoEl.textContent = `$0.00`;
+    }
+
+    // Limpiar campos visibles (el usuario va a cargar un PAGO NUEVO)
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('sust_fechaPago').value = today;
+    document.getElementById('sust_referencia').value = '';
+    document.getElementById('sust_depositante').value = p.depositor || ''; // Le podemos sugerir el mismo depositante (generalmente el cliente)
+    document.getElementById('sust_obsAdministracion').value = '';
+    document.getElementById('sust_montoBs').value = '';
+    document.getElementById('sust_montoRef').value = '';
+    
+    // Moneda por defecto
+    document.getElementById('sust_moneda').value = '';
+    
+    // Forma de pago por defecto
+    const formaPagoSelect = document.getElementById('sust_formaPago');
+    formaPagoSelect.value = '';
+
+    // Ocultar contenedores dinámicos por defecto
+    const bancoContainer = document.getElementById('sust_bancoFieldsContainer');
+    const pagoMovilContainer = document.getElementById('sust_pagoMovilFieldsContainer');
+    if (bancoContainer) bancoContainer.style.display = 'none';
+    if (pagoMovilContainer) pagoMovilContainer.style.display = 'none';
+
+    // Cargar estatus automatizado visual
+    getSustPagoEstatus(p.nro_ticket || '');
+
+    // Refresh budget data for validation
+    if (p.nro_ticket) {
+        loadTotalPaid(p.nro_ticket, '');
+    }
+
+    // Cargar bancos si es transferencia
+    poblarBancosModal('sust_bancoOrigen', 'sust_bancoDestino');
+    
+    // Cargar formas de pago (Copiando del select principal si están disponibles)
+    poblarFormaPagoModal('sust_formaPago');
+    
+    handleSustFormaPagoChange();
+    updateSustMontoEquipoDisplay();
+    
+    // Initial validation check
+    setTimeout(() => {
+        validateSustBudget(false);
+    }, 500);
+
+    // Cargar tasa de cambio
+    if (typeof today !== 'undefined') loadSustExchangeRate(today);
+
+    // Reset file input and UI
+    resetSustFileUI();
+
+    // Abrir modal
+    const el = document.getElementById('modalSustituirPago');
+    sustituirPagoModalInstance = new bootstrap.Modal(el);
+    sustituirPagoModalInstance.show();
+}
+
+function resetSustFileUI() {
+    resetFileUI("sust_documentFile", "sust_fileStatusContainer", "sust_fileIconDisplay", "sust_fileNameText", "sust_fileDropZone");
+    validateSustBudget(false);
+}
+
+/**
+ * Función genérica para manejar la selección de archivos con UI mejorada
+ */
+function handleFileSelection(input, containerId, iconId, textId, dropZoneId, btnId) {
+    const file = input.files[0];
+    const container = document.getElementById(containerId);
+    const icon = document.getElementById(iconId);
+    const text = document.getElementById(textId);
+    const dropZone = document.getElementById(dropZoneId);
+    const btn = document.getElementById(btnId);
+
+    if (file) {
+        if (text) {
+            text.textContent = file.name;
+            text.classList.remove("d-none"); // Asegurar visibilidad
+        }
+        
+        if (container) {
+            container.classList.remove("d-none");
+            container.style.setProperty('display', 'block', 'important');
+        }
+
+        if (dropZone) dropZone.style.setProperty('display', 'none', 'important');
+
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'image/jpg'];
+        const isValidType = allowedTypes.includes(file.type);
+        const isValidSize = file.size <= 5 * 1024 * 1024;
+
+        const successIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>';
+        const errorIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ef4444" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/></svg>';
+
+        if (isValidType && isValidSize) {
+            if (container) {
+                container.style.background = "#f0fdf4";
+                container.style.borderColor = "#86efac";
+            }
+            if (text) text.style.color = "#16a34a";
+            if (icon) icon.innerHTML = successIcon;
+            if (btn) btn.disabled = false;
+        } else {
+            if (container) {
+                container.style.background = "#fff5f5";
+                container.style.borderColor = "#feb2b2";
+            }
+            if (text) {
+                text.style.color = "#c53030";
+                text.textContent = file.name + (isValidSize ? ' (Formato no permitido)' : ' (Excede 5MB)');
+            }
+            if (icon) icon.innerHTML = errorIcon;
+            if (btn) {
+                btn.disabled = true;
+                btn.title = "Archivo no válido";
+            }
+        }
+    }
+}
+
+/**
+ * Función genérica para resetear la UI de archivos
+ */
+function resetFileUI(inputId, containerId, iconId, textId, dropZoneId) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
+    const icon = document.getElementById(iconId);
+    const text = document.getElementById(textId);
+    const dropZone = document.getElementById(dropZoneId);
+
+    if (input) input.value = '';
+    if (container) {
+        container.classList.add("d-none");
+        container.style.setProperty('display', 'none', 'important');
+    }
+    if (text) {
+        text.textContent = '';
+        text.classList.remove("d-none");
+        text.style.color = "";
+    }
+    if (icon) {
+        icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>';
+    }
+    if (dropZone) {
+        dropZone.style.setProperty('display', 'block', 'important');
+        dropZone.style.borderColor = "#cbd5e0";
+        dropZone.style.background = "#f8f9fa";
+    }
+}
+
+/**
+ * Pobla los selects de banco del modal de sustitución copiando del modal de edición
+ */
+function poblarBancosModal(origenId, destinoId) {
+    const srcOrigen = document.getElementById('edit_bancoOrigen');
+    const srcDestino = document.getElementById('edit_bancoDestino');
+    const destOrigen = document.getElementById(origenId);
+    const destDestino = document.getElementById(destinoId);
+
+    if (srcOrigen && destOrigen && destOrigen.options.length <= 1) {
+        Array.from(srcOrigen.options).forEach(opt => {
+            destOrigen.add(new Option(opt.text, opt.value));
+        });
+    }
+    if (srcDestino && destDestino && destDestino.options.length <= 1) {
+        Array.from(srcDestino.options).forEach(opt => {
+            destDestino.add(new Option(opt.text, opt.value));
+        });
+    }
+}
+
+/**
+ * Pobla el select de forma de pago del modal de sustitución copiando del select principal
+ */
+function poblarFormaPagoModal(destinoId) {
+    const srcFormaPago = document.getElementById('formaPago');
+    const destFormaPago = document.getElementById(destinoId);
+
+    if (srcFormaPago && destFormaPago && destFormaPago.options.length <= 1) {
+        Array.from(srcFormaPago.options).forEach(opt => {
+            if (opt.value !== "") {
+                destFormaPago.add(new Option(opt.text, opt.value));
+            }
+        });
+    }
+}
+
+function handleSustMonedaChange(val) {
+    const bs = document.getElementById('sust_montoBs');
+    const ref = document.getElementById('sust_montoRef');
+    if (!bs || !ref) return;
+
+    if (val === 'bs') {
+        bs.readOnly = false; bs.style.backgroundColor = '#fff';
+        ref.readOnly = true;  ref.style.backgroundColor = '#e9ecef';
+    } else if (val === 'usd') {
+        bs.readOnly = true;  bs.style.backgroundColor = '#e9ecef';
+        ref.readOnly = false; ref.style.backgroundColor = '#fff';
+    } else {
+        bs.readOnly = true;  bs.style.backgroundColor = '#e9ecef';
+        ref.readOnly = true;  ref.style.backgroundColor = '#e9ecef';
+    }
+}
+
+function handleSustFormaPagoChange() {
+    const formaPagoSelect = document.getElementById('sust_formaPago');
+    const bancoContainer = document.getElementById('sust_bancoFieldsContainer');
+    const pagoMovilContainer = document.getElementById('sust_pagoMovilFieldsContainer');
+    const monedaSelect = document.getElementById('sust_moneda');
+    
+    // Default hiding
+    if (bancoContainer) bancoContainer.style.display = 'none';
+    if (pagoMovilContainer) pagoMovilContainer.style.display = 'none';
+    
+    if (!formaPagoSelect) return;
+
+    const idMethod = parseInt(formaPagoSelect.value) || 0;
+    const selectedOption = formaPagoSelect.options[formaPagoSelect.selectedIndex];
+    const selectedText = selectedOption ? selectedOption.textContent.toLowerCase() : "";
+
+    if (idMethod === 2 || selectedText.includes("transferencia")) {
+         if (bancoContainer) bancoContainer.style.display = 'flex';
+         if (monedaSelect) {
+             monedaSelect.value = "bs"; 
+             monedaSelect.setAttribute("disabled", "disabled");
+             handleSustMonedaChange("bs");
+         }
+    } else if (idMethod === 3 || selectedText.includes("movil") || selectedText.includes("móvil")) {
+         if (pagoMovilContainer) pagoMovilContainer.style.display = 'block';
+         if (monedaSelect) {
+             monedaSelect.value = "bs"; 
+             monedaSelect.setAttribute("disabled", "disabled");
+             handleSustMonedaChange("bs");
+         }
+    } else if (idMethod > 0 || (selectedText && selectedText !== "seleccione")) {
+        if (monedaSelect) monedaSelect.removeAttribute("disabled");
+    } else {
+        if (monedaSelect) {
+            monedaSelect.value = "";
+            monedaSelect.setAttribute("disabled", "disabled");
+            handleSustMonedaChange("");
+        }
+    }
+}
+
+/**
+ * Obtiene el estatus del pago para sustitucion basado en el número de ticket.
+ * Copiado de la logica del Tecnico.
+ */
+function getSustPagoEstatus(nroTicket) {
+    const estatusInput = document.getElementById("sust_estatus_pago_visual");
+    if (!estatusInput || !nroTicket) return;
+
+    estatusInput.value = "Cargando estatus...";
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetEstatusPagoAutomatizado`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                const responseData = response.estatus_pago || response.data;
+                
+                if (response.success && Array.isArray(responseData) && responseData.length > 0) {
+                    const statusId = parseInt(responseData[0].id_status_payment);
+                    if (statusId === 17) {
+                        // Ya tiene pagos previos (Abono/complemento)
+                        estatusInput.value = "Pago Pendiente por Revisión";
+                        sustPagoStatusToSave = 17;
+                    } else {
+                        // Sin pagos previos (Anticipo)
+                        estatusInput.value = "Anticipo Pendiente por Revisión"; 
+                        sustPagoStatusToSave = 7;
+                    }
+                } else {
+                    estatusInput.value = "Anticipo Pendiente por Revisión"; 
+                    sustPagoStatusToSave = 7;
+                }
+            } catch (error) {
+                estatusInput.value = "Anticipo Pendiente por Revisión";
+                sustPagoStatusToSave = 7;
+            }
+        } else {
+            estatusInput.value = "Error al cargar estatus";
+            sustPagoStatusToSave = 7;
+        }
+    };
+    xhr.onerror = function () {
+        estatusInput.value = "Error de red";
+        sustPagoStatusToSave = 7;
+    };
+    
+    xhr.send(`action=GetEstatusPagoAutomatizado&nro_ticket=${encodeURIComponent(nroTicket)}`);
+}
+
+function loadSustExchangeRate(fecha) {
+    const tasaVal = document.getElementById("sust_tasaDisplayValue");
+    const fechaTasa = document.getElementById("sust_fechaTasaDisplay");
+
+    if (!fecha) {
+        if (tasaVal) tasaVal.textContent = "Bs. --";
+        if (fechaTasa) fechaTasa.textContent = "Tasa: --/--/----";
+        sustExchangeRate = 0;
+        return;
+    }
+
+    if (tasaVal) tasaVal.textContent = "Cargando...";
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExchangeRateByDate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `action=GetExchangeRateByDate&fecha=${encodeURIComponent(fecha)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        const rate = (data.exchange_rate && data.exchange_rate.tasa_dolar) ? data.exchange_rate.tasa_dolar : data.rate;
+        const fecha_tasa = (data.exchange_rate && data.exchange_rate.fecha_tasa) ? data.exchange_rate.fecha_tasa : fecha;
+        
+        if (data.success && rate) {
+            sustExchangeRate = parseFloat(rate);
+            if (tasaVal) tasaVal.textContent = `Bs. ${sustExchangeRate.toLocaleString('es-VE', { minimumFractionDigits: 2 })}`;
+            
+            if (fechaTasa) {
+                const dateParts = fecha_tasa.split('-');
+                if(dateParts.length === 3) {
+                     fechaTasa.textContent = `Tasa: ${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                } else {
+                     fechaTasa.textContent = `Tasa: ${fecha_tasa}`;
+                }
+            }
+            
+            // Recalcular montos si ya hay valores
+            const montoBs = document.getElementById('sust_montoBs');
+            const montoRef = document.getElementById('sust_montoRef');
+            if (montoBs && montoBs.value) $(montoBs).trigger('input');
+            else if (montoRef && montoRef.value) $(montoRef).trigger('input');
+
+        } else {
+            console.error("No se pudo cargar la tasa de cambio");
+            sustExchangeRate = 0;
+            if (tasaVal) tasaVal.textContent = "No disponible";
+            
+            // Si hay montos ingresados y la tasa falló, resetear el campo calculado a 0
+            const montoBs = document.getElementById('sust_montoBs');
+            const montoRef = document.getElementById('sust_montoRef');
+            const moneda = document.getElementById('sust_moneda').value;
+            if (moneda === 'bs' && montoBs && montoBs.value) {
+                if (montoRef) montoRef.value = '0.00';
+            } else if (moneda === 'usd' && montoRef && montoRef.value) {
+                if (montoBs) montoBs.value = '0.00';
+            }
+        }
+    })
+    .catch(() => {
+        console.error("No se pudo cargar la tasa de cambio");
+        sustExchangeRate = 0;
+        if (tasaVal) tasaVal.textContent = "Error de red";
+    });
+}
+
+// Bind events del modal de sustitución
+
+$(document).on('change', '#sust_moneda', function() {
+    handleSustMonedaChange(this.value);
+});
+
+$(document).on('change', '#sust_formaPago', function() {
+    handleSustFormaPagoChange();
+});
+
+$(document).on('change', '#sust_fechaPago', function() {
+    loadSustExchangeRate(this.value);
+});
+
+/**
+ * Actualiza el monto de referencia en la cabecera del modal
+ */
+function updateSustMontoEquipoDisplay() {
+    const montoRef = document.getElementById('sust_montoRef');
+    const display = document.getElementById('sust_montoEquipo');
+    if (montoRef && display) {
+        const val = parseFloat(montoRef.value) || 0;
+        display.textContent = `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+}
+
+$(document).on('input keyup', '#sust_montoBs', function() {
+    if (document.getElementById('sust_moneda').value === 'bs' && sustExchangeRate > 0) {
+        const val = parseFloat(this.value) || 0;
+        document.getElementById('sust_montoRef').value = (val / sustExchangeRate).toFixed(2);
+        updateSustMontoEquipoDisplay();
+        validateSustBudget(false);
+    }
+});
+
+$(document).on('input keyup', '#sust_montoRef', function() {
+    if (document.getElementById('sust_moneda').value === 'usd' && sustExchangeRate > 0) {
+        const val = parseFloat(this.value) || 0;
+        document.getElementById('sust_montoBs').value = (val * sustExchangeRate).toFixed(2);
+    }
+    updateSustMontoEquipoDisplay();
+    validateSustBudget(false);
+});
+
+// Drop zone del modal de sustitución
+$(document).on('click', '#sust_fileDropZone', function() {
+    document.getElementById('sust_documentFile').click();
+});
+
+$(document).on('change', '#sust_documentFile', function() {
+    handleFileSelection(
+        this, 
+        "sust_fileStatusContainer", 
+        "sust_fileIconDisplay", 
+        "sust_fileNameText", 
+        "sust_fileDropZone", 
+        "btnGuardarSustituirPago"
+    );
+});
+
+// Permitir resetear al hacer click en el cuadro del nombre (Sustitución modal)
+$(document).on('click', '#sust_fileStatusContainer', function() {
+    resetSustFileUI();
+    document.getElementById('sust_documentFile').click();
+});
+
+// Drag-and-drop
+$(document).on('dragover', '#sust_fileDropZone', function(e) {
+    e.preventDefault();
+    $(this).css({'border-color': '#667eea', 'background': '#f0f4ff'});
+});
+$(document).on('dragleave', '#sust_fileDropZone', function() {
+    $(this).css({'border-color': '#cbd5e0', 'background': '#f8f9fa'});
+});
+$(document).on('drop', '#sust_fileDropZone', function(e) {
+    e.preventDefault();
+    $(this).css({'border-color': '#cbd5e0', 'background': '#f8f9fa'});
+    const files = e.originalEvent.dataTransfer.files;
+    if (files.length > 0) {
+        const input = document.getElementById('sust_documentFile');
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(files[0]);
+        input.files = dataTransfer.files;
+        $(input).trigger('change');
+    }
+});
+
+// Cancelar modal
+$(document).on('click', '#btnCancelarSustituirPago', function() {
+    if (sustituirPagoModalInstance) sustituirPagoModalInstance.hide();
+});
+
+// ============================================================
+// GUARDAR SUSTITUCIÓN DE PAGO
+// ============================================================
+$(document).on('click', '#btnGuardarSustituirPago', async function() {
+    // Validaciones
+    const required = ['sust_fechaPago', 'sust_formaPago', 'sust_moneda', 'sust_referencia', 'sust_depositante'];
+    const monedaVal = document.getElementById('sust_moneda') ? document.getElementById('sust_moneda').value : '';
+    
+    if (monedaVal === 'bs') required.push('sust_montoBs');
+    if (monedaVal === 'usd') required.push('sust_montoRef');
+
+    for (const id of required) {
+        const el = document.getElementById(id);
+        if (!el || !el.value) {
+            Swal.fire({ icon: 'warning', title: 'Atención', text: `El campo ${id.replace('sust_','')} es obligatorio.` });
+            return;
+        }
+    }
+
+    const fileInput = document.getElementById('sust_documentFile');
+    if (!fileInput || !fileInput.files.length) {
+        Swal.fire({ icon: 'warning', title: 'Atención', text: 'Debe cargar el nuevo comprobante de pago.' });
+        return;
+    }
+
+    const idPaymentOld = document.getElementById('sust_id_payment_record_loading').value;
+    if (!idPaymentOld) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se encontró el registro de pago a sustituir.' });
+        return;
+    }
+
+    const saveBtn = document.getElementById('btnGuardarSustituirPago');
+    if (saveBtn) saveBtn.disabled = true;
+
+    Swal.fire({ title: 'Procesando sustitución...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    const getValue = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const nroTicket   = getValue('sust_nro_ticket_pago');
+    const idTicket    = getValue('sust_id_ticket_pago');
+    const recordNumber = getValue('sust_registro');
+    const idUser      = getValue('sust_id_user_pago') || document.getElementById('id_user')?.value || '';
+    const docType     = getValue('sust_document_type_pago') || 'Anticipo';
+
+    const formaPagoEl  = document.getElementById('sust_formaPago');
+    const formaPagoText = (formaPagoEl && formaPagoEl.selectedIndex >= 0) ? formaPagoEl.options[formaPagoEl.selectedIndex].text : '';
+    const idMethod     = parseInt(formaPagoEl?.value) || 0;
+
+    // Final budget validation before saving
+    if (typeof window.currentBudgetAmount !== 'undefined' && window.currentBudgetAmount > 0) {
+        const montoRef = parseFloat(getValue('sust_montoRef')) || 0;
+        const remaining = window.currentRemaining || 0;
+        if (montoRef > (remaining + 0.001)) {
+            Swal.fire({
+                title: 'Excede el Presupuesto',
+                text: 'No se puede procesar la sustitución porque el monto excede el presupuesto restante.',
+                icon: 'error'
+            });
+            if (saveBtn) saveBtn.disabled = false;
+            return;
+        }
+    }
+
+    // Usar el nuevo estatus calculado por getSustPagoEstatus
+    let newStatus = sustPagoStatusToSave;
+
+    try {
+        // PASO 1: Actualizar datos del pago (SubstitutePayment)
+        Swal.update({ title: 'Actualizando datos del pago...' });
+
+        const dataUpdate = new URLSearchParams();
+        dataUpdate.append('id_payment', idPaymentOld);
+        dataUpdate.append('amount_bs', getValue('sust_montoBs'));
+        dataUpdate.append('reference_amount', getValue('sust_montoRef'));
+        dataUpdate.append('payment_method', formaPagoText);
+        dataUpdate.append('currency', monedaVal === 'bs' ? 'BS' : 'USD');
+        dataUpdate.append('payment_reference', getValue('sust_referencia'));
+        dataUpdate.append('depositor', getValue('sust_depositante'));
+        dataUpdate.append('record_number', recordNumber);
+        dataUpdate.append('payment_status', newStatus);
+        dataUpdate.append('observations', getValue('sust_obsAdministracion'));
+        dataUpdate.append('document_type', docType);
+
+        if (idMethod === 2) { // Transferencia
+            const bo = document.getElementById('sust_bancoOrigen');
+            const bd = document.getElementById('sust_bancoDestino');
+            dataUpdate.append('origen_bank', bo?.options[bo.selectedIndex]?.text || '');
+            dataUpdate.append('destination_bank', bd?.options[bd.selectedIndex]?.text || '');
+        } else if (idMethod === 3) { // Pago Movil
+            const po = document.getElementById('sust_origenBanco');
+            const pt = document.getElementById('sust_origenTelefono');
+            const pr = document.getElementById('sust_origenRifNumero');
+            
+            dataUpdate.append('origen_bank', po?.options[po.selectedIndex]?.text || '');
+            dataUpdate.append('origen_telefono', pt?.value || '');
+            dataUpdate.append('origen_rif_numero', pr?.value || '');
+            // El destino del pago movil es la empresa por defecto
+            dataUpdate.append('destination_bank', 'Banesco Banco Universal (Pago Móvil)');
+        }
+
+        const resUpdate = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SubstitutePayment`, {
+            method: 'POST',
+            body: dataUpdate.toString(),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        const dataUpdateRes = await resUpdate.json();
+        if (!dataUpdateRes.success) throw new Error(dataUpdateRes.message || 'Error al actualizar el pago.');
+
+        // PASO 2: Subir nuevo comprobante (UploadPaymentDoc)
+        Swal.update({ title: 'Subiendo nuevo comprobante...' });
+
+        const formDataDoc = new FormData();
+        formDataDoc.append('payment_doc', fileInput.files[0]);
+        formDataDoc.append('nro_ticket', nroTicket);
+        formDataDoc.append('record_number', recordNumber);
+        formDataDoc.append('user_loader', idUser);
+        formDataDoc.append('document_type', docType);
+        formDataDoc.append('ticket_id', idTicket);
+        formDataDoc.append('mime_type', fileInput.files[0].type);
+
+        const resUpload = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/UploadPaymentDoc`, {
+            method: 'POST',
+            body: formDataDoc
+        });
+        const dataUpload = await resUpload.json();
+
+        if (dataUpload.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Sustitución exitosa!',
+                text: 'El pago y el nuevo comprobante han sido registrados correctamente.',
+                confirmButtonColor: '#003594'
+            }).then(() => location.reload());
+        } else {
+            throw new Error(dataUpload.message || 'Error al subir el nuevo comprobante.');
+        }
+
+    } catch (e) {
+        if (saveBtn) saveBtn.disabled = false;
+        console.error('Error al sustituir el pago:', e);
+        Swal.fire({ icon: 'error', title: 'Error', text: e.message || 'Error inesperado al sustituir el pago.' });
+    }
+});
+

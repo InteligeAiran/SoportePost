@@ -184,6 +184,16 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetEmailAreaTesoreria(){
+         $result = $this->model->GetEmailAreaTesoreria();
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetUserByArea($id_area){
+        $result = $this->model->GetUserByArea($id_area);
+        return $result ? $result['row'] : null;
+    }
+
     public function GetTicketDataById($ticketId){
         // Lógica para obtener datos del ticket por ID
         $result = $this->model->GetTicketDataById($ticketId);
@@ -258,5 +268,20 @@ class EmailRepository
             }
             return null;
         }
+    }
+
+    public function GetLastPaymentByTicket($nro_ticket) {
+        $result = $this->model->GetLastPaymentByTicket($nro_ticket);
+        return ($result && isset($result['row'])) ? $result['row'] : null;
+    }
+
+    public function GetDataTicket2ByNro($nro_ticket) {
+        $result = $this->model->GetDataTicket2ByNro($nro_ticket);
+        return ($result && isset($result['row'])) ? $result['row'] : null;
+    }
+
+    public function GetTicketStaffDetails($nro_ticket, $payment_reference) {
+        $result = $this->model->GetTicketStaffDetails($nro_ticket, $payment_reference);
+        return ($result && isset($result['row'])) ? $result['row'] : null;
     }
 }

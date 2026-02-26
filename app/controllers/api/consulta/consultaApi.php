@@ -2843,6 +2843,24 @@ class Consulta extends Controller
         $result = $repository->InsertPaymentRecord($data);
 
         if ($result) {
+            // Enviar notificación por correo a Tesorería
+            try {
+                require_once __DIR__ . '/../email/emailApi.php';
+                $emailApi = new \App\Controllers\Api\email\email();
+                // Simular el POST para el handler
+                $_POST['nro_ticket'] = $data['nro_ticket'];
+                $_POST['serial_pos'] = $data['serial_pos'];
+                $_POST['amount_bs'] = $data['amount_bs'];
+                $_POST['reference_amount'] = $data['reference_amount'];
+                $_POST['payment_method'] = $data['payment_method'];
+                $_POST['payment_reference'] = $data['payment_reference'];
+                $_POST['payment_date'] = $data['payment_date'];
+                
+                $emailApi->handleSendPaymentRegistrationEmail();
+            } catch (\Exception $e) {
+                error_log("Error al intentar enviar notificación de pago por correo: " . $e->getMessage());
+            }
+
             $this->response(['success' => true, 'message' => 'Pago registrado con éxito.', 'id_payment' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al registrar el pago.'], 500);
@@ -4111,7 +4129,8 @@ HTML;
             'record_number',
             'payment_status',
             'confirmation_number',
-            'payment_date'
+            'payment_date',
+            'document_type'
         ];
 
         foreach ($possibleFields as $field) {

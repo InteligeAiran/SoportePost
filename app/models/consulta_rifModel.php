@@ -7029,7 +7029,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $sql = "SELECT * FROM status_payments 
                         WHERE id_status_payment = (
                             CASE 
-                                WHEN EXISTS (SELECT 1 FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " AND amount_bs > 0) THEN 17 
+                                WHEN EXISTS (
+                                    SELECT 1 FROM archivos_adjuntos 
+                                    WHERE nro_ticket = " . $escaped_nro_ticket . " 
+                                    AND document_type = 'Anticipo' 
+                                    AND (rechazado IS NULL OR rechazado = FALSE)
+                                ) THEN 17 
                                 ELSE 7 
                             END
                         )";
@@ -7189,7 +7194,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                         a.file_path,
                         a.file_path as receipt_path,
                         a.mime_type as receipt_mime,
-                        a.original_filename as receipt_name
+                        a.original_filename as receipt_name,
+                        a.document_type
                     FROM payment_records p
                     LEFT JOIN archivos_adjuntos a ON p.record_number = a.record_number
                     WHERE p.nro_ticket = " . $escaped_nro_ticket . "

@@ -622,10 +622,12 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     </tr>
                                                 ` : ''}
                                                 ${showMotivoRechazo ? `
-                                                    <tr>
-                                                        <th class="text-start">Motivo Rechazo Documento:</th>
-                                                        <td class="${motivoRechazoChanged ? "highlighted-change" : ""}"><strong>${cleanString(item.name_motivo_rechazo) || "N/A"}</strong></td>
-                                                    </tr>
+                                                    ${(cleanString(item.name_motivo_rechazo) && cleanString(item.name_motivo_rechazo) !== 'N/A') ? `
+                                                        <tr>
+                                                            <th class="text-start">Motivo Rechazo Documento:</th>
+                                                            <td class="${motivoRechazoChanged ? "highlighted-change" : ""}"><strong>${cleanString(item.name_motivo_rechazo)}</strong></td>
+                                                        </tr>
+                                                    ` : ''}
                                                     ${cleanString(item.nro_payment_reference) ? `
                                                         <tr>
                                                             <th class="text-start">Nro de Pago:</th>

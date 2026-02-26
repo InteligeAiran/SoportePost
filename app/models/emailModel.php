@@ -249,6 +249,28 @@ class emailModel extends Model{
         }
     }
 
+    public function GetEmailAreaTesoreria(){
+       try{
+            $sql = "SELECT ar.id_area, ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 2";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetUserByArea($id_area){
+        try{
+            $escaped_id_area = pg_escape_literal($this->db->getConnection(), $id_area);
+            $sql = "SELECT * FROM get_full_names_by_area(".$escaped_id_area.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetUserByArea: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
     public function GetTicketDataById($ticketId){
         try{
             $escaped_ticket_id = pg_escape_literal($this->db->getConnection(), $ticketId);
@@ -346,6 +368,39 @@ class emailModel extends Model{
         } catch (Throwable $e) {
             error_log("Error en GetTicketCompleteDataByNroTicket: " . $e->getMessage());
             return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    public function GetLastPaymentByTicket($nro_ticket) {
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM payment_records WHERE nro_ticket = $escaped_nro_ticket ORDER BY id_payment_record DESC LIMIT 1";
+            return Model::getResult($sql, $this->db);
+        } catch (\Throwable $e) {
+            error_log("Error en GetLastPaymentByTicket: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function GetDataTicket2ByNro($nro_ticket) {
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM GetDataTicket2() WHERE nro_ticket = $escaped_nro_ticket LIMIT 1";
+            return Model::getResult($sql, $this->db);
+        } catch (\Throwable $e) {
+            error_log("Error en GetDataTicket2ByNro: " . $e->getMessage());
+            return null;
+        }
+    }
+    public function GetTicketStaffDetails($nro_ticket, $payment_reference) {
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $escaped_payment_reference = pg_escape_literal($this->db->getConnection(), $payment_reference);
+            $sql = "SELECT * FROM get_ticket_staff_details($escaped_nro_ticket, $escaped_payment_reference) LIMIT 1";
+            return Model::getResult($sql, $this->db);
+        } catch (\Throwable $e) {
+            error_log("Error en GetTicketStaffDetails: " . $e->getMessage());
+            return null;
         }
     }
 }
