@@ -469,13 +469,49 @@ class email extends Controller {
 
             
             // 6. Enviar correos según jerarquía
+            // =========================================================================
+            // RESUMEN EXPLICATIVO DE DESTINATARIOS PARA TICKETS DE NIVEL 2
+            // 
+            // ¿Quién recibe correos cuando se crea un Ticket Nivel 2?
+            //
+            // 1. CORREO AZUL (Notificación Ejecutiva):
+            //    -> Se envía a: El Área configurada con ID 5 en la BD (GetEmailArea()).
+            //       Ejemplo actual: "Gerencia de El rosal".
+            //    -> Condición: SIEMPRE se envía.
+            //
+            // 2. CORREO DORADO (Notificación Oriente - NUEVO):
+            //    -> Se envía a: Usuario con ID 1 (Coordinador Nacional/Oriente).
+            //    -> Condición: SÓLO se envía si el técnico que está creando el ticket
+            //       pertenece activamente a la región "Oriente" (ej. Anzoátegui, Monagas).
+            //       Si el técnico es de Caracas, Zulia, etc., este correo se OMITE.
+            //
+            // 3. CORREO VERDE (Confirmación Técnica):
+            //    -> Se envía a: El técnico o usuario que está gestionando/creando el ticket.
+            //    -> Condición: SIEMPRE se envía (al correo personal de ese usuario).
+            //
+            // 4. CORREO ADMINISTRACIÓN (Status Domiciliación):
+            //    -> Se envía a: Correos fijos de administración definidos en código 
+            //       (domiciliacion.intelipunto@..., olga.rojas@..., neishy.tupano@...).
+            //    -> Condición: SIEMPRE se envía.
+            // =========================================================================
+
             $results = [
                 'coordinador' => false,
                 'tecnico' => false,
+                'coordinador_oriente' => false,
                 'messages' => []
             ];
             
-            // Enviar correo a COORDINACIÓN (Jerarquía Alta - Estilo Ejecutivo)
+            // =========================================================================
+            // REVISIÓN DE ENVÍO DE CORREOS PARA CREACIÓN DE TICKETS NIVEL 2
+            // =========================================================================
+            
+            // =========================================================================
+            // 1. Enviar correo a COORDINACIÓN (Jerarquía Alta - Estilo Ejecutivo)
+            // DESTINATARIO: El correo asociado al Área (por defecto operaciones)
+            // PLANTILLA: Ejecutiva (getCoordinatorEmailBodyForCreation)
+            // CONDICIÓN: Siempre se envía.
+            // =========================================================================
             error_log("INTENTANDO ENVIAR CORREO A COORDINADOR: " . $email_area);
             error_log("ASUNTO COORDINADOR: " . $subject_coordinador);
             $results['coordinador'] = $this->emailService->sendEmail($email_area, $subject_coordinador, $body_coordinador, [], $embeddedImages);
@@ -488,7 +524,60 @@ class email extends Controller {
             } else {
                 error_log("CORREO COORDINADOR ENVIADO: SI");
             }
+
+            // =========================================================================
+            // 2. Enviar correo a COORDINADOR ORIENTE (Notificación Extra)
+            // DESTINATARIO: ID_USER = 9 (Coordinador Nacional) LO CUAL ES Joel Oliveros, PERO SOLO SI EL TÉCNICO QUE CREA EL TICKET ES DE LA REGIÓN "ORIENTE".
+            // PLANTILLA: Ejecutiva Personalizada (getCoordinatorOrienteEmailBodyForCreation)
+            // CONDICIÓN: SOLO se envía si el técnico que registra el ticket es de la región "Oriente".
+            // =========================================================================
+            // Validar si el técnico que crea el ticket es de "Oriente"
+            // Si es de Oriente, le enviamos un correo adicional al ID 1 (el Coordinador Nacional/Oriente)
+            $userRegionData = $repository->GetRegionUser($id_user);
             
+            if ($userRegionData && isset($userRegionData['row']['desc_reg']) && strtolower(trim($userRegionData['row']['desc_reg'])) === 'oriente') {
+                error_log("El usuario " . $id_user . " es de la región: Oriente. Buscando correo para enviar notificación extra al coordinador ID 1.");
+                $extraCoordinator = $repository->GetEmailUserDataById(9);
+                
+                if ($extraCoordinator && !empty($extraCoordinator['user_email'])) {
+                    $email_coordinador_oriente = $extraCoordinator['user_email'];
+                    $nombre_coordinador_oriente = $extraCoordinator['full_name'] ?? 'Coordinador';
+                    error_log("INTENTANDO ENVIAR CORREO EXTRA COORDINADOR (Oriente): " . $email_coordinador_oriente);
+                    
+                    $body_coordinador_oriente = $this->getCoordinatorOrienteEmailBodyForCreation(
+                        $nombre_coordinador_oriente, 
+                        $nombre_tecnico_ticket, 
+                        $ticketnro, 
+                        $clientRif, 
+                        $clientName, 
+                        $ticketserial, 
+                        $ticketNivelFalla, 
+                        $name_failure, 
+                        $ticketfinished, 
+                        $ticketaccion, 
+                        $ticketstatus,
+                        $ticketprocess,
+                        $ticketpaymnet,
+                        $ticketdomiciliacion
+                    );
+                    
+                    $results['coordinador_oriente'] = $this->emailService->sendEmail($email_coordinador_oriente, $subject_coordinador, $body_coordinador_oriente, [], $embeddedImages);
+                    
+                    if (!$results['coordinador_oriente']) {
+                        $error_coordinador_oriente = $this->emailService->getLastError();
+                        error_log("ERROR AL ENVIAR CORREO EXTRA COORDINADOR ORIENTE: " . $error_coordinador_oriente);
+                    } else {
+                        error_log("CORREO EXTRA COORDINADOR ORIENTE ENVIADO: SI");
+                    }
+                }
+            }
+            
+            // =========================================================================
+            // 3. Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
+            // DESTINATARIO: El correo del técnico que realiza la gestión (según el $id_user)
+            // PLANTILLA: Operativa Técnica (getTechnicianEmailBody)
+            // CONDICIÓN: Siempre se envía.
+            // =========================================================================
             // Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
             $result_tecnico = $repository->GetEmailUserDataById($id_user);
             error_log("DATOS TECNICO OBTENIDOS: " . ($result_tecnico ? 'SI' : 'NO'));
@@ -536,6 +625,12 @@ class email extends Controller {
                 }
             }
 
+            // =========================================================================
+            // 4. Enviar correo a ADMINISTRACIÓN (Notificación Domiciliación)
+            // DESTINATARIOS: Lista fija de correos (domiciliacion, olga.rojas, neishy)
+            // PLANTILLA: Administrativa (getAdminEmailBodyForTicketCreation)
+            // CONDICIÓN: Siempre se envía para revisar el estatus de domiciliación.
+            // =========================================================================
             // 6. Enviar correo a ADMINISTRACIÓN (Jerarquía Administrativa - Estilo de Notificación)
             $results['admin'] = false; // Inicializar
             // Correos específicos para domiciliación
@@ -2492,6 +2587,160 @@ class email extends Controller {
 HTML;
     }
 
+    private function getCoordinatorOrienteEmailBodyForCreation($nombre_coordinador_oriente, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketprocess,  $ticketpaymnet, $ticketdomiciliacion) {
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue,
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet ?? ''),
+            'domi' => htmlspecialchars($ticketdomiciliacion ?? ''),
+            'coordinador' => htmlspecialchars($nombre_coordinador_oriente ?? ''),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket ?? '')
+        ];
+        $serialUrl = urlencode($ticketserial);
+        $processUrl = urlencode($ticketprocess);
+        $nivelUrl = urlencode($ticketNivelFalla);
+        $currentYear = date("Y");
+        
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Correo de ticket Región Oriente</title>
+            <style>
+        body{ margin:0; padding:30px 0; background:#f1f5f9; font-family:'Inter','Segoe UI',sans-serif; }
+        .card{ background:#ffffff; max-width:650px; margin:0 auto; border-radius:24px; box-shadow:0 25px 80px rgba(15,23,42,0.12); overflow:hidden; }
+        .header{ background:linear-gradient(135deg,#eab308 0%,#ca8a04 100%); color:#ffffff; padding:30px; text-align:center; }
+        .header h1{ margin:0; font-size:26px; letter-spacing:0.5px; }
+        .header p{ margin:6px 0 0; font-size:15px; opacity:0.85; }
+        .body{ padding:30px 34px 24px; }
+        .hello{ text-align:center; font-size:17px; color:#0f172a; margin-bottom:22px; }
+        .hello span{ color:#ca8a04; font-weight:700; }
+        .hero-badge{ background:#fdfbe8; border:1px solid rgba(202,138,4,0.2); border-radius:18px; padding:14px 18px; text-align:center; font-size:14px; color:#475569; margin-bottom:28px; }
+        .detail{ display:flex; align-items:center; padding:14px 0; border-bottom:1px solid #edf2f7; }
+        .detail:last-child{ border-bottom:none; }
+        .icon{ width:45px; height:45px; border-radius:14px; background:#f8fafc; display:flex; align-items:center; justify-content:center; margin-right:14px; font-size:22px; }
+        .label{ font-size:12px; letter-spacing:0.6px; text-transform:uppercase; color:#94a3b8; margin-bottom:3px; }
+        .value{ font-size:16px; color:#0f172a; font-weight:600; }
+        .value-serial{ font-family:"JetBrains Mono","Courier New",monospace; font-size:15px; background:#f1f5f9; padding:4px 10px; border-radius:8px; color:#0f172a; }
+        .status-row{ display:flex; gap:12px; flex-wrap:wrap; margin:24px 0 6px; width:100%; }
+        .status-pill{ flex:1 1 calc(33.333% - 8px); min-width:180px; max-width:100%; background:#fdfbe8; border-radius:18px; padding:13px 18px; display:flex; flex-direction:column; border:1px solid rgba(202,138,4,0.2); box-sizing:border-box; word-wrap:break-word; overflow-wrap:break-word; }
+        .status-pill strong{ color:#ca8a04; font-size:11px; letter-spacing:0.5px; word-wrap:break-word; overflow-wrap:break-word; margin-right: 8%; }
+        .status-pill span{ color:#0f172a; font-weight:700; font-size:11px; word-wrap:break-word; overflow-wrap:break-word; line-height:1.4; hyphens:auto; }
+        .logo-container{ text-align:center; margin:30px 0 20px; }
+        .logo{ max-width: 50%; height:auto; display:block; margin:0 auto; margin-top: -5px; margin-top: -25%; }
+        .footer{ padding:20px; text-align:center; font-size:12px; color:#94a3b8; background:#f8fafc; margin-top: -17%; }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{ flex:1 1 100%; min-width:100%; max-width:100%; }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Correo de ticket Región Oriente</h1>
+            <p>Notificación para el Coordinador Nacional</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>{$map['coordinador']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{$map['tecnico']} (Oriente)</strong> registró un nuevo ticket Nivel 2. A continuación se detalla la información pertinente.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{$map['fecha']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{$map['accion']}</div>
+                        </div>
+                        </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{$map['status']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{$map['pago']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{$map['domi']}</span>
+                </div>
+            </div>
+            {$logoHtml}
+                </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático para notificar a la Coordinación. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+</html>
+HTML;
+    }
+
     private function getTechnicianEmailBody($nombre_tecnico, $nombre_area, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketpaymnet, $ticketstatus, $ticketprocess, $ticketdomiciliacion) {
         // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
         $nivelValue = htmlspecialchars($ticketNivelFalla);
@@ -3984,6 +4233,634 @@ HTML;
         </div>
     </div>
 </body>
+</html>
+HTML;
+    }
+
+    public function getFinanzasEmailBodyForAnticipo($nombre_area_finanzas, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue, // Solo el número
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area' => htmlspecialchars($nombre_area_finanzas),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
+        ];
+        $currentYear = date("Y");
+        
+        // Preparar el logo HTML si está definido
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Financiera - Revisar Anticipo</title>
+            <style>
+        body{
+            margin:0;
+            padding:30px 0;
+            background:#f8f9fa;
+            font-family:'Inter','Segoe UI',sans-serif;
+        }
+        .card{
+            background:#ffffff;
+            max-width:650px;
+            margin:0 auto;
+            border-radius:24px;
+            box-shadow:0 25px 80px rgba(0,0,0,0.12);
+            overflow:hidden;
+        }
+        .header{
+            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
+            color:#ffffff;
+            padding:30px;
+            text-align:center;
+        }
+        .header h1{
+            margin:0;
+            font-size:26px;
+            letter-spacing:0.5px;
+        }
+        .header p{
+            margin:6px 0 0;
+            font-size:15px;
+            opacity:0.85;
+        }
+        .body{
+            padding:30px 34px 24px;
+        }
+        .hello{
+            text-align:center;
+            font-size:17px;
+            color:#0f172a;
+            margin-bottom:22px;
+        }
+        .hello span{
+            color:#6f42c1;
+            font-weight:700;
+        }
+        .hero-badge{
+            background:#f3e5f5;
+            border:1px solid rgba(111,66,193,0.2);
+            border-radius:18px;
+            padding:14px 18px;
+            text-align:center;
+            font-size:14px;
+            color:#6f42c1;
+            margin-bottom:28px;
+        }
+        .detail{
+            display:flex;
+            align-items:center;
+            padding:14px 0;
+            border-bottom:1px solid #edf2f7;
+        }
+        .detail:last-child{
+            border-bottom:none;
+        }
+        .icon{
+            width:45px;
+            height:45px;
+            border-radius:14px;
+            background:#f8f0fc;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-right:14px;
+            font-size:22px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:0.6px;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:3px;
+        }
+        .value{
+            font-size:16px;
+            color:#0f172a;
+            font-weight:600;
+        }
+        .value-serial{
+            font-family:"JetBrains Mono","Courier New",monospace;
+            font-size:15px;
+            background:#f1f5f9;
+            padding:4px 10px;
+            border-radius:8px;
+            color:#0f172a;
+        }
+        .status-row{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:24px 0 6px;
+            width:100%;
+        }
+        .status-pill{
+            flex:1 1 calc(33.333% - 8px);
+            min-width:180px;
+            max-width:100%;
+            background:#f3e5f5;
+            border-radius:18px;
+            padding:13px 18px;
+            display:flex;
+            flex-direction:column;
+            border:1px solid rgba(111,66,193,0.2);
+            box-sizing:border-box;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+        }
+        .status-pill strong{
+            color:#6f42c1;
+            font-size:11px;
+            letter-spacing:0.5px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            margin-right:8%;
+        }
+        .status-pill span{
+            color:#0f172a;
+            font-weight:700;
+            font-size:11px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            line-height:1.4;
+            hyphens:auto;
+        }
+        .attention-box{
+            background:#f0e6fa;
+            border:2px solid #d8bcfc;
+            border-radius:12px;
+            padding:20px;
+            margin-top:25px;
+            text-align:center;
+        }
+        .attention-box p{
+            margin:0;
+            font-size:1.1em;
+            color:#6f42c1;
+            font-weight:600;
+            line-height:1.5;
+        }
+        .logo-container{
+            text-align:center;
+            margin:30px 0 20px;
+        }
+        .logo{
+            max-width:50%;
+            height:auto;
+            display:block;
+            margin:0 auto;
+            margin-top:-5px;
+            margin-top:-25%;
+        }
+        .footer{
+            padding:20px;
+            text-align:center;
+            font-size:12px;
+            color:#94a3b8;
+            background:#f8fafc;
+            margin-top:-17%;
+        }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{
+                flex:1 1 100%;
+                min-width:100%;
+                max-width:100%;
+            }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Revisar Anticipo</h1>
+            <p>Notificación Financiera</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>Área de {\$map['area']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{\$map['tecnico']}</strong> ha cargado un documento de anticipo. Por favor, revise el documento asociado.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{\$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{\$map['rif']} &mdash; {\$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{\$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {\$map['nivel']} &nbsp;|&nbsp; {\$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">👤</div>
+                <div>
+                    <div class="label">Técnico Responsable</div>
+                    <div class="value">{\$map['tecnico']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{\$map['fecha']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{\$map['accion']}</div>
+                        </div>
+                        </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{\$map['status']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{\$map['pago']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{\$map['domi']}</span>
+                </div>
+            </div>
+
+            <div class="attention-box">
+                <p><strong>¡Atención!</strong> Por favor, verifique el documento de anticipo de este ticket.</p>
+            </div>
+
+            {\$logoHtml}
+                </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {\$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+</html>
+HTML;
+    }
+
+    public function getAdminEmailBodyForExoneracion($nombre_area_admin, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion) {
+        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        // Si el valor ya contiene "Nivel", extraer solo el número
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1]; // Solo el número si hay uno
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue, // Solo el número
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area' => htmlspecialchars($nombre_area_admin),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
+        ];
+        $currentYear = date("Y");
+        
+        // Preparar el logo HTML si está definido
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Administrativa - Revisar Exoneración</title>
+            <style>
+        body{
+            margin:0;
+            padding:30px 0;
+            background:#f8f9fa;
+            font-family:'Inter','Segoe UI',sans-serif;
+        }
+        .card{
+            background:#ffffff;
+            max-width:650px;
+            margin:0 auto;
+            border-radius:24px;
+            box-shadow:0 25px 80px rgba(0,0,0,0.12);
+            overflow:hidden;
+        }
+        .header{
+            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
+            color:#ffffff;
+            padding:30px;
+            text-align:center;
+        }
+        .header h1{
+            margin:0;
+            font-size:26px;
+            letter-spacing:0.5px;
+        }
+        .header p{
+            margin:6px 0 0;
+            font-size:15px;
+            opacity:0.85;
+        }
+        .body{
+            padding:30px 34px 24px;
+        }
+        .hello{
+            text-align:center;
+            font-size:17px;
+            color:#0f172a;
+            margin-bottom:22px;
+        }
+        .hello span{
+            color:#6f42c1;
+            font-weight:700;
+        }
+        .hero-badge{
+            background:#f3e5f5;
+            border:1px solid rgba(111,66,193,0.2);
+            border-radius:18px;
+            padding:14px 18px;
+            text-align:center;
+            font-size:14px;
+            color:#6f42c1;
+            margin-bottom:28px;
+        }
+        .detail{
+            display:flex;
+            align-items:center;
+            padding:14px 0;
+            border-bottom:1px solid #edf2f7;
+        }
+        .detail:last-child{
+            border-bottom:none;
+        }
+        .icon{
+            width:45px;
+            height:45px;
+            border-radius:14px;
+            background:#f8f0fc;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-right:14px;
+            font-size:22px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:0.6px;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:3px;
+        }
+        .value{
+            font-size:16px;
+            color:#0f172a;
+            font-weight:600;
+        }
+        .value-serial{
+            font-family:"JetBrains Mono","Courier New",monospace;
+            font-size:15px;
+            background:#f1f5f9;
+            padding:4px 10px;
+            border-radius:8px;
+            color:#0f172a;
+        }
+        .status-row{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:24px 0 6px;
+            width:100%;
+        }
+        .status-pill{
+            flex:1 1 calc(33.333% - 8px);
+            min-width:180px;
+            max-width:100%;
+            background:#f3e5f5;
+            border-radius:18px;
+            padding:13px 18px;
+            display:flex;
+            flex-direction:column;
+            border:1px solid rgba(111,66,193,0.2);
+            box-sizing:border-box;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+        }
+        .status-pill strong{
+            color:#6f42c1;
+            font-size:11px;
+            letter-spacing:0.5px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            margin-right:8%;
+        }
+        .status-pill span{
+            color:#0f172a;
+            font-weight:700;
+            font-size:11px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            line-height:1.4;
+            hyphens:auto;
+        }
+        .attention-box{
+            background:#f0e6fa;
+            border:2px solid #d8bcfc;
+            border-radius:12px;
+            padding:20px;
+            margin-top:25px;
+            text-align:center;
+        }
+        .attention-box p{
+            margin:0;
+            font-size:1.1em;
+            color:#6f42c1;
+            font-weight:600;
+            line-height:1.5;
+        }
+        .logo-container{
+            text-align:center;
+            margin:30px 0 20px;
+        }
+        .logo{
+            max-width:50%;
+            height:auto;
+            display:block;
+            margin:0 auto;
+            margin-top:-5px;
+            margin-top:-25%;
+        }
+        .footer{
+            padding:20px;
+            text-align:center;
+            font-size:12px;
+            color:#94a3b8;
+            background:#f8fafc;
+            margin-top:-17%;
+        }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{
+                flex:1 1 100%;
+                min-width:100%;
+                max-width:100%;
+            }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Revisar Exoneración</h1>
+            <p>Notificación Administrativa</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>Área de {\$map['area']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{\$map['tecnico']}</strong> ha cargado un documento de exoneración. Por favor, revise el documento asociado.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{\$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{\$map['rif']} &mdash; {\$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{\$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {\$map['nivel']} &nbsp;|&nbsp; {\$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">👤</div>
+                <div>
+                    <div class="label">Técnico Responsable</div>
+                    <div class="value">{\$map['tecnico']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{\$map['fecha']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{\$map['accion']}</div>
+                        </div>
+                        </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{\$map['status']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{\$map['pago']}</span>
+                    </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{\$map['domi']}</span>
+                </div>
+            </div>
+
+            <div class="attention-box">
+                <p><strong>¡Atención!</strong> Por favor, verifique el documento de exoneración de este ticket.</p>
+            </div>
+
+            {\$logoHtml}
+                </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {\$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
 </html>
 HTML;
     }

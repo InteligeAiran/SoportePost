@@ -21,6 +21,16 @@ class emailModel extends Model{
         }
     }
 
+    public function GetRegionUser($id_user){
+        try{
+            $sql = "SELECT * FROM sp_verregionusers(".$id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     /* REALIZAR ESTA FUNCION EN POSTGRESQL*/
     public function GetEmailCoordByIdfun($id_coordinador){
         try{

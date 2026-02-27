@@ -32,6 +32,11 @@ class EmailRepository
         return $result;
     }
 
+    public function GetRegionUser($id_user){
+        $result = $this->model->GetRegionUser($id_user);
+        return $result;
+    }
+
     public function GetEmailUser($email){
         // Lógica para obtener un usuario por su ID usando el modelo
         $result = $this->model->GetEmailUser($email); 

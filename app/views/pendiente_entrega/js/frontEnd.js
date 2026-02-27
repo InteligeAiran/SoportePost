@@ -976,10 +976,11 @@ function getTicketDataFinaljs() {
   const columnTitles = {
     //id_ticket: "ID Ticket",
     nro_ticket: "Nro Ticket",
+    razonsocial_cliente: "Razón Social",
+    rif: "RIF",
+    serial_pos: "Serial POS",
     full_name_tecnico1: "Técnico Gestión", // CORREGIDO
    // create_ticket: "Fecha Creación",
-    serial_pos: "Serial POS",
-    rif: "Rif",
     name_failure: "Falla",
     // id_level_failure: "Nivel Falla", // ELIMINADO
     full_name_coord: "Coordinador", // CORREGIDO
@@ -1000,7 +1001,8 @@ function getTicketDataFinaljs() {
     fecha_carga_llaves: "Fecha Carga Llaves", // CORREGIDO
     date_receivefrom_desti: "Fecha Envío a Destino", // CORREGIDO
     confirmreceive: "Confirmar Recibido", // AÑADIDO
-    //fecha_instalacion: "Fecha Instalación", // Añadido
+    fecha_instalacion: "Fecha Instalación", // Añadido
+    fecha_cierre_anterior: "Fecha Último Ticket C."
     //estatus_inteliservices: "Estatus Inteliservices", // Añadido
   };
 
@@ -1066,7 +1068,7 @@ function getTicketDataFinaljs() {
                     if (type === "display" || type === "filter") {
                       const fullText = String(data || "").trim();
                       if (fullText.length > displayLengthForTruncate) {
-                        return `<span class="truncated-cell" data-full-text="${fullText}">${fullText.substring(
+                        return `<span class="truncated-cell" data-full-text="${fullText}" style="cursor: pointer;">${fullText.substring(
                          0,
                          displayLengthForTruncate
                         )
@@ -1078,6 +1080,25 @@ function getTicketDataFinaljs() {
                   };
                 }                   
                 // ************* FIN: APLICAR LÓGICA DE TRUNCADO A FALLA *************
+
+                // ************* APLICAR LÓGICA DE TRUNCADO A RAZON SOCIAL *************
+                if (key === "razonsocial_cliente") {
+                  columnDef.render = function (data, type, row) {
+                    if (type === "display" || type === "filter") {
+                      const fullText = String(data || "").trim();
+                      if (fullText.length > displayLengthForTruncate) {
+                        return `<span class="truncated-cell" data-full-text="${fullText}" style="cursor: pointer;" title="Haz clic para expandir/plegar">${fullText.substring(
+                         0,
+                         displayLengthForTruncate
+                        )
+                      }...</span>`;
+                     }
+                     return fullText;
+                    }
+                    return data;
+                  };
+                }
+                // ************* FIN: APLICAR LÓGICA DE TRUNCADO A RAZON SOCIAL *************
 
                 // ************* APLICAR LÓGICA DE TRUNCADO A STATUS_PAYMENTS *************
                 if (key === "name_status_payment") {
@@ -1355,19 +1376,19 @@ function getTicketDataFinaljs() {
                            return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
-                                     data-serial-pos="${row.serial_pos} 
+                                     data-serial-pos="${row.serial_pos}" 
                                     title="Es devolucion" checked disabled>`;
                         } else if(recibidoRosal === 'f' || recibidoRosal === false || recibidoRosal === '' || recibidoRosal === null){
                            return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
-                                     data-serial-pos="${row.serial_pos} 
+                                     data-serial-pos="${row.serial_pos}" 
                                     title="Confirmar recibido" disabled>`;
                         }else{
                           return `<input type="checkbox" class="receive-key-checkbox" 
                                     data-id-ticket="${idTicket}" 
                                     data-nro-ticket="${row.nro_ticket}"
-                                     data-serial-pos="${row.serial_pos} 
+                                     data-serial-pos="${row.serial_pos}" 
                                     title="Confirmar Carga De llaves">`;
                         }
                 },
@@ -1488,10 +1509,10 @@ function getTicketDataFinaljs() {
                                       status: "En proceso",
                                       action: ["En espera de confirmar recibido en el Rosal", "En espera de Confirmar Devolución", "Pago Anticipo Pendiente por Revision", "Rechazado"],
                                       adjustColumns: () => {
-                                          dataTableInstance.column(17).visible(false);
-                                          dataTableInstance.column(18).visible(true);
-                                          dataTableInstance.column(19).visible(false);
-                                          dataTableInstance.column(20).visible(true);
+                                          dataTableInstance.column(20).visible(false);
+                                          dataTableInstance.column(21).visible(true);
+                                          dataTableInstance.column(22).visible(false);
+                                          dataTableInstance.column(23).visible(true);
                                       }
                                   },
                                   {
@@ -1500,10 +1521,10 @@ function getTicketDataFinaljs() {
                                       status: "En proceso",
                                       action: "En el Rosal",
                                       adjustColumns: () => {
-                                          dataTableInstance.column(17).visible(true);
-                                          dataTableInstance.column(18).visible(true);
-                                          dataTableInstance.column(19).visible(true);
                                           dataTableInstance.column(20).visible(true);
+                                          dataTableInstance.column(21).visible(true);
+                                          dataTableInstance.column(22).visible(true);
+                                          dataTableInstance.column(23).visible(true);
                                       }
                                   },
                                   {
@@ -1512,10 +1533,10 @@ function getTicketDataFinaljs() {
                                       status: "En proceso",
                                       action: "En espera confirmación carga de llaves",
                                       adjustColumns: () => {
-                                          dataTableInstance.column(17).visible(false);
-                                          dataTableInstance.column(18).visible(false);
-                                          dataTableInstance.column(19).visible(false);
                                           dataTableInstance.column(20).visible(false);
+                                          dataTableInstance.column(21).visible(false);
+                                          dataTableInstance.column(22).visible(false);
+                                          dataTableInstance.column(23).visible(false);
                                       }
                                   },
                                   {
@@ -1524,10 +1545,10 @@ function getTicketDataFinaljs() {
                                       status: "En proceso",
                                       action: "Llaves Cargadas",
                                       adjustColumns: () => {
-                                          dataTableInstance.column(17).visible(true);
-                                          dataTableInstance.column(18).visible(true);
-                                          dataTableInstance.column(19).visible(true);
                                           dataTableInstance.column(20).visible(true);
+                                          dataTableInstance.column(21).visible(true);
+                                          dataTableInstance.column(22).visible(true);
+                                          dataTableInstance.column(23).visible(true);
                                       }
                                   }
                               ];
@@ -1542,7 +1563,7 @@ function getTicketDataFinaljs() {
                               // Función para verificar si hay datos en una búsqueda específica
                               function checkDataExists(searchTerm) {
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(10).search(searchTerm, true, false).draw();
+                                  dataTableInstance.column(11).search(searchTerm, true, false).draw();
                                   const rowCount = dataTableInstance.rows({ filter: 'applied' }).count();
                                   return rowCount > 0;
                               }
@@ -1550,7 +1571,7 @@ function getTicketDataFinaljs() {
                               function applyFilterConfig(config) {
                                   if (!config) return;
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(10).search(config.term, true, false).draw();
+                                  dataTableInstance.column(11).search(config.term, true, false).draw();
                                   config.adjustColumns();
                                   setActiveButton(config.button);
                                   showTicketStatusIndicator(config.status, config.action);
@@ -1647,11 +1668,11 @@ function getTicketDataFinaljs() {
                                   }
 
                                   dataTableInstance.columns().search('').draw(false);
-                                  dataTableInstance.column(17).visible(false);
-                                  dataTableInstance.column(18).visible(false);
-                                  dataTableInstance.column(19).visible(false);
-                                  dataTableInstance.column(20).visible(true);
-                                  dataTableInstance.column(10).search("NO_DATA_FOUND").draw();
+                                  dataTableInstance.column(20).visible(false);
+                                  dataTableInstance.column(21).visible(false);
+                                  dataTableInstance.column(22).visible(false);
+                                  dataTableInstance.column(23).visible(true);
+                                  dataTableInstance.column(11).search("NO_DATA_FOUND").draw();
                                   setActiveButton("btn-por-asignar");
                                   showTicketStatusIndicator('Cerrado', 'Sin datos');
 
@@ -1722,6 +1743,22 @@ function getTicketDataFinaljs() {
                                       findFirstButtonWithData();
                                   }
                               });
+
+                              // Lógica para expandir/plegar las celdas truncadas
+                              $("#tabla-ticket tbody")
+                                .off("click", ".truncated-cell, .expanded-cell")
+                                .on("click", ".truncated-cell, .expanded-cell", function (e) {
+                                  e.stopPropagation();
+                                  const $cellSpan = $(this);
+                                  const fullText = $cellSpan.data("full-text");
+                                  const displayLength = 25;
+                                  if ($cellSpan.hasClass("truncated-cell")) {
+                                    $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
+                                  } else if ($cellSpan.hasClass("expanded-cell")) {
+                                    $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
+                                    $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
+                                  }
+                                });
                           },
                       });
 
