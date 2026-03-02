@@ -323,7 +323,15 @@ class users extends Controller {
             'redirect' => $redirectURL,
             'session_lifetime' => $_SESSION['session_lifetime'],
             'session_id' => $_SESSION["session_id"],
-            'id_user' => $_SESSION['id_user']
+            'id_user' => $_SESSION['id_user'],
+            'usuario' => $_SESSION["usuario"],
+            'nombres' => $_SESSION["nombres"],
+            'apellidos' => $_SESSION["apellidos"],
+            'correo' => $_SESSION["correo"],
+            'id_rol' => $_SESSION['id_rol'],
+            'name_rol' => $_SESSION['name_rol'],
+            'id_area' => $_SESSION['id_area'],
+            'status' => $_SESSION['status']
         ], 200);
     } else {
         $this->response(['error' => 'Error al guardar la información de la sesión'], 500);

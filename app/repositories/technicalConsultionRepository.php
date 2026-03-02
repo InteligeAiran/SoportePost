@@ -620,6 +620,76 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetAllTicketDocuments($id_ticket, $nro_ticket) {
+        $allDocs = [];
+        
+        // 1. Archivos Adjuntos
+        $attachments = $this->getTicketAttachmentsDetails($id_ticket);
+        if ($attachments) {
+            foreach ($attachments as $att) {
+                $allDocs[] = [
+                    'id_attachment' => $att['id_attachment'],
+                    'document_type' => $att['document_type'],
+                    'original_filename' => $att['original_filename'],
+                    'mime_type' => $att['mime_type'],
+                    'file_size' => $att['file_size'],
+                    'file_path' => $att['file_path'],
+                    'uploaded_at' => $att['uploaded_at'],
+                    'source' => 'archivos_adjuntos'
+                ];
+            }
+        }
+
+        // 2. Pagos
+        $payments = $this->GetPaymentsByTicket($nro_ticket);
+        if ($payments) {
+            foreach ($payments as $pay) {
+                if (!empty($pay['support_path'])) {
+                    $allDocs[] = [
+                        'id_attachment' => $pay['id_payment_record'],
+                        'document_type' => 'Comprobante de Pago',
+                        'original_filename' => 'Pago_' . $pay['record_number'] . '.pdf',
+                        'mime_type' => 'application/pdf', 
+                        'file_size' => 0,
+                        'file_path' => $pay['support_path'],
+                        'uploaded_at' => $pay['payment_date'],
+                        'source' => 'payment_records'
+                    ];
+                }
+            }
+        }
+
+        // 3. Budgets
+        // Using direct DB access for simplicity as it exists in other models
+        $escaped_nro_ticket = pg_escape_literal($this->model->db->getConnection(), $nro_ticket);
+        $sqlBudgets = "SELECT id_budget, pdf_path, fecha_creacion FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " AND pdf_path IS NOT NULL AND trim(pdf_path) != ''";
+        $resultBudgets = Model::getResult($sqlBudgets, $this->model->db);
+        if ($resultBudgets && $resultBudgets['numRows'] > 0) {
+            for ($i = 0; $i < $resultBudgets['numRows']; $i++) {
+                $budget = pg_fetch_assoc($resultBudgets['query'], $i);
+                $allDocs[] = [
+                    'id_attachment' => $budget['id_budget'],
+                    'document_type' => 'Presupuesto',
+                    'original_filename' => 'Presupuesto_' . $nro_ticket . '.pdf',
+                    'mime_type' => 'application/pdf',
+                    'file_size' => 0,
+                    'file_path' => $budget['pdf_path'],
+                    'uploaded_at' => $budget['fecha_creacion'],
+                    'source' => 'budgets'
+                ];
+            }
+        }
+
+        // Sort by uploaded_at descending
+        usort($allDocs, function($a, $b) {
+            $timeA = strtotime($a['uploaded_at'] ?? '1970-01-01');
+            $timeB = strtotime($b['uploaded_at'] ?? '1970-01-01');
+            return $timeB - $timeA;
+        });
+
+        return $allDocs;
+    }
+
     public function UpdateTicketAction($ticketId, $id_user, $comment){
         $result = $this->model->UpdateTicketAction($ticketId, $id_user, $comment);
         return $result;

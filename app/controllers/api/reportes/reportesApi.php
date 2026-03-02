@@ -300,7 +300,7 @@ class reportes extends Controller {
         $result = $repository->SearchRif($rif,$id_user,$idtipouser);
 
          if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'ticket' => $result], 200);
+            $this->response(['success' => true, 'rif' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay rif disponibles'], 404); // Código 404 Not Found
         } else {
@@ -318,7 +318,7 @@ class reportes extends Controller {
         $result = $repository->SearchSerial($serial,$id_user,$idtipouser);
 
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'ticket' => $result], 200);
+            $this->response(['success' => true, 'data' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
         } else {
@@ -337,7 +337,7 @@ class reportes extends Controller {
         $result = $repository->SearchRangeData($ini_date, $end_date, $id_user, $idtipouser);
         if($ini_date !== null && $end_date !== null) {
             if ($result) {
-                $this->response(['success' => true, 'ticket' => $result], 200);
+                $this->response(['success' => true, 'data' => $result], 200);
             }else{
                 $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Abiertos por Mes.'], 500);
             }
@@ -495,7 +495,7 @@ class reportes extends Controller {
         $repository = new ReportRepository();
         $result = $repository->getTicketDataFinal();
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
-            $this->response(['success' => true, 'ticket' => $result], 200);
+            $this->response(['success' => true, 'data' => $result], 200);
         } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {

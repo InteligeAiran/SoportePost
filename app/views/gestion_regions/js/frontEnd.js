@@ -741,11 +741,11 @@ function getTicketDataFinaljs() {
 
   const columnTitles = {
     nro_ticket: "N° Ticket",
-    serial_pos: "Serial POS",
+    razonsocial_cliente: "Razón Social",
     rif: "Rif",
+    serial_pos: "Serial POS",
     name_failure: "Falla",
     full_name_tecnico: "Técnico Gestión",
-    razonsocial_cliente: "Razón Social",
     name_status_ticket: "Estatus Ticket",
     name_process_ticket: "Proceso Ticket",
     name_accion_ticket: "Acción Ticket",

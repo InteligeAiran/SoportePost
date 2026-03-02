@@ -201,6 +201,18 @@ class Consulta extends Controller
                     $this->handleGetAttachments();
                     break;
                 
+                case 'GetTicketAttachmentsList':
+                    $this->handleGetTicketAttachmentsList();
+                    break;
+                
+                case 'GetAllTicketDocuments':
+                    $this->handleGetAllTicketDocuments();
+                    break;
+
+                case 'StreamAttachment':
+                    $this->handleStreamAttachment();
+                    break;
+                
                 case 'DevolverCliente':
                     $this->handleTicketAction();
                     break;
@@ -1440,7 +1452,7 @@ class Consulta extends Controller
 
     public function handleGetTicketData()
     {
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : null);
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData($id_user);
 
@@ -1720,6 +1732,77 @@ class Consulta extends Controller
             // Error: El archivo no se encontró en el disco, aunque la DB lo listaba
             $this->response(['success' => false, 'message' => 'El archivo asociado no fue encontrado en el servidor. ' . $filePath], 404); // Puedes incluir $filePath para depurar
             return; // Termina la ejecución aquí
+        }
+    }
+
+    public function handleGetTicketAttachmentsList(){
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        if (!$ticketId) {
+            $this->response(['success' => false, 'message' => 'ID de ticket requerido.'], 400); 
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $attachments = $repository->getTicketAttachmentsDetails($ticketId);
+
+        if ($attachments === false) {
+            $this->response(['success' => false, 'message' => 'Error al obtener adjuntos.'], 500);
+            return;
+        }
+
+        $this->response(['success' => true, 'attachments' => $attachments], 200);
+    }
+
+    public function handleGetAllTicketDocuments(){
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        $nroTicket = isset($_POST['nroTicket']) ? $_POST['nroTicket'] : '';
+
+        if (!$ticketId || !$nroTicket) {
+            $this->response(['success' => false, 'message' => 'ID de ticket y Nro de ticket requeridos.'], 400); 
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $documents = $repository->GetAllTicketDocuments($ticketId, $nroTicket);
+
+        if ($documents === false) {
+            $this->response(['success' => false, 'message' => 'Error al obtener documentos.'], 500);
+            return;
+        }
+
+        $this->response(['success' => true, 'attachments' => $documents], 200);
+    }
+
+    public function handleStreamAttachment(){
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+        
+        if (!$ticketId || !$documentType) {
+            $this->response(['success' => false, 'message' => 'ID de ticket y tipo de documento requeridos.'], 400); 
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $attachment = $repository->getDocumentByType($ticketId, $documentType);
+
+        if (!$attachment) {
+             $this->response(['success' => false, 'message' => 'Documento no encontrado.'], 404);
+             return;
+        }
+
+        $filePath = $attachment['file_path'];
+        $mimeType = $attachment['mime_type'];
+        $originalFilename = $attachment['original_filename'];
+
+        if (file_exists($filePath)) {
+            if (ob_get_level()) ob_end_clean();
+            header('Content-Type: ' . $mimeType);
+            header('Content-Disposition: inline; filename="' . basename($originalFilename) . '"');
+            header('Content-Length: ' . filesize($filePath));
+            readfile($filePath);
+            exit();
+        } else {
+            $this->response(['success' => false, 'message' => 'Archivo no encontrado en el servidor.'], 404);
         }
     }
     
