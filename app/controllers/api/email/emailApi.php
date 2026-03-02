@@ -430,6 +430,10 @@ class email extends Controller {
             $ticketnro = $result_ticket['nro_ticket'] ?? 'N/A';
             $ticketpaymnet = $result_ticket['name_status_payment'];
             $ticketdomiciliacion = $result_ticket['name_status_domiciliacion'] ?? 'N/A';
+            
+            // IDs para validación de condiciones de envío
+            $id_status_payment = isset($result_ticket['id_status_payment']) ? (int)$result_ticket['id_status_payment'] : 0;
+            $id_failure = isset($result_ticket['id_failure']) ? (int)$result_ticket['id_failure'] : 0;
 
             // Obtener datos adicionales
             $resultgetid_ticket = $repository->GetTicketId($ticketnro);
@@ -493,6 +497,12 @@ class email extends Controller {
             //    -> Se envía a: Correos fijos de administración definidos en código 
             //       (domiciliacion.intelipunto@..., olga.rojas@..., neishy.tupano@...).
             //    -> Condición: SIEMPRE se envía.
+            //
+            // 5. CORREO ADMINISTRACIÓN (Status Pago / Verificación):
+            //    -> Se envía a: Jose Corro, Grace Herrera, Robert Marino, Oriana Diaz, 
+            //       Ivanna Alvarez, Arianna Reyes, Naberlis Flores, Ines Mata (IDs específicos).
+            //    -> Condición: NO se envía si el ticket tiene garantía (status 1 o 3) 
+            //       O si la falla es de tipo 9 o 12.
             // =========================================================================
 
             $results = [
@@ -571,13 +581,11 @@ class email extends Controller {
                     }
                 }
             }
-            
+
+            // (Bloque movido abajo para seguir el orden 1-5)
+
             // =========================================================================
             // 3. Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
-            // DESTINATARIO: El correo del técnico que realiza la gestión (según el $id_user)
-            // PLANTILLA: Operativa Técnica (getTechnicianEmailBody)
-            // CONDICIÓN: Siempre se envía.
-            // =========================================================================
             // Enviar correo a TÉCNICO (Jerarquía Operativa - Estilo Técnico)
             $result_tecnico = $repository->GetEmailUserDataById($id_user);
             error_log("DATOS TECNICO OBTENIDOS: " . ($result_tecnico ? 'SI' : 'NO'));
@@ -631,7 +639,6 @@ class email extends Controller {
             // PLANTILLA: Administrativa (getAdminEmailBodyForTicketCreation)
             // CONDICIÓN: Siempre se envía para revisar el estatus de domiciliación.
             // =========================================================================
-            // 6. Enviar correo a ADMINISTRACIÓN (Jerarquía Administrativa - Estilo de Notificación)
             $results['admin'] = false; // Inicializar
             // Correos específicos para domiciliación
             $emails_admin = [
@@ -684,8 +691,66 @@ class email extends Controller {
                 error_log("TODOS LOS CORREOS DE ADMINISTRACION ENVIADOS: " . $emails_enviados_admin . "/" . $total_emails_admin);
             } elseif ($emails_enviados_admin > 0) {
                 error_log("ALGUNOS CORREOS DE ADMINISTRACION ENVIADOS: " . $emails_enviados_admin . "/" . $total_emails_admin);
+            }
+            
+            // =========================================================================
+            // 5. Enviar correo a ADMINISTRACIÓN (Registro de Pagos)
+            // EXPLICACIÓN: Se ha incrementado el flujo de notificaciones para asegurar 
+            // que el equipo de Administración esté al tanto de cada ticket creado y 
+            // proceda con la carga de pagos de manera oportuna.
+            // DESTINATARIOS (Área de Administración): 
+            // - no Jose Corro, no Grace Herrera, no Robert Marino, Oriana Diaz, 
+            // - Ivanna Alvarez, Arianna Reyes, Naberlis Flores, Ines Mata
+            // IDs correspondientes: 46, 58, 59, 51, 52, 53, 54, 50
+            // PLANTILLA: Administrativa (getAdminEmailBodyForPaymentLoading)
+            // CONDICIÓN ESPECIAL: Solo se envía si NO es garantía (status 1 o 3) 
+            // y si la falla NO es de tipo 9 o 12.
+            // =========================================================================
+            
+            // Evaluar condiciones de envío
+            $isWarranty = in_array($id_status_payment, [1, 3]);
+            $isExcludedFailure = in_array($id_failure, [9, 12]);
+            
+            if (!$isWarranty && !$isExcludedFailure) {
+                $adminIds = [59, 51, 52, 53, 54];
+                $adminUsers = $repository->GetUsersByIds($adminIds);
+                
+                if (!empty($adminUsers)) {
+                    error_log("Enviando notificaciones a " . count($adminUsers) . " usuarios de Administración (Pago).");
+                    foreach ($adminUsers as $admin) {
+                        if (!empty($admin['user_email'])) {
+                            $email_admin = $admin['user_email'];
+                            $nombre_admin = $admin['full_name'] ?? 'Administrador';
+                            
+                            error_log("INTENTANDO ENVIAR CORREO A ADMINISTRACION (Pago): " . $email_admin);
+                            
+                            $subject_admin_payment = '📋 NOTIFICACIÓN ADMINISTRATIVA - Cargar Pago del Ticket';
+                            
+                            $body_admin_payment = $this->getAdminEmailBodyForPaymentLoading(
+                                $nombre_admin, 
+                                $nombre_tecnico_ticket, 
+                                $ticketnro, 
+                                $clientRif, 
+                                $clientName, 
+                                $ticketserial, 
+                                $ticketNivelFalla, 
+                                $name_failure, 
+                                $ticketfinished, 
+                                $ticketaccion, 
+                                $ticketstatus,
+                                $ticketprocess, 
+                                $ticketpaymnet,
+                                $ticketdomiciliacion
+                            );
+                            
+                            $results['administracion_pago'][] = $this->emailService->sendEmail($email_admin, $subject_admin_payment, $body_admin_payment, [], $embeddedImages);
+                        }
+                    }
+                } else {
+                    error_log("No se encontraron usuarios de Administración para notificar pago.");
+                }
             } else {
-                error_log("NINGUN CORREO DE ADMINISTRACION FUE ENVIADO");
+                error_log("SE OMITE el correo de Administración (Pago) por garantía (".$id_status_payment.") o tipo de falla (".$id_failure.").");
             }
 
             // 7. Responder según resultados
@@ -3050,8 +3115,291 @@ HTML;
 HTML;
     }
 
+    private function getAdminEmailBodyForPaymentLoading($nombre_area_admin, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketprocess, $ticketpaymnet, $ticketdomiciliacion) {
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        }
+        
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue,
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area_admin' => htmlspecialchars($nombre_area_admin),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
+        ];
+        $currentYear = date("Y");
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Notificación Administrativa - Cargar Pago</title>
+            <style>
+        body{
+            margin:0;
+            padding:30px 0;
+            background:#f8f9fa;
+            font-family:'Inter','Segoe UI',sans-serif;
+        }
+        .card{
+            background:#ffffff;
+            max-width:650px;
+            margin:0 auto;
+            border-radius:24px;
+            box-shadow:0 25px 80px rgba(0,0,0,0.12);
+            overflow:hidden;
+        }
+        .header{
+            background:linear-gradient(135deg,#2e59d9 0%,#4e73df 100%);
+            color:#ffffff;
+            padding:30px;
+            text-align:center;
+        }
+        .header h1{
+            margin:0;
+            font-size:26px;
+            letter-spacing:0.5px;
+        }
+        .header p{
+            margin:6px 0 0;
+            font-size:15px;
+            opacity:0.85;
+        }
+        .body{
+            padding:30px 34px 24px;
+        }
+        .hello{
+            text-align:center;
+            font-size:17px;
+            color:#0f172a;
+            margin-bottom:22px;
+        }
+        .hello span{
+            color:#4e73df;
+            font-weight:700;
+        }
+        .hero-badge{
+            background:#eaecf4;
+            border:1px solid rgba(78,115,223,0.2);
+            border-radius:18px;
+            padding:14px 18px;
+            text-align:center;
+            font-size:14px;
+            color:#4e73df;
+            margin-bottom:28px;
+        }
+        .detail{
+            display:flex;
+            align-items:center;
+            padding:14px 0;
+            border-bottom:1px solid #edf2f7;
+        }
+        .detail:last-child{
+            border-bottom:none;
+        }
+        .icon{
+            width:45px;
+            height:45px;
+            border-radius:14px;
+            background:#f8f9fc;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            margin-right:14px;
+            font-size:22px;
+        }
+        .label{
+            font-size:12px;
+            letter-spacing:0.6px;
+            text-transform:uppercase;
+            color:#94a3b8;
+            margin-bottom:3px;
+        }
+        .value{
+            font-size:16px;
+            color:#0f172a;
+            font-weight:600;
+        }
+        .value-serial{
+            font-family:"JetBrains Mono","Courier New",monospace;
+            font-size:15px;
+            background:#f1f5f9;
+            padding:4px 10px;
+            border-radius:8px;
+            color:#0f172a;
+        }
+        .status-row{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin:24px 0 6px;
+            width:100%;
+        }
+        .status-pill{
+            flex:1 1 calc(33.333% - 8px);
+            min-width:180px;
+            max-width:100%;
+            background:#eaecf4;
+            border-radius:18px;
+            padding:13px 18px;
+            display:flex;
+            flex-direction:column;
+            border:1px solid rgba(78,115,223,0.2);
+            box-sizing:border-box;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+        }
+        .status-pill strong{
+            color:#4e73df;
+            font-size:11px;
+            letter-spacing:0.5px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            margin-right:8%;
+        }
+        .status-pill span{
+            color:#0f172a;
+            font-weight:700;
+            font-size:11px;
+            word-wrap:break-word;
+            overflow-wrap:break-word;
+            line-height:1.4;
+            hyphens:auto;
+        }
+        .logo-container{
+            text-align:center;
+            margin:30px 0 20px;
+        }
+        .logo{
+            max-width:50%;
+            height:auto;
+            display:block;
+            margin:0 auto;
+            margin-top:-5px;
+            margin-top:-25%;
+        }
+        .footer{
+            padding:20px;
+            text-align:center;
+            font-size:12px;
+            color:#94a3b8;
+            background:#f8fafc;
+            margin-top:-17%;
+        }
+        @media(max-width:580px){
+            .body{padding:24px 20px;}
+            .detail{flex-direction:column; align-items:flex-start;}
+            .icon{margin-bottom:10px;}
+            .status-row{flex-direction:column;}
+            .status-pill{
+                flex:1 1 100%;
+                min-width:100%;
+                max-width:100%;
+            }
+            .hero-badge{font-size:13px;}
+        }
+            </style>
+        </head>
+        <body>
+    <div class="card">
+        <div class="header">
+            <h1>Cargar Pago del Ticket</h1>
+            <p>Notificación Administrativa</p>
+                </div>
+        <div class="body">
+            <div class="hello">Hola, <span>{$map['area_admin']}</span></div>
+            <div class="hero-badge">
+                El técnico <strong>{$map['tecnico']}</strong> ha registrado un nuevo ticket. Por favor, proceda a <strong>cargar el pago</strong> correspondiente.
+                    </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{$map['ticket']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{$map['serial']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
+                            </div>
+                            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Creación</div>
+                    <div class="value">{$map['fecha']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{$map['accion']}</div>
+                        </div>
+                    </div>
+                    
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{$map['status']}</span>
+                </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{$map['pago']}</span>
+                </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{$map['domi']}</span>
+                    </div>
+                </div>
+                
+            {$logoHtml}
+        </div>
+                <div class="footer">
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+</html>
+HTML;
+    }
+
     private function getAdminEmailBodyForTicketCreation($nombre_area_admin, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketprocess, $ticketpaymnet, $ticketdomiciliacion) {
-        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
         $nivelValue = htmlspecialchars($ticketNivelFalla);
         // Si el valor ya contiene "Nivel", extraer solo el número
         if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
