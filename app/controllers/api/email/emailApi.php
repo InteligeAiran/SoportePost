@@ -535,7 +535,7 @@ class email extends Controller {
             // Si es de Oriente, le enviamos un correo adicional al ID 1 (el Coordinador Nacional/Oriente)
             $userRegionData = $repository->GetRegionUser($id_user);
             
-            if ($userRegionData && isset($userRegionData['row']['desc_reg']) && strtolower(trim($userRegionData['row']['desc_reg'])) === 'oriente') {
+            if ($userRegionData && isset($userRegionData['row']['idreg']) && (int)$userRegionData['row']['idreg'] === 2) {
                 error_log("El usuario " . $id_user . " es de la región: Oriente. Buscando correo para enviar notificación extra al coordinador ID 1.");
                 $extraCoordinator = $repository->GetEmailUserDataById(9);
                 
