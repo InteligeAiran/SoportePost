@@ -413,5 +413,17 @@ class emailModel extends Model{
             return null;
         }
     }
+
+    public function GetUsersByIds($ids){
+        try{
+            $ids_string = implode(',', array_map('intval', $ids));
+            $sql = "SELECT id_user, CONCAT(name, ' ', surname) as full_name, email as user_email FROM users WHERE id_user IN ($ids_string)";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetUsersByIds: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
 }
 ?>

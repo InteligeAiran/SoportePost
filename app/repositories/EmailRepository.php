@@ -289,4 +289,17 @@ class EmailRepository
         $result = $this->model->GetTicketStaffDetails($nro_ticket, $payment_reference);
         return ($result && isset($result['row'])) ? $result['row'] : null;
     }
+
+    public function GetUsersByIds($ids){
+        $result = $this->model->GetUsersByIds($ids);
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        }
+        return [];
+    }
 }
