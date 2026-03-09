@@ -2258,6 +2258,44 @@ function SendDataFailure2(idStatusPayment) {
         });
         return; // Detener la ejecución
       }
+
+      // NUEVA VALIDACIÓN: Exoneración Estricta
+      const archivoExoneracionFinalValidacion = archivoExoneracionGuardado || window.archivoExoneracionPreservado || null;
+      
+      if (checkExoneracion && checkExoneracion.checked) {
+          // Si el checkbox de exoneración está marcado, DEBE haber tanto datos sincronizados como archivo
+          if (archivoExoneracionFinalValidacion && !window.nroExoneracionActual) {
+              Swal.fire({
+                  icon: "warning",
+                  title: "<strong style='font-size: 24px; color: #d9534f;'>Detalles de Exoneración Requeridos</strong>",
+                  html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                      <p style="font-size: 16px; color: #333; margin-bottom: 15px; line-height: 1.6;">
+                        Ha seleccionado/cargado una <strong>Exoneración</strong>, pero aún no ha registrado los detalles (tipo y porcentaje).
+                      </p>
+                      <p style="font-size: 15px; color: #666; margin-bottom: 20px;">
+                        Por favor, haga clic en el botón <span style="display: inline-block; padding: 2px 10px; background: orange; color: white; border-radius: 4px; font-weight: bold;">Detalles Exoneración</span> 
+                        para sincronizar los datos antes de guardar el ticket.
+                      </p>
+                    </div>
+                  `,
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#FF8C00"
+              });
+              return;
+          }
+
+          if (window.nroExoneracionActual && !archivoExoneracionFinalValidacion) {
+              Swal.fire({
+                  icon: "warning",
+                  title: "<strong style='font-size: 24px; color: #d9534f;'>Documento de Exoneración Requerido</strong>",
+                  text: "Ha sincronizado los datos de exoneración, pero falta adjuntar el documento correspondiente.",
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#FF8C00"
+              });
+              return;
+          }
+      }
     }
 
     // Crear FormData
@@ -2291,6 +2329,11 @@ function SendDataFailure2(idStatusPayment) {
       if (checkExoneracion && checkExoneracion.checked && archivoExoneracionFinal) {
         formData.append("archivoExoneracion", archivoExoneracionFinal);
         formData.append("documento_exoneracion", "Sí"); // NUEVO: Marcar que se cargó exoneración
+
+        // NUEVO: Agregar record_number de exoneración para archivos_adjuntos
+        if (window.nroExoneracionActual) {
+            formData.append("record_number_exoneracion", window.nroExoneracionActual);
+        }
       }
       
       // Usar archivoAnticipoActual que puede venir del parámetro, del preservado globalmente, o del DOM
@@ -2299,12 +2342,12 @@ function SendDataFailure2(idStatusPayment) {
         formData.append("archivoAnticipo", archivoAnticipoFinal);
         formData.append("documento_anticipo", "Sí"); // NUEVO: Marcar que se cargó anticipo
         
-        // NUEVO: Agregar record_number si existe el campo 'registro'
+        // NUEVO: Agregar record_number para Anticipo
         const registroInput = document.getElementById("registro");
         if (window.lastPaymentRecordNumber) {
-             formData.append("record_number", window.lastPaymentRecordNumber);
+             formData.append("record_number_anticipo", window.lastPaymentRecordNumber);
         } else if (registroInput && registroInput.value) {
-             formData.append("record_number", registroInput.value);
+             formData.append("record_number_anticipo", registroInput.value);
         }
       }
     }
@@ -9493,3 +9536,162 @@ function mostrarEstadoCola() {
 
 // Exponer función globalmente para debugging (opcional)
 window.mostrarEstadoCola = mostrarEstadoCola;
+
+/* =========================================================================
+   LÓGICA DE EXONERACIÓN (NUEVA)
+   ========================================================================= */
+
+document.addEventListener("DOMContentLoaded", function() {
+    const checkExoneracion = document.getElementById("checkExoneracion");
+    const porcentajeExo = document.getElementById("porcentaje_exoneracion");
+    const valPorcentaje = document.getElementById("val_porcentaje");
+    const btnGuardarExo = document.getElementById("btnGuardarDatosExoneracion");
+    
+    // 1. Abrir Modal al seleccionar Exoneración
+    if (checkExoneracion) {
+        checkExoneracion.addEventListener("change", function() {
+            if (this.checked) {
+                // Buscar el serial en los posibles IDs (serialSelect o serialSelect1)
+                let serial = "";
+                const ss = document.getElementById("serialSelect");
+                const ss1 = document.getElementById("serialSelect1");
+                
+                if (ss && ss.value) {
+                    serial = ss.value;
+                } else if (ss1 && ss1.value) {
+                    serial = ss1.value;
+                }
+                
+                // Generar Número de Exoneración: Exo[ID_CLIENTE]-[últimos 4 del serial]
+                let last4 = "0000";
+                if (serial && serial.length >= 4) {
+                    last4 = serial.substring(serial.length - 4);
+                } else if (serial) {
+                    last4 = serial.padStart(4, '0');
+                }
+                
+                const clientIdStr = globalIdClient ? globalIdClient.toString().padStart(2, '0') : "00";
+                const nroExo = "Exo" + clientIdStr + "-" + last4;
+                
+                const nroExoneracionDisplay = document.getElementById("nro_exoneracion_display");
+                if (nroExoneracionDisplay) nroExoneracionDisplay.value = nroExo;
+                
+                // Abrir Modal con Bootstrap 5
+                const modalEl = document.getElementById('modalAgregarExoneracion');
+                if (modalEl) {
+                  // Si ya existe una instancia guardada, usarla, si no crear una y guardarla globalmente
+                  if (!window.modalExoInstance) {
+                    window.modalExoInstance = new bootstrap.Modal(modalEl, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                  }
+
+                  window.modalExoInstance.show();
+
+                  const navbar = document.getElementById("sidenav-main");
+                  if (navbar) {
+                    navbar.style.display = "none";
+                  }
+                }
+            }
+        });
+    }
+    
+    // 2. Actualizar Valor del Porcentaje (Range)
+    if (porcentajeExo && valPorcentaje) {
+        porcentajeExo.addEventListener("input", function() {
+            valPorcentaje.textContent = this.value + "%";
+        });
+    }
+    
+    // 3. Botón Guardar (Sincronizar)
+    if (btnGuardarExo) {
+        btnGuardarExo.addEventListener("click", function() {
+            saveExoneracionData();
+        });
+    }
+});
+
+function saveExoneracionData() {
+    const tipoRadio = document.querySelector('input[name="tipo_exoneracion"]:checked');
+    const tipo = tipoRadio ? tipoRadio.value : 'Anticipo';
+    const porcentaje = document.getElementById("porcentaje_exoneracion").value;
+    const nroExoneracion = document.getElementById("nro_exoneracion_display").value;
+    // Buscar el serial en los posibles IDs
+    let serial = "";
+    const ss = document.getElementById("serialSelect");
+    const ss1 = document.getElementById("serialSelect1");
+    
+    if (ss && ss.value) {
+        serial = ss.value;
+    } else if (ss1 && ss1.value) {
+        serial = ss1.value;
+    }
+    
+    if (!serial) {
+        Swal.fire("Error", "Debe seleccionar un serial primero", "error");
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append("serial_pos", serial);
+    formData.append("tipo_exoneracion", tipo);
+    formData.append("porcentaje", porcentaje);
+    formData.append("nro_exoneracion", nroExoneracion);
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/SaveExoneracion";
+
+    fetch(apiUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "¡Sincronizado!",
+                text: "Los datos de exoneración se han vinculado correctamente. Ahora proceda a cargar el documento.",
+                icon: "success",
+                confirmButtonColor: "#FF8C00"
+            });
+            
+            // Cerrar el modal usando la instancia guardada de Bootstrap 5
+            if (window.modalExoInstance) {
+                window.modalExoInstance.hide();
+
+                 const navbar = document.getElementById("sidenav-main");
+                  if (navbar) {
+                    navbar.style.display = "inline-block";
+                  }
+            } else {
+                // Fallback por si acaso
+                const modalEl = document.getElementById('modalAgregarExoneracion');
+                if (modalEl) {
+                   const bsModal = bootstrap.Modal.getInstance(modalEl);
+                   if (bsModal) bsModal.hide();
+                }
+            }
+                        
+            // IMPORTANTE: Preservar el nro_exoneracion para enviarlo como record_number en la carga de archivo
+            window.nroExoneracionActual = nroExoneracion;
+            
+            // Actualizar status visual si existe
+            /*const exoStatus = document.getElementById("exoneracionStatus");
+            if (exoStatus) {
+                exoStatus.innerHTML = `<span class="badge bg-success" style="font-size: 0.85rem; padding: 8px 12px; border-radius: 6px;">
+                    <i class="bi bi-check-circle me-1"></i> Datos Sincronizados: ${nroExoneracion}
+                </span>`;
+            }*/
+        } else {
+            Swal.fire("Error", data.error || "No se pudieron guardar los datos", "error");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving exemption:", error);
+        Swal.fire("Error", "Error de servidor al guardar exoneración", "error");
+    });
+}

@@ -6816,10 +6816,125 @@ async function savePayment() {
     }
 
     // --- NUEVO: Validación de Presupuesto antes de Guardar ---
-    if (!validateEditBudget(true)) {
+    if (typeof validateEditBudget === 'function' && !validateEditBudget(true)) {
         return;
     }
     // ---------------------------------------------------------
+
+    let nroTicketForExo = document.getElementById("nro_ticket_pago") ? document.getElementById("nro_ticket_pago").value : '';
+    let serialPosForExo = document.getElementById("serialPosPago") ? document.getElementById("serialPosPago").value : '';
+    let montoRefActual = document.getElementById("montoRef") && document.getElementById("montoRef").value ? parseFloat(document.getElementById("montoRef").value) : 0;
+
+    const saveBtn = document.getElementById("btnGuardarDatosPago");
+    if (saveBtn) saveBtn.disabled = true;
+
+    Swal.fire({
+        title: 'Validando datos...', 
+        allowOutsideClick: false, 
+        target: document.getElementById('modalAgregarDatosPago'),
+        customClass: { container: 'payment-alert-modal' },
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        // Validacion de Exoneracion Parcial
+        const docTypeForStatus = document.getElementById("document_type_pago") ? document.getElementById("document_type_pago").value : '';
+        if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo' || docTypeForStatus === 'Pago' || docTypeForStatus === 'pago') {
+            const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${nroTicketForExo}&serial_pos=${serialPosForExo}`;
+            const exoResponse = await fetch(checkExoUrl);
+            const exoData = await exoResponse.json();
+
+            if (exoData.success && exoData.data) {
+                const porcentaje = parseInt(exoData.data.porcentaje);
+                if (porcentaje > 0 && porcentaje < 100) {
+                    const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                    const params = new URLSearchParams();
+                    params.append('action', 'GetTotalPaidByTicket');
+                    params.append('nro_ticket', nroTicketForExo);
+
+                    const payResponse = await fetch(checkPaymentUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+                    const payData = await payResponse.json();
+
+                    let totalPaidAnterior = parseFloat(payData.total_paid) || 0;
+                    let tipoExoData = exoData.data.tipo_exoneracion || 'Anticipo';
+                    
+                    let montoBase = 30; // Monto base estándar para Anticipo
+                    if (tipoExoData === 'Presupuesto') {
+                        // totalBudget ya viene en la respuesta de GetTotalPaidByTicket actualizada
+                        montoBase = parseFloat(payData.total_budget) || 0;
+                    }
+
+                    let montoExonerado = (montoBase * porcentaje) / 100;
+                    let montoNetoRequerido = montoBase - montoExonerado;
+                    
+                    // Solo validar el saldo si estamos insertando un nuevo pago O si el id de pago viejo existe pero vamos a registrar una correccion por rechazo
+                    let idAnterior = document.getElementById("id_payment_record_loading") ? document.getElementById("id_payment_record_loading").value : '';
+                    let verificarSuma = true; // Por defecto verifica
+
+                    if(idAnterior) {
+                        // En update necesitamos saber cuanto era lo viejo q ibamos a reemplazar
+                        const viejoMontoEle = document.getElementById("montoRefViejo_Hidden"); // Si tuvieramos viejo, restarlo
+                        // En este flujo el edit reemplaza, la API asume el total sin el rechazado.
+                    }
+
+                    if (totalPaidAnterior < montoNetoRequerido) {
+                        let totalConPagoActual = totalPaidAnterior + montoRefActual;
+
+                        if (totalConPagoActual < (montoNetoRequerido - 0.01)) {
+                        let montoRestante = montoNetoRequerido - totalPaidAnterior;
+                        let faltaPorPagar = montoNetoRequerido - totalConPagoActual;
+                        let tipoExoText = exoData.data.tipo_exoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+
+                        if (saveBtn) saveBtn.disabled = false;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '<span style="color: #003594;">Pago Insuficiente</span>',
+                            html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                    El ticket tiene una <strong>Exoneración Parcial</strong>. El pago que intenta registrar más lo ya pagado no cubre el saldo pendiente requerido.
+                                </p>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                    <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                    <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #003594;">
+                                    <span>Ya Pagado (Aprobado):</span><strong>$${totalPaidAnterior.toFixed(2)}</strong>
+                                </div>
+                                <hr style="border-color: #adb5bd;">
+                                <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.2em; color: #dc3545; font-weight: bold;">
+                                    <span>Saldo Pendiente Actual:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.1em; color: #ff9800; font-weight: bold;">
+                                    <span>Pago a registrar:</span><span>$${montoRefActual.toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                    <span>Faltaría por pagar:</span><span>$${Math.max(0, faltaPorPagar).toFixed(2)}</span>
+                                </div>
+                            </div>`,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                            width: '500px',
+                            target: document.getElementById('modalAgregarDatosPago'),
+                            customClass: { container: 'payment-alert-modal' }
+                        });
+                        return; // Detiene el guardado
+                    }
+                  } // Fin de verificación `totalPaidAnterior < montoNetoRequerido`
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error validando pagos para exoneración antes de guardar:", err);
+    }
 
     Swal.fire({
         title: 'Guardando datos...', 

@@ -2916,9 +2916,10 @@ function loadPaymentHistory(nroTicket) {
                 const response = JSON.parse(xhr.responseText);
                 // console.log("DEBUG loadPaymentHistory: Data parsed:", response);
                 
-                if (response.success && Array.isArray(response.payments) && response.payments.length > 0) {
-                    let rows = '';
-                    response.payments.forEach((payment, index) => {
+                    if (response.success && Array.isArray(response.payments)) {
+                        let rows = '';
+                        
+                        response.payments.forEach((payment, index) => {
                         // Format date
                         const paymentDate = payment.payment_date ? new Date(payment.payment_date).toLocaleDateString('es-VE') : 'N/A';
                         
@@ -3014,7 +3015,10 @@ function loadPaymentHistory(nroTicket) {
                         rows += `
                             <tr style="${rowStyle}">
                                 <td style="padding: 8px;">${index + 1}</td>
-                                <td style="padding: 8px;">${payment.record_number || 'N/A'}</td>
+                                <td style="padding: 8px;">
+                                    ${payment.record_number || 'N/A'}
+                                    ${payment.id_exoneracion ? '<br><span class="badge" style="background:rgba(102, 126, 234, 0.1); color:#667eea; border:1px solid #667eea; font-size:0.65rem; padding:2px 5px; margin-top:4px;">Anticipo</span>' : ''}
+                                </td>
                                 <td style="padding: 8px;">${paymentDate}</td>
                                 <td style="padding: 8px;">${payment.payment_method || 'N/A'}</td>
                                 <td style="padding: 8px;">${payment.currency || 'N/A'}</td>
@@ -3031,12 +3035,22 @@ function loadPaymentHistory(nroTicket) {
                             </tr>
                         `;
                     });
-                    tableBody.innerHTML = rows;
-                    console.log("DEBUG loadPaymentHistory: Tabla poblada con", response.payments.length, "registros.");
+                    if (rows === '') {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="11" class="text-center text-muted" style="padding: 20px;">
+                                    <i class="fas fa-info-circle me-1"></i>No hay pagos ni exoneraciones registradas
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tableBody.innerHTML = rows;
+                        console.log("DEBUG loadPaymentHistory: Tabla poblada con registros.");
+                    }
                 } else {
                     tableBody.innerHTML = `
                         <tr>
-                            <td colspan="10" class="text-center text-muted" style="padding: 20px;">
+                            <td colspan="11" class="text-center text-muted" style="padding: 20px;">
                                 <i class="fas fa-info-circle me-1"></i>No hay pagos registrados
                             </td>
                         </tr>
@@ -3117,46 +3131,93 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     const totalPaid = parseFloat(response.total_paid) || 0;
                     const totalBudget = parseFloat(response.total_budget) || 0;
                     const presupuestoDiferencia = parseFloat(response.presupuesto_diferencia) || 0;
+                    const exoneracionPorcentaje = parseFloat(response.exoneracion_porcentaje) || 0;
+                    const tipoExoneracion = response.tipo_exoneracion || 'Anticipo';
                     
-                    // Logic: Amount to use for calculation (total) vs display (diff)
-                    // If total budget is 0, fallback to passed parameter
-                    const budgetToUse = totalBudget > 0 ? totalBudget : (parseFloat(budgetAmount) || 0);
+                    // DETERMINAR EL MONTO PARA LAS TARJETAS (Header, Card Izquierda, Restante)
+                    // El usuario pide que sea NEUTRAL: solo mostramos el presupuesto real de la DB.
+                    let montoBaseTarjetas = totalBudget;
                     
-                    const remaining = Math.max(0, budgetToUse - totalPaid);
+                    // El "Restante" se calcula sobre el presupuesto real
+                    const remaining = Math.max(0, montoBaseTarjetas - totalPaid);
                     
-                    // Store in global variable for validation
+                    // Store in global variables for references and logic
                     window.currentTotalPaid = totalPaid;
-                    window.currentBudgetAmount = budgetToUse;
-                    window.currentDiferenciaBudget = presupuestoDiferencia;
-                    window.currentRemaining = remaining; // Added for dynamic header calculation
+                    window.currentBudgetAmount = totalBudget; // Official budget (0 if none)
+                    window.currentRemaining = remaining;
+                    window.currentExoneracionPorcentaje = exoneracionPorcentaje;
                     
-                    // Update display
+                    // Bandera para permitir carga de Anticipo ($30) aunque el presupuesto sea 0
+                    window.isAnticipoPhase = (totalBudget <= 0 && exoneracionPorcentaje > 0);
+                    window.nominalAnticipoBase = 30.00; // Base nominal para el anticipo info
+                    
+                    // --- ACTUALIZACIÓN DE UI (TARJETAS) ---
+                    
+                    // 1. Tarjeta Izquierda: MONTO PRESUPUESTO / ANTICIPO
+                    const montoPresupuestoDisplay = document.getElementById("montoPresupuestoDisplay");
+                    const labelPresupuesto = document.getElementById("labelMontoPresupuesto");
+                    
+                    if (montoPresupuestoDisplay) {
+                        montoPresupuestoDisplay.textContent = `$${montoBaseTarjetas.toFixed(2)}`;
+                        if (labelPresupuesto) {
+                            labelPresupuesto.textContent = "Monto Presupuesto";
+                        }
+                    }
+
+                    // 2. Tarjeta Derecha: MONTO ABONADO Y RESTANTE
                     montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
                     montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
                     
-                    // ACTUALIZACIÓN: Actualizar Card de 'Monto del Presupuesto'
-                    const montoPresupuestoDisplay = document.getElementById("montoPresupuestoDisplay");
-                    if (montoPresupuestoDisplay) {
-                        // User requested 'monto del taller' (Total) instead of difference
-                        montoPresupuestoDisplay.textContent = `$${totalBudget.toFixed(2)}`;
+                    // 3. SECCIÓN DEDICADA DE EXONERACIÓN (INFORMATIVA)
+                    const exonerationSection = document.getElementById("exonerationSection");
+                    const exonerationDetailText = document.getElementById("exonerationDetailText");
+                    const exonerationAmountText = document.getElementById("exonerationAmountText");
+                    
+                    if (exoneracionPorcentaje > 0 && exonerationSection) {
+                        exonerationSection.style.display = "block";
+                        if (exonerationDetailText) {
+                            // Base para el cálculo informativo: Dinámico basado en tipo_exoneracion
+                            let baseParaInfo = window.nominalAnticipoBase; // Default
+                            if (tipoExoneracion === 'Presupuesto') {
+                                baseParaInfo = totalBudget > 0 ? totalBudget : 0;
+                            }
+                            
+                            const descuentoInfo = (baseParaInfo * exoneracionPorcentaje) / 100;
+                            const montoNetoInformativo = baseParaInfo - descuentoInfo;
+                            
+                            exonerationDetailText.innerHTML = `
+                                <span style="font-weight: 500;">Base (${tipoExoneracion}):</span> $${baseParaInfo.toFixed(2)} | 
+                                <span style="font-weight: 500;">Exoneración:</span> ${exoneracionPorcentaje}% | 
+                                <span style="font-weight: 500;">Neto:</span> $${montoNetoInformativo.toFixed(2)}
+                            `;
+                            
+                            if (exonerationAmountText) {
+                                exonerationAmountText.textContent = `Ahorro -$${descuentoInfo.toFixed(2)}`;
+                            }
+                        }
+                    } else if (exonerationSection) {
+                        exonerationSection.style.display = "none";
                     }
                     
-                    // ACTUALIZACIÓN: Actualizar también el card del encabezado "Monto a Pagar" con el saldo restante
+                    // 4. Encabezado "Monto a Pagar" (ID: montoEquipo)
+                    // Para el administrativo, mostramos el monto total nominal (ej. $30.00)
+                    // sin restar automáticamente la exoneración.
                     const montoEquipoHeader = document.getElementById("montoEquipo");
                     if (montoEquipoHeader) {
-                        montoEquipoHeader.textContent = `$${remaining.toFixed(2)}`;
+                        montoEquipoHeader.textContent = `$${montoBaseTarjetas.toFixed(2)}`;
                     }
                     
                     // Button control logic
                     const btnGuardarPago = document.getElementById("btnGuardarPagoPresupuesto");
                     if (btnGuardarPago) {
-                        // Only block if budget is set (>0) AND remaining is 0 or less
-                        if (budgetToUse > 0 && remaining <= 0.00) {
+                        // Solo bloqueamos si hay presupuesto real (>0) Y el restante es 0
+                        // Si estamos en fase Anticipo (budget 0), permitimos cargar pagos siempre.
+                        if (totalBudget > 0 && remaining <= 0.001) {
                             btnGuardarPago.disabled = true;
                             btnGuardarPago.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pagado Completo';
                             btnGuardarPago.classList.remove('btn-primary');
                             btnGuardarPago.classList.add('btn-secondary');
-                            btnGuardarPago.style.background = '#6c757d'; // Force gray override
+                            btnGuardarPago.style.background = '#6c757d'; 
                         } else {
                             btnGuardarPago.disabled = false;
                             btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
@@ -3166,7 +3227,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                         }
                     }
                     
-                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Total:", budgetToUse, "Restante:", remaining);
+                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Total:", montoBaseTarjetas, "Restante:", remaining);
                 } else {
                     montoAbonadoElement.textContent = "$0.00";
                     montoRestanteElement.textContent = `Restante: $${(parseFloat(budgetAmount) || 0).toFixed(2)}`;
@@ -3615,15 +3676,20 @@ function validateBudget(showModal = false) {
     const inputAmount = parseFloat(montoRefInput.value) || 0;
     const remaining = window.currentRemaining || 0;
     
-    // Safety check: if remaining is 0 (Fully Paid), keep it disabled
-    if (remaining <= 0.001) {
-         if (btnGuardar) {
-             btnGuardar.disabled = true;
-         }
+    // Safety check: if remaining is 0 (Fully Paid) AND we have a budget, keep it disabled
+    if (window.currentBudgetAmount > 0 && remaining <= 0.001) {
+         if (btnGuardar) btnGuardar.disabled = true;
          return;
     }
     
-    const isOverBudget = inputAmount > (remaining + 0.001);
+    // Lógica de Bloqueo "Sin Restricciones" para Anticipos
+    // Si estamos en fase Anticipo (budget 0), permitimos hasta $30 nominales
+    let isOverBudget = false;
+    if (window.isAnticipoPhase) {
+        isOverBudget = inputAmount > (window.nominalAnticipoBase + 0.001);
+    } else if (window.currentBudgetAmount > 0) {
+        isOverBudget = inputAmount > (remaining + 0.001);
+    }
 
     if (isOverBudget) {
         // DISABLE BUTTON

@@ -875,12 +875,11 @@ function mi_navbar() {}
                             <input type="hidden" id="pago_serial_pos_hidden" name="serial_pos">
                          
                             <!-- MONTO ABONADO SECTION -->
-                            <!-- MONTO ABONADO SECTION -->
                             <div class="row mb-3">
                                 <!-- Card: Monto del Presupuesto -->
                                 <div class="col-6">
                                     <div class="payment-summary-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3); height: 100%;">
-                                        <h6 style="color: white; margin-bottom: 10px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Presupuesto</h6>
+                                        <h6 id="labelMontoPresupuesto" style="color: white; margin-bottom: 10px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Presupuesto</h6>
                                         <h3 id="montoPresupuestoDisplay" style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0;">$0.00</h3>
                                     </div>
                                 </div>
@@ -891,6 +890,28 @@ function mi_navbar() {}
                                         <h6 style="color: white; margin-bottom: 10px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Monto Abonado</h6>
                                         <h3 id="montoAbonado" style="color: white; font-size: 1.8rem; font-weight: 700; margin: 0;">$0.00</h3>
                                         <small id="montoRestante" style="color: rgba(255, 255, 255, 0.9); font-size: 0.75rem; display: block; margin-top: 8px;">Restante: $0.00</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SECCIÓN DEDICADA PARA EXONERACIÓN (INFORMATIVA) -->
+                            <div class="row mb-3" id="exonerationSection" style="display: none;">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm" style="background: rgba(255, 81, 47, 0.05); border: 1px dashed #FF512F !important; border-radius: 12px; padding: 10px 15px;">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <div style="background: #FF512F; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                                                    <i class="fas fa-percent" style="font-size: 0.9rem;"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px;">Desglose de Exoneración</h6>
+                                                    <p id="exonerationDetailText" class="mb-0 text-muted" style="font-size: 0.85rem;"></p>
+                                                </div>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge" style="background: #FF512F; color: white; padding: 6px 12px; border-radius: 6px; font-weight: 600;" id="exonerationAmountText"></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

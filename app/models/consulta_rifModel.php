@@ -798,23 +798,19 @@ class consulta_rifModel extends Model
             $isSinLlavesDukpt = ($id_failure === 12);
             $isFallaSinPago = $isActualizacionSoftware || $isSinLlavesDukpt;
 
-            if (!empty($envio)) {
-                $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $envio, 'envio_stored', '/path/to/envio', 'application/pdf', 1024, 'Envio');
-            }
 
             if (!$isFallaSinPago) {
-                if (!empty($exoneracion)) {
-                    $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $exoneracion, 'exoneracion_stored', '/path/to/exoneracion', 'application/pdf', 1024, 'Exoneracion');
-                }
-                if (!empty($anticipo)) {
-                    $this->saveArchivoAdjunto($idTicketCreado, $Nr_ticket, $id_user, $anticipo, 'anticipo_stored', '/path/to/anticipo', 'application/pdf', 1024, 'Anticipo');
-                }
-
                 $paymentTransferResult = $this->TransferPaymentFromTempToMain($serial, $Nr_ticket);
                 if ($paymentTransferResult !== false && $paymentTransferResult !== true) {
                     error_log("Pago transferido exitosamente dentro de SaveDataFalla2. ID: " . $paymentTransferResult);
                 } elseif ($paymentTransferResult === false) {
                     error_log("Advertencia: No se pudo transferir el pago temporal para el serial: " . $serial);
+                }
+
+                // NUEVO: Transferir Exoneración si existe en la temporal
+                $exoneracionTransferResult = $this->TransferExoneracionFromTempToMain($serial, $Nr_ticket);
+                if ($exoneracionTransferResult) {
+                    error_log("Exoneración transferida exitosamente dentro de SaveDataFalla2 para el serial: " . $serial);
                 }
             } else {
                 $fallaName = $isActualizacionSoftware ? "Actualización de Software (id_failure = 9)" : "Sin Llaves/Dukpt Vacío (id_failure = 12)";
@@ -1359,6 +1355,23 @@ class consulta_rifModel extends Model
 
         }
 
+    }
+
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sql = "SELECT porcentaje, tipo_exoneracion FROM exoneraciones 
+                    WHERE nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket) . " 
+                    AND serial_pos = " . pg_escape_literal($db_conn, $serial_pos) . " 
+                    AND tipo_exoneracion = 'Anticipo' 
+                    ORDER BY id_exoneracion DESC LIMIT 1";
+
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error in GetExoneracionPorcentaje: " . $e->getMessage());
+            return false;
+        }
     }
 
     public function GetTecnico2()
@@ -2642,10 +2655,6 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         return ['success' => false, 'message' => 'Ocurrió un error inesperado al procesar la solicitud.'];
     }
 }
-
-
-
-
 
 
     public function GetLastUserTicketInfo($id_user){
@@ -4376,141 +4385,83 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
     public function UpdateStatusToReceiveInRosal($id_ticket, $id_user){
+        try {
+            $id_accion_ticket = 14;
 
-         try {
+            // ========================================================================
+            // 1. TOMAR LA "FOTO" DEL PASADO (Leer estatus antes de mutar la base de datos)
+            // ========================================================================
 
-                $id_accion_ticket = 14;
+            // --- A. Leer Estatus Lab ---
+            $id_status_lab = 0; // Valor por defecto igual al original
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
+            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $row_lab = pg_fetch_assoc($status_lab_result);
+                $id_status_lab = $row_lab['id_status_lab'] !== null ? (int)$row_lab['id_status_lab'] : 'NULL';
+            }
 
+            // --- B. Leer Estatus Payment ---
+            $id_new_status_payment = 'NULL'; 
+            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
+            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                $status_payment_data = pg_fetch_assoc($status_payment_status_result);
+                $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
+            }
 
+            // --- C. Leer Estatus Domiciliacion ---
+            $new_status_domiciliacion = 'NULL'; 
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
+            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result);
+                $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
+            }
 
-                $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket.", date_send_torosal_fromlab = NOW(), confirmrosal = TRUE WHERE id_ticket = ".$id_ticket.";";
+            // --- D. Leer Coordinador ---
+            $id_coordinador = null;
+            $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                pg_free_result($resultcoordinador);
+            }
 
-                $result = Model::getResult($sql, $this->db);
+            // ========================================================================
+            // 2. EJECUTAR EL UPDATE (Acción 14)
+            // ========================================================================
+            $sql = "UPDATE tickets SET id_accion_ticket = ".(int)$id_accion_ticket.", date_send_torosal_fromlab = NOW(), confirmrosal = TRUE WHERE id_ticket = ".$id_ticket.";";
+            $result = Model::getResult($sql, $this->db);
 
-                if ($result) {
-
-
-
-                    $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". $id_ticket. ";";
-
-                    $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-
-
-                    if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-
-                        $row = [];
-
-                        for ($i = 0; $i < pg_num_rows($status_lab_result); $i++) {
-
-                            $row[] = pg_fetch_assoc($status_lab_result, $i);
-
-                        }
-
-                        $id_status_lab = $row[0]['id_status_lab'] ?? null;
-
-                    } else {
-
-                        $id_status_lab = 0;
-
-                    }
-
-
-
-                $id_new_status_payment = 'NULL'; 
-
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . $id_ticket . ";";
-
-                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-
-                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-
-                    $status_payment_data = pg_fetch_assoc($status_payment_status_result, 0);
-
-                    $id_new_status_payment = $status_payment_data['id_status_payment'] !== null ? (int)$status_payment_data['id_status_payment'] : 'NULL';
-
-                }
-
-
-
-                $new_status_domiciliacion = 'NULL'; 
-
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . $id_ticket . ";";
-
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-
-                    $domiciliacion_data = pg_fetch_assoc($status_domiciliacion_result, 0);
-
-                    $new_status_domiciliacion = $domiciliacion_data['id_status_domiciliacion'] !== null ? (int)$domiciliacion_data['id_status_domiciliacion'] : 'NULL';
-
-                }
-
-
-
-                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
-
-                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
-                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
-                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
-                        pg_free_result($resultcoordinador);
-
-                    }else{ 
-
-                        $id_coordinador = null;
-
-                    }
-
-
-
-
-
-                    $sqlInsertHistory = sprintf(
-
+            // ========================================================================
+            // 3. GUARDAR EL HISTORIAL
+            // ========================================================================
+            if ($result) {
+                $sqlInsertHistory = sprintf(
                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
-                    (int)$id_ticket, // Se asume que $id_ticket ya es un entero válido o se castea
-
-                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
-
-                    (int)2, // Usamos la acción específica para el historial
-
-                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
-
+                    (int)$id_ticket,
+                    (int)$id_user,
+                    2, 
+                    (int)$id_accion_ticket,
                     $id_status_lab,
-
                     $id_new_status_payment,
-
                     $new_status_domiciliacion,
-
                     (int)$id_coordinador
-
                 );
-
-
 
                 $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
-
-
-                return array('save_result' => $result, 'history_result' => $sqlInsertHistory);
-
+                // CORRECCIÓN: Antes devolvías la variable $sqlInsertHistory (el texto puro), 
+                // ahora devuelve $resultsqlInsertHistory (el resultado de la base de datos).
+                return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);
             }
 
         } catch (Throwable $e) {
-
             // Log the error (e.g., error_log($e->getMessage());)
-
             return false; // Return false on error
-
         }
-
     }
 
     public function GetRegionsByTechnician($id_user){
@@ -4717,467 +4668,233 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
-    public function SendToRegion($ticketId, $id_user, $componentes_array, $serial, $modulo) {
-
+   public function SendToRegion($ticketId, $id_user, $componentes_array, $serial, $modulo) {
         try {
-
             $id_accion_ticket = 18;
-
             $modulo_insertcolumn = $modulo;
-
-            
             
             // 1. Inicia una transacción
-
             pg_query($this->db->getConnection(), "BEGIN");
 
+            // ========================================================================
+            // 2. TOMAR LA "FOTO" DEL PASADO (Leer TODOS los estatus una sola vez al inicio)
+            // ========================================================================
+            
+            // --- A. Leer Estatus Ticket ---
+            $id_status_ticket = 0;
+            $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+            if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') ?? 0;
+            }
 
+            // --- B. Leer Estatus Lab ---
+            $id_status_lab = 0;
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+            }
 
-            // 2. Si hay componentes seleccionados, primero crea el registro de "Actualización de Componentes"
+            // --- C. Leer Estatus Payment ---
+            $id_new_status_payment = 'NULL';
+            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                $val = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment');
+                $id_new_status_payment = $val !== null ? (int)$val : 'NULL';
+            }
 
+            // --- D. Leer Estatus Domiciliacion ---
+            $new_status_domiciliacion = 'NULL';
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$ticketId . ";";
+            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $val = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion');
+                $new_status_domiciliacion = $val !== null ? (int)$val : 'NULL';
+            }
+
+            // --- E. Leer Coordinador ---
+            $id_coordinador = null;
+            $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                pg_free_result($resultcoordinador);
+            }
+
+            // ========================================================================
+            // 3. ACTUALIZACIÓN DE COMPONENTES (Si aplica)
+            // ========================================================================
             if (is_array($componentes_array) && !empty($componentes_array)) {
-
-                // Obtiene estados para el historial de componentes
-
-                $id_status_ticket = 0;
-
-                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$ticketId . ";";
-
-                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
-
-                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
-
-                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') ?? 0;
-
-                }
-
-                
-                
-                $id_status_lab = 0;
-
-                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$ticketId . ";";
-
-                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-
-                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
-
-                }
-
-
-
-                $id_new_status_payment = 'NULL';
-
-                $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$ticketId . ";";
-
-                $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-
-                if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-
-                    $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
-
-                }
-
-
-
-                $new_status_domiciliacion = 'NULL';
-
-                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$ticketId . ";";
-
-                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-
-                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-
-                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
-
-                }
-
-
-
-                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
-
-                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
-                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
-                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
-                        pg_free_result($resultcoordinador);
-
-                    }else{ 
-
-                        $id_coordinador = null;
-
-                    }
-
-
-
-                // Inserta el historial de "Actualización de Componentes" (id_accion_ticket = 20)
-
+                // Inserta el historial usando las variables del Paso 2
                 $sqlInsertComponentHistory = sprintf(
-
                     "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
                     (int)$ticketId,
-
                     (int)$id_user,
-
                     (int)$id_status_ticket,
-
-                    (int)20, // id_accion_ticket para "Actualización de Componentes"
-
+                    20, // id_accion_ticket para "Actualización de Componentes"
                     $id_status_lab,
-
                     $id_new_status_payment,
-
                     $new_status_domiciliacion,
-
-                    $id_coordinador
-
+                    (int)$id_coordinador
                 );
-
+                
                 $resultComponentHistory = pg_query($this->db->getConnection(), $sqlInsertComponentHistory);
-
-                
-                
                 if ($resultComponentHistory === false) {
-
                     pg_query($this->db->getConnection(), "ROLLBACK");
-
                     return false;
-
                 }
 
-
-
-                // Ahora inserta los componentes en tickets_componets
-
+                // Inserta los componentes
                 foreach ($componentes_array as $comp_id) {
-
                     $sqlcomponents = "INSERT INTO tickets_componets (serial_pos, id_ticket, id_components, id_user_carga, component_insert, modulo_insert) 
-
-                                    VALUES ('" . pg_escape_string($this->db->getConnection(), $serial) . "', " . (int)$ticketId . ", " . (int)$comp_id . ", " . (int)$id_user . ", NOW(), '" . pg_escape_string($this->db->getConnection(), $modulo_insertcolumn) . "');";
-
-
+                                      VALUES ('" . pg_escape_string($this->db->getConnection(), $serial) . "', " . (int)$ticketId . ", " . (int)$comp_id . ", " . (int)$id_user . ", NOW(), '" . pg_escape_string($this->db->getConnection(), $modulo_insertcolumn) . "');";
 
                     $resultcomponent = pg_query($this->db->getConnection(), $sqlcomponents);
-
-                    
-                    
                     if ($resultcomponent === false) {
-
                         pg_query($this->db->getConnection(), "ROLLBACK");
-
                         return false;
-
                     }
-
                 }
-
             }
 
-
-
-            // 3. Actualiza el ticket
-
+            // ========================================================================
+            // 4. ACTUALIZAR EL TICKET (MUTACIÓN - Dispara el Trigger en BD)
+            // ========================================================================
             $sql = "UPDATE tickets SET id_accion_ticket = " . (int)$id_accion_ticket . ", date_sentRegion = NOW() WHERE id_ticket = " . (int)$ticketId . ";";
-
             $result = Model::getResult($sql, $this->db);
-
-            
-            
             if (!$result) {
-
                 pg_query($this->db->getConnection(), "ROLLBACK");
-
                 return false;
-
             }
 
-
-
-            // 4. Se obtienen los estados para el historial de "En espera de confirmar recibido en Región"
-
-            $id_status_lab = 0;
-
-            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$ticketId . ";";
-
-            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-
-                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
-
-            }
-
-
-
-            $id_new_status_payment = 'NULL';
-
-            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$ticketId . ";";
-
-            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-
-            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-
-                $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
-
-            }
-
-
-
-            $new_status_domiciliacion = 'NULL';
-
-            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$ticketId . ";";
-
-            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-
-            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-
-                $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
-
-            }
-
-
-
-             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
-
-                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
-                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
-                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
-                        pg_free_result($resultcoordinador);
-
-                    }else{ 
-
-                        $id_coordinador = null;
-
-                    }
-            
-            
-
-            // 5. Se inserta en el historial el estado "En espera de confirmar recibido en Región"
-
+            // ========================================================================
+            // 5. GUARDAR HISTORIAL PRINCIPAL (Reciclando la "foto" del Paso 2)
+            // ========================================================================
             $sqlInsertHistory = sprintf(
-
                 "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
                 (int)$ticketId,
-
                 (int)$id_user,
-
-                (int)2, // id_status_ticket (debe ser el valor correcto para el estado actual)
-
-                (int)$id_accion_ticket, // 18 para "En espera de confirmar recibido en Región"
-
+                2, // id_status_ticket fijo
+                (int)$id_accion_ticket, // 18 
                 $id_status_lab,
-
                 $id_new_status_payment,
-
                 $new_status_domiciliacion,
-
-                $id_coordinador // id_coordinador
-
+                (int)$id_coordinador
             );
-
             $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
-
-            
             
             if ($resultsqlInsertHistory === false) {
-
                 pg_query($this->db->getConnection(), "ROLLBACK");
-
                 return false;
-
             }
 
-
-
-            // 6. Si todo ha sido exitoso, confirma la transacción
-
+            // 6. Confirmar transacción
             pg_query($this->db->getConnection(), "COMMIT");
-
-            
-            
             return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'component_result' => true);
 
-
-
         } catch (Throwable $e) {
-
-            // En caso de cualquier error, revierte la transacción
-
             error_log("Error in SendToRegion: " . $e->getMessage());
-
             pg_query($this->db->getConnection(), "ROLLBACK");
-
             return false;
-
         }
-
     }
 
 
 
     public function SendToRegionWithoutComponent($ticketId, $id_user){
-
         try{
-
             $id_accion_ticket = 18;
 
             // 1. Inicia una transacción
-
             pg_query($this->db->getConnection(), "BEGIN");
 
-            // 2. Actualiza el ticket
+            // ========================================================================
+            // 2. TOMAR LA "FOTO" DEL PASADO (Leer estatus actuales ANTES de mutar)
+            // ========================================================================
+            
+            // --- A. Leer Estatus Lab ---
+            $id_status_lab = 0;
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$ticketId. ";";
+            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+            }
 
+            // --- B. Leer Estatus Payment ---
+            $id_new_status_payment = 'NULL';
+            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = ". (int)$ticketId. ";";
+            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
+            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
+                $val = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment');
+                $id_new_status_payment = $val !== null ? (int)$val : 'NULL';
+            }
+
+            // --- C. Leer Estatus Domiciliacion ---
+            $new_status_domiciliacion = 'NULL';
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$ticketId. ";";
+            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $val = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion');
+                $new_status_domiciliacion = $val !== null ? (int)$val : 'NULL';
+            }
+
+            // --- D. Leer Coordinador ---
+            $id_coordinador = null;
+            $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
+            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                pg_free_result($resultcoordinador);
+            }
+
+            // ========================================================================
+            // 3. ACTUALIZAR EL TICKET (Esto puede disparar Triggers en PostgreSQL)
+            // ========================================================================
             $sql = "UPDATE tickets SET id_accion_ticket = ". (int)$id_accion_ticket. ", date_sentRegion = NOW() WHERE id_ticket = ". (int)$ticketId. ";";
-
             $result = Model::getResult($sql, $this->db);
 
-
-
             if (!$result) {
-
                 pg_query($this->db->getConnection(), "ROLLBACK");
-
                 return false;
-
             }
 
-
-
-            $id_status_lab = 0;
-
-            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$ticketId. ";";
-
-            $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
-
-            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
-
-                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
-
-            }
-
-
-
-            $id_new_status_payment = 'NULL';
-
-            $status_payment_status_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = ". (int)$ticketId. ";";
-
-            $status_payment_status_result = pg_query($this->db->getConnection(), $status_payment_status_sql);
-
-            if ($status_payment_status_result && pg_num_rows($status_payment_status_result) > 0) {
-
-                $id_new_status_payment = pg_fetch_result($status_payment_status_result, 0, 'id_status_payment')!== null? (int)pg_fetch_result($status_payment_status_result, 0, 'id_status_payment') : 'NULL';
-
-            }
-
-
-
-            $new_status_domiciliacion = 'NULL';
-
-            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$ticketId. ";";
-
-            $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
-
-            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
-
-                $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
-
-            }
-
-
-
-             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
-
-                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
-                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
-                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
-                        pg_free_result($resultcoordinador);
-
-                    }else{ 
-
-                        $id_coordinador = null;
-
-                    }
-
-
-
+            // ========================================================================
+            // 4. GUARDAR HISTORIAL (Usando la foto del Paso 2)
+            // ========================================================================
             $sqlInsertHistory = sprintf(
-
                 "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
                 (int)$ticketId,
-
                 (int)$id_user,
-
                 (int)2,
-
                 (int)$id_accion_ticket,
-
                 $id_status_lab,
-
                 $id_new_status_payment,
-
                 $new_status_domiciliacion,
-
-                $id_coordinador
-
+                (int)$id_coordinador
             );
-
-
 
             $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
 
-
-
             if (!$resultsqlInsertHistory) {
-
                 pg_query($this->db->getConnection(), "ROLLBACK");
-
                 return false;
-
             }
 
-
-
-            // 3. ¡Agrega esta línea para confirmar la transacción!
-
+            // 5. ¡Agrega esta línea para confirmar la transacción!
             pg_query($this->db->getConnection(), "COMMIT");
-
-            
             
             return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory);
 
         } catch (Throwable $e) {
-
             // Log the error (e.g., error_log($e->getMessage());)
-
             pg_query($this->db->getConnection(), "ROLLBACK");
-
             return false; // Return false on error
-
         } 
-
     }
-
-
-
-
 
     public function CheckTicketEnProceso($serial){
 
@@ -5206,8 +4923,6 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
 
     }
-
-
 
     public function HasComponents($ticketId){
 
@@ -7058,10 +6773,13 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $sql = "SELECT 
                         COALESCE(SUM(pr.reference_amount), 0) as total_paid,
                         COALESCE((SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as total_budget,
-                        COALESCE((SELECT diferencia_usd FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as presupuesto_diferencia
+                        COALESCE((SELECT diferencia_usd FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as presupuesto_diferencia,
+                        COALESCE((SELECT porcentaje FROM exoneraciones WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_exoneracion DESC LIMIT 1), 0) as exoneracion_porcentaje,
+                        (SELECT tipo_exoneracion FROM exoneraciones WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_exoneracion DESC LIMIT 1) as tipo_exoneracion
                     FROM payment_records pr
                     WHERE pr.nro_ticket = " . $escaped_nro_ticket . "
                     AND (pr.is_substituted IS NULL OR pr.is_substituted = FALSE)
+                    AND pr.id_exoneracion IS NOT NULL
                     AND pr.payment_status IN (1, 3, 4, 5, 6, 7, 17)";
             
             $result = Model::getResult($sql, $this->db);
@@ -7071,7 +6789,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 return [
                     'total_paid' => floatval($row['total_paid']),
                     'total_budget' => floatval($row['total_budget']),
-                    'presupuesto_diferencia' => floatval($row['presupuesto_diferencia'])
+                    'presupuesto_diferencia' => floatval($row['presupuesto_diferencia']),
+                    'exoneracion_porcentaje' => floatval($row['exoneracion_porcentaje']),
+                    'tipo_exoneracion' => $row['tipo_exoneracion']
                 ];
             }
             
@@ -7131,6 +6851,16 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $payment_status = $this->determineStatusPayment($nro_ticket_val, 'Anticipo');
         }
 
+            // AUTO-LINK EXONERACION (Traceability)
+            // We look for the most recent exoneration for this ticket
+            $linkSql = "SELECT id_exoneracion FROM exoneraciones WHERE nro_ticket = $nro_ticket ORDER BY id_exoneracion DESC LIMIT 1";
+            $linkResult = Model::getResult($linkSql, $this->db);
+            $id_exoneracion_val = 'NULL';
+            if ($linkResult && $linkResult['numRows'] > 0) {
+                $linkRow = pg_fetch_assoc($linkResult['query'], 0);
+                $id_exoneracion_val = intval($linkRow['id_exoneracion']);
+            }
+
             // CONFIRMATION NUMBER defaults to FALSE
             $confirmation_number = 'false';
 
@@ -7141,7 +6871,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 observations, record_number, loadpayment_date, payment_status,
                 confirmation_number,
                 destino_rif_tipo, destino_rif_numero, destino_telefono,
-                origen_rif_tipo, origen_rif_numero, origen_telefono
+                origen_rif_tipo, origen_rif_numero, origen_telefono,
+                id_exoneracion
             ) VALUES (
                 $nro_ticket, $serial_pos, $user_loader, $payment_date,
                 $origen_bank, $destination_bank, $payment_method, $currency,
@@ -7149,7 +6880,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $observations, $record_number, NOW(), $payment_status,
                 $confirmation_number,
                 $destino_rif_tipo, $destino_rif_numero, $destino_telefono,
-                $origen_rif_tipo, $origen_rif_numero, $origen_telefono
+                $origen_rif_tipo, $origen_rif_numero, $origen_telefono,
+                $id_exoneracion_val
             ) RETURNING id_payment_record";
 
             $result = Model::getResult($sql, $this->db);
@@ -7191,6 +6923,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                         p.payment_status,
                         p.serial_pos,
                         p.nro_ticket,
+                        p.id_exoneracion,
                         a.file_path,
                         a.file_path as receipt_path,
                         a.mime_type as receipt_mime,
@@ -7560,6 +7293,112 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
         } catch (Throwable $e) {
             error_log("Error en TransferPaymentFromTempToMain: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene el total de exoneraciones realizadas para un serial específico.
+     * Útil para generar el correlativo (ej. Exo02-XXXX).
+     */
+    public function GetExonerationCount($serial_pos) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sqlSelect = "SELECT COUNT(*) as total FROM exoneraciones WHERE serial_pos = " . pg_escape_literal($db_conn, $serial_pos);
+            $result = $this->db->pgquery($sqlSelect);
+
+            if ($result && pg_num_rows($result) > 0) {
+                $row = pg_fetch_assoc($result);
+                return (int)$row['total'];
+            }
+            return 0;
+        } catch (Exception $e) {
+            error_log("Error en GetExonerationCount: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Guarda los datos de exoneración en la tabla temporal.
+     */
+    public function SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // 1. CREACIÓN DE LA TABLA TEMPORAL (si no existe)
+            $sqlTable = "CREATE TEMPORARY TABLE IF NOT EXISTS temp_exoneracion_uploads (
+                id_temp_exoneracion SERIAL PRIMARY KEY,
+                serial_pos VARCHAR(225) NOT NULL,
+                tipo_exoneracion VARCHAR(100),
+                porcentaje INTEGER,
+                nro_exoneracion VARCHAR(50),
+                id_user INTEGER
+            ) ON COMMIT PRESERVE ROWS;";
+            $this->db->pgquery($sqlTable);
+
+            // 2. Limpiar registros previos para este serial en la temporal
+            $sqlDelete = "DELETE FROM temp_exoneracion_uploads WHERE serial_pos = " . pg_escape_literal($db_conn, $serial_pos) . ";";
+            $this->db->pgquery($sqlDelete);
+
+            // 3. Insertar nuevo registro
+            $sqlInsert = "INSERT INTO temp_exoneracion_uploads (serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user) VALUES ("
+                . pg_escape_literal($db_conn, $serial_pos) . ", "
+                . pg_escape_literal($db_conn, $tipo_exoneracion) . ", "
+                . (int)$porcentaje . ", "
+                . pg_escape_literal($db_conn, $nro_exoneracion) . ", "
+                . (int)$id_user . ") RETURNING id_temp_exoneracion;";
+            
+            $result = $this->getResult($sqlInsert, $this->db);
+            return $result && $result['numRows'] > 0;
+        } catch (Exception $e) {
+            error_log("Error en SaveExoneracion: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Transfiere la exoneración de la tabla temporal a la principal.
+     */
+    public function TransferExoneracionFromTempToMain($serial_pos, $nro_ticket) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // Asegurarse de que la tabla temporal existe antes de consultar
+            $sqlTable = "CREATE TEMPORARY TABLE IF NOT EXISTS temp_exoneracion_uploads (
+                id_temp_exoneracion SERIAL PRIMARY KEY,
+                serial_pos VARCHAR(225) NOT NULL,
+                tipo_exoneracion VARCHAR(100),
+                porcentaje INTEGER,
+                nro_exoneracion VARCHAR(50),
+                id_user INTEGER
+            ) ON COMMIT PRESERVE ROWS;";
+            $this->db->pgquery($sqlTable);
+
+            // 1. Obtener datos de la temporal
+            $sqlSelect = "SELECT * FROM temp_exoneracion_uploads WHERE serial_pos = " . pg_escape_literal($db_conn, $serial_pos) . " LIMIT 1";
+            $result = $this->db->pgquery($sqlSelect);
+            
+            if ($result && pg_num_rows($result) > 0) {
+                $data = pg_fetch_assoc($result);
+                
+                // 2. Insertar en la tabla principal (incluyendo el serial_pos)
+                $sqlInsert = "INSERT INTO exoneraciones (nro_ticket, serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user) VALUES ("
+                    . pg_escape_literal($db_conn, $nro_ticket) . ", "
+                    . pg_escape_literal($db_conn, $data['serial_pos']) . ", "
+                    . pg_escape_literal($db_conn, $data['tipo_exoneracion']) . ", "
+                    . (int)$data['porcentaje'] . ", "
+                    . pg_escape_literal($db_conn, $data['nro_exoneracion']) . ", "
+                    . (int)$data['id_user'] . ")";
+                
+                if ($this->db->pgquery($sqlInsert)) {
+                    // 3. Limpiar la temporal
+                    $this->db->pgquery("DELETE FROM temp_exoneracion_uploads WHERE serial_pos = " . pg_escape_literal($db_conn, $serial_pos));
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception $e) {
+            error_log("Error en TransferExoneracionFromTempToMain: " . $e->getMessage());
             return false;
         }
     }

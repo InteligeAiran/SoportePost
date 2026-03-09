@@ -141,6 +141,10 @@ class Consulta extends Controller
                     $this->handleGetCoordinator();
                     break;
 
+                case 'GetExoneracionPorcentaje':
+                    $this->handleGetExoneracionPorcentaje();
+                    break;
+
                 case 'GetTecnico2':
                     $this->handleGetTecnico2();
                     break;
@@ -389,6 +393,10 @@ class Consulta extends Controller
 
                 case 'SavePayment':
                     $this->handleSavePayment();
+                    break;
+
+                case 'SaveExoneracion':
+                    $this->handleSaveExoneracion();
                     break;
 
                 case 'GetEstatusPago':
@@ -936,8 +944,9 @@ class Consulta extends Controller
     $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
-    // NUEVO: Obtener record_number para Anticipo
-    $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+    // NUEVO: Obtener record_number para Anticipo y Exoneracion por separado
+    $record_number_anticipo = isset($_POST['record_number_anticipo']) ? $_POST['record_number_anticipo'] : (isset($_POST['record_number']) ? $_POST['record_number'] : null);
+    $record_number_exoneracion = isset($_POST['record_number_exoneracion']) ? $_POST['record_number_exoneracion'] : null;
     $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
     $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
     $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : ''; // NUEVO
@@ -1098,8 +1107,8 @@ class Consulta extends Controller
                         'document_type' => $documentType
                     ];
                     
-                    // Solo agregar record_number si es Anticipo
-                    if ($documentType === 'Anticipo' && $recordNumber) {
+                    // Agregar record_number para Anticipo o Exoneracion
+                    if (($documentType === 'Anticipo' || $documentType === 'Exoneracion') && $recordNumber) {
                         $targetVar['record_number'] = $recordNumber;
                     }
                     
@@ -1123,9 +1132,8 @@ class Consulta extends Controller
         // 8. Procesar cada tipo de archivo adjunto
         // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", NO procesar anticipo ni exoneración
         $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
-        $exoneracionOk = $isFallaSinPago ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
-        // Pasamos record_number solo a Anticipo
-        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo, $record_number);
+        $exoneracionOk = $isFallaSinPago ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketReal, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo, $record_number_exoneracion);
+        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketReal, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo, $record_number_anticipo);
 
         if (!$envioOk || (!$isFallaSinPago && (!$exoneracionOk || !$anticipoOk))) {
             error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
@@ -1452,6 +1460,26 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }
+
+    public function handleGetExoneracionPorcentaje()
+    {
+        if (!isset($_GET['nro_ticket']) || !isset($_GET['serial_pos'])) {
+            $this->response(['success' => false, 'message' => 'Faltan parámetros requeridos'], 400);
+            return;
+        }
+
+        $nro_ticket = $_GET['nro_ticket'];
+        $serial_pos = $_GET['serial_pos'];
+        
+        $repository = new technicalConsultionRepository();
+        $result = $repository->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+
+        if ($result !== false) {
+            $this->response(['success' => true, 'data' => $result], 200);
+        } else {
+            $this->response(['success' => true, 'data' => null], 200); // Send null if no exoneration found instead of an error
+        }
     }
 
 
@@ -2808,7 +2836,9 @@ class Consulta extends Controller
             'success' => true, 
             'total_paid' => $result['total_paid'],
             'total_budget' => $result['total_budget'],
-            'presupuesto_diferencia' => isset($result['presupuesto_diferencia']) ? $result['presupuesto_diferencia'] : 0
+            'presupuesto_diferencia' => isset($result['presupuesto_diferencia']) ? $result['presupuesto_diferencia'] : 0,
+            'exoneracion_porcentaje' => isset($result['exoneracion_porcentaje']) ? $result['exoneracion_porcentaje'] : 0,
+            'tipo_exoneracion' => isset($result['tipo_exoneracion']) ? $result['tipo_exoneracion'] : null
         ], 200);
     }
 
@@ -3107,6 +3137,89 @@ class Consulta extends Controller
             $this->response([
                 'success' => false, 
                 'message' => 'Error al guardar el pago en la tabla temporal.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtiene el total de exoneraciones para un serial (para correlativo).
+     * Endpoint: GET /api/consulta/GetExonerationCount?serial_pos=XYZ
+     */
+    public function handleGetExonerationCount() {
+        $repository = new technicalConsultionRepository();
+        $serial_pos = isset($_GET['serial_pos']) ? trim($_GET['serial_pos']) : '';
+
+        if (empty($serial_pos)) {
+            $this->response(['success' => false, 'message' => 'Serial POS requerido', 'count' => 0], 400);
+            return;
+        }
+
+        $count = $repository->GetExonerationCount($serial_pos);
+        $this->response(['success' => true, 'count' => $count], 200);
+    }
+
+    /**
+     * Guarda los datos de exoneración en la tabla temporal.
+     * Endpoint: POST /api/consulta/SaveExoneracion
+     */
+    public function handleSaveExoneracion() {
+        $repository = new technicalConsultionRepository();
+
+        // ============================================
+        // 1. OBTENER DATOS DEL POST
+        // ============================================
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $tipo_exoneracion = isset($_POST['tipo_exoneracion']) ? trim($_POST['tipo_exoneracion']) : '';
+        $porcentaje = isset($_POST['porcentaje']) ? (int)$_POST['porcentaje'] : 0;
+        $nro_exoneracion = isset($_POST['nro_exoneracion']) ? trim($_POST['nro_exoneracion']) : '';
+        
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : null);
+
+        // ============================================
+        // 2. VALIDACIONES - Campos Obligatorios
+        // ============================================
+        if (empty($serial_pos)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'El serial del POS es obligatorio.'
+            ], 400);
+            return;
+        }
+
+        if (empty($nro_exoneracion)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'El numero de exoneracion es obligatorio.'
+            ], 400);
+            return;
+        }
+
+        // ============================================
+        // 3. GUARDAR EN BASE DE DATOS
+        // ============================================
+        $result = $repository->SaveExoneracion(
+            $serial_pos,
+            $tipo_exoneracion,
+            $porcentaje,
+            $nro_exoneracion,
+            $id_user
+        );
+
+        // ============================================
+        // 4. RESPUESTA AL CLIENTE
+        // ============================================
+        if ($result) {
+            $this->response([
+                'success' => true, 
+                'message' => 'Exoneracion guardada correctamente en la tabla temporal (temp_exoneracion_uploads).', 
+                'nro_exoneracion' => $nro_exoneracion,
+                'serial_pos' => $serial_pos,
+                'table' => 'temp_exoneracion_uploads'
+            ], 200);
+        } else {
+            $this->response([
+                'success' => false, 
+                'message' => 'Error al guardar la exoneracion en la tabla temporal.'
             ], 500);
         }
     }

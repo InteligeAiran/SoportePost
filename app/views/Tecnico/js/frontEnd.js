@@ -754,7 +754,7 @@ function getTicketData() {
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
 
-              // Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
+              // 1. Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
               if (id_domiciliacion == 4 && (url_convenio === "" || url_convenio === null || url_convenio === undefined)) {
                 Swal.fire({
                   icon: 'warning',
@@ -767,7 +767,7 @@ function getTicketData() {
                 return;
               }
 
-              // Validación de Gestión Comercial - Espera de Respuesta (id_status_domiciliacion = 3)
+              // 2. Validación de Gestión Comercial - Espera de Respuesta (id_status_domiciliacion = 3)
               if (parseInt(id_domiciliacion) === 3) {
                 Swal.fire({
                   icon: 'error',
@@ -799,8 +799,7 @@ function getTicketData() {
                 return;
               }
 
-              // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
-              // Solo requiere documento de Envío, no anticipo ni exoneración
+              // 3. VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
               if (isFallaSinPago) {
                 if (url_envio === "" || url_envio === null || url_envio === undefined) {
                   Swal.fire({
@@ -813,12 +812,9 @@ function getTicketData() {
                   });
                   return;
                 }
-                // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
               } else {
-                // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9 y id_failure != 12)
-                // MODIFICACION: Si el estatus es 1 (Garantia Instalacion) o 3 (Garantia Reingreso)
+                // 4. VALIDACIÓN NORMAL PARA OTRAS FALLAS
                 if (id_document == 1 || id_document == 3) {
-                    // Solo validar Envio si NO es region central
                     if (!isEstadoSinEnvio && (url_envio === "" || url_envio === null || url_envio === undefined)) {
                         Swal.fire({
                             icon: 'warning',
@@ -830,7 +826,6 @@ function getTicketData() {
                         });
                         return;
                     }
-                    // Si es region central o ya tiene envio, permitir (showButton se mantiene false)
                 } else if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                     showButton = true;
                 } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
@@ -882,38 +877,173 @@ function getTicketData() {
                 }
               }
 
-              // Validaciones adicionales que aplican a todos los casos
-              if (id_document == 5 || id_document == 7) {
-                Swal.fire({
-                  icon: 'warning',
-                  iconColor: '#ff9800',
-                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Pendientes!</span>',
-                  html: `
-                    <div style="text-align: left; padding: 10px 0;">
-                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                        El caso actual tiene <strong>documentos pendientes por revisar</strong> en el sistema.
-                      </p>
-                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
-                          <strong>⚠️ Acción requerida:</strong><br>
-                          Debe esperar a que Administración verifique y apruebe los documentos cargados antes de poder enviar el equipo a taller.
+              // Funciones de utilidad
+              const continuarFlujoEnviarTaller = () => {
+                if (id_domiciliacion == 2 || id_domiciliacion == 3) {
+                  Swal.fire({
+                    title: '<span style="color: #003594; font-size: 1.6em; font-weight: 800;">¿Confirmar Envío?</span>',
+                    html: `
+                      <div style="text-align: center; padding: 15px 0;">
+                        <div class="mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="85" height="85" fill="#ffc107" class="bi bi-question-circle-fill custom-icon-animation" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.24-2.673-2.24-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                          </svg>
+                        </div>
+                        <p style="font-size: 1.25em; color: #495057; margin-bottom: 25px; line-height: 1.4;">
+                          ¿Deseas enviar a taller el POS asociado al ticket actual?
                         </p>
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; border: 1px solid #e9ecef; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
+                          <div style="margin-bottom: 18px;">
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Serial POS</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentSerial}
+                            </span>
+                          </div>
+                          <div>
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Número de Ticket</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentnroTicket}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  `,
-                  confirmButtonText: 'Entendido',
-                  confirmButtonColor: '#003594',
-                  color: 'black',
-                  width: '600px',
-                  padding: '2em',
-                  customClass: {
-                    popup: 'swal2-popup-custom',
-                    title: 'swal2-title-custom',
-                    htmlContainer: 'swal2-html-container-custom'
-                  }
-                });
-                return;
-              } else if (id_domiciliacion == 1) {
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-paper-plane me-2"></i>Enviar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#003594',
+                    cancelButtonColor: '#8392ab',
+                    width: '550px',
+                    padding: '2.5em'
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      handleSendToTallerClick();
+                    }
+                  });
+
+                } else if (id_domiciliacion == 5) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡No se puede procesar!',
+                        text: 'Aun no es validada la domiciliación de la cuenta de cliente.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#003594',
+                        color: 'black',
+                    });
+                } else if (id_domiciliacion == 6) {
+                    Swal.fire({
+                        icon: 'warning',
+                        iconColor: '#dc3545',
+                        title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Validación Rechazada!</span>',
+                        html: `
+                        <div style="text-align: left; padding: 10px 0;">
+                            <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                            El caso actual tiene un estatus de <strong>Domiciliación Rechazada</strong> por parte de Administración.
+                            </p>
+                            <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p style="color: #721c24; margin: 0; font-size: 1em; line-height: 1.6;">
+                                <strong>⚠️ Acción requerida:</strong><br>
+                                Comuníquese con el coordinador para más información y solventar el rechazo de la cuenta del cliente para poder enviar el equipo al taller.
+                            </p>
+                            </div>
+                        </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#003594',
+                        color: 'black',
+                        width: '600px',
+                        padding: '2em',
+                        customClass: {
+                            popup: 'swal2-popup-custom',
+                            title: 'swal2-title-custom',
+                            htmlContainer: 'swal2-html-container-custom'
+                        }
+                    });
+                } else {
+                  Swal.fire({
+                    title: '<span style="color: #003594; font-size: 1.6em; font-weight: 800;">¿Confirmar Envío?</span>',
+                    html: `
+                      <div style="text-align: center; padding: 15px 0;">
+                        <div class="mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="85" height="85" fill="#ffc107" class="bi bi-question-circle-fill custom-icon-animation" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.24-2.673-2.24-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                          </svg>
+                        </div>
+                        <p style="font-size: 1.25em; color: #495057; margin-bottom: 25px; line-height: 1.4;">
+                          ¿Deseas enviar a taller el POS asociado al ticket actual?
+                        </p>
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; border: 1px solid #e9ecef; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
+                          <div style="margin-bottom: 18px;">
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Serial POS</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentSerial}
+                            </span>
+                          </div>
+                          <div>
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Número de Ticket</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentnroTicket}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-paper-plane me-2"></i>Enviar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#003594',
+                    cancelButtonColor: '#8392ab',
+                    width: '550px',
+                    padding: '2.5em'
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      const modalTicketNrSpan = document.getElementById("modalTicketNr");
+                      const modalSerialPosSpan = document.getElementById("serialpos");
+                      if (modalTicketNrSpan && currentnroTicket && modalSerialPosSpan) {
+                        modalTicketNrSpan.textContent = currentnroTicket;
+                        modalSerialPosSpan.textContent = currentSerial;
+                      }
+                      if (actionSelectionModalInstance) actionSelectionModalInstance.hide();
+                      if (staticBackdropModalInstance) staticBackdropModalInstance.show();
+                    }
+                  });
+                }
+              };
+
+
+              const mostrarValidacionDocumentosPendientes = () => {
+                  Swal.fire({
+                    icon: 'warning',
+                    iconColor: '#ff9800',
+                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Pendientes!</span>',
+                    html: `
+                      <div style="text-align: left; padding: 10px 0;">
+                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                          El caso actual tiene <strong>documentos pendientes por revisar</strong> en el sistema.
+                        </p>
+                        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                            <strong>⚠️ Acción requerida:</strong><br>
+                            Debe esperar a que Administración verifique y apruebe los documentos cargados antes de poder enviar el equipo a taller.
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#003594',
+                    color: 'black',
+                    width: '600px',
+                    padding: '2em',
+                    customClass: {
+                      popup: 'swal2-popup-custom',
+                      title: 'swal2-title-custom',
+                      htmlContainer: 'swal2-html-container-custom'
+                    }
+                  });
+              };
+
+              // 5. Validación de Revisión de Domiciliación (id_domiciliacion = 1)
+              if (id_domiciliacion == 1) {
                 Swal.fire({
                   icon: 'warning',
                   iconColor: '#ff9800',
@@ -943,26 +1073,106 @@ function getTicketData() {
                   }
                 });
                 return;
-              } else {
-                const modalTicketNrSpan = document.getElementById("modalTicketNr");
-                const modalSerialPosSpan = document.getElementById("serialpos");
-                if (modalTicketNrSpan && currentnroTicket && modalSerialPosSpan) {
-                  modalTicketNrSpan.textContent = currentnroTicket;
-                  modalSerialPosSpan.textContent = currentSerial;
-                } else {
-                  modalTicketNrSpan.textContent = "seleccionado";
-                  console.warn("No se pudo inyectar el número de ticket en el modal de taller.");
-                }
-
-                if (actionSelectionModalInstance) {
-                  actionSelectionModalInstance.hide();
-                }
-
-                if (staticBackdropModalInstance) {
-                  staticBackdropModalInstance.show();
-                }
               }
+
+              // 6. Validación de Exoneración Pendiente de Revisión
+              if (id_document == 5) {
+                  mostrarValidacionDocumentosPendientes();
+                  return;
+              } 
+              
+              // 7. Validación de Documentos Pendientes Generales
+              if (id_document == 7) {
+                  mostrarValidacionDocumentosPendientes();
+                  return;
+              }
+
+              // 8. Validación Mandatoria de Exoneración (Sin importar si el estatus actual es Exoneración Aprobada o Pago Aprobado)
+              const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${currentnroTicket}&serial_pos=${currentSerial}`;
+              fetch(checkExoUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      let porcentaje = 0;
+                      let tipoExoneracion = '';
+                      if (data.success && data.data) {
+                          porcentaje = parseInt(data.data.porcentaje);
+                          tipoExoneracion = data.data.tipo_exoneracion;
+                      }
+
+                      // Si existe una exoneración parcial (entre 1% y 99%), SIEMPRE validar que lo pagado cubra la base
+                      if (porcentaje > 0 && porcentaje < 100) {
+                          const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                          const params = new URLSearchParams();
+                          params.append('action', 'GetTotalPaidByTicket');
+                          params.append('nro_ticket', currentnroTicket);
+
+                          fetch(checkPaymentUrl, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                              body: params
+                          })
+                          .then(p => p.json())
+                          .then(payData => {
+                              let totalPaid = parseFloat(payData.total_paid) || 0;
+                              let montoBase = 30; // Ajustar si es dinámico
+                              let montoExonerado = (montoBase * porcentaje) / 100;
+                              let montoNetoRequerido = montoBase - montoExonerado;
+
+                              // Verificamos si la totalidad de lo pagado YA CUBRE el diagnóstico base
+                              if (totalPaid >= (montoNetoRequerido - 0.01)) {
+                                  // Ya cubrió la exoneración, puede enviarse a taller sin problema
+                                  continuarFlujoEnviarTaller();
+                              } else {
+                                  // NO CUBRE. Faltan pagos por aprobar antes de poder enviar a taller
+                                  let tipoExoText = tipoExoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+                                  let montoRestante = montoNetoRequerido - totalPaid;
+                                  
+                                  Swal.fire({
+                                      icon: 'warning',
+                                      title: '<span style="color: #003594;">Pago Restante Requerido</span>',
+                                      html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                          <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                              Este equipo posee una Exoneración Parcial. No se puede enviar a Taller hasta que los pagos asociados sumen la totalidad requerida y <strong>sean aprobados</strong> por Administración.
+                                          </p>
+                                          <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                              <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                              <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #003594;">
+                                              <span>Ya Pagado (Aprobado):</span><strong>$${totalPaid.toFixed(2)}</strong>
+                                          </div>
+                                          <hr style="border-color: #adb5bd;">
+                                          <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                              <span>Falta por Pagar:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                          </div>
+                                      </div>`,
+                                      confirmButtonText: 'Entendido',
+                                      confirmButtonColor: '#003594',
+                                      color: 'black',
+                                      width: '500px'
+                                  });
+                              }
+                          })
+                          .catch(err => {
+                              console.error("Error validando pagos para exoneración:", err);
+                              continuarFlujoEnviarTaller();
+                          });
+                          
+                          return; // Evita que se ejecute el continuarFlujoEnviarTaller principal mientras el fetch asíncrono termina
+                      }
+                      
+                      // Si no tiene exoneración o la exoneración no es parcial, simplemente envía el equipo.
+                      continuarFlujoEnviarTaller();
+                  })
+                  .catch(error => {
+                      console.error("Error validando exoneración:", error);
+                      // Si falla la red, continuamos por defecto para no trancar al personal o avisamos error
+                      Swal.fire("Error", "Ocurrió un error de red al validar los datos de exoneración del ticket.", "error");
+                  });
             });
+
 
             $("#BtnCerrarSelecionAccion").off("click").on("click", function () {
               if (actionSelectionModalInstance) {
@@ -4643,10 +4853,108 @@ $(document).on('click', '#btnGuardarDatosPago', async function() {
         }
     }
 
+    let nroTicketForExo = document.getElementById("nro_ticket_pago") ? document.getElementById("nro_ticket_pago").value : '';
+    let serialPosForExo = document.getElementById("serialPosPago") ? document.getElementById("serialPosPago").value : '';
+    let montoRefActual = parseFloat(document.getElementById("montoRef").value) || 0;
+
     const saveBtn = document.getElementById("btnGuardarDatosPago");
     if (saveBtn) saveBtn.disabled = true;
 
+    Swal.fire({ title: 'Validando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        // Validacion de Exoneracion Parcial
+        const docTypeForStatus = document.getElementById("document_type_pago") ? document.getElementById("document_type_pago").value : '';
+        if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo' || docTypeForStatus === 'Pago' || docTypeForStatus === 'pago') {
+            const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${nroTicketForExo}&serial_pos=${serialPosForExo}`;
+            const exoResponse = await fetch(checkExoUrl);
+            const exoData = await exoResponse.json();
+
+            if (exoData.success && exoData.data) {
+                const porcentaje = parseInt(exoData.data.porcentaje);
+                if (porcentaje > 0 && porcentaje < 100) {
+                    const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                    const params = new URLSearchParams();
+                    params.append('action', 'GetTotalPaidByTicket');
+                    params.append('nro_ticket', nroTicketForExo);
+
+                    const payResponse = await fetch(checkPaymentUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+                    const payData = await payResponse.json();
+
+                    let totalPaidAnterior = parseFloat(payData.total_paid) || 0;
+                    let tipoExoData = exoData.data.tipo_exoneracion || 'Anticipo';
+                    
+                    let montoBase = 30; // Monto base estándar para Anticipo
+                    if (tipoExoData === 'Presupuesto') {
+                        // totalBudget ya viene en la respuesta de GetTotalPaidByTicket actualizada
+                        montoBase = parseFloat(payData.total_budget) || 0;
+                    }
+
+                    let montoExonerado = (montoBase * porcentaje) / 100;
+                    let montoNetoRequerido = montoBase - montoExonerado;
+                    
+                    // Si lo que ya se pagó y aprobó es IGUAL o MAYOR al monto neto requerido
+                    // por el diagnóstico base o presupuesto, entonces ya no validamos.
+                    // El usuario es libre de subir pagos por $5 o lo que sea.
+                    if (totalPaidAnterior < montoNetoRequerido) {
+                        let totalConPagoActual = totalPaidAnterior + montoRefActual;
+
+                        if (totalConPagoActual < (montoNetoRequerido - 0.01)) {
+                        let montoRestante = montoNetoRequerido - totalPaidAnterior;
+                        let faltaPorPagar = montoNetoRequerido - totalConPagoActual;
+                        let tipoExoText = exoData.data.tipo_exoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+
+                        if (saveBtn) saveBtn.disabled = false;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '<span style="color: #003594;">Pago Insuficiente</span>',
+                            html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                    El ticket tiene una <strong>Exoneración Parcial</strong>. El pago que intenta registrar más lo ya pagado no cubre el saldo pendiente requerido.
+                                </p>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                    <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                    <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #003594;">
+                                    <span>Ya Pagado (Aprobado):</span><strong>$${totalPaidAnterior.toFixed(2)}</strong>
+                                </div>
+                                <hr style="border-color: #adb5bd;">
+                                <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.2em; color: #dc3545; font-weight: bold;">
+                                    <span>Saldo Pendiente Actual:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.1em; color: #ff9800; font-weight: bold;">
+                                    <span>Pago que intenta registrar:</span><span>$${montoRefActual.toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                    <span>Faltaría por pagar:</span><span>$${Math.max(0, faltaPorPagar).toFixed(2)}</span>
+                                </div>
+                            </div>`,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                            width: '500px'
+                        });
+                        return; // Detiene el guardado
+                    }
+                 } // Fin de verificación `totalPaidAnterior < montoNetoRequerido`
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error validando pagos para exoneración antes de guardar:", err);
+        // Continuamos si falla la validación por error de red
+    }
+
     Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+
 
     // 2. Preparar datos para SavePayment (Metadatos)
     // Helper interno para obtener el valor de un elemento de forma segura

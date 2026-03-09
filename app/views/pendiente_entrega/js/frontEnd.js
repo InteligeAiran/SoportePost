@@ -5154,6 +5154,50 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
 // ========================================
 
 // Función para abrir el modal de presupuesto
+/**
+ * Función para obtener el porcentaje de exoneración de un ticket
+ * @param {string} nroTicket 
+ */
+function fetchExoneracionPercentage(nroTicket) {
+    const serialPos = window.currentSerialPosForAnticipo || "";
+    const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExoneracionPorcentaje?nro_ticket=${encodeURIComponent(nroTicket)}&serial_pos=${encodeURIComponent(serialPos)}`;
+    
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                const porcentaje = parseFloat(data.data.porcentaje) || 0;
+                const tipo = data.data.tipo_exoneracion || "";
+                
+                window.presupuestoPorcentajeExoneracion = porcentaje;
+                window.presupuestoTipoExoneracion = tipo;
+                
+                const porcentajeExoSpan = document.getElementById('presupuestoPorcentajeExo');
+                const exoContainer = document.getElementById('presupuestoExoneracionContainer');
+                
+                if (porcentaje > 0) {
+                    if (porcentajeExoSpan) {
+                        porcentajeExoSpan.textContent = `${porcentaje} (${tipo})`;
+                    }
+                    if (exoContainer) {
+                        exoContainer.style.display = '';
+                        exoContainer.classList.add('d-block');
+                        exoContainer.style.setProperty('display', 'block', 'important');
+                    }
+                    // Recalcular diferencia si ya hay un monto taller
+                    calcularDiferenciaPresupuesto();
+                } else {
+                    window.presupuestoTipoExoneracion = "";
+                    if (exoContainer) {
+                        exoContainer.style.display = 'none';
+                        exoContainer.classList.remove('d-block');
+                    }
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching exoneration:', error));
+}
+
 function openPresupuestoModal(nroTicket, idFailure = null) {
     const nroTicketSpan = document.getElementById('presupuestoNroTicket');
     
@@ -5214,6 +5258,18 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
     document.getElementById('presupuestoDiferenciaUSD').value = '';
     document.getElementById('presupuestoDiferenciaBS').value = '';
     
+    // ✅ Limpiar y ocultar campos de exoneración
+    const montoExoInput = document.getElementById('presupuestoMontoExonerado');
+    const porcentajeExoSpan = document.getElementById('presupuestoPorcentajeExo');
+    const exoContainer = document.getElementById('presupuestoExoneracionContainer');
+    
+    if (montoExoInput) montoExoInput.value = '';
+    if (porcentajeExoSpan) porcentajeExoSpan.textContent = '0';
+    if (exoContainer) exoContainer.style.display = 'none';
+    
+    // ✅ Resetear porcentaje global
+    window.presupuestoPorcentajeExoneracion = 0;
+    
     // Ocultar todos los contenedores condicionales
     const containersToHide = [
         'presupuestoBancoOrigenContainer',
@@ -5259,6 +5315,9 @@ function openPresupuestoModal(nroTicket, idFailure = null) {
         }
         return; // Salir de la función sin cargar datos de pago
     }
+    
+    // ✅ FETCH EXONERACIÓN PERCENTAGE (Si no es falla sin pago)
+    fetchExoneracionPercentage(nroTicket);
     
     // Obtener datos de payment_records (solo si NO es Actualización de Software)
     const xhr = new XMLHttpRequest();
@@ -5837,7 +5896,33 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
         montoPagadoBSInput.value = montoPagadoBS.toFixed(2);
     }
     
-    const diferenciaUSD = montoTaller - montoPagadoUSD;
+    const porcentaje = window.presupuestoPorcentajeExoneracion || 0;
+    const tipo = window.presupuestoTipoExoneracion || "";
+    let montoExonerado = 0;
+    let montoExoneradoDisplay = 0;
+    
+    if (porcentaje > 0) {
+        if (tipo === 'Anticipo') {
+            // El usuario indica que si es tipo 'Anticipo', NO aplica al monto del taller
+            // Solo es informativo sobre un base de $30 por default
+            montoExonerado = 0;
+            montoExoneradoDisplay = (30 * porcentaje / 100);
+            console.log(`Exoneración informativa: ${porcentaje}% de $30 = $${montoExoneradoDisplay}`);
+        } else {
+            // Otros tipos sí podrían aplicar al monto taller
+            montoExonerado = (montoTaller * porcentaje / 100);
+            montoExoneradoDisplay = montoExonerado;
+        }
+    }
+    
+    // ✅ Actualizar campos de exoneración en el modal
+    const montoExoInput = document.getElementById('presupuestoMontoExonerado');
+    if (montoExoInput) {
+        // Mostramos el monto informativo o real
+        montoExoInput.value = montoExoneradoDisplay.toFixed(2);
+    }
+    
+    const diferenciaUSD = montoTaller - montoExonerado - montoPagadoUSD;
     const diferenciaBS = diferenciaUSD * tasaCambio;
     
     document.getElementById('presupuestoDiferenciaUSD').value = diferenciaUSD.toFixed(2);
@@ -6204,11 +6289,17 @@ function getPresupuestoData() {
     const descripcion = document.getElementById('presupuestoDescripcion').value.trim();
     const fechaPresupuesto = document.getElementById('presupuestoFecha').value;
     
+    const montoExonerado = parseFloat(document.getElementById('presupuestoMontoExonerado').value) || 0;
+    const porcentajeExoneracion = window.presupuestoPorcentajeExoneracion || 0;
+    
     return {
         nroTicket: nroTicket,
         montoTaller: montoTaller,
         descripcion: descripcion,
-        fechaPresupuesto: fechaPresupuesto
+        fechaPresupuesto: fechaPresupuesto,
+        montoExonerado: montoExonerado,
+        porcentajeExoneracion: porcentajeExoneracion,
+        tipoExoneracion: window.presupuestoTipoExoneracion || ""
     };
 }
 
@@ -6257,7 +6348,7 @@ function validatePresupuestoFields() {
 
 // Función para previsualizar el PDF del presupuesto
 function previewPresupuestoPDF() {
-    // Validar campos
+    // 1. Validar campos
     if (!validatePresupuestoFields()) {
         return;
     }
@@ -6265,10 +6356,24 @@ function previewPresupuestoPDF() {
     const data = getPresupuestoData();
     const nroTicket = data.nroTicket;
     
+    // 2. ABRIR VENTANA EN BLANCO INMEDIATAMENTE (Para saltar el bloqueador de popups)
+    // Se abre en blanco y se guarda la referencia para llenarla luego
+    const previewWindow = window.open('', '_blank');
+    if (!previewWindow) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Bloqueador de ventanas',
+            text: 'Su navegador bloqueó la apertura del presupuesto. Por favor, permita las ventanas emergentes en este sitio.',
+            confirmButtonColor: '#003594',
+            color: 'black'
+        });
+        return;
+    }
+
     // Mostrar modal de carga mientras se procesa
     Swal.fire({
         title: 'Procesando presupuesto...',
-        html: 'Por favor, espere mientras se guardan los datos.',
+        html: 'Por favor, espere mientras se guardan los datos y se genera el documento.',
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -6277,7 +6382,7 @@ function previewPresupuestoPDF() {
         }
     });
     
-    // Obtener datos del cliente
+    // 3. Obtener datos del cliente
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -6297,6 +6402,9 @@ function previewPresupuestoPDF() {
                         validez: '5 días hábiles',
                         descripcion: data.descripcion,
                         montoTaller: data.montoTaller,
+                        montoExonerado: data.montoExonerado,
+                        porcentajeExoneracion: data.porcentajeExoneracion,
+                        tipoExoneracion: data.tipoExoneracion,
                         montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
                         diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
                         diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
@@ -6305,7 +6413,7 @@ function previewPresupuestoPDF() {
                         cliente: clienteData
                     };
                     
-                    // 1. GUARDAR PRESUPUESTO EN BD PRIMERO
+                    // 4. GUARDAR PRESUPUESTO EN BD
                     saveBudgetToDatabaseWithCallback(presupuestoData, function(success, message, idBudget, presupuestoNumero) {
                         Swal.close(); // Cerrar el "Procesando..."
                         
@@ -6313,64 +6421,41 @@ function previewPresupuestoPDF() {
                             // Guardar el número real en los datos
                             presupuestoData.presupuestoNumero = presupuestoNumero;
                             
-                            // 2. PREGUNTAR SI DESEA VISUALIZAR
+                            // 5. LLENAR LA VENTANA PREOTERTA
+                            previewWindow.document.open();
+                            
+                            // Generar HTML con el header de instrucciones
+                            const htmlWithHeader = buildPresupuestoHTML(presupuestoData, true);
+                            const baseHref = `${window.location.origin}/SoportePost/`;
+                            let htmlWithBase = htmlWithHeader.replace('<head>', `<head><base href="${baseHref}">`);
+                            
+                            // Generar nombre de archivo para el PDF (Exactamente el número de presupuesto)
+                            const filename = `Presupuesto_${presupuestoNumero}`;
+                            
+                            previewWindow.document.write(htmlWithBase);
+                            previewWindow.document.title = filename; 
+                            previewWindow.document.close();
+                            previewWindow.focus();
+
+                            // Mostrar confirmación de éxito y RECARGAR solo al cerrar
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Presupuesto Guardado',
-                                text: 'El presupuesto se ha guardado correctamente. ¿Desea visualizar el documento?',
-                                showCancelButton: true,
-                                confirmButtonText: 'Ver PDF',
-                                cancelButtonText: 'Cerrar',
+                                title: '¡Presupuesto Generado!',
+                                text: 'El presupuesto ha sido guardado y se ha abierto en una nueva pestaña.',
+                                confirmButtonText: 'Entendido',
                                 confirmButtonColor: '#003594',
-                                cancelButtonColor: '#808080',
-                                reverseButtons: true,
                                 color: 'black'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // Generar HTML con el número real
-                                    const html = buildPresupuestoHTML(presupuestoData);
-                                    const baseHref = `${window.location.origin}/SoportePost/`;
-                                    let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
-                                    
-                                    // Abrir en nueva ventana / pestaña
-                                    const previewWindow = window.open('', '_blank');
-                                    if (previewWindow) {
-                                        previewWindow.document.open();
-                                        
-                                        // Generar HTML con el header de instrucciones
-                                        const htmlWithHeader = buildPresupuestoHTML(presupuestoData, true);
-                                        const baseHref = `${window.location.origin}/SoportePost/`;
-                                        let htmlWithBase = htmlWithHeader.replace('<head>', `<head><base href="${baseHref}">`);
-                                        
-                                        // Generar nombre de archivo para el PDF (Exactamente el número de presupuesto)
-                                        const filename = `${presupuestoNumero}`;
-                                        
-                                        previewWindow.document.write(htmlWithBase);
-                                        previewWindow.document.title = filename; // <--- ESTO CAMBIA EL NOMBRE AL GUARDAR
-                                        previewWindow.document.close();
-                                        previewWindow.focus();
-                                        
-                                        // RELOAD PAGE AS REQUESTED
-                                        window.location.reload();
-                                    } else {
-                                        Swal.fire({
-                                            icon: 'warning',
-                                            title: 'Bloqueador de ventanas',
-                                            text: 'Su navegador bloqueó la apertura del presupuesto. Por favor, permita las ventanas emergentes.',
-                                            confirmButtonColor: '#003594',
-                                            color: 'black'
-                                        }).then(() => {
-                                            window.location.reload();
-                                        });
-                                    }
-                                } else {
-                                    // Si elige NO visualizar, solo recarga para ver los cambios
+                            }).then(() => {
+                                // No recargamos inmediatamente para no interrumpir el flujo del usuario
+                                // pero si el usuario quiere ver cambios en la tabla, recargamos
+                                setTimeout(() => {
                                     window.location.reload();
-                                }
+                                }, 500);
                             });
                             
                         } else {
                             // Error al guardar
+                            previewWindow.close(); // Cerrar la ventana en blanco si falló el guardado
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error al guardar',
@@ -6382,52 +6467,46 @@ function previewPresupuestoPDF() {
                     });
                     
                 } else {
-                    Swal.close();
+                    previewWindow.close();
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error',
-                        text: response.message || 'No se pudieron obtener los datos del cliente',
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#dc3545'
+                        title: 'Error de Datos',
+                        text: response.message || 'No se pudieron obtener los datos necesarios.',
+                        confirmButtonColor: '#dc3545',
+                        color: 'black'
                     });
                 }
             } catch (error) {
-                Swal.close();
-                console.error('Error al parsear la respuesta JSON:', error);
+                previewWindow.close();
+                console.error('Error al procesar respuesta:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error de Respuesta',
-                    text: 'Error al procesar la respuesta del servidor',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#dc3545'
+                    title: 'Error de Sistema',
+                    text: 'Ocurrió un error al procesar los datos del presupuesto.',
+                    confirmButtonColor: '#dc3545',
+                    color: 'black'
                 });
             }
         } else {
-            Swal.close();
-            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            previewWindow.close();
             Swal.fire({
                 icon: 'error',
                 title: 'Error de Conexión',
                 text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
-                confirmButtonText: 'Ok',
-                color: 'black',
-                confirmButtonColor: '#dc3545'
+                confirmButtonColor: '#dc3545',
+                color: 'black'
             });
         }
     };
     
     xhr.onerror = function() {
-        Swal.close();
-        console.error('Error de red al intentar obtener los datos del cliente');
+        previewWindow.close();
         Swal.fire({
             icon: 'error',
             title: 'Error de Red',
-            text: 'Error de conexión con el servidor',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#dc3545'
+            text: 'Error de comunicación con el servidor.',
+            confirmButtonColor: '#dc3545',
+            color: 'black'
         });
     };
     
@@ -6466,6 +6545,9 @@ function generarPresupuestoPDF() {
                         validez: '5 días hábiles',
                         descripcion: data.descripcion,
                         montoTaller: data.montoTaller,
+                        montoExonerado: data.montoExonerado,
+                        porcentajeExoneracion: data.porcentajeExoneracion,
+                        tipoExoneracion: data.tipoExoneracion,
                         montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
                         diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
                         diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
@@ -7684,6 +7766,17 @@ function buildPresupuestoHTML(d, isNewWindow = false) {
             <span class="summary-label">SUB-TOTAL:</span>
             <span class="summary-value">$${formatCurrency(d.montoTaller)}</span>
           </div>
+          ${d.porcentajeExoneracion > 0 ? `
+          <div class="summary-row" style="color: #e65100; font-weight: bold; ${d.tipoExoneracion === 'Anticipo' ? 'border-bottom: none;' : ''}">
+            <span class="summary-label">EXONERACIÓN ${d.tipoExoneracion ? `(${d.tipoExoneracion}) ` : ''}(${d.porcentajeExoneracion}%):</span>
+            <span class="summary-value">${d.tipoExoneracion === 'Anticipo' ? `INFORMATIVO: $${formatCurrency(30 * d.porcentajeExoneracion / 100)}` : `-$${formatCurrency(d.montoExonerado)}`}</span>
+          </div>
+          ${d.tipoExoneracion === 'Anticipo' ? `
+          <div style="font-size: 10px; color: #777; font-style: italic; margin-top: 0; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid #ddd;">
+            * La exoneración aplica sobre el monto base del anticipo ($30.00)
+          </div>
+          ` : ''}
+          ` : ''}
           <div class="summary-row">
             <span class="summary-label">ABONO:</span>
             <span class="summary-value">$${formatCurrency(d.montoPagadoUSD)}</span>
@@ -8484,7 +8577,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Función para guardar los datos de pago (adaptada de consulta_rif)
-function savePaymentPendienteEntrega() {
+async function savePaymentPendienteEntrega() {
     // Obtener todos los valores del formulario
     const serialPosPago = document.getElementById("serialPosPago");
     const idUser = document.getElementById("id_user_pago");
@@ -8693,8 +8786,106 @@ function savePaymentPendienteEntrega() {
         });
         return;
     }
+
+    const saveBtn = document.getElementById("btnGuardarDatosPago");
+    if (saveBtn) saveBtn.disabled = true;
+
+    Swal.fire({ title: 'Validando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        // Validacion de Exoneracion Parcial
+        const docTypeForStatus = document.getElementById("document_type_pago") ? document.getElementById("document_type_pago").value : '';
+        const nroTicketVal = nroTicketPago ? nroTicketPago.value : '';
+        const serialPosVal = serialPosPago ? serialPosPago.value : '';
+        const montoRefActual = montoRef && montoRef.value ? parseFloat(montoRef.value) : 0;
+
+        if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo' || docTypeForStatus === 'Pago' || docTypeForStatus === 'pago') {
+            const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${nroTicketVal}&serial_pos=${serialPosVal}`;
+            const exoResponse = await fetch(checkExoUrl);
+            const exoData = await exoResponse.json();
+
+            if (exoData.success && exoData.data) {
+                const porcentaje = parseInt(exoData.data.porcentaje);
+                if (porcentaje > 0 && porcentaje < 100) {
+                    const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                    const params = new URLSearchParams();
+                    params.append('action', 'GetTotalPaidByTicket');
+                    params.append('nro_ticket', nroTicketVal);
+
+                    const payResponse = await fetch(checkPaymentUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+                    const payData = await payResponse.json();
+
+                    let totalPaidAnterior = parseFloat(payData.total_paid) || 0;
+                    let tipoExoData = exoData.data.tipo_exoneracion || 'Anticipo';
+                    
+                    let montoBase = 30; // Monto base estándar para Anticipo
+                    if (tipoExoData === 'Presupuesto') {
+                        // totalBudget ya viene en la respuesta de GetTotalPaidByTicket actualizada
+                        montoBase = parseFloat(payData.total_budget) || 0;
+                    }
+
+                    let montoExonerado = (montoBase * porcentaje) / 100;
+                    let montoNetoRequerido = montoBase - montoExonerado;
+                    
+                    if (totalPaidAnterior < montoNetoRequerido) {
+                        let totalConPagoActual = totalPaidAnterior + montoRefActual;
+
+                        if (totalConPagoActual < (montoNetoRequerido - 0.01)) {
+                            let montoRestante = montoNetoRequerido - totalPaidAnterior;
+                            let faltaPorPagar = montoNetoRequerido - totalConPagoActual;
+                            let tipoExoText = exoData.data.tipo_exoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+
+                        if (saveBtn) saveBtn.disabled = false;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '<span style="color: #003594;">Pago Insuficiente</span>',
+                            html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                    El ticket tiene una <strong>Exoneración Parcial</strong>. El pago que intenta registrar más lo ya pagado no cubre el saldo pendiente requerido.
+                                </p>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                    <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                    <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #003594;">
+                                    <span>Ya Pagado (Aprobado):</span><strong>$${totalPaidAnterior.toFixed(2)}</strong>
+                                </div>
+                                <hr style="border-color: #adb5bd;">
+                                <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.2em; color: #dc3545; font-weight: bold;">
+                                    <span>Saldo Pendiente Actual:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.1em; color: #ff9800; font-weight: bold;">
+                                    <span>Pago que intenta registrar:</span><span>$${montoRefActual.toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                    <span>Faltaría por pagar:</span><span>$${Math.max(0, faltaPorPagar).toFixed(2)}</span>
+                                </div>
+                            </div>`,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                            width: '500px'
+                        });
+                        return; // Detiene el guardado
+                    }
+                  } // Fin de verificación `totalPaidAnterior < montoNetoRequerido`
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error validando pagos para exoneración antes de guardar:", err);
+    }
+
+    Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
     // Preparar datos para enviar
+
     // El campo fechaPago es type="date", así que ya viene en formato YYYY-MM-DD
     let fechaPagoValue = fechaPago.value;
     

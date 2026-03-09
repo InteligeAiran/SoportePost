@@ -334,6 +334,15 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos) {
+        $result = $this->model->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+        if ($result && $result['numRows'] > 0) {
+            return pg_fetch_assoc($result['query'], 0);
+        } else {
+            return null;
+        }
+    }
+
     public function getTecnico2(){
         $result = $this->model->GetTecnico2();
 
@@ -1344,6 +1353,24 @@ class TechnicalConsultionRepository
      */
     public function GetPaymentAttachment($record_number) {
         return $this->model->GetPaymentAttachmentByRecordNumber($record_number);
+    }
+
+    /**
+     * Guarda los datos de exoneración en la tabla temporal.
+     */
+    public function GetExonerationCount($serial_pos) {
+        return $this->consultaRifDB->GetExonerationCount($serial_pos);
+    }
+
+    public function SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        return $this->model->SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user);
+    }
+
+    /**
+     * Transfiere la exoneración de la tabla temporal a la tabla principal.
+     */
+    public function TransferExoneracionFromTempToMain($serial_pos, $nro_ticket) {
+        return $this->model->TransferExoneracionFromTempToMain($serial_pos, $nro_ticket);
     }
 
 }

@@ -1442,6 +1442,96 @@ function mi_navbar() {}
             </div>
         <!--END MODAL AGREGAR DATOS DE PAGO-->
 
+        <!-- Modal Agregar Datos Exoneración -->
+        <div class="modal fade" id="modalAgregarExoneracion" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalAgregarExoneracionLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%); border-radius: 12px 12px 0 0; padding: 20px 25px;">
+                        <h5 class="modal-title d-flex align-items-center" id="modalAgregarExoneracionLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-file-earmark-check me-2" viewBox="0 0 16 16">
+                                <path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
+                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                            </svg>
+                            Detalles de Exoneración
+                        </h5>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="formExoneracion">
+                            <div class="mb-4 text-center">
+                                <label style="font-size: 120%; margin-left: -29%;" class="form-label fw-bold text-muted mb-3 d-block">Tipo de Exoneración</label>
+                                <div class="btn-group w-100" role="group" aria-label="Tipo Exoneracion">
+                                    <input type="radio" class="btn-check" name="tipo_exoneracion" id="exo_pago" value="Anticipo" autocomplete="off" checked>
+                                    <label class="btn btn-outline-warning py-2" for="exo_pago">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-stack me-2" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>
+                                        Anticipo
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="tipo_exoneracion" id="exo_taller" value="Pago taller" autocomplete="off">
+                                    <label class="btn btn-outline-warning py-2" for="exo_taller">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools me-2" viewBox="0 0 16 16"><path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.605-.183-1.164-.497-1.631L12.873 3.648a1 1 0 0 1-1.415 0l-1.06-1.06a1 1 0 0 1 0-1.415l2.279-2.63A2.996 2.996 0 0 0 13 0a3 3 0 0 0-3 3 3.003 3.003 0 0 0 .149 1.012L7.493 6.666 4.818 3.99A1 1 0 0 0 4.11 3.7h-.07a1 1 0 0 0-.814-.419L1 0Zm11.354 9.646a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708l3-3a.5.5 0 0 1 .708 0Z"/></svg>
+                                        Pago taller
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 p-3 bg-light" style="border-radius: 10px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="porcentaje_exoneracion" class="form-label fw-bold text-muted mb-0">Porcentaje Aplicado</label>
+                                    <span class="badge bg-warning text-dark fs-5 shadow-sm" id="val_porcentaje" style="min-width: 15%;">50%</span>
+                                </div>
+                                <input type="range" class="form-range custom-range" id="porcentaje_exoneracion" min="0" max="100" step="5" value="50">
+                                <div class="d-flex justify-content-between px-1 mt-1" style="font-size: 0.75rem; color: #6c757d; font-weight: 500;">
+                                    <span>0%</span>
+                                    <span>25%</span>
+                                    <span>50%</span>
+                                    <span>75%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label fw-bold text-muted mb-1 small" for="nro_exoneracion_display">Código de Exoneración (Auto)</label>
+                                <div class="input-group input-group-lg shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-warning" id="basic-addon1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 1.5 0h2a.5.5 0 0 1 0 1h-2zM13 .5a.5.5 0 0 1 .5-.5h2A1.5 1.5 0 0 1 17 1.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 1-.5-.5zM.5 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 1 0 1h-2A1.5 1.5 0 0 1 0 15.5v-2a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v2a1.5 1.5 0 0 1-1.5 1.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 .5-.5zM2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11zm9.5 1h-8v9h8v-9z"/></svg>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 fw-bold text-center" id="nro_exoneracion_display" readonly style="color: #003594 !important; background-color: #ffffff !important; letter-spacing: 2px;">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-top-0 d-flex gap-2 p-4 pt-0">
+                        <button type="button" class="btn btn-warning px-4 flex-grow-1 shadow" id="btnGuardarDatosExoneracion" style="border-radius: 8px; font-weight: 700; background: linear-gradient(135deg, #FFB700 0%, #FFA000 100%); border: none; color: #fff;">Sincronizar Datos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        #modalAgregarExoneracion .custom-range::-webkit-slider-thumb {
+            background: #FF8C00 !important;
+            box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.2);
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        #modalAgregarExoneracion .custom-range::-moz-range-thumb {
+            background: #FF8C00 !important;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        #modalAgregarExoneracion .btn-outline-warning:hover {
+            background-color: rgba(255, 140, 0, 0.1);
+            color: #FF8C00;
+        }
+        #modalAgregarExoneracion .btn-check:checked + .btn-outline-warning {
+            background-color: #FF8C00;
+            border-color: #FF8C00;
+            color: #fff;
+        }
+        </style>
+
         <input type="hidden" id="payment_id_to_save" value="">
 
         <!--MODAL FALLA NIVEL 1-->
