@@ -1227,6 +1227,9 @@ function mi_navbar()
     <link id="pagestyle" rel="stylesheet"
         href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
     <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+    <style>
+        .forced-hidden { display: none !important; }
+    </style>
 </head>
 
 <body id="fondo" class="g-sidenav-show bg-gray-100">
@@ -1606,7 +1609,8 @@ function mi_navbar()
                             </div>
                             
                             <!-- Datos del Pago -->
-                            <div class="col-12">
+                            <div class="col-12 presupuesto-col-anticipo">
+
                                 <div class="card border-0 shadow-sm mb-3 presupuesto-card-pago" style="border-radius: 12px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);">
                                     <div class="card-body p-3">
                                         <div class="d-flex align-items-center">
@@ -1620,7 +1624,7 @@ function mi_navbar()
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-6 presupuesto-col-anticipo">
                                 <label class="form-label fw-semibold mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-coin me-1" viewBox="0 0 16 16">
                                         <path fill-rule="evenodd" d="M11 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8m5-4a5 5 0 1 1-10 0 5 5 0 0 1 10 0"/>
@@ -1631,7 +1635,7 @@ function mi_navbar()
                                 <input type="text" id="presupuestoMoneda" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-md-6 presupuesto-col-anticipo">
                                 <label class="form-label fw-semibold mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-dollar me-1" viewBox="0 0 16 16">
                                         <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718zm3.391-3.836c-1.043-.263-1.6-.825-1.6-1.616 0-.944.704-1.641 1.8-1.828v3.495l-.2-.05m1.591 1.872c1.287.323 1.852.859 1.852 1.769 0 1.097-.826 1.828-2.2 1.939V8.73z"/>
@@ -1641,7 +1645,7 @@ function mi_navbar()
                                 <input type="text" id="presupuestoMontoUSD" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-md-6 presupuesto-col-anticipo">
                                 <label class="form-label fw-semibold mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-wallet2 me-1" viewBox="0 0 16 16">
                                         <path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5z"/>
@@ -1651,7 +1655,7 @@ function mi_navbar()
                                 <input type="text" id="presupuestoMetodoPago" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-md-6 presupuesto-col-anticipo">
                                 <label class="form-label fw-semibold mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-currency-exchange me-1" viewBox="0 0 16 16">
                                         <path d="M0 5a5.002 5.002 0 0 0 4.027 4.905 6.46 6.46 0 0 1 .544-.275 1.5 1.5 0 0 1 .31-.293 1.5 1.5 0 0 1 .663-.293.5.5 0 0 0 .374-.832 6.5 6.5 0 0 1 .306-.77 1.5 1.5 0 0 1 .33-.292 1.5 1.5 0 0 1 .663-.293.5.5 0 0 0 .374-.832 6.5 6.5 0 0 1 .306-.77 1.5 1.5 0 0 1 .33-.292 1.5 1.5 0 0 1 .663-.293.5.5 0 0 0 .374-.832 6.5 6.5 0 0 1 .306-.77A5 5 0 0 0 0 5m.955 1.905A4.5 4.5 0 0 1 4.5 9H5a.5.5 0 0 0 0-1h-.5a3.5 3.5 0 0 0-2.545-1.19zm4.354 0a4.5 4.5 0 0 1 2.545 1.19H7a.5.5 0 0 0 0 1h.5a4.5 4.5 0 0 1 2.545 1.19A4.5 4.5 0 0 1 11.5 9H12a.5.5 0 0 0 0-1h-.5a4.5 4.5 0 0 1-2.545-1.19A4.5 4.5 0 0 1 7.5 5H7a.5.5 0 0 0 0 1h.5a4.5 4.5 0 0 1 2.545 1.19M0 11a5 5 0 0 1 4.027-4.905 6.5 6.5 0 0 0 .306.77 1.5 1.5 0 0 0 .33.292 1.5 1.5 0 0 0 .663.293.5.5 0 0 1 .374.832 6.5 6.5 0 0 0 .306.77 1.5 1.5 0 0 0 .33.292 1.5 1.5 0 0 0 .663.293.5.5 0 0 1 .374.832 6.5 6.5 0 0 0 .306.77 1.5 1.5 0 0 0 .33.292 1.5 1.5 0 0 0 .663.293.5.5 0 0 1 .374.832 6.5 6.5 0 0 0 .306.77A5 5 0 0 1 0 11m16-6a5 5 0 0 0-4.027 4.905 6.5 6.5 0 0 1-.306-.77 1.5 1.5 0 0 1-.33-.292 1.5 1.5 0 0 1-.663-.293.5.5 0 0 0-.374-.832 6.5 6.5 0 0 1-.306-.77 1.5 1.5 0 0 1-.33-.292 1.5 1.5 0 0 1-.663-.293.5.5 0 0 0-.374-.832 6.5 6.5 0 0 1-.306-.77 1.5 1.5 0 0 1-.33-.292 1.5 1.5 0 0 1-.663-.293.5.5 0 0 0-.374-.832 6.5 6.5 0 0 1-.306-.77A5 5 0 0 0 16 5"/>
@@ -1661,33 +1665,33 @@ function mi_navbar()
                                 <input type="text" id="presupuestoMontoBS" class="form-control shadow-sm border-0" style="border-radius: 8px; background-color: #fff;" readonly>
                             </div>
                             
-                            <div class="col-md-6" id="presupuestoBancoOrigenContainer" style="display: none;">
+                            <div class="col-md-6 presupuesto-col-anticipo" id="presupuestoBancoOrigenContainer" style="display: none;">
                                 <label class="form-label fw-semibold">Banco Origen</label>
                                 <input type="text" id="presupuestoBancoOrigen" class="form-control" readonly>
                             </div>
                             
-                            <div class="col-md-6" id="presupuestoBancoDestinoContainer" style="display: none;">
+                            <div class="col-md-6 presupuesto-col-anticipo" id="presupuestoBancoDestinoContainer" style="display: none;">
                                 <label class="form-label fw-semibold">Banco Destino</label>
                                 <input type="text" id="presupuestoBancoDestino" class="form-control" readonly>
                             </div>
                             
-                            <div class="col-md-6" id="presupuestoReferenciaContainer" style="display: none;">
+                            <div class="col-md-6 presupuesto-col-anticipo" id="presupuestoReferenciaContainer" style="display: none;">
                                 <label class="form-label fw-semibold">Referencia</label>
                                 <input type="text" id="presupuestoReferencia" class="form-control" readonly>
                             </div>
                             
-                            <div class="col-md-6" id="presupuestoDepositanteContainer" style="display: none;">
+                            <div class="col-md-6 presupuesto-col-anticipo" id="presupuestoDepositanteContainer" style="display: none;">
                                 <label class="form-label fw-semibold">Depositante</label>
                                 <input type="text" id="presupuestoDepositante" class="form-control" readonly>
                             </div>
                             
-                            <div class="col-md-6" id="presupuestoFechaPagoContainer" style="display: none;">
+                            <div class="col-md-6 presupuesto-col-anticipo" id="presupuestoFechaPagoContainer" style="display: none;">
                                 <label class="form-label fw-semibold">Fecha de Pago</label>
                                 <input type="text" id="presupuestoFechaPago" class="form-control" readonly>
                             </div>
                             
                             <!-- Sección: Datos de Pago Móvil -->
-                            <div class="col-12" id="presupuestoPagoMovilContainer" style="display: none; margin-top: 15px;">
+                            <div class="col-12 presupuesto-col-anticipo" id="presupuestoPagoMovilContainer" style="display: none; margin-top: 15px;">
                                 <div class="row g-2">
                                     <!-- Origen -->
                                     <div class="col-md-6 mb-3">
@@ -1748,7 +1752,6 @@ function mi_navbar()
                                                     <input type="text" id="presupuestoDestinoTelefono" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
                                                 </div>
                                                 <div id="presupuestoDestinoBancoContainer" style="display: none;">
-                                                    <label class="form-label fw-semibold mb-1" style="font-size: 0.85rem;">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-bank me-1 text-primary" viewBox="0 0 16 16"><path d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.499.499 0 0 1-.485.62H.5a.499.499 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h.89zM3.777 3h8.447L8 1.11zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h2.5V6zm3.5 0v7h1V6zM1.5 14l-.25 1h13.5l-.25-1z"/></svg>Banco
                                                     </label>
                                                     <input type="text" id="presupuestoDestinoBanco" class="form-control" readonly style="font-size: 0.9rem; padding: 6px 10px; background-color: #e9ecef;">
@@ -1800,18 +1803,6 @@ function mi_navbar()
                                 </div>
                             </div>
                             
-                            <div class="col-md-6" id="presupuestoExoneracionContainer" style="display: none;">
-                                <label class="form-label fw-semibold mb-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-percent me-1" viewBox="0 0 16 16">
-                                        <path d="M13.442 2.558a.625.625 0 0 1 0 .884l-10 10a.625.625 0 1 1-.884-.884l10-10a.625.625 0 0 1 .884 0M4.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m7 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
-                                    </svg>
-                                    Exoneración (<span id="presupuestoPorcentajeExo">0</span>%)
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; background-color: #ffe0b2; color: #e65100; font-weight: 600; border: 1px solid #ffd180;">$</span>
-                                    <input type="text" id="presupuestoMontoExonerado" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; background-color: #fff3e0; border: 1px solid #ffd180; color: #e65100; font-weight: bold;" readonly>
-                                </div>
-                            </div>
                             
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold mb-2">
@@ -1850,6 +1841,19 @@ function mi_navbar()
                                 <div class="input-group">
                                     <span class="input-group-text" style="border-radius: 8px 0 0 8px; padding-right: 15px; color: #495057; font-weight: 600; background-color: darkgray; height: 100%;">Bs</span>
                                     <input type="text" id="presupuestoDiferenciaBS" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; transition: all 0.3s ease; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" id="presupuestoExoneracionContainer" style="display: none;">
+                                <label class="form-label fw-semibold mb-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-percent me-1" viewBox="0 0 16 16">
+                                        <path d="M13.442 2.558a.625.625 0 0 1 0 .884l-10 10a.625.625 0 1 1-.884-.884l10-10a.625.625 0 0 1 .884 0M4.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m7 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                                    </svg>
+                                    <span id="presupuestoLabelExoneracion">Exoneración</span> <span id="presupuestoPorcentajeContent"><span id="presupuestoPorcentajeExo">0</span>%</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="border-radius: 8px 0 0 8px; background-color: darkgray; color: #495057; font-weight: 600; height: 100%;">$</span>
+                                    <input type="text" id="presupuestoMontoExonerado" class="form-control shadow-sm border-0" style="border-radius: 0 8px 8px 0; background-color: #f5f5f5; border-left: 1px solid #e9ecef; padding-left: 12px;" readonly>
                                 </div>
                             </div>
                             
@@ -2036,6 +2040,23 @@ function mi_navbar()
                                     </label>
                                     <input type="text" class="form-control" id="serialPosPago" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px;">
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Desglose de Exoneración -->
+                        <div id="exonerationBreakdownContainer" class="form-section" style="display: none; border: 1px dashed #667eea !important; background: #fdfdfd;">
+                            <div class="form-section-header">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-percent me-2" viewBox="0 0 16 16">
+                                    <path d="M13.442 2.558a.625.625 0 0 1 0 .884l-10 10a.625.625 0 1 1-.884-.884l10-10a.625.625 0 0 1 .884 0M4.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m7 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                                </svg>
+                                <h6 class="form-section-title">Desglose de Exoneración</h6>
+                            </div>
+                            <div id="exonerationBreakdownList" class="px-2">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                            <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center px-2">
+                                <span class="fw-bold text-dark">AHORRO TOTAL:</span>
+                                <span class="fw-bold" id="exonerationTotalAhorro" style="color: #2ecc71; font-size: 1.1rem;">$0.00</span>
                             </div>
                         </div>
 

@@ -1096,7 +1096,7 @@ function mi_navbar() {}
                                             <input class="form-check-input" type="checkbox" id="checkEnvio" value="envio">
                                             <label class="form-check-label" for="checkEnvio"> Documento de Envío</label>
                                         </div>
-                                        <div id="checkExoneracionContainer" class="form-check">
+                                        <div id="checkExoneracionContainer" class="form-check" style="display: none;">
                                             <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
                                             <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Exoneración</label>
                                         </div>
@@ -1447,13 +1447,13 @@ function mi_navbar() {}
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                     <div class="modal-header text-white" style="background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%); border-radius: 12px 12px 0 0; padding: 20px 25px;">
-                        <h5 class="modal-title d-flex align-items-center" id="modalAgregarExoneracionLabel">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-file-earmark-check me-2" viewBox="0 0 16 16">
-                                <path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
-                                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
-                            </svg>
                             Detalles de Exoneración
                         </h5>
+                        <button type="button" class="btn-close-custom" id="btnCloseExoModal" aria-label="Close">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
                     <div class="modal-body p-4">
                         <form id="formExoneracion">
@@ -1477,9 +1477,9 @@ function mi_navbar() {}
                             <div class="mb-4 p-3 bg-light" style="border-radius: 10px;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <label for="porcentaje_exoneracion" class="form-label fw-bold text-muted mb-0">Porcentaje Aplicado</label>
-                                    <span class="badge bg-warning text-dark fs-5 shadow-sm" id="val_porcentaje" style="min-width: 15%;">50%</span>
+                                    <span class="badge bg-warning text-dark fs-5 shadow-sm" id="val_porcentaje" style="min-width: 15%;">100%</span>
                                 </div>
-                                <input type="range" class="form-range custom-range" id="porcentaje_exoneracion" min="0" max="100" step="5" value="50">
+                                <input type="range" class="form-range custom-range" id="porcentaje_exoneracion" min="0" max="100" step="5" value="100" disabled style="cursor: not-allowed; opacity: 0.7;">
                                 <div class="d-flex justify-content-between px-1 mt-1" style="font-size: 0.75rem; color: #6c757d; font-weight: 500;">
                                     <span>0%</span>
                                     <span>25%</span>
@@ -1529,6 +1529,46 @@ function mi_navbar() {}
             background-color: #FF8C00;
             border-color: #FF8C00;
             color: #fff;
+        }
+
+        /* Estilo para el botón de cierre personalizado */
+        .btn-close-custom {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+            z-index: 1060;
+            padding: 0;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-close-custom:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-close-custom:active {
+            transform: rotate(90deg) scale(0.95);
+        }
+
+        .btn-close-custom svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+            stroke-width: 2.5;
+            transition: all 0.3s ease;
         }
         </style>
 

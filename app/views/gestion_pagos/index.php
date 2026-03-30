@@ -894,23 +894,28 @@ function mi_navbar() {}
                                 </div>
                             </div>
 
-                            <!-- SECCIÓN DEDICADA PARA EXONERACIÓN (INFORMATIVA) -->
+                            <!-- SECCIÓN DEDICADA PARA EXONERACIÓN (INFORMATIVA - DESGLOSE) -->
                             <div class="row mb-3" id="exonerationSection" style="display: none;">
                                 <div class="col-12">
-                                    <div class="card border-0 shadow-sm" style="background: rgba(255, 81, 47, 0.05); border: 1px dashed #FF512F !important; border-radius: 12px; padding: 10px 15px;">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <div style="background: #FF512F; color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                                                    <i class="fas fa-percent" style="font-size: 0.9rem;"></i>
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0 fw-bold" style="font-size: 0.8rem; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px;">Desglose de Exoneración</h6>
-                                                    <p id="exonerationDetailText" class="mb-0 text-muted" style="font-size: 0.85rem;"></p>
-                                                </div>
+                                    <div class="card border-0 shadow-sm" style="background: rgba(102, 126, 234, 0.02); border: 1px dashed #667eea !important; border-radius: 12px; padding: 15px;">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 12px; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="19" y1="5" x2="5" y2="19"></line>
+                                                    <circle cx="6.5" cy="6.5" r="2.5"></circle>
+                                                    <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                                                </svg>
                                             </div>
-                                            <div class="text-end">
-                                                <span class="badge" style="background: #FF512F; color: white; padding: 6px 12px; border-radius: 6px; font-weight: 600;" id="exonerationAmountText"></span>
-                                            </div>
+                                            <h6 class="mb-0 fw-bold" style="font-size: 0.9rem; color: #2c3e50; text-transform: uppercase; letter-spacing: 0.5px;">Desglose de Exoneración</h6>
+                                        </div>
+                                        
+                                        <div id="exonerationBreakdownList">
+                                            <!-- Las filas se insertarán dinámicamente desde JS -->
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top" style="border-top-style: dashed !important;">
+                                            <span class="fw-bold" style="color: #444; font-size: 0.85rem;">AHORRO TOTAL:</span>
+                                            <span id="exonerationTotalAhorro" class="fw-bold text-danger" style="font-size: 1.1rem;">$0.00</span>
                                         </div>
                                     </div>
                                 </div>

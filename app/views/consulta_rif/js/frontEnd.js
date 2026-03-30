@@ -861,7 +861,7 @@ function updateDocumentTypeVisibility() {
     }
   } else {
     // Mostrar los radio buttons si no es Actualización de Software ni Sin Llaves/Dukpt Vacío
-    checkExoneracionContainer.style.display = '';
+    checkExoneracionContainer.style.display = 'none'; // Forzar oculto
     // checkAnticipoContainer.style.display = ''; // Original - Comentado por petición del usuario
     checkAnticipoContainer.style.display = 'none'; // Forzar oculto siempre
   }
@@ -1377,11 +1377,11 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       const checkExoneracion = document.getElementById("checkExoneracionContainer");
       const checkAnticipo = document.getElementById("checkAnticipoContainer");
       const checkEnvio = document.getElementById("checkEnvioContainer");
-      if (checkExoneracion) checkExoneracion.style.display = "block";
+      if (checkExoneracion) checkExoneracion.style.display = "none";
       // if (checkAnticipo) checkAnticipo.style.display = "block"; // Original
       if (checkAnticipo) checkAnticipo.style.display = "none"; // Forzar oculto
       if (checkEnvio) checkEnvio.style.display = "block";
-      if (botonExoneracion) botonExoneracion.style.display = "inline-block";
+      if (botonExoneracion) botonExoneracion.style.display = "none";
       // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
       if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
@@ -1421,10 +1421,10 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       resultadoElemento.style.color = "";
       const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
       const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
-      if (checkExoneracionContainer) checkExoneracionContainer.style.display = "block";
+      if (checkExoneracionContainer) checkExoneracionContainer.style.display = "none";
       // if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block"; // Original
       if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none"; // Forzar oculto
-      if (botonExoneracion) botonExoneracion.style.display = "inline-block";
+      if (botonExoneracion) botonExoneracion.style.display = "none";
       // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
       if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
@@ -1659,14 +1659,14 @@ function VerificarSucursales(rif) {
                         }
                         if (checkEnvioContainer) {
                             checkEnvioContainer.style.display = "none";
-                            checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de exoneración
+                            checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de exoneración
                             // checkAnticipoContainer.style.display = "block"; // Original
                             checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         }
                       }else{
                         // checkAnticipoContainer.style.display = "block"; // Original
                         checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
-                        checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de ex
+                        checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de ex
                         checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
                       }
                 } else {
@@ -6391,7 +6391,12 @@ function clearFormFields() {
     const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
     
     if (botonCargaPDFEnv) botonCargaPDFEnv.style.display = "none";
-    if (botonCargaExoneracion) botonCargaExoneracion.style.display = "none";
+    if (botonCargaExoneracion) {
+      const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+      if (checkExoneracionContainer) {
+        checkExoneracionContainer.style.display = "none";
+      }
+    }
     if (botonCargaAnticipo) botonCargaAnticipo.style.display = "none";
   }
 
@@ -6413,7 +6418,7 @@ function restaurarVisibilidadCompleta() {
   const checkEnvioContainer = document.getElementById("checkEnvioContainer");
   
   if (checkExoneracionContainer) {
-    checkExoneracionContainer.style.display = "block";
+    checkExoneracionContainer.style.display = "none";
   }
   if (checkAnticipoContainer) {
     checkAnticipoContainer.style.display = "block";
@@ -9541,6 +9546,69 @@ window.mostrarEstadoCola = mostrarEstadoCola;
    LÓGICA DE EXONERACIÓN (NUEVA)
    ========================================================================= */
 
+/**
+ * Actualiza el código de exoneración dinámicamente según el tipo seleccionado.
+ */
+function updateExoCodeByType(tipo, serial) {
+    const inputExo = document.getElementById("nro_exoneracion_display");
+    if (!inputExo) return;
+
+    // 1. Obtener los ÚLTIMOS 4 dígitos del serial (ej: 8956)
+    let last4Serial = "0000";
+    if (serial) {
+        const serialStr = String(serial).trim();
+        last4Serial = serialStr.slice(-4); 
+    }
+
+    // 2. Obtener los PRIMEROS 4 dígitos del ID de Cliente (id_cliente)
+    // Priorizamos globalIdClient como solicitaste
+    const clientIdRaw = (typeof globalIdClient !== 'undefined' && globalIdClient) ? String(globalIdClient).trim() : '0';
+    
+    // Tomamos solo los primeros 4 del ID de cliente
+    const exoIdPart = clientIdRaw.substring(0, 4); 
+
+    // 3. Sufijo por tipo
+    const typeIndicator = (tipo === 'Anticipo') ? '-A' : '-T';
+    
+    // 4. Formato final: Exo[ID_CLIENTE_4]-[SERIAL_4]-[TIPO]
+    // Ejemplo esperado: Exo7473-8956-A
+    const nroExo = `Exo${exoIdPart}-${last4Serial}${typeIndicator}`;
+    
+    inputExo.value = nroExo;
+    
+    // Consola para que verifiques en el trabajo si los datos son correctos
+    console.log("Generando Exo Code:", {
+        clienteOriginal: clientIdRaw,
+        clienteCortado: exoIdPart,
+        serialOriginal: serial,
+        serialCortado: last4Serial,
+        resultado: nroExo
+    });
+}
+
+/**
+ * Ajusta el estado del slider de porcentaje según el tipo de exoneración.
+ * Para Anticipo: 100% y deshabilitado.
+ */
+function adjustExoSliderByType(tipo) {
+    const slider = document.getElementById("porcentaje_exoneracion");
+    const badge = document.getElementById("val_porcentaje");
+    
+    if (!slider || !badge) return;
+
+    if (tipo === 'Anticipo') {
+        slider.value = 100;
+        slider.disabled = true;
+        badge.textContent = "100%";
+        slider.style.cursor = "not-allowed";
+        slider.style.opacity = "0.7";
+    } else {
+        slider.disabled = false;
+        slider.style.cursor = "pointer";
+        slider.style.opacity = "1";
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     const checkExoneracion = document.getElementById("checkExoneracion");
     const porcentajeExo = document.getElementById("porcentaje_exoneracion");
@@ -9562,19 +9630,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     serial = ss1.value;
                 }
                 
-                // Generar Número de Exoneración: Exo[ID_CLIENTE]-[últimos 4 del serial]
-                let last4 = "0000";
-                if (serial && serial.length >= 4) {
-                    last4 = serial.substring(serial.length - 4);
-                } else if (serial) {
-                    last4 = serial.padStart(4, '0');
-                }
-                
-                const clientIdStr = globalIdClient ? globalIdClient.toString().padStart(2, '0') : "00";
-                const nroExo = "Exo" + clientIdStr + "-" + last4;
-                
-                const nroExoneracionDisplay = document.getElementById("nro_exoneracion_display");
-                if (nroExoneracionDisplay) nroExoneracionDisplay.value = nroExo;
+                // Obtener el tipo seleccionado actualmente
+                const tipoRadio = document.querySelector('input[name="tipo_exoneracion"]:checked');
+                const tipo = tipoRadio ? tipoRadio.value : 'Anticipo';
+
+                // Actualizar el código inicial y el slider según el tipo
+                updateExoCodeByType(tipo, serial);
+                adjustExoSliderByType(tipo);
                 
                 // Abrir Modal con Bootstrap 5
                 const modalEl = document.getElementById('modalAgregarExoneracion');
@@ -9598,6 +9660,23 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
+    // 2. Escuchar cambios en el tipo de exoneración para actualizar el código
+    const radiosTipoExo = document.querySelectorAll('input[name="tipo_exoneracion"]');
+    radiosTipoExo.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                let serial = "";
+                const ss = document.getElementById("serialSelect");
+                const ss1 = document.getElementById("serialSelect1");
+                if (ss && ss.value) serial = ss.value;
+                else if (ss1 && ss1.value) serial = ss1.value;
+
+                updateExoCodeByType(this.value, serial);
+                adjustExoSliderByType(this.value);
+            }
+        });
+    });
+
     // 2. Actualizar Valor del Porcentaje (Range)
     if (porcentajeExo && valPorcentaje) {
         porcentajeExo.addEventListener("input", function() {
@@ -9656,7 +9735,8 @@ function saveExoneracionData() {
                 title: "¡Sincronizado!",
                 text: "Los datos de exoneración se han vinculado correctamente. Ahora proceda a cargar el documento.",
                 icon: "success",
-                confirmButtonColor: "#FF8C00"
+                confirmButtonColor: "#FF8C00",
+                color: 'black'
             });
             
             // Cerrar el modal usando la instancia guardada de Bootstrap 5
@@ -9668,14 +9748,14 @@ function saveExoneracionData() {
                     navbar.style.display = "inline-block";
                   }
             } else {
-                // Fallback por si acaso
+                // Fallback con new bootstrap
                 const modalEl = document.getElementById('modalAgregarExoneracion');
                 if (modalEl) {
-                   const bsModal = bootstrap.Modal.getInstance(modalEl);
+                   const bsModal = new bootstrap.Modal(modalEl);
                    if (bsModal) bsModal.hide();
                 }
             }
-                        
+            
             // IMPORTANTE: Preservar el nro_exoneracion para enviarlo como record_number en la carga de archivo
             window.nroExoneracionActual = nroExoneracion;
             
@@ -9695,3 +9775,47 @@ function saveExoneracionData() {
         Swal.fire("Error", "Error de servidor al guardar exoneración", "error");
     });
 }
+
+// Delegación de eventos para el botón de cierre
+document.addEventListener("click", function(e) {
+    const closeExoBtn = e.target.closest('.btn-close-custom');
+    if (closeExoBtn) {
+        const modalEl = document.getElementById('modalAgregarExoneracion');
+        if (modalEl) {
+            // Según requerimiento explícito: utilizar new bootstrap.Modal
+            const bsModal = new bootstrap.Modal(modalEl);
+            bsModal.hide();
+
+            // Limpieza manual drástica por si quedan backdrops residuales
+            if (window.modalExoInstance) {
+                window.modalExoInstance.hide();
+            }
+            
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Restaurar el navbar
+            const navbar = document.getElementById("sidenav-main");
+            if (navbar) {
+                navbar.style.display = "inline-block";
+            }
+            
+            // Deseleccionar el radio button al cerrar con la X
+            const checkExoneracion = document.getElementById("checkExoneracion");
+            if (checkExoneracion) {
+                checkExoneracion.checked = false;
+            }
+            const radiosDocType = document.querySelectorAll('input[name="documentType"]');
+            radiosDocType.forEach(radio => radio.checked = false);
+
+            // Ocultar el botón para cargar documentos al cerrar con la X
+            const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+            if (botonCargaExoneracion) {
+                botonCargaExoneracion.style.display = "none";
+            }
+        }
+    }
+});

@@ -143,6 +143,11 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetDataTicketClosedByNro($nro_ticket){
+        $result = $this->model->GetDataTicketClosedByNro($nro_ticket);
+        return $result ? $result['row'] : null;
+    }
+
     public  function GetClientInfo($serial){
         // Lógica para obtener información del cliente
         $result = $this->model->GetClientInfo($serial);

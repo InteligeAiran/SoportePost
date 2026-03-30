@@ -1964,9 +1964,9 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
     });
 
     // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO (Regular)
-    const pagoFileInput = document.getElementById("pago_documentFile");
-    if (pagoFileInput) {
-        pagoFileInput.addEventListener("change", function(e) {
+    // === SOPORTE DIGITAL (NUEVO PAGO) ===
+    if (document.getElementById('pago_documentFile')) {
+        $(document).on('change', '#pago_documentFile', function() {
             handleFileSelection(
                 this, 
                 "pago_fileStatusContainer", 
@@ -1975,18 +1975,63 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                 "pago_fileDropZone", 
                 "btnGuardarPagoPresupuesto"
             );
+            // Efecto premium: Borde punteado verde y fondo menta
+            const wrapper = document.getElementById('pago_upload_wrapper');
+            if (wrapper && this.files.length > 0) {
+                wrapper.style.background = "#effaf3";
+                wrapper.style.border = "2px dashed #10b981";
+                wrapper.style.padding = "15px";
+            }
         });
     }
 
-    // Resetear al hacer click en el nombre (Regular modal)
-    $(document).on('click', '#pago_fileStatusContainer', function() {
-        resetFileUI("pago_documentFile", "pago_fileStatusContainer", "pago_fileIconDisplay", "pago_fileNameText", "pago_fileDropZone");
-        document.getElementById('pago_documentFile').click();
+    // Botón Limpiar Pago (NUEVO PAGO)
+    $(document).on('click', '#btn_clear_pago_file', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        resetFormPago(); // Reuse existing reset or custom one
     });
 
+    function resetFormPago() {
+        // Reset Wrapper
+        const wrapper = document.getElementById('pago_upload_wrapper');
+        if (wrapper) {
+            wrapper.style.background = "transparent";
+            wrapper.style.border = "none";
+            wrapper.style.padding = "0";
+        }
+
+        // Reset inputs
+        const ids = ["formaPago", "montoBs", "montoRef", "referencia", "depositante", "obsAdministracion", "pago_documentFile"];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+
+        const moneda = document.getElementById("moneda");
+        if (moneda) {
+            moneda.value = "";
+            moneda.removeAttribute("disabled");
+        }
+
+        // Reset File UI
+        resetDocumentoPagoUI();
+        
+        const bancoCont = document.getElementById("bancoFieldsContainer");
+        if (bancoCont) bancoCont.style.display = "none";
+        
+        const pmCont = document.getElementById("pagoMovilFieldsContainer");
+        if (pmCont) pmCont.style.display = "none";
+    }
+
     function resetDocumentoPagoUI() {
+        const wrapper = document.getElementById('pago_upload_wrapper');
+        if (wrapper) {
+            wrapper.style.background = "transparent";
+            wrapper.style.border = "none";
+            wrapper.style.padding = "0";
+        }
         resetFileUI("pago_documentFile", "pago_fileStatusContainer", "pago_fileIconDisplay", "pago_fileNameText", "pago_fileDropZone");
-        validateBudget(false);
     }
 
     // VALIDACION DE MONTO LIMITE (PRESUPUESTO)
@@ -3168,32 +3213,46 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
                     montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
                     
-                    // 3. SECCIÓN DEDICADA DE EXONERACIÓN (INFORMATIVA)
+                    // 3. SECCIÓN DEDICADA DE EXONERACIÓN (INFORMATIVA - DESGLOSE DETALLADO)
                     const exonerationSection = document.getElementById("exonerationSection");
-                    const exonerationDetailText = document.getElementById("exonerationDetailText");
-                    const exonerationAmountText = document.getElementById("exonerationAmountText");
-                    
-                    if (exoneracionPorcentaje > 0 && exonerationSection) {
+                    const exonerationList = document.getElementById("exonerationBreakdownList");
+                    const totalAhorroElement = document.getElementById("exonerationTotalAhorro");
+
+                    if (exonerationSection && exonerationList && response.all_exonerations && response.all_exonerations.length > 0) {
                         exonerationSection.style.display = "block";
-                        if (exonerationDetailText) {
-                            // Base para el cálculo informativo: Dinámico basado en tipo_exoneracion
-                            let baseParaInfo = window.nominalAnticipoBase; // Default
-                            if (tipoExoneracion === 'Presupuesto') {
-                                baseParaInfo = totalBudget > 0 ? totalBudget : 0;
+                        exonerationList.innerHTML = "";
+                        let totalAhorro = 0;
+
+                        response.all_exonerations.forEach(exo => {
+                            let type = exo.tipo_exoneracion || 'Anticipo';
+                            let pct = parseFloat(exo.porcentaje) || 0;
+                            
+                            // Determinar base según tipo
+                            let baseValue = 30.00; // Default Anticipo
+                            if (type.toLowerCase() === 'pago taller' || type.toLowerCase() === 'taller' || type.toLowerCase() === 'presupuesto') {
+                                // Usar presupuesto bruto como base para el cálculo si está disponible
+                                let grossBudget = parseFloat(response.gross_budget) || totalBudget;
+                                baseValue = grossBudget > 0 ? grossBudget : 0;
                             }
                             
-                            const descuentoInfo = (baseParaInfo * exoneracionPorcentaje) / 100;
-                            const montoNetoInformativo = baseParaInfo - descuentoInfo;
-                            
-                            exonerationDetailText.innerHTML = `
-                                <span style="font-weight: 500;">Base (${tipoExoneracion}):</span> $${baseParaInfo.toFixed(2)} | 
-                                <span style="font-weight: 500;">Exoneración:</span> ${exoneracionPorcentaje}% | 
-                                <span style="font-weight: 500;">Neto:</span> $${montoNetoInformativo.toFixed(2)}
+                            let savings = (baseValue * pct) / 100;
+                            totalAhorro += savings;
+
+                            const row = document.createElement("div");
+                            row.className = "d-flex justify-content-between align-items-center mb-2";
+                            row.style.fontSize = "0.85rem";
+                            row.innerHTML = `
+                                <div class="text-muted">
+                                    <span class="fw-bold text-dark">${type}:</span> 
+                                    Base $${baseValue.toFixed(2)} (${pct}%)
+                                </div>
+                                <div class="fw-bold text-success">-$${savings.toFixed(2)}</div>
                             `;
-                            
-                            if (exonerationAmountText) {
-                                exonerationAmountText.textContent = `Ahorro -$${descuentoInfo.toFixed(2)}`;
-                            }
+                            exonerationList.appendChild(row);
+                        });
+
+                        if (totalAhorroElement) {
+                            totalAhorroElement.textContent = `-$${totalAhorro.toFixed(2)}`;
                         }
                     } else if (exonerationSection) {
                         exonerationSection.style.display = "none";
@@ -4911,27 +4970,25 @@ function handleFileSelection(input, containerId, iconId, textId, dropZoneId, btn
         const isValidType = allowedTypes.includes(file.type);
         const isValidSize = file.size <= 5 * 1024 * 1024;
 
-        const successIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>';
-        const errorIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ef4444" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/></svg>';
-
         if (isValidType && isValidSize) {
+            // Estilo Premium: Tarjeta blanca sobre fondo esmeralda (fondo puesto por el listener)
             if (container) {
-                container.style.background = "#f0fdf4";
-                container.style.borderColor = "#86efac";
+                container.style.background = "#ffffff";
+                container.style.border = "1px solid #d1fae5";
+                container.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
+                container.style.borderRadius = "16px";
             }
-            if (text) text.style.color = "#16a34a";
-            if (icon) icon.innerHTML = successIcon;
+            if (text) text.style.color = "#065f46";
             if (btn) btn.disabled = false;
         } else {
             if (container) {
                 container.style.background = "#fff5f5";
-                container.style.borderColor = "#feb2b2";
+                container.style.border = "1px solid #feb2b2";
             }
             if (text) {
                 text.style.color = "#c53030";
-                text.textContent = file.name + (isValidSize ? ' (Formato no permitido)' : ' (Excede 5MB)');
+                text.textContent = !isValidType ? "Formato no permitido" : "Excede 5MB";
             }
-            if (icon) icon.innerHTML = errorIcon;
             if (btn) {
                 btn.disabled = true;
                 btn.title = "Archivo no válido";
@@ -5240,7 +5297,31 @@ $(document).on('change', '#sust_documentFile', function() {
         "sust_fileDropZone", 
         "btnGuardarSustituirPago"
     );
+    // Efecto premium: Borde punteado verde y fondo menta
+    const wrapper = document.getElementById('sust_upload_wrapper');
+    if (wrapper && this.files.length > 0) {
+        wrapper.style.background = "#effaf3";
+        wrapper.style.border = "2px dashed #10b981";
+        wrapper.style.padding = "15px";
+    }
 });
+
+// Botón Limpiar Sustitución (Sustituir pago)
+$(document).on('click', '#btn_clear_sust_file', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    resetSustFileUI();
+});
+
+function resetSustFileUI() {
+    const wrapper = document.getElementById('sust_upload_wrapper');
+    if (wrapper) {
+        wrapper.style.background = "transparent";
+        wrapper.style.border = "none";
+        wrapper.style.padding = "0";
+    }
+    resetFileUI("sust_documentFile", "sust_fileStatusContainer", "sust_fileIconDisplay", "sust_fileNameText", "sust_fileDropZone");
+}
 
 // Permitir resetear al hacer click en el cuadro del nombre (Sustitución modal)
 $(document).on('click', '#sust_fileStatusContainer', function() {

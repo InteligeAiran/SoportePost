@@ -737,13 +737,14 @@ class consulta_rifModel extends Model
             $id_status_domiciliacion_inicial = 1; 
 
             $sqlInsertHistoryCrear = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer, %d::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,
                 (int) $id_status_ticket_inicial,
                 (int) $id_accion_ticket_crear,
                 (int) $id_status_payment,
-                (int) $id_status_domiciliacion_inicial
+                (int) $id_status_domiciliacion_inicial,
+                (int) $coordinador
             );
             $resultHistoryCrear = $this->db->pgquery($sqlInsertHistoryCrear);
             
@@ -757,13 +758,14 @@ class consulta_rifModel extends Model
             $id_accion_ticket = 4; 
 
             $sqlInsertHistoryCoord = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer, %d::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,
                 (int) $id_status_ticket_inicial,
                 (int) $id_accion_ticket,
                 (int) $id_status_payment,
-                (int) $id_status_domiciliacion_inicial
+                (int) $id_status_domiciliacion_inicial,
+                (int) $coordinador
             );
             $resultHistoryCoord = $this->db->pgquery($sqlInsertHistoryCoord);
             
@@ -840,7 +842,7 @@ class consulta_rifModel extends Model
 
     // Nueva función para insertar en archivos_adjuntos
 
-    public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type, $record_number = null)
+    public function saveArchivoAdjunto($ticket_id, $Nr_ticket, $uploaded_by_user_id, $original_filename, $stored_filename, $file_path, $mime_type, $file_size_bytes, $document_type, $record_number = null, $skip_sync = false)
     {
         try {
             $db_conn = $this->db->getConnection();
@@ -895,12 +897,14 @@ class consulta_rifModel extends Model
             error_log("saveArchivoAdjunto: Linkage Affected Rows: " . pg_affected_rows($resLink));
 
             // PATRÓN saveDocument2: Determinación de estatus e historial
-            $id_status_payment = $this->determineStatusPayment($Nr_ticket, $document_type);
-            
-            // Sync status and history using helper
-            $this->syncTicketStatusAndHistoryByNro($Nr_ticket, $uploaded_by_user_id, $id_status_payment);
+            if (!$skip_sync) {
+                $id_status_payment = $this->determineStatusPayment($Nr_ticket, $document_type);
+                
+                // Sync status and history using helper
+                $this->syncTicketStatusAndHistoryByNro($Nr_ticket, $uploaded_by_user_id, $id_status_payment);
+            }
 
-            return ['success' => true];
+            return ['success' => true, 'id' => $new_img_id];
 
         } catch (Throwable $e) {
             error_log("Excepción en saveArchivoAdjunto: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
@@ -1317,6 +1321,24 @@ class consulta_rifModel extends Model
         }
     }
 
+    public function GetTicketDataExoneracion($id_user)
+    {
+
+        try {
+
+            $sql = "SELECT * FROM getdataticketexoneracion(" . $id_user . ")";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            // Manejar excepciones
+
+        }
+    }
+
 
 
      public function GetCoordinator()
@@ -1357,17 +1379,16 @@ class consulta_rifModel extends Model
 
     }
 
-    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos) {
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos = null) {
         try {
             $db_conn = $this->db->getConnection();
-            $sql = "SELECT porcentaje, tipo_exoneracion FROM exoneraciones 
-                    WHERE nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket) . " 
-                    AND serial_pos = " . pg_escape_literal($db_conn, $serial_pos) . " 
-                    AND tipo_exoneracion = 'Anticipo' 
-                    ORDER BY id_exoneracion DESC LIMIT 1";
+            $sql = "SELECT porcentaje, tipo_exoneracion, id_status_payment FROM exoneraciones 
+                    WHERE TRIM(nro_ticket) = " . pg_escape_literal($db_conn, trim($nro_ticket)) . " 
+                    AND (is_substituted IS NULL OR is_substituted = FALSE)
+                    ORDER BY id_exoneracion ASC";
 
-            $result = Model::getResult($sql, $this->db);
-            return $result;
+            return Model::getResult($sql, $this->db);
+
         } catch (Throwable $e) {
             error_log("Error in GetExoneracionPorcentaje: " . $e->getMessage());
             return false;
@@ -1390,6 +1411,30 @@ class consulta_rifModel extends Model
 
         }
 
+    }
+
+    /**
+     * Verifica si un ticket ha pasado por el taller (new_action = 15)
+     * en la tabla tickets_status_history.
+     * 
+     * @param int $id_ticket ID del ticket
+     * @return bool True si ha pasado por taller, False de lo contrario
+     */
+    public function CheckTicketWorkshopHistory($id_ticket) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sql = "SELECT COUNT(*) as count FROM tickets_status_history 
+                    WHERE id_ticket = " . pg_escape_literal($db_conn, $id_ticket) . " 
+                    AND new_action = 15";
+            $result = Model::getResult($sql, $this->db);
+            if ($result && isset($result['row']['count'])) {
+                return (int)$result['row']['count'] > 0;
+            }
+            return false;
+        } catch (Throwable $e) {
+            error_log("Error in CheckTicketWorkshopHistory: " . $e->getMessage());
+            return false;
+        }
     }
 
     public function GetDomiciliacion($id_ticket){
@@ -4959,7 +5004,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
             $escaped_document_type = pg_escape_literal($db_conn, $documentType);
             
-            $sql = "SELECT * FROM archivos_adjuntos WHERE nro_ticket = $escaped_ticket_id AND document_type = $escaped_document_type ORDER BY id DESC LIMIT 1";
+            $sql = "SELECT adj.*, e.id_exoneracion, pr.id_payment_record
+                    FROM archivos_adjuntos adj
+                    LEFT JOIN exoneraciones e ON adj.record_number = e.nro_exoneracion
+                    LEFT JOIN payment_records pr ON adj.record_number = pr.record_number
+                    WHERE adj.nro_ticket = $escaped_ticket_id AND adj.document_type = $escaped_document_type 
+                    ORDER BY adj.id DESC LIMIT 1";
             
             $result = $this->db->pgquery($sql);
 
@@ -4988,19 +5038,60 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
         } catch (Throwable $e) {
-
-            error_log("Excepción en getDocumentByType: " . $e->getMessage());
-
+            error_log("Error en getDocumentByType: " . $e->getMessage());
             return false;
-
         }
-
     }
 
+    public function getDocumentExoneracionByType($ticketId, $documentType) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_ticket_id = pg_escape_literal($db_conn, $ticketId);
+            
+            // Lógica especial para exoneraciones (Anticipo y Pago taller)
+            if (in_array(strtolower($documentType), ['anticipo', 'exoneracion'])) {
+                $tipoBusqueda = (strtolower($documentType) === 'anticipo') ? 'Anticipo' : 'Pago taller';
+                $escaped_tipo = pg_escape_literal($db_conn, $tipoBusqueda);
+                
+                $sql = "SELECT adj.* 
+                        FROM exoneraciones e
+                        JOIN archivos_adjuntos adj ON e.nro_exoneracion = adj.record_number
+                        WHERE e.nro_ticket = $escaped_ticket_id 
+                          AND e.tipo_exoneracion ILIKE $escaped_tipo
+                        ORDER BY e.fecha_creacion DESC LIMIT 1";
+                
+                $result = $this->db->pgquery($sql);
+                
+                if ($result && pg_num_rows($result) > 0) {
+                    return pg_fetch_assoc($result);
+                }
+                
+                // Fallback: Si no hay match por record_number, buscar por document_type directamente
+                $escaped_doc_type = pg_escape_literal($db_conn, $documentType);
+                $sqlFallback = "SELECT * FROM archivos_adjuntos WHERE nro_ticket = $escaped_ticket_id AND document_type ILIKE $escaped_doc_type ORDER BY id DESC LIMIT 1";
+                $resultFallback = $this->db->pgquery($sqlFallback);
+                if ($resultFallback && pg_num_rows($resultFallback) > 0) {
+                    return pg_fetch_assoc($resultFallback);
+                }
+                
+                return false;
+            } else {
+                // Caso general (presupuesto, etc.)
+                $escaped_document_type = pg_escape_literal($db_conn, $documentType);
+                $sql = "SELECT * FROM archivos_adjuntos WHERE nro_ticket = $escaped_ticket_id AND document_type = $escaped_document_type ORDER BY id DESC LIMIT 1";
+                $result = $this->db->pgquery($sql);
+                
+                if ($result && pg_num_rows($result) > 0) {
+                    return pg_fetch_assoc($result);
+                }
+                return false;
+            }
 
-
-
-
+        } catch (Throwable $e) {
+            error_log("Error en getDocumentExoneracionByType: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function getNonRejectedDocumentByType($ticketId, $documentType) {
 
@@ -5159,6 +5250,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         // 2. ACTUALIZAR payment_records Y archivos_adjuntos
         $record_number_rechazado = null;
         $is_payment_document = in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago']);
+        $is_exoneration_document = ($document_type === 'Exoneracion');
 
         if ($is_payment_document && !empty($nro_ticket)) {
             $status_rechazado = 13;
@@ -5189,16 +5281,52 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $sqlAdjuntos = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE record_number = $escaped_record";
                 $resAdj = pg_query($db_conn, $sqlAdjuntos);
                 
-                // Fallback si no afectó filas
+                // Fallback si no afectó filas (tal vez no tenía record_number)
                 if ($resAdj && pg_affected_rows($resAdj) === 0) {
-                    $sqlFallback = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE nro_ticket = $escaped_nro_ticket AND document_type = $escaped_document_type AND (record_number IS NULL OR record_number = '')";
+                    $sqlFallback = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE id = (SELECT id FROM archivos_adjuntos WHERE nro_ticket = $escaped_nro_ticket AND document_type = $escaped_document_type ORDER BY uploaded_at DESC LIMIT 1)";
                     pg_query($db_conn, $sqlFallback);
+                }
+            }
+        } else if ($is_exoneration_document && !empty($nro_ticket)) {
+            $status_rechazado = 12; // Rechazada para Exoneración
+            
+            // 1. Obtener record_number para vincular con archivos_adjuntos
+            if ($id_payment_record) {
+                $sqlGetRecordExo = "SELECT nro_exoneracion FROM exoneraciones WHERE id_exoneracion = " . (int)$id_payment_record;
+            } else {
+                $sqlGetRecordExo = "SELECT nro_exoneracion FROM exoneraciones WHERE nro_ticket = $escaped_nro_ticket ORDER BY id_exoneracion DESC LIMIT 1";
+            }
+            
+            $resExoRecord = pg_query($db_conn, $sqlGetRecordExo);
+            if ($resExoRecord && pg_num_rows($resExoRecord) > 0) {
+                $record_number_rechazado = pg_fetch_result($resExoRecord, 0, 'nro_exoneracion');
+            }
+
+            // 2. Actualizar tabla exoneracion
+            $whereClauseExo = $id_payment_record ? "id_exoneracion = " . (int)$id_payment_record : "id_exoneracion = (SELECT id_exoneracion FROM exoneraciones WHERE nro_ticket = $escaped_nro_ticket ORDER BY id_exoneracion DESC LIMIT 1)";
+            $sqlUpdateExo = "UPDATE exoneraciones SET id_status_payment = $status_rechazado WHERE $whereClauseExo";
+            
+            if (!pg_query($db_conn, $sqlUpdateExo)) {
+                error_log("Error actualizando exoneraciones: " . pg_last_error($db_conn));
+                return false;
+            }
+
+            // 3. Actualizar archivos_adjuntos
+            if ($record_number_rechazado) {
+                $escaped_record = pg_escape_literal($db_conn, $record_number_rechazado);
+                $sqlAdjuntosExo = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE record_number = $escaped_record";
+                $resAdjExo = pg_query($db_conn, $sqlAdjuntosExo);
+                
+                // Fallback
+                if ($resAdjExo && pg_affected_rows($resAdjExo) === 0) {
+                   $sqlFallbackExo = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE id = (SELECT id FROM archivos_adjuntos WHERE nro_ticket = $escaped_nro_ticket AND document_type = $escaped_document_type ORDER BY uploaded_at DESC LIMIT 1)";
+                   pg_query($db_conn, $sqlFallbackExo);
                 }
             }
         } else {
             // Otros documentos
             $sqlOther = "UPDATE archivos_adjuntos SET id_motivo_rechazo = $id_motivo, rechazado = TRUE WHERE id = (SELECT id FROM archivos_adjuntos WHERE nro_ticket = $escaped_nro_ticket AND document_type = $escaped_document_type ORDER BY uploaded_at DESC LIMIT 1)";
-            if (!Model::getResult($sqlOther, $this->db)) return false;
+            if (!pg_query($db_conn, $sqlOther)) return false;
         }
 
         // 3. ACTUALIZAR ESTADO DEL TICKET (Si aplica)
@@ -5208,7 +5336,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             } else {
                 $sqlTicket = "UPDATE tickets_status_domiciliacion SET id_status_domiciliacion = $new_status_domiciliacion WHERE id_ticket = $escaped_id_ticket";
             }
-            if (!Model::getResult($sqlTicket, $this->db)) return false;
+            if (!pg_query($db_conn, $sqlTicket)) return false;
         }
 
         // Determinar status final para el historial
@@ -5232,7 +5360,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         // Si no es admin/super (rol 5), asignamos el coordinador al ticket si no tiene
         if ($id_rol != 5) {
             $sqlUpdateCoord = "UPDATE users_tickets SET id_coordinador = $id_user WHERE id_ticket = $escaped_id_ticket AND (id_coordinador IS NULL OR id_coordinador = 0)";
-            if (!Model::getResult($sqlUpdateCoord, $this->db)) return false;
+            if (!pg_query($db_conn, $sqlUpdateCoord)) return false;
         }
 
         // 5. RECOPILAR DATOS PARA HISTORIAL (Centralizado, se ejecuta UNA sola vez)
@@ -5390,9 +5518,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             }
         }
 
-        // ✅ ACTUALIZAR SOLO SI NO ES CONVENIO_FIRMADO NI PAGO INDIVIDUAL
-        // El usuario solicitó no actualizar el ticket automáticamente al aprobar pagos individuales
-        if ($document_type !== 'convenio_firmado' && empty($id_payment_record)) {
+        // ✅ ACTUALIZAR SOLO SI NO ES CONVENIO_FIRMADO, EXONERACION NI PAGO INDIVIDUAL
+        // El usuario solicitó no actualizar el ticket automáticamente al aprobar pagos/exoneraciones individuales
+        if ($document_type !== 'convenio_firmado' && $document_type !== 'Exoneracion' && empty($id_payment_record)) {
             $sql1 = "UPDATE tickets SET id_status_payment = " . $id_new_status_payment . " WHERE id_ticket = " . $id_ticket;
             $result1 = Model::getResult($sql1, $this->db);
 
@@ -5442,11 +5570,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             // Construir y ejecutar la consulta UPDATE usando subconsulta para obtener el id más reciente
             $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
             
-            if ($id_payment_record) {
+            if (!empty($id_payment_record)) {
                 $sqlUpdatePayment = "UPDATE payment_records 
                                     SET " . implode(", ", $updateFields) . "
                                     WHERE id_payment_record = " . (int)$id_payment_record;
-            } else {
+            } else if ($document_type === 'Anticipo' || $document_type === 'pago' || $document_type === 'Pago' || $document_type === 'comprobante_pago') {
+                // Si no hay ID específico, intentar por el más reciente del ticket (fallback)
                 $sqlUpdatePayment = "UPDATE payment_records 
                                     SET " . implode(", ", $updateFields) . "
                                     WHERE id_payment_record = (
@@ -5456,16 +5585,20 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                                         ORDER BY id_payment_record DESC
                                         LIMIT 1
                                     );";
+            } else {
+                // Para otros tipos de documentos que no están en payment_records, no hacemos nada aquí
+                $sqlUpdatePayment = null;
             }
             
-            $resultUpdatePayment = pg_query($db_conn, $sqlUpdatePayment);
-            
-            if ($resultUpdatePayment === false) {
-                error_log("Error al actualizar payment_records para Anticipo: " . pg_last_error($db_conn));
-                // No retornar false aquí, solo loguear el error para no afectar la aprobación
-            } else {
-                pg_free_result($resultUpdatePayment);
-                error_log("payment_records actualizado correctamente para ticket: $nro_ticket");
+            if ($sqlUpdatePayment) {
+                $resultUpdatePayment = pg_query($db_conn, $sqlUpdatePayment);
+                
+                if ($resultUpdatePayment === false) {
+                    error_log("Error al actualizar payment_records para $document_type: " . pg_last_error($db_conn));
+                } else {
+                    pg_free_result($resultUpdatePayment);
+                    error_log("payment_records actualizado correctamente para ticket: $nro_ticket");
+                }
             }
         }
 
@@ -5682,6 +5815,132 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
+    /**
+     * Aprueba la exoneración de un ticket, moviendo id_status_payment a 6
+     */
+    public function AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion = null, $is_final_approval = false, $nro_exoneracion = null) {
+        $db_conn = $this->db->getConnection();
+        
+        try {
+            $this->db->pgquery("BEGIN");
+
+            // 1. Obtener el id_ticket por número
+            $id_ticket = $this->getTicketIdByNumber($nro_ticket);
+            if (!$id_ticket) {
+                $this->db->pgquery("ROLLBACK");
+                return ["success" => false, "message" => "Ticket no encontrado: " . $nro_ticket];
+            }
+
+            // 2. Actualizar estatus en la tabla exoneraciones (4 = Exoneracion Aprobada)
+            $whereExo = "WHERE nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket);
+            
+            if ($id_exoneracion) {
+                $whereExo .= " AND id_exoneracion = " . (int)$id_exoneracion;
+                if ($nro_exoneracion) {
+                    $whereExo .= " AND nro_exoneracion = " . pg_escape_literal($db_conn, $nro_exoneracion);
+                }
+            } else if ($is_final_approval) {
+                // Si es aprobación final y no hay ID específico, aprobamos todas las pendientes
+                $whereExo .= " AND id_status_payment = 5"; 
+            } else {
+                // Error de seguridad: Si no es aprobación final, EXIGIMOS un ID
+                $this->db->pgquery("ROLLBACK");
+                return ['success' => false, 'message' => 'ID de exoneración no proporcionado para aprobación individual.'];
+            }
+
+            $sqlExo = "UPDATE exoneraciones SET id_status_payment = 4 " . $whereExo;
+            
+            if (!$this->db->pgquery($sqlExo)) {
+                $this->db->pgquery("ROLLBACK");
+                return ['success' => false, 'message' => 'Error al actualizar estatus de exoneración.'];
+            }
+
+            // 3. Solo actualizamos el estatus del TICKET si es la aprobación final
+            if ($is_final_approval) {
+                // Verificar si quedan exoneraciones pendientes para este ticket
+                $sqlCheckPending = "SELECT COUNT(*) as pending FROM exoneraciones 
+                                    WHERE nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket) . " 
+                                    AND id_status_payment = 5";
+                $resCheck = $this->db->pgquery($sqlCheckPending);
+                $pendingExo = pg_fetch_result($resCheck, 0, 'pending');
+
+                if ($pendingExo == 0) {
+                    $sql_update = "UPDATE tickets SET id_status_payment = 4 WHERE id_ticket = " . (int)$id_ticket;
+                    $result = pg_query($db_conn, $sql_update);
+                    
+                    if (!$result) {
+                        $this->db->pgquery("ROLLBACK");
+                        return ["success" => false, "message" => "Error al actualizar el estatus del ticket: " . pg_last_error($db_conn)];
+                    }
+                }
+            }
+
+            // 5. Obtener datos para el historial
+            $id_status_lab = 0;
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_lab_result = pg_query($db_conn, $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+            }
+
+            $new_status_domiciliacion = 'NULL';
+            $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_domiciliacion_result = pg_query($db_conn, $status_domiciliacion_sql);
+            if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') !== null ? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+            }
+
+            $id_status_ticket = 'NULL';
+            $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_ticket_result = pg_query($db_conn, $status_ticket_sql);
+            if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') !== null ? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+            }
+
+            $id_accion_ticket = 'NULL';
+            $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+            $accion_ticket_result = pg_query($db_conn, $accion_ticket_sql);
+            if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') !== null ? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+            }
+
+            $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+            $resultcoordinador = pg_query($db_conn, $sqlgetcoordinador);
+            $id_coordinador = ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) ? (int)pg_fetch_result($resultcoordinador, 0, 'id_coordinador') : 'NULL';
+
+            // 6. Obtener el estatus de pago actual del ticket para el historial (ya que no lo cambiamos)
+            $id_current_status_payment = 'NULL';
+            $status_payment_current_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_payment_current_result = pg_query($db_conn, $status_payment_current_sql);
+            if ($status_payment_current_result && pg_num_rows($status_payment_current_result) > 0) {
+                $id_current_status_payment = pg_fetch_result($status_payment_current_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_current_result, 0, 'id_status_payment') : 'NULL';
+            }
+
+            // 7. Insertar Historial (Usamos el estatus de pago actual del ticket)
+            $sql_history = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
+                (int)$id_ticket,
+                (int)$id_user,
+                $id_status_ticket,
+                $id_accion_ticket,
+                $id_status_lab,
+                $id_current_status_payment,
+                $new_status_domiciliacion,
+                $id_coordinador
+            );
+
+            pg_query($db_conn, $sql_history);
+
+            $this->db->pgquery("COMMIT");
+            return ["success" => true, "message" => "Exoneración aprobada correctamente."];
+
+        } catch (Throwable $e) {
+            $this->db->pgquery("ROLLBACK");
+            error_log("Error en AprobarExoneracionTicket: " . $e->getMessage());
+            return ["success" => false, "message" => "Excepción: " . $e->getMessage()];
+        }
+    }
+
 
 
     public function GetEstatusTicket(){
@@ -5724,7 +5983,13 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
+    /**
+     * Verifica aprobaciones individuales en tablas específicas según el tipo de trámite (Pago o Exoneración)
+     */
+   
+
     public function SendBackToTaller($id_ticket, $id_user){
+
 
         try {
 
@@ -6771,16 +7036,17 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
             
             $sql = "SELECT 
-                        COALESCE(SUM(pr.reference_amount), 0) as total_paid,
+                        COALESCE(SUM(CASE WHEN pr.payment_status = 6 THEN pr.reference_amount ELSE 0 END), 0) as total_paid,
+                        COALESCE(SUM(CASE WHEN pr.payment_status IN (1, 3, 4, 5, 7, 17) THEN pr.reference_amount ELSE 0 END), 0) as total_pending,
                         COALESCE((SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as total_budget,
                         COALESCE((SELECT diferencia_usd FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " LIMIT 1), 0) as presupuesto_diferencia,
                         COALESCE((SELECT porcentaje FROM exoneraciones WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_exoneracion DESC LIMIT 1), 0) as exoneracion_porcentaje,
                         (SELECT tipo_exoneracion FROM exoneraciones WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_exoneracion DESC LIMIT 1) as tipo_exoneracion
                     FROM payment_records pr
                     WHERE pr.nro_ticket = " . $escaped_nro_ticket . "
-                    AND (pr.is_substituted IS NULL OR pr.is_substituted = FALSE)
-                    AND pr.id_exoneracion IS NOT NULL
-                    AND pr.payment_status IN (1, 3, 4, 5, 6, 7, 17)";
+                    AND (pr.is_substituted IS NULL OR pr.is_substituted = FALSE)";
+
+
             
             $result = Model::getResult($sql, $this->db);
             
@@ -6788,6 +7054,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $row = pg_fetch_assoc($result['query'], 0);
                 return [
                     'total_paid' => floatval($row['total_paid']),
+                    'total_pending' => floatval($row['total_pending']),
                     'total_budget' => floatval($row['total_budget']),
                     'presupuesto_diferencia' => floatval($row['presupuesto_diferencia']),
                     'exoneracion_porcentaje' => floatval($row['exoneracion_porcentaje']),
@@ -6795,11 +7062,13 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 ];
             }
             
-            return ['total_paid' => 0.0, 'total_budget' => 0.0];
+            return ['total_paid' => 0.0, 'total_pending' => 0.0, 'total_budget' => 0.0];
+
         } catch (Throwable $e) {
             error_log("Error en GetTotalPaidByTicket: " . $e->getMessage());
-            return ['total_paid' => 0.0, 'total_budget' => 0.0];
+            return ['total_paid' => 0.0, 'total_pending' => 0.0, 'total_budget' => 0.0];
         }
+
     }
 
     public function InsertPaymentRecord($data) {
@@ -7325,6 +7594,13 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         try {
             $db_conn = $this->db->getConnection();
             
+            // ASEGURAR SUFIJO POR TIPO (-A para Anticipo, -T para Pago Taller)
+            if ($tipo_exoneracion === 'Anticipo' && !preg_match('/-A$/i', $nro_exoneracion)) {
+                $nro_exoneracion .= '-A';
+            } else if ($tipo_exoneracion === 'Pago taller' && !preg_match('/-T$/i', $nro_exoneracion)) {
+                $nro_exoneracion .= '-T';
+            }
+
             // 1. CREACIÓN DE LA TABLA TEMPORAL (si no existe)
             $sqlTable = "CREATE TEMPORARY TABLE IF NOT EXISTS temp_exoneracion_uploads (
                 id_temp_exoneracion SERIAL PRIMARY KEY,
@@ -7332,7 +7608,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 tipo_exoneracion VARCHAR(100),
                 porcentaje INTEGER,
                 nro_exoneracion VARCHAR(50),
-                id_user INTEGER
+                id_user INTEGER,
+                id_status_payment INTEGER DEFAULT 5
             ) ON COMMIT PRESERVE ROWS;";
             $this->db->pgquery($sqlTable);
 
@@ -7341,17 +7618,221 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $this->db->pgquery($sqlDelete);
 
             // 3. Insertar nuevo registro
-            $sqlInsert = "INSERT INTO temp_exoneracion_uploads (serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user) VALUES ("
+            $sqlInsert = "INSERT INTO temp_exoneracion_uploads (serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user, id_status_payment) VALUES ("
                 . pg_escape_literal($db_conn, $serial_pos) . ", "
                 . pg_escape_literal($db_conn, $tipo_exoneracion) . ", "
                 . (int)$porcentaje . ", "
                 . pg_escape_literal($db_conn, $nro_exoneracion) . ", "
-                . (int)$id_user . ") RETURNING id_temp_exoneracion;";
+                . (int)$id_user . ", 5) RETURNING id_temp_exoneracion;";
             
             $result = $this->getResult($sqlInsert, $this->db);
             return $result && $result['numRows'] > 0;
         } catch (Exception $e) {
             error_log("Error en SaveExoneracion: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Guarda los datos de exoneración directamente en la tabla principal.
+     */
+    public function SaveExoneracionDirect($nro_ticket, $serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        try {
+            $db_conn = $this->db->getConnection();
+            
+            // ASEGURAR SUFIJO POR TIPO (-A para Anticipo, -T para Pago Taller)
+            if ($tipo_exoneracion === 'Anticipo' && !preg_match('/-A$/i', $nro_exoneracion)) {
+                $nro_exoneracion .= '-A';
+            } else if ($tipo_exoneracion === 'Pago taller' && !preg_match('/-T$/i', $nro_exoneracion)) {
+                $nro_exoneracion .= '-T';
+            }
+
+            $sqlInsert = "INSERT INTO exoneraciones (nro_ticket, serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user, id_status_payment) VALUES ("
+                . pg_escape_literal($db_conn, $nro_ticket) . ", "
+                . pg_escape_literal($db_conn, $serial_pos) . ", "
+                . pg_escape_literal($db_conn, $tipo_exoneracion) . ", "
+                . (int)$porcentaje . ", "
+                . pg_escape_literal($db_conn, $nro_exoneracion) . ", "
+                . (int)$id_user . ", 5) RETURNING id_exoneracion;";
+            
+            $result = $this->getResult($sqlInsert, $this->db);
+            return $result && $result['numRows'] > 0;
+        } catch (Exception $e) {
+            error_log("Error en SaveExoneracionDirect: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene el historial de exoneraciones para un ticket específico.
+     */
+    public function GetExonerationHistory($nro_ticket) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sql = "SELECT e.*, u.name as user_name, u.surname as user_surname,
+                           adj.file_path, adj.original_filename
+                    FROM exoneraciones e
+                    LEFT JOIN users u ON e.id_user = u.id_user
+                    LEFT JOIN LATERAL (
+                        SELECT a.file_path, a.original_filename
+                        FROM archivos_adjuntos a
+                        WHERE a.record_number = e.nro_exoneracion
+                        AND (a.is_substituted IS NULL OR a.is_substituted = FALSE)
+                        ORDER BY a.uploaded_at DESC
+                        LIMIT 1
+                    ) as adj ON TRUE
+                    WHERE e.nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket) . "
+                    AND (e.is_substituted IS NULL OR e.is_substituted = FALSE)
+                    ORDER BY e.fecha_creacion DESC;";
+            
+            $result = $this->getResult($sql, $this->db);
+            return $result;
+        } catch (Exception $e) {
+            error_log("Error en GetExonerationHistory: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Actualiza una exoneración mediante el modelo de SUSTITUCIÓN (Historial).
+     * Sigue el patrón de CreatePaymentSubstitution.
+     */
+    public function UpdateExoneracion($id_exoneracion, $porcentaje, $fileData = null) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $id_exo_old = (int)$id_exoneracion;
+            $porc = (int)$porcentaje;
+            $updated_at = date('Y-m-d H:i:s');
+            
+            if (session_status() === PHP_SESSION_NONE) session_start();
+            $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
+
+            // 1. Obtener la exoneración original
+            $sqlOld = "SELECT * FROM exoneraciones WHERE id_exoneracion = $id_exo_old";
+            $resOld = pg_query($db_conn, $sqlOld);
+            if (!$resOld || pg_num_rows($resOld) === 0) return false;
+            $oldData = pg_fetch_assoc($resOld);
+
+            // 2. Preparar los datos del NUEVO registro (Copia enriquecida)
+            $newData = $oldData;
+            $newData['porcentaje'] = $porc;
+            $newData['id_status_payment'] = 5; // Vuelve a pendiente por aprobar
+            $newData['fecha_creacion'] = $updated_at;
+            $newData['id_user'] = $id_user ?? $oldData['id_user'];
+            unset($newData['id_exoneracion']);
+            
+            // Aseguramos estados iniciales para el nuevo
+            $newData['is_substituted'] = 'FALSE';
+            if (array_key_exists('substituted_by_id_exoneracion', $newData)) {
+                $newData['substituted_by_id_exoneracion'] = null;
+            }
+
+            // 3. Insertar el NUEVO registro
+            $cols = []; $vals = [];
+            foreach ($newData as $key => $val) {
+                $cols[] = $key;
+                if ($val === null) $vals[] = 'NULL';
+                elseif (is_bool($val)) $vals[] = $val ? 'TRUE' : 'FALSE';
+                else $vals[] = pg_escape_literal($db_conn, $val);
+            }
+            $sqlInsert = "INSERT INTO exoneraciones (" . implode(", ", $cols) . ") VALUES (" . implode(", ", $vals) . ") RETURNING id_exoneracion";
+            $resInsert = pg_query($db_conn, $sqlInsert);
+            if (!$resInsert) return false;
+            
+            $id_exo_new = pg_fetch_result($resInsert, 0, 0);
+
+            // 4. Vincular el ANTIGUO al NUEVO y marcarlo como sustituido
+            $sqlUpdateOld = "UPDATE exoneraciones 
+                            SET is_substituted = TRUE, 
+                                substituted_by_id_exoneracion = $id_exo_new 
+                            WHERE id_exoneracion = $id_exo_old";
+            pg_query($db_conn, $sqlUpdateOld);
+
+            // 5. Gestión del Soporte (Archivos Adjuntos)
+            $nro_ticket = $oldData['nro_ticket'];
+            $tipo_exoneracion = $oldData['tipo_exoneracion'];
+            $nro_exoneracion = $oldData['nro_exoneracion'];
+
+            // Seteo de variables para los updates de archivos posteriores
+            $escaped_rec = pg_escape_literal($db_conn, $nro_exoneracion);
+            $escaped_tipo = pg_escape_literal($db_conn, $tipo_exoneracion);
+
+            if ($fileData && $fileData['error'] === UPLOAD_ERR_OK) {
+                // 1. Obtener el serial del ticket para la ruta (Estructura Estándar)
+                $sqlTicket = "SELECT serial_pos FROM tickets WHERE nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket) . " LIMIT 1";
+                $resTkt = pg_query($db_conn, $sqlTicket);
+                $ticketInfo = pg_fetch_assoc($resTkt);
+                $serial = ($ticketInfo && isset($ticketInfo['serial_pos'])) ? preg_replace("/[^a-zA-Z0-9_-]/", "_", $ticketInfo['serial_pos']) : 'SERIAL_UNKNOWN';
+
+                // 2. Definir Base Upload Dir (desde la constante definida en database.php)
+                $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : 'C:' . DIRECTORY_SEPARATOR . 'Documentos_SoportePost' . DIRECTORY_SEPARATOR;
+                
+                $ticketFolder = preg_replace('/[^a-zA-Z0-9_-]/', '', $nro_ticket);
+                $uploadDir = $baseUploadDir . $serial . DIRECTORY_SEPARATOR . $ticketFolder . DIRECTORY_SEPARATOR . 'Exoneracion' . DIRECTORY_SEPARATOR;
+                
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+                $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
+                $safeTipo = str_replace(' ', '_', $tipo_exoneracion);
+                $filename = "Exo_{$safeTipo}_{$ticketFolder}_" . date('Ymd_His') . "_SUB.{$ext}";
+                $targetPath = $uploadDir . $filename;
+
+                if (move_uploaded_file($fileData['tmp_name'], $targetPath)) {
+                    $resFile = $this->saveArchivoAdjunto(
+                        0, 
+                        $nro_ticket,
+                        $id_user ?? 0,
+                        $fileData['name'],
+                        $filename,
+                        $targetPath,
+                        $fileData['type'],
+                        $fileData['size'],
+                        $tipo_exoneracion,
+                        $nro_exoneracion,
+                        true 
+                    );
+
+                    if (isset($resFile['success']) && $resFile['success'] && isset($resFile['id'])) {
+                        $newFileId = $resFile['id'];
+                        // VINCULAR VIEJOS CON EL NUEVO
+                        $sqlLinkDoc = "UPDATE archivos_adjuntos 
+                                      SET is_substituted = TRUE, 
+                                          substituted_by_id_payment_record = $newFileId 
+                                      WHERE record_number = $escaped_rec AND document_type = $escaped_tipo
+                                      AND id != $newFileId AND (is_substituted IS NULL OR is_substituted = FALSE)";
+                        pg_query($db_conn, $sqlLinkDoc);
+                    }
+                }
+            } else {
+                // 1. Marcar el soporte actual como SUSTITUIDO antes de clonar (para tener una base)
+                $sqlMarkOld = "UPDATE archivos_adjuntos SET is_substituted = TRUE 
+                              WHERE record_number = $escaped_rec AND document_type = $escaped_tipo 
+                              AND (is_substituted IS NULL OR is_substituted = FALSE)";
+                pg_query($db_conn, $sqlMarkOld);
+
+                // 2. Clonar el soporte anterior (que acabamos de marcar como TRUE) para la nueva exoneración
+                $sqlCloneFile = "INSERT INTO archivos_adjuntos (nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, uploaded_by_user_id, document_type, record_number, is_substituted)
+                                 SELECT nro_ticket, original_filename, stored_filename, file_path, mime_type, file_size_bytes, " . ($id_user ?? 'uploaded_by_user_id') . ", document_type, record_number, FALSE
+                                 FROM archivos_adjuntos 
+                                 WHERE record_number = $escaped_rec AND document_type = $escaped_tipo AND is_substituted = TRUE
+                                 ORDER BY id DESC LIMIT 1
+                                 RETURNING id";
+                
+                $resClone = pg_query($db_conn, $sqlCloneFile);
+                if ($resClone && pg_num_rows($resClone) > 0) {
+                    $newCloneId = pg_fetch_result($resClone, 0, 0);
+                    // 3. Vincular el registro viejo específicamente con el ID del nuevo clon
+                    $sqlLinkClone = "UPDATE archivos_adjuntos 
+                                    SET substituted_by_id_payment_record = $newCloneId 
+                                    WHERE record_number = $escaped_rec AND document_type = $escaped_tipo
+                                    AND id != $newCloneId AND is_substituted = TRUE AND substituted_by_id_payment_record IS NULL";
+                    pg_query($db_conn, $sqlLinkClone);
+                }
+            }
+
+            return true;
+        } catch (Throwable $e) {
+            error_log("Error en UpdateExoneration: " . $e->getMessage());
             return false;
         }
     }
@@ -7370,7 +7851,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 tipo_exoneracion VARCHAR(100),
                 porcentaje INTEGER,
                 nro_exoneracion VARCHAR(50),
-                id_user INTEGER
+                id_user INTEGER,
+                id_status_payment INTEGER DEFAULT 5
             ) ON COMMIT PRESERVE ROWS;";
             $this->db->pgquery($sqlTable);
 
@@ -7381,14 +7863,15 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             if ($result && pg_num_rows($result) > 0) {
                 $data = pg_fetch_assoc($result);
                 
-                // 2. Insertar en la tabla principal (incluyendo el serial_pos)
-                $sqlInsert = "INSERT INTO exoneraciones (nro_ticket, serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user) VALUES ("
+                // 2. Insertar en la tabla principal (incluyendo el serial_pos y id_status_payment)
+                $sqlInsert = "INSERT INTO exoneraciones (nro_ticket, serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user, id_status_payment) VALUES ("
                     . pg_escape_literal($db_conn, $nro_ticket) . ", "
                     . pg_escape_literal($db_conn, $data['serial_pos']) . ", "
                     . pg_escape_literal($db_conn, $data['tipo_exoneracion']) . ", "
                     . (int)$data['porcentaje'] . ", "
                     . pg_escape_literal($db_conn, $data['nro_exoneracion']) . ", "
-                    . (int)$data['id_user'] . ")";
+                    . (int)$data['id_user'] . ", "
+                    . (int)$data['id_status_payment'] . ")";
                 
                 if ($this->db->pgquery($sqlInsert)) {
                     // 3. Limpiar la temporal
@@ -7622,7 +8105,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
      * @param string $record_number Payment record number
      * @return array|null Attachment info or null if not found
      */
-    public function GetPaymentAttachmentByRecordNumber($record_number) {
+    public function GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket = null, $document_type = null) {
         try {
             $conn = $this->db->getConnection();
             $escaped_record_number = pg_escape_literal($conn, $record_number);
@@ -7640,6 +8123,34 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             
             if ($result && pg_num_rows($result) > 0) {
                 return pg_fetch_assoc($result);
+            }
+
+            // Fallback #0 (generic): if caller provides nro_ticket, try locate by nro_ticket + document_type.
+            // This helps legacy Exo formats where record_number stored differs from UI code.
+            if ($nro_ticket !== null && $nro_ticket !== '') {
+                $escaped_nro_ticket = pg_escape_literal($conn, $nro_ticket);
+                $docFilter = "";
+                if ($document_type !== null && $document_type !== '') {
+                    $escaped_doc = pg_escape_literal($conn, $document_type);
+                    $docFilter = " AND document_type = $escaped_doc";
+                } else {
+                    // Default to common document types used for these lookups
+                    $docFilter = " AND (document_type = 'Exoneracion' OR document_type = 'Anticipo' OR document_type ILIKE 'Pago%')";
+                }
+
+                $sql_by_ticket = "SELECT id, nro_ticket, original_filename, stored_filename,
+                                         file_path, mime_type, file_size_bytes, uploaded_at,
+                                         uploaded_by_user_id, document_type, record_number
+                                  FROM archivos_adjuntos
+                                  WHERE nro_ticket = $escaped_nro_ticket
+                                  $docFilter
+                                  ORDER BY uploaded_at DESC
+                                  LIMIT 1";
+
+                $res_ticket = pg_query($conn, $sql_by_ticket);
+                if ($res_ticket && pg_num_rows($res_ticket) > 0) {
+                    return pg_fetch_assoc($res_ticket);
+                }
             }
             
             // Fallback: If no record_number match, try old proximity logic
@@ -7719,6 +8230,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 
                 if (!$resUpdate) {
                     error_log("SubstitutePayment: Failed SQL Update: " . pg_last_error($db_conn));
+  
                 } else {
                     error_log("SubstitutePayment: payment_records updated. Affected: " . pg_affected_rows($resUpdate));
                 }
@@ -7730,6 +8242,111 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
         } catch (Throwable $e) {
             error_log("Error en CreatePaymentSubstitution: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene los datos de todas las exoneraciones de un ticket para su visualización.
+     */
+    public function GetExonerationDataByTicket($nro_ticket) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sql = "SELECT e.*, 
+                           u.name as name_user, u.surname as surname_user,
+                           TO_CHAR(e.fecha_creacion, 'DD-MM-YYYY HH12:MI AM') as fecha_registro,
+                           adj.file_path, adj.mime_type, adj.original_filename
+                    FROM exoneraciones e
+                    LEFT JOIN users u ON e.id_user = u.id_user
+                    LEFT JOIN LATERAL (
+                        SELECT a.file_path, a.mime_type, a.original_filename
+                        FROM archivos_adjuntos a
+                        WHERE a.record_number = e.nro_exoneracion
+                        AND (a.is_substituted IS NULL OR a.is_substituted = FALSE)
+                        ORDER BY a.uploaded_at DESC
+                        LIMIT 1
+                    ) as adj ON TRUE
+                    WHERE e.nro_ticket = " . pg_escape_literal($db_conn, $nro_ticket) . "
+                    AND (e.is_substituted IS NULL OR e.is_substituted = FALSE)
+                    ORDER BY e.fecha_creacion DESC;";
+            
+            $result = $this->db->pgquery($sql);
+            $data = [];
+            if ($result && pg_num_rows($result) > 0) {
+                while ($row = pg_fetch_assoc($result)) {
+                    $data[] = $row;
+                }
+            }
+            return $data;
+        } catch (Exception $e) {
+            error_log("Error en GetExonerationDataByTicket: " . $e->getMessage());
+            return false;
+        }
+    }
+    /**
+     * Obtiene datos básicos de un ticket por su ID.
+     */
+    public function GetTicketDataById($id_ticket) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sql = "SELECT id_ticket, nro_ticket, rif, razonsocial, serial_pos, id_status_payment 
+                    FROM public.v_getdataticketbyid 
+                    WHERE id_ticket = " . (int)$id_ticket;
+            
+            $result = $this->db->pgquery($sql);
+            if ($result && pg_num_rows($result) > 0) {
+                return pg_fetch_assoc($result); // Retorna una sola fila como array asociativo
+            }
+            return null;
+        } catch (Exception $e) {
+            error_log("Error en GetTicketDataById: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Verifica si existe una aprobación manual (exoneración o pago) para un ticket.
+     */
+    public function CheckManualApprovalStatus($id_ticket, $id_status_payment) {
+        try {
+            $db_conn = $this->db->getConnection();
+
+            // 1. Obtener el número de ticket primero
+            $sqlTicket = "SELECT nro_ticket FROM public.tickets WHERE id_ticket = " . (int)$id_ticket;
+            $resTicket = $this->db->pgquery($sqlTicket);
+            if (!$resTicket || pg_num_rows($resTicket) == 0) return false;
+            
+            $rowTicket = pg_fetch_assoc($resTicket);
+            $nro_ticket = trim($rowTicket['nro_ticket']); // TRIM en PHP
+            $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
+
+            // 2. Lógica según el estatus
+            if ($id_status_payment == 5) { // Espera de Exoneración
+                // Usamos TRIM(nro_ticket) en la consulta SQL también por seguridad
+                $sqlExo = "SELECT COUNT(*) as total FROM public.exoneraciones 
+                           WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND id_status_payment = 4 
+                           AND (is_substituted IS NULL OR is_substituted = FALSE)";
+                $resExo = $this->db->pgquery($sqlExo);
+                if ($resExo && pg_num_rows($resExo) > 0) {
+                    $row = pg_fetch_assoc($resExo);
+                    return ((int)$row['total'] > 0);
+                }
+            } 
+            
+            if ($id_status_payment == 7 || $id_status_payment == 17) { // Espera de Pagos
+                // Usamos TRIM(nro_ticket) en la consulta SQL también por seguridad
+                $sqlPago = "SELECT COUNT(*) as total FROM public.payment_records 
+                            WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND payment_status = 6";
+                $resPago = $this->db->pgquery($sqlPago);
+                if ($resPago && pg_num_rows($resPago) > 0) {
+                    $row = pg_fetch_assoc($resPago);
+                    return ((int)$row['total'] > 0);
+                }
+            }
+
+            return false;
+        } catch (Exception $e) {
+            error_log("Error en CheckManualApprovalStatus: " . $e->getMessage());
             return false;
         }
     }
