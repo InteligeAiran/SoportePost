@@ -3174,6 +3174,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                 
                 if (response.success) {
                     const totalPaid = parseFloat(response.total_paid) || 0;
+                    const totalPending = parseFloat(response.total_pending) || 0;
                     const totalBudget = parseFloat(response.total_budget) || 0;
                     const presupuestoDiferencia = parseFloat(response.presupuesto_diferencia) || 0;
                     const exoneracionPorcentaje = parseFloat(response.exoneracion_porcentaje) || 0;
@@ -3184,10 +3185,13 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     let montoBaseTarjetas = totalBudget;
                     
                     // El "Restante" se calcula sobre el presupuesto real
-                    const remaining = Math.max(0, montoBaseTarjetas - totalPaid);
+                    // Incluimos tanto lo PAGADO como lo PENDIENTE para evitar sobre-presupuesto.
+                    const coveredAmount = totalPaid + totalPending;
+                    const remaining = Math.max(0, montoBaseTarjetas - coveredAmount);
                     
                     // Store in global variables for references and logic
                     window.currentTotalPaid = totalPaid;
+                    window.currentTotalPending = totalPending;
                     window.currentBudgetAmount = totalBudget; // Official budget (0 if none)
                     window.currentRemaining = remaining;
                     window.currentExoneracionPorcentaje = exoneracionPorcentaje;
@@ -3263,7 +3267,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     // sin restar automáticamente la exoneración.
                     const montoEquipoHeader = document.getElementById("montoEquipo");
                     if (montoEquipoHeader) {
-                        montoEquipoHeader.textContent = `$${montoBaseTarjetas.toFixed(2)}`;
+                        montoEquipoHeader.textContent = `$${remaining.toFixed(2)}`;
                     }
                     
                     // Button control logic
@@ -3273,7 +3277,11 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                         // Si estamos en fase Anticipo (budget 0), permitimos cargar pagos siempre.
                         if (totalBudget > 0 && remaining <= 0.001) {
                             btnGuardarPago.disabled = true;
-                            btnGuardarPago.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pagado Completo';
+                            if (totalPending > 0 && (totalPaid + totalPending) >= totalBudget) {
+                                btnGuardarPago.innerHTML = '<i class="fas fa-clock me-2"></i>Pago en Revisión';
+                            } else {
+                                btnGuardarPago.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pagado Completo';
+                            }
                             btnGuardarPago.classList.remove('btn-primary');
                             btnGuardarPago.classList.add('btn-secondary');
                             btnGuardarPago.style.background = '#6c757d'; 
@@ -3581,6 +3589,8 @@ function handleCurrencyChange() {
       montoBsInput.setAttribute("disabled", "disabled");
       montoRefInput.setAttribute("disabled", "disabled");
     }
+    // Re-validate budget after switching currency/state
+    validateBudget(false);
 }
 
 function calculateBsToUsd() {
@@ -3607,6 +3617,8 @@ function calculateBsToUsd() {
       if(montoRefSuffix) { montoRefSuffix.style.display = "none"; } // Hide suffix if no value
       updateMontoEquipo();
     }
+    // Validate budget after calculation
+    validateBudget(false);
 }
 
 function calculateUsdToBs() {
@@ -3643,6 +3655,8 @@ function formatBsDecimal() {
         const val = parseFloat(input.value);
         if (!isNaN(val)) input.value = val.toFixed(2);
     }
+    // Trigger validation on blur
+    validateBudget(true);
 }
 function formatUsdDecimal() {
     const input = document.getElementById("montoRef");

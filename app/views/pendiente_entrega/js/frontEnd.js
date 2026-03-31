@@ -906,8 +906,102 @@ function closeUploadModalAndClean() {
             if (nroTicket) {
                 // Guardar el serial en una variable global para usarlo después
                 window.currentSerialPosForAnticipo = serialPos;
-                // Abrir el modal de presupuesto - PASAMOS serialPos
-                openPresupuestoModal(nroTicket, idFailure, serialPos);
+                
+                // Mostrar indicador de carga
+                Swal.fire({
+                    title: 'Verificando estatus...',
+                    text: 'Comprobando datos de exoneración...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Validar si tiene una exoneración pendiente antes de abrir el modal
+                const checkExoUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExoneracionPorcentaje?nro_ticket=${encodeURIComponent(nroTicket)}&serial_pos=${encodeURIComponent(serialPos)}`;
+                
+                fetch(checkExoUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        let isPending = false;
+                        if (data.success && data.data) {
+                            let exosToCheck = [];
+                            
+                            // Extraer array de exoneraciones dependiendo de la estructura de respuesta
+                            if (Array.isArray(data.data)) {
+                                exosToCheck = data.data;
+                            } else if (data.data && Array.isArray(data.data.all_exonerations)) {
+                                exosToCheck = data.data.all_exonerations;
+                            } else if (data.data) {
+                                exosToCheck = [data.data];
+                            }
+
+                            // Comprobar si existe *alguna* exoneración que cumpla ambas reglas
+                            isPending = exosToCheck.some(exo => {
+                                const idStatus = parseInt(exo.id_status_payment);
+                                const tipo = (exo.tipo_exoneracion || '').toLowerCase().trim();
+                                return idStatus === 5 && tipo === 'pago taller';
+                            });
+                        }
+                        
+                        if (isPending) {
+                            Swal.fire({
+                                showCloseButton: true,
+                                title: false,
+                                icon: false,
+                                html: `
+                                    <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; text-align: center; padding: 10px 5px;">
+                                        <!-- Animated Shield Icon -->
+                                        <div style="width: 72px; height: 72px; background: rgba(255, 152, 0, 0.08); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 8px rgba(255, 152, 0, 0.04);">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="#f57c00" viewBox="0 0 16 16">
+                                                <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.467.545 7.15 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
+                                                <path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415z"/>
+                                            </svg>
+                                        </div>
+                                        
+                                        <!-- Title -->
+                                        <h2 style="color: #002e70; font-size: 1.55rem; font-weight: 800; margin: 0 0 15px; letter-spacing: -0.5px;">¡Acción Restringida!</h2>
+                                        
+                                        <!-- Description -->
+                                        <p style="color: #555; font-size: 1.05rem; line-height: 1.5; margin-bottom: 25px;">
+                                            El flujo de este ticket está <strong style="color: #222;">bloqueado</strong> porque cuenta con una exoneración pendiente de revisión administrativa.
+                                        </p>
+                                        
+                                        <!-- Alert Box -->
+                                        <div style="background: linear-gradient(145deg, #fffcf5, #fff5d1); border: 1px solid #ffe69c; padding: 18px 20px; border-radius: 12px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.05); text-align: left;">
+                                            <div style="font-size: 1.4rem; line-height: 1; flex-shrink: 0;">⏳</div>
+                                            <div>
+                                                <h4 style="color: #b5850b; font-size: 0.95rem; font-weight: 700; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.5px;">Paso Requerido</h4>
+                                                <p style="color: #8c6607; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+                                                    El sistema requiere que administración procese la solicitud para poder continuar con la generación del presupuesto.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Entendido',
+                                buttonsStyling: false,
+                                customClass: {
+                                    confirmButton: 'btn btn-primary px-4 py-2 mt-3 mb-2 rounded-pill shadow-sm fw-bold',
+                                    popup: 'rounded-4 shadow-lg border-0'
+                                },
+                                background: '#ffffff',
+                                width: '450px',
+                                padding: '1.5rem',
+                                color: '#333'
+                            });
+                        } else {
+                            Swal.close();
+                            // Abrir el modal de presupuesto - PASAMOS serialPos
+                            openPresupuestoModal(nroTicket, idFailure, serialPos);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error validando exoneración:', error);
+                        Swal.close(); // Cerramos el de carga
+                        // Si falla la petición por error de red, intentamos abrir de todos modos para no bloquear
+                        openPresupuestoModal(nroTicket, idFailure, serialPos);
+                    });
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -1353,11 +1447,11 @@ function getTicketDataFinaljs() {
                               data-id-failure="${idFailure || ''}"
                               title="Presupuesto"
                               style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block;">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block; pointer-events: none;">
                                 <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
                                 <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5"/>
                               </svg>
-                              <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Presupuesto</span>
+                              <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap; pointer-events: none;">Presupuesto</span>
                           </button>`;
                       }
                       
@@ -4405,6 +4499,18 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 $('#ne_banco').val(d.ibp || 'Sin banco');
                 $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
 
+                // Bloquear botón de Imprimir y limpiar iframe al abrir
+                $('#printHtmlTemplateBtn').prop('disabled', true);
+                const iframePreview = document.getElementById('htmlTemplatePreview');
+                if (iframePreview) {
+                    const doc = iframePreview.contentDocument || iframePreview.contentWindow.document;
+                    if (doc) {
+                        doc.open();
+                        doc.write('');
+                        doc.close();
+                    }
+                }
+
                 // 1. Obtiene la instancia del modal o la crea si no existe
                 const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
                 htmlModal.show();
@@ -4453,7 +4559,11 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
   doc.open();
   doc.write(html);
   doc.close();
+
+  // Habilitar el botón de Imprimir/Guardar PDF ahora que hay una previsualización
+  $('#printHtmlTemplateBtn').prop('disabled', false);
 });
+
 
 function buildDeliveryNoteHtml(d) {
   const safe = (s) => (s || '').toString();
@@ -5673,7 +5783,24 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
         totalMontoExoneradoReal = 0;
     }
     
-    const diferenciaUSD = montoTaller - totalMontoExoneradoReal - montoPagadoUSD;
+    let diferenciaUSD = montoTaller - totalMontoExoneradoReal - montoPagadoUSD;
+    
+    // LÓGICA DE EXCESO SEGÚN REQUERIMIENTO DEL USUARIO:
+    // El modal de 'Ajuste Requerido' SOLO DEBE SALIR si el presupuesto (montoTaller) 
+    // es MENOR que el monto pagado de Anticipo, sin importar la exoneración.
+    let isExcesoReal = (montoTaller > 0 && montoTaller < montoPagadoUSD);
+    
+    if (isExcesoReal) {
+        // Forzamos la diferencia para que refleje el exceso real basado solo en el presupuesto vs el anticipo
+        diferenciaUSD = montoTaller - montoPagadoUSD; 
+    } else {
+        // Si el presupuesto es mayor o igual al anticipo, no consideramos que haya un "exceso" a ajustar.
+        // Cualquier negatividad aquí sería por exoneraciones que absorben el total, y el usuario no tiene que pagar nada (0).
+        if (diferenciaUSD < 0) {
+            diferenciaUSD = 0;
+        }
+    }
+
     const diferenciaBS = diferenciaUSD * tasaCambio;
     
     document.getElementById('presupuestoDiferenciaUSD').value = diferenciaUSD.toFixed(2);
@@ -5688,7 +5815,8 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
         diferenciaUSDInput.classList.remove('bg-danger', 'bg-success', 'text-white');
         diferenciaBSInput.classList.remove('bg-danger', 'bg-success', 'text-white');
         
-        if (diferenciaUSD >= 0) {
+        // Si no hay exceso real que bloquee, permitimos continuar
+        if (!isExcesoReal) {
             diferenciaUSDInput.classList.add('bg-success', 'text-white');
             diferenciaBSInput.classList.add('bg-success', 'text-white');
             
@@ -5728,7 +5856,7 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
                             </div>
                             
                             <p class="small text-muted mb-0">
-                                Por favor, ajuste el <b>Monto Total de Taller</b> hasta que la diferencia sea $0.00.
+                                Por favor, ajuste el <b>Monto Total de Taller</b> hasta que sea al menos igual al anticipo ($${montoPagadoUSD.toFixed(2)}).
                             </p>
                         </div>
                     `,
@@ -10068,4 +10196,4 @@ function cargarTasaPresupuesto() {
     }
 }
 
-
+

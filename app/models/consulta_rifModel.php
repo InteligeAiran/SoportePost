@@ -984,8 +984,8 @@ class consulta_rifModel extends Model
         
         if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
             $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
-            if (in_array($current_status, [1, 3, 4, 6, 17]) && 
-                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
+            if (in_array((int)$current_status, [1, 3, 4, 5, 6, 7, 17]) && 
+                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio' || $document_type_being_uploaded === 'Envio_Destino')) {
                 return $current_status;
             }
         }
@@ -1040,6 +1040,10 @@ class consulta_rifModel extends Model
             return 7; // Pago Anticipo Pendiente por Revision
         } elseif ($document_type_being_uploaded === 'Pago' || $document_type_being_uploaded === 'pago') {
             return 17; // Pago Pendiente por Revision
+        } elseif ($document_type_being_uploaded === 'Envio_Destino') {
+            if (in_array('Exoneracion', $existing_documents)) return 5;
+            if (in_array('Anticipo', $existing_documents)) return 7;
+            return 1; // Solventado
         }   
 
         return 11; // Por defecto (Pendiente Por Cargar Documento ZOOM)

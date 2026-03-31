@@ -1081,10 +1081,12 @@ function getTicketData() {
                   .then(response => response.json())
                   .then(data => {
                       let idStatusExoneracion = 0;
+                      let porcentaje = 0;
+                      let tipoExoneracion = '';
                       if (data.success && data.data) {
-                          porcentaje = parseInt(data.data.porcentaje);
-                          tipoExoneracion = data.data.tipo_exoneracion;
-                          idStatusExoneracion = parseInt(data.data.id_status_payment);
+                          porcentaje = parseInt(data.data.porcentaje) || 0;
+                          tipoExoneracion = data.data.tipo_exoneracion || '';
+                          idStatusExoneracion = parseInt(data.data.id_status_payment) || 0;
                       }
 
                       // 1. PRIORIDAD: Si la exoneración está PENDIENTE (5), mostrar el modal original de documentos pendientes
@@ -2106,6 +2108,18 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 $('#ne_banco').val(d.ibp || 'Sin banco');
                 $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
 
+                // Bloquear botón de Imprimir y limpiar iframe al abrir
+                $('#printHtmlTemplateBtn').prop('disabled', true);
+                const iframePreview = document.getElementById('htmlTemplatePreview');
+                if (iframePreview) {
+                    const doc = iframePreview.contentDocument || iframePreview.contentWindow.document;
+                    if (doc) {
+                        doc.open();
+                        doc.write('');
+                        doc.close();
+                    }
+                }
+
                 // 1. Obtiene la instancia del modal o la crea si no existe
                 const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
                 htmlModal.show();
@@ -2154,6 +2168,9 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
   doc.open();
   doc.write(html);
   doc.close();
+
+  // Habilitar el botón de Imprimir/Guardar PDF ahora que hay una previsualización
+  $('#printHtmlTemplateBtn').prop('disabled', false);
 });
 
 function buildDeliveryNoteHtml(d) {
@@ -4664,6 +4681,9 @@ $(document).on('input', '#montoBs, #montoRef', function() {
         ref.value = (val / rate).toFixed(2);
         if (display) display.textContent = `$${ref.value}`;
     }
+    
+    // Validate budget at the end of every change
+    if (typeof validateEditBudget === 'function') validateEditBudget(false);
 });
 
 $(document).on('change', '#moneda', function() {
@@ -4684,6 +4704,13 @@ $(document).on('change', '#moneda', function() {
     
     const display = document.getElementById('montoEquipo');
     if (display) display.textContent = "$0.00";
+    
+    // Re-validate budget after switching currency/state
+    if (typeof validateEditBudget === 'function') validateEditBudget(false);
+});
+
+$(document).on('blur', '#montoBs, #montoRef', function() {
+    if (typeof validateEditBudget === 'function') validateEditBudget(true);
 });
 
 // Guardar Pago
@@ -5163,10 +5190,40 @@ async function fetchBudgetDataForValidation(nroTicket) {
         const resultBudget = await response.json();
 
         if (resultBudget.success) {
+            const totalPaid = parseFloat(resultBudget.total_paid || 0);
+            const totalPending = parseFloat(resultBudget.total_pending || 0);
             window.currentBudgetAmount = parseFloat(resultBudget.total_budget || 0);
-            window.currentRemaining = window.currentBudgetAmount > 0 
-                ? (window.currentBudgetAmount - parseFloat(resultBudget.total_paid || 0)) 
-                : 0;
+            
+            // Calculamos el restante restando tanto el monto pagado (6) como el pendiente (7, 17, etc.)
+            const coveredAmount = totalPaid + totalPending;
+            const remaining = Math.max(0, window.currentBudgetAmount - coveredAmount);
+            window.currentRemaining = remaining;
+
+            // --- ACTUALIZACIÓN DE UI SI EXISTE ---
+            const montoAbonado = document.getElementById("montoAbonado");
+            const montoRestante = document.getElementById("montoRestante");
+            const montoEquipoHeader = document.getElementById("montoEquipo");
+            const btnGuardar = document.getElementById("btnGuardarDatosPago");
+
+            if (montoAbonado) montoAbonado.textContent = `$${totalPaid.toFixed(2)}`;
+            if (montoRestante) montoRestante.textContent = `Restante: $${remaining.toFixed(2)}`;
+            if (montoEquipoHeader) montoEquipoHeader.textContent = `$${remaining.toFixed(2)}`;
+            
+            // Bloqueo proactivo del botón si ya está cubierto y no es una edición
+            const idRec = document.getElementById("id_payment_record_loading") ? document.getElementById("id_payment_record_loading").value : "";
+            if (window.currentBudgetAmount > 0 && remaining <= 0.001 && (!idRec || idRec === "")) {
+                if (btnGuardar) {
+                    btnGuardar.disabled = true;
+                    if (totalPending > 0 && (totalPaid + totalPending) >= window.currentBudgetAmount) {
+                        btnGuardar.innerHTML = '<i class="fas fa-clock me-2"></i>Pago en Revisión';
+                    } else {
+                        btnGuardar.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pagado Completo';
+                    }
+                    btnGuardar.style.background = '#6c757d'; 
+                }
+            }
+
+            console.log("DEBUG fetchBudgetDataForValidation: Budget:", window.currentBudgetAmount, "Paid:", totalPaid, "Pending:", totalPending, "Remaining:", window.currentRemaining);
         } else {
             window.currentBudgetAmount = 0;
             window.currentRemaining = 0;

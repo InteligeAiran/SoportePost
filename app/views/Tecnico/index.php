@@ -1599,7 +1599,7 @@ function mi_navbar() {}
 
                             <div class="col-12">
                                 <button type="button" class="btn btn-secondary" id="previewHtmlTemplateBtn">Previsualizar</button>
-                                <button type="button" class="btn btn-success" id="printHtmlTemplateBtn">Imprimir / Guardar PDF</button>
+                                <button type="button" class="btn btn-success" id="printHtmlTemplateBtn" disabled>Imprimir / Guardar PDF</button>
                             </div>
                             <div class="col-12" style="height: 400px;">
                                 <iframe id="htmlTemplatePreview" style="width:100%; height:100%; border:1px solid #ddd;"></iframe>

@@ -992,9 +992,9 @@ function mi_navbar() {}
                                     /* Ensure disabled amount fields have consistent styling */
                                     #montoBs:disabled,
                                     #montoRef:disabled {
-                                        background-color: #e9ecef !important;
-                                        cursor: not-allowed !important;
-                                        border-color: #ced4da !important;
+                                        background-color: #e9ecef;
+                                        cursor: not-allowed;
+                                        border-color: #ced4da;
                                         opacity: 1 !important;
                                         color: #6c757d !important;
                                     }
