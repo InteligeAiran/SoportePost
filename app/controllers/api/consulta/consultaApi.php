@@ -1535,6 +1535,7 @@ class Consulta extends Controller
             $responseData = [
                 'porcentaje' => (float)$primary['porcentaje'],
                 'tipo_exoneracion' => $primary['tipo_exoneracion'],
+                'id_status_payment' => (int)$primary['id_status_payment'],
                 'has_anticipo_100' => $hasAnticipo100,
                 'anticipo_data' => $anticipo,
                 'workshop_data' => $workshop,
@@ -3023,14 +3024,25 @@ class Consulta extends Controller
         }
 
         $total_budget = floatval($result['total_budget']);
-        $taller_porcentaje = 0;
+        $ahorro_taller = 0;
+        $ahorro_anticipo = 0;
+
         foreach ($all_exonerations as $exo) {
             $tipo = strtolower(trim($exo['tipo_exoneracion'] ?? ''));
+            $porcentaje = (float)($exo['porcentaje'] ?? 0);
+            
             if ($tipo === 'pago taller' || $tipo === 'taller' || $tipo === 'presupuesto') {
-                $taller_porcentaje += (float)$exo['porcentaje'];
+                $ahorro_taller += ($total_budget * $porcentaje / 100);
+            } else if ($tipo === 'anticipo') {
+                // El anticipo tiene una base fija nominal de $30 USD
+                $ahorro_anticipo += (30.00 * $porcentaje / 100);
             }
         }
-        $net_budget = $total_budget - ($total_budget * $taller_porcentaje / 100);
+
+        // El Anticipo es parte del pago del taller. El ahorro total es el máximo entre ambos.
+        // Si el ahorro por presupuesto ya es mayor al del anticipo, este último queda "absorbido".
+        $total_ahorro = max($ahorro_taller, $ahorro_anticipo);
+        $net_budget = $total_budget - $total_ahorro;
 
         $this->response([
             'success' => true, 

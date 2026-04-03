@@ -3181,18 +3181,19 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     const tipoExoneracion = response.tipo_exoneracion || 'Anticipo';
                     
                     // DETERMINAR EL MONTO PARA LAS TARJETAS (Header, Card Izquierda, Restante)
-                    // El usuario pide que sea NEUTRAL: solo mostramos el presupuesto real de la DB.
-                    let montoBaseTarjetas = totalBudget;
+                    // El usuario pide que el Card de Presupuesto muestre el monto bruto (sin deducciones)
+                    let totalGrossBudget = parseFloat(response.gross_budget) || totalBudget;
                     
-                    // El "Restante" se calcula sobre el presupuesto real
+                    // El "Restante" se calcula sobre el presupuesto NETO (ya exonerado)
                     // Incluimos tanto lo PAGADO como lo PENDIENTE para evitar sobre-presupuesto.
                     const coveredAmount = totalPaid + totalPending;
-                    const remaining = Math.max(0, montoBaseTarjetas - coveredAmount);
+                    const remaining = Math.max(0, totalBudget - coveredAmount);
                     
                     // Store in global variables for references and logic
                     window.currentTotalPaid = totalPaid;
                     window.currentTotalPending = totalPending;
-                    window.currentBudgetAmount = totalBudget; // Official budget (0 if none)
+                    window.currentBudgetAmount = totalBudget; // Official net budget (0 if none)
+                    window.currentGrossBudget = totalGrossBudget; // Official gross budget
                     window.currentRemaining = remaining;
                     window.currentExoneracionPorcentaje = exoneracionPorcentaje;
                     
@@ -3207,7 +3208,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     const labelPresupuesto = document.getElementById("labelMontoPresupuesto");
                     
                     if (montoPresupuestoDisplay) {
-                        montoPresupuestoDisplay.textContent = `$${montoBaseTarjetas.toFixed(2)}`;
+                        montoPresupuestoDisplay.textContent = `$${totalGrossBudget.toFixed(2)}`;
                         if (labelPresupuesto) {
                             labelPresupuesto.textContent = "Monto Presupuesto";
                         }
@@ -3225,7 +3226,8 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     if (exonerationSection && exonerationList && response.all_exonerations && response.all_exonerations.length > 0) {
                         exonerationSection.style.display = "block";
                         exonerationList.innerHTML = "";
-                        let totalAhorro = 0;
+                        let workshopTotalAhorro = 0;
+                        let anticipoTotalAhorro = 0;
 
                         response.all_exonerations.forEach(exo => {
                             let type = exo.tipo_exoneracion || 'Anticipo';
@@ -3234,13 +3236,14 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                             // Determinar base según tipo
                             let baseValue = 30.00; // Default Anticipo
                             if (type.toLowerCase() === 'pago taller' || type.toLowerCase() === 'taller' || type.toLowerCase() === 'presupuesto') {
-                                // Usar presupuesto bruto como base para el cálculo si está disponible
                                 let grossBudget = parseFloat(response.gross_budget) || totalBudget;
                                 baseValue = grossBudget > 0 ? grossBudget : 0;
+                                workshopTotalAhorro += (baseValue * pct) / 100;
+                            } else if (type.toLowerCase() === 'anticipo') {
+                                anticipoTotalAhorro += (30.00 * pct) / 100;
                             }
                             
-                            let savings = (baseValue * pct) / 100;
-                            totalAhorro += savings;
+                            let individualSavings = (baseValue * pct) / 100;
 
                             const row = document.createElement("div");
                             row.className = "d-flex justify-content-between align-items-center mb-2";
@@ -3250,13 +3253,16 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                                     <span class="fw-bold text-dark">${type}:</span> 
                                     Base $${baseValue.toFixed(2)} (${pct}%)
                                 </div>
-                                <div class="fw-bold text-success">-$${savings.toFixed(2)}</div>
+                                <div class="fw-bold text-success">-$${individualSavings.toFixed(2)}</div>
                             `;
                             exonerationList.appendChild(row);
                         });
 
+                        // El ahorro total es el máximo de los dos tipos
+                        let finalAhorro = Math.max(workshopTotalAhorro, anticipoTotalAhorro);
+
                         if (totalAhorroElement) {
-                            totalAhorroElement.textContent = `-$${totalAhorro.toFixed(2)}`;
+                            totalAhorroElement.textContent = `-$${finalAhorro.toFixed(2)}`;
                         }
                     } else if (exonerationSection) {
                         exonerationSection.style.display = "none";
@@ -3294,7 +3300,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                         }
                     }
                     
-                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Total:", montoBaseTarjetas, "Restante:", remaining);
+                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Bruto:", totalGrossBudget, "Neto:", totalBudget, "Restante:", remaining);
                 } else {
                     montoAbonadoElement.textContent = "$0.00";
                     montoRestanteElement.textContent = `Restante: $${(parseFloat(budgetAmount) || 0).toFixed(2)}`;

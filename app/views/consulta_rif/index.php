@@ -1010,7 +1010,7 @@ function mi_navbar() {}
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 2</h1>
                         </div>
-                        <div class="modal-body" style="margin-left: 0; max-height: 70vh; overflow-y: auto;">
+                        <div class="modal-body" style="margin-left: 0; max-height: 60vh; overflow-y: auto;">
                             <form id="miFormulario" class="row g-3">
                                 <div id="detalle1" class="col-md-6">
                                     <div><br>

@@ -5743,25 +5743,27 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
     let listaTextosExo = [];
     const exoContainer = document.getElementById('presupuestoExoneracionContainer');
     
+    let ahorroWorkshopTotal = 0;
+    let ahorroAnticipoTotal = 0;
+
     if (window.presupuestoListaExoneraciones && window.presupuestoListaExoneraciones.length > 0) {
         window.presupuestoListaExoneraciones.forEach(exo => {
             const tipo = (exo.tipo_exoneracion || '').trim().toLowerCase();
             const porc = parseFloat(exo.porcentaje) || 0;
-            const isAnticipo = tipo.includes('anticipo');
             
-            if (isAnticipo) {
-                // Es INFORMATIVO (ya se pagó o no aplica a este módulo)
-                const montoInformativo = (30 * porc / 100);
-                listaTextosExo.push(`Anticipo ${porc}% ($${montoInformativo.toFixed(2)})`);
-                console.log(`[PRESUPUESTO] Detectada Exoneración Anticipo ${porc}% (Informativa)`);
-            } else {
-                // Es DESCUENTO REAL sobre el monto del taller
+            if (tipo.includes('pago taller') || tipo.includes('taller') || tipo.includes('presupuesto')) {
                 const montoDcto = (montoTaller * porc / 100);
-                totalMontoExoneradoReal += montoDcto;
+                ahorroWorkshopTotal += montoDcto;
                 listaTextosExo.push(`${exo.tipo_exoneracion} ${porc}% (-$${montoDcto.toFixed(2)})`);
-                console.log(`[PRESUPUESTO] Detectada Exoneración ${exo.tipo_exoneracion} ${porc}% (Descuento Real $${montoDcto.toFixed(2)})`);
+            } else if (tipo.includes('anticipo')) {
+                const montoDcto = (30 * porc / 100);
+                ahorroAnticipoTotal += montoDcto;
+                listaTextosExo.push(`Anticipo ${porc}% ($${montoDcto.toFixed(2)})`);
             }
         });
+        
+        // Aplicamos la regla del MÁXIMO (Regla de absorción de anticipo) para el descuento real
+        totalMontoExoneradoReal = Math.max(ahorroWorkshopTotal, ahorroAnticipoTotal);
         
         // Mostrar contenedor de exoneración
         if (exoContainer) {
@@ -5785,17 +5787,15 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
     
     let diferenciaUSD = montoTaller - totalMontoExoneradoReal - montoPagadoUSD;
     
-    // LÓGICA DE EXCESO SEGÚN REQUERIMIENTO DEL USUARIO:
-    // El modal de 'Ajuste Requerido' SOLO DEBE SALIR si el presupuesto (montoTaller) 
-    // es MENOR que el monto pagado de Anticipo, sin importar la exoneración.
-    let isExcesoReal = (montoTaller > 0 && montoTaller < montoPagadoUSD);
+    // ACTUALIZACIÓN: Lógica de Exceso Contable (Sobrando Dinero)
+    // El exceso real ocurre cuando lo YA PAGADO + el DESCUENTO DE EXONERACIÓN superan el monto bruto del presupuesto.
+    let isExcesoReal = (montoTaller > 0 && (montoPagadoUSD + totalMontoExoneradoReal) > (montoTaller + 0.05));
     
     if (isExcesoReal) {
-        // Forzamos la diferencia para que refleje el exceso real basado solo en el presupuesto vs el anticipo
-        diferenciaUSD = montoTaller - montoPagadoUSD; 
+        // La diferencia negativa refleja el excedente real que el sistema no permite procesar
+        diferenciaUSD = montoTaller - totalMontoExoneradoReal - montoPagadoUSD; 
     } else {
-        // Si el presupuesto es mayor o igual al anticipo, no consideramos que haya un "exceso" a ajustar.
-        // Cualquier negatividad aquí sería por exoneraciones que absorben el total, y el usuario no tiene que pagar nada (0).
+        // Si no hay exceso contable, la diferencia mínima es 0 (no se debe nada)
         if (diferenciaUSD < 0) {
             diferenciaUSD = 0;
         }
@@ -5842,38 +5842,33 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
             // ✅ Mostrar alerta si es negativo y se solicitó mostrar alerta
             if (showAlert) {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Ajuste Requerido',
+                    icon: 'error',
+                    title: '<span style="color: #dc3545;">Monto Excedido (Sobrante)</span>',
                     html: `
                         <div class="text-center">
-                            <p class="mb-3 text-muted">El pago del cliente supera el monto del presupuesto.</p>
+                            <p class="mb-3 text-muted">La combinación de <b>Pagos + Exoneraciones</b> supera el presupuesto bruto. 
+                            <br>Existe un excedente de <b class="text-danger">$${Math.abs(diferenciaUSD).toFixed(2)}</b>.</p>
                             
                             <div class="d-flex justify-content-center mb-3">
                                 <div class="p-3 bg-light rounded border border-danger">
-                                    <span class="d-block text-secondary small text-uppercase fw-bold">Monto Pagado en Exceso</span>
+                                    <span class="d-block text-secondary small text-uppercase fw-bold">Diferencia Excedente</span>
                                     <span class="d-block text-danger fw-bold fs-4">${Math.abs(diferenciaUSD).toFixed(2)} USD</span>
                                 </div>
                             </div>
                             
                             <p class="small text-muted mb-0">
-                                Por favor, ajuste el <b>Monto Total de Taller</b> hasta que sea al menos igual al anticipo ($${montoPagadoUSD.toFixed(2)}).
+                                Por favor, ajuste el <b>Monto Total de Taller</b> o las <b>Exoneraciones</b> hasta que cubran como máximo el presupuesto.
                             </p>
                         </div>
                     `,
-                    confirmButtonColor: '#ffc107',
-                    confirmButtonText: '<span style="color: #000; font-weight: bold;">Entendido</span>',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'Entendido',
                     showClass: {
                         popup: 'animate__animated animate__fadeInDown'
                     },
                     hideClass: {
                         popup: 'animate__animated animate__fadeOutUp'
-                    },
-                    backdrop: `
-                        rgba(0,0,123,0.1)
-                        left top
-                        no-repeat
-                    `
+                    }
                 });
             }
         }

@@ -772,8 +772,9 @@ function getTicketData() {
                   return;
                 }
               } else {
-                // 4. VALIDACIÓN DE APROBACIÓN ADMINISTRATIVA (FLEXIBLE: PERMITIR INTENTO DE ENVÍO PARA PENDIENTES 5 Y 7)
-                const forbiddenStatus = [10, 11, 13, 17]; // Documentación incompleta, rechazo total o pago normal pendiente
+                // 4. VALIDACIÓN DE APROBACIÓN ADMINISTRATIVA (FLEXIBLE: PERMITIR INTENTO DE ENVÍO PARA PENDIENTES 5, 7, 10 Y 17)
+                // El estatus 13 (Anticipo Rechazado) se mantiene bloqueado. 10, 11 y 17 pasan a la validación manual.
+                const forbiddenStatus = [13]; // Sólo rechazo total bloquea de inmediato
                 if (forbiddenStatus.includes(parseInt(id_document))) {
                     let statusLabel = "Documentación Incompleta";
                     if (parseInt(id_document) === 17) statusLabel = "Pago Pendiente por Revisión";
@@ -838,25 +839,36 @@ function getTicketData() {
                 }
 
                 if (showButton) {
+                  const isDocumentoPendienteManual = (id_document === 10 || id_document === 11 || id_document === 17);
+                  let detallePendiente = "documentación incompleta";
+                  if (id_document === 10) detallePendiente = "carga de <strong>Anticipo</strong> o <strong>Exoneración</strong>";
+                  if (id_document === 11) detallePendiente = "<strong>PDF de envío ZOOM</strong>";
+                  if (id_document === 17) detallePendiente = "revisión de <strong>Pago Pendiente</strong>";
+
                   Swal.fire({
                     icon: 'warning',
                     iconColor: '#ff9800',
-                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Incompletos!</span>',
+                    title: `<span style="color: #003594; font-size: 1.5em; font-weight: 700;">${isDocumentoPendienteManual ? '¡Documentos Incompletos!' : '¡Documentos Incompletos!'}</span>`,
                     html: `
                       <div style="text-align: left; padding: 10px 0;">
                         <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                          No es posible procesar el envío del equipo con la documentación actual.
+                          ${isDocumentoPendienteManual 
+                            ? `Este ticket requiere la ${detallePendiente}. Puede intentar enviarlo si ya fue aprobado manualmente.` 
+                            : 'No es posible procesar el envío del equipo con la documentación actual.'}
                         </p>
                         <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
                           <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
-                            <strong>⚠️ Acción requerida:</strong><br>
-                            Antes de enviar el equipo al taller, es estrictamente necesario <strong>cargar todos los documentos correspondientes.</strong>
+                            <strong>⚠️ Nota:</strong><br>
+                            El servidor realizará la validación final basada en el registro de aprobaciones administrativas.
                           </p>
                         </div>
                       </div>
                     `,
-                    confirmButtonText: 'Entendido',
+                    showCancelButton: isDocumentoPendienteManual,
+                    confirmButtonText: isDocumentoPendienteManual ? 'Entendido' : 'Aceptar',
+                    cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#003594',
+                    cancelButtonColor: '#8392ab',
                     color: 'black',
                     width: '600px',
                     padding: '2em',
@@ -864,6 +876,10 @@ function getTicketData() {
                       popup: 'swal2-popup-custom',
                       title: 'swal2-title-custom',
                       htmlContainer: 'swal2-html-container-custom'
+                    }
+                  }).then((result) => {
+                    if (isDocumentoPendienteManual && result.isConfirmed) {
+                      continuarFlujoEnviarTaller();
                     }
                   });
                   return;
@@ -1004,7 +1020,7 @@ function getTicketData() {
               };
 
 
-              const mostrarValidacionDocumentosPendientes = () => {
+              const mostrarValidacionDocumentosPendientes = (tipoDoc = "de pago o exoneración") => {
                   Swal.fire({
                     icon: 'warning',
                     iconColor: '#ff9800',
@@ -1012,7 +1028,7 @@ function getTicketData() {
                     html: `
                       <div style="text-align: left; padding: 10px 0;">
                         <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                          El caso actual tiene <strong>documentos pendientes por revisar</strong> en el sistema.
+                          El caso actual tiene <strong>documentos de ${tipoDoc} pendientes por revisar</strong> en el sistema.
                         </p>
                         <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
                           <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
@@ -1068,11 +1084,15 @@ function getTicketData() {
                 return;
               }
 
-              // 6. Validación de Exoneración/Pago Pendiente (MODIFICADA: Dejar pasar para validación granular en el modal)
-              /* if (id_document == 5 || id_document == 7) {
-                  mostrarValidacionDocumentosPendientes();
+              // 6. Validación de Exoneración/Pago Pendiente (MODIFICADA: Mostrar tipo de documento específico)
+              if (parseInt(id_document) === 5) {
+                  mostrarValidacionDocumentosPendientes("Exoneración");
                   return;
-              } */
+              }
+              if (parseInt(id_document) === 7) {
+                  mostrarValidacionDocumentosPendientes("Anticipo");
+                  return;
+              }
 
 
               // 8. Validación Mandatoria de Exoneración (Sin importar si el estatus actual es Exoneración Aprobada o Pago Aprobado)
@@ -1091,7 +1111,7 @@ function getTicketData() {
 
                       // 1. PRIORIDAD: Si la exoneración está PENDIENTE (5), mostrar el modal original de documentos pendientes
                       if (idStatusExoneracion === 5) {
-                          mostrarValidacionDocumentosPendientes();
+                          mostrarValidacionDocumentosPendientes("Exoneración");
                           return;
                       }
 
@@ -3681,31 +3701,46 @@ function handleSendToTallerClick() {
         const response = JSON.parse(xhr.responseText);
         Swal.fire({
             icon: "success",
-            title: "¡Notificación!", // <-- FIX IS HERE
+            title: "¡Notificación!", 
             html:`El POS asociado <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialpos}</span> al ticket Nro: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> fue enviado a Taller`,
             color: "black",
-            // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
-            showConfirmButton: true, // Muestra el botón de confirmación
-            confirmButtonText: "Ok", // Texto del botón
-            confirmButtonColor: "#003594", // Color del botón (puedes ajustar)
-            allowOutsideClick: false, // Opcional: para que el usuario DEBA hacer clic en el botón
-            allowEscapeKey: false,   // Opcional: para que no se pueda cerrar con la tecla Escape
+            showConfirmButton: true, 
+            confirmButtonText: "Ok", 
+            confirmButtonColor: "#003594", 
+            allowOutsideClick: false, 
+            allowEscapeKey: false,   
             didOpen: () => {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                location.reload(); // Recarga la página
+                location.reload(); 
             }
         });
             if (staticBackdropModalInstance) {
-            staticBackdropModalInstance.hide(); // Cierra el modal "Deseas Enviar al Taller"
+            staticBackdropModalInstance.hide(); 
         
             getTicketData(); 
-        } else {
-          alert("Error al enviar el ticket: " + response.message);
         }
       } else {
-        alert("Error de conexión: " + xhr.statusText);
+        // MANEJO DE ERRORES MEJORADO: Capturamos el mensaje del backend (ej. 403 de validación)
+        let errorMsg = "Error de conexión: " + xhr.statusText;
+        try {
+            const response = JSON.parse(xhr.responseText);
+            if (response && response.message) {
+                errorMsg = response.message;
+            }
+        } catch (e) {
+            // No es un JSON válido, mantenemos el mensaje por defecto
+        }
+
+        Swal.fire({
+            icon: "error",
+            title: "¡No se puede enviar!",
+            text: errorMsg,
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#003594",
+            color: "black"
+        });
       }
     };
     xhr.onerror = function () {
@@ -5193,6 +5228,9 @@ async function fetchBudgetDataForValidation(nroTicket) {
             const totalPaid = parseFloat(resultBudget.total_paid || 0);
             const totalPending = parseFloat(resultBudget.total_pending || 0);
             window.currentBudgetAmount = parseFloat(resultBudget.total_budget || 0);
+            window.currentGrossBudget = parseFloat(resultBudget.gross_budget || 0);
+            window.currentTotalPaid = totalPaid;
+            window.currentExonerations = resultBudget.all_exonerations || [];
             
             // Calculamos el restante restando tanto el monto pagado (6) como el pendiente (7, 17, etc.)
             const coveredAmount = totalPaid + totalPending;
@@ -5526,6 +5564,9 @@ function confirmAndSaveExoneration() {
     const porcentaje = formData.get('porcentaje');
     const btn = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
     const fileInput = document.getElementById('exo_documentFile');
+
+    // Validación final de sobrepago antes de confirmar
+    if (!validateExonerationOverpaymentImpact()) return;
 
     // Validación de archivo obligatoria
     if (!fileInput || !fileInput.files.length) {
@@ -5880,11 +5921,86 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
   }
 }
 
+/**
+ * Valida el impacto de la exoneración propuesta contra lo ya pagado 
+ * para evitar sobrepagos/excedentes de dinero (Copia sincronizada de Exoneración)
+ */
+function validateExonerationOverpaymentImpact() {
+    const selectedType = document.getElementById('exo_tipo_seleccionado')?.value || 'Anticipo';
+    const sliderVal = parseFloat(document.getElementById('exo_slider')?.value) || 0;
+    if (typeof window.currentGrossBudget === 'undefined' || window.currentGrossBudget <= 0) return true;
+    const gross = window.currentGrossBudget || 0;
+    const currentPaid = window.currentTotalPaid || 0;
+    const currentHistory = window.currentExonerations || [];
+    let workshopSavingsTotal = 0;
+    let anticipoSavingsTotal = 0;
+
+    currentHistory.forEach(exo => {
+        let type = (exo.tipo_exoneracion || 'Anticipo').toLowerCase();
+        let pct = parseFloat(exo.porcentaje) || 0;
+        if (type === 'pago taller' || type === 'taller' || type === 'presupuesto') {
+            workshopSavingsTotal += (gross * pct) / 100;
+        } else if (type === 'anticipo') {
+            anticipoSavingsTotal += (30.00 * pct) / 100;
+        }
+    });
+
+    if (selectedType.toLowerCase() === 'pago taller' || selectedType.toLowerCase() === 'taller' || selectedType.toLowerCase() === 'presupuesto') {
+        workshopSavingsTotal += (gross * sliderVal) / 100;
+    } else if (selectedType.toLowerCase() === 'anticipo') {
+        anticipoSavingsTotal += (30.00 * sliderVal) / 100;
+    }
+
+    let finalTotalSavings = Math.max(workshopSavingsTotal, anticipoSavingsTotal);
+    let proposedNetBudget = Math.max(0, gross - finalTotalSavings);
+    let infoContainer = document.getElementById('exo_limit_info_container');
+    let btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+
+    if (currentPaid > (proposedNetBudget + 0.05) && gross > 0) {
+        const overflow = currentPaid - proposedNetBudget;
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="alert alert-danger border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+                     style="background: #fff5f5; border-radius: 12px; border-left: 5px solid #ff4d4f !important; padding: 15px; margin-top:-10px;">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-danger" style="font-weight: 700; font-size: 0.95rem;">Excedente de Pago</h6>
+                            <p class="mb-0 text-muted" style="font-size: 0.85rem; line-height: 1.4;">
+                                El cliente ya pagó <span class="fw-bold text-dark">$${currentPaid.toFixed(2)}</span>. 
+                                Con esta exoneración, el monto total baja a <span class="fw-bold text-dark">$${proposedNetBudget.toFixed(2)}</span>.
+                                <br><span class="text-danger fw-bold">Sobrante: $${overflow.toFixed(2)}</span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+            btnGuardar.innerHTML = `<i class="fas fa-ban me-2"></i>Monto Excedido`;
+        }
+        return false;
+    } else {
+        if (infoContainer) infoContainer.innerHTML = "";
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.style.background = 'linear-gradient(135deg, #da1b60 0%, #ff8a00 100%)';
+            btnGuardar.innerHTML = `<i class="fas fa-save me-2"></i>Guardar Exoneración`;
+        }
+        return true;
+    }
+}
+
 // Listeners adicionales para el modal de exoneración (Slider y Botones de Tipo)
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'exo_slider') {
         const display = document.getElementById('exo_porcentaje_valor');
         if (display) display.innerText = `${e.target.value}%`;
+        validateExonerationOverpaymentImpact();
     }
 });
 
@@ -5899,6 +6015,7 @@ document.addEventListener('click', function(e) {
         
         // REGLA DEL 100% PARA ANTICIPO
         adjustExoSliderByType(selectedType);
+        validateExonerationOverpaymentImpact();
     }
     
     if (e.target.closest('#btnSincronizarExoneracion')) {

@@ -2810,12 +2810,99 @@ function adjustExoSliderByType(type, isEdit = false) {
  * Carga el historial de exoneraciones para un ticket.
  */
 
+/**
+ * Valida el impacto de la exoneración propuesta contra lo ya pagado 
+ * para evitar sobrepagos/excedentes de dinero.
+ */
+function validateExonerationOverpaymentImpact() {
+    const selectedType = document.getElementById('exo_tipo_seleccionado')?.value || 'Anticipo';
+    const sliderVal = parseFloat(document.getElementById('exo_slider')?.value) || 0;
+    
+    if (typeof window.currentGrossBudget === 'undefined') return true;
+
+    const gross = window.currentGrossBudget || 0;
+    const currentPaid = window.currentTotalPaid || 0;
+    const currentHistory = window.currentExonerations || [];
+
+    // Lógica espejo del backend para el total ahorro (Suma de tipos, luego Max entre tipos)
+    let workshopSavingsTotal = 0;
+    let anticipoSavingsTotal = 0;
+
+    // 1. Sumar ahorros actuales del historial (evitar duplicar si es edición, pero aquí es registro nuevo)
+    currentHistory.forEach(exo => {
+        let type = (exo.tipo_exoneracion || 'Anticipo').toLowerCase();
+        let pct = parseFloat(exo.porcentaje) || 0;
+        if (type === 'pago taller' || type === 'taller' || type === 'presupuesto') {
+            workshopSavingsTotal += (gross * pct) / 100;
+        } else if (type === 'anticipo') {
+            anticipoSavingsTotal += (30.00 * pct) / 100;
+        }
+    });
+
+    // 2. Sumar el propuesto en el modal
+    if (selectedType.toLowerCase() === 'pago taller' || selectedType.toLowerCase() === 'taller' || selectedType.toLowerCase() === 'presupuesto') {
+        workshopSavingsTotal += (gross * sliderVal) / 100;
+    } else if (selectedType.toLowerCase() === 'anticipo') {
+        anticipoSavingsTotal += (30.00 * sliderVal) / 100;
+    }
+
+    // Ahorro total máximo (regla de absorción de anticipo)
+    let totalSaving = Math.max(workshopSavingsTotal, anticipoSavingsTotal);
+    let newNetBudget = Math.max(0, gross - totalSaving);
+
+    const infoContainer = document.getElementById('exo_limit_info_container');
+    const btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+
+    // 3. Validación: ¿Abonado > Presupuesto Neto?
+    if (currentPaid > (newNetBudget + 0.05) && gross > 0) {
+        const overflow = currentPaid - newNetBudget;
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="alert alert-danger border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+                     style="background: #fff5f5; border-radius: 12px; border-left: 5px solid #ff4d4f !important; padding: 15px; margin-top:-10px;">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px; box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-danger" style="font-weight: 700; font-size: 0.95rem;">Excedente de Pago Detectado</h6>
+                            <p class="mb-0 text-muted" style="font-size: 0.85rem; line-height: 1.4;">
+                                El cliente ya pagó <span class="fw-bold text-dark">$${currentPaid.toFixed(2)}</span>. 
+                                Con esta exoneración, el monto total baja a <span class="fw-bold text-dark">$${newNetBudget.toFixed(2)}</span>.
+                                <br><span class="text-danger fw-bold">Sobrante: $${overflow.toFixed(2)}</span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+            btnGuardar.style.boxShadow = 'none';
+            btnGuardar.innerHTML = `<i class="fas fa-coins me-2"></i>Pago Excedido`;
+        }
+        return false;
+    } else {
+        if (infoContainer) infoContainer.innerHTML = "";
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.style.background = 'linear-gradient(135deg, #da1b60 0%, #ff8a00 100%)';
+            btnGuardar.style.boxShadow = '0 4px 15px rgba(218, 27, 96, 0.3)';
+            btnGuardar.innerHTML = `<i class="fas fa-save me-2"></i>Guardar Exoneración`;
+        }
+        return true;
+    }
+}
+
 // Listeners para el modal de exoneración (Slider y Botones de Tipo)
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'exo_slider') {
         const val = e.target.value;
         const display = document.getElementById('exo_porcentaje_valor');
         if (display) display.innerText = `${val}%`;
+        // Validar impacto de sobrepago
+        validateExonerationOverpaymentImpact();
     }
     if (e.target && e.target.id === 'edit_porcentaje_slider') {
         const val = e.target.value;
@@ -2843,6 +2930,8 @@ document.addEventListener('click', function(e) {
         
         // REGLA DEL 100% PARA ANTICIPO
         adjustExoSliderByType(selectedType);
+        // Validar impacto de sobrepago
+        validateExonerationOverpaymentImpact();
     }
     
     // Botón Sincronizar (Guardar Directo con Confirmación)
@@ -2976,6 +3065,11 @@ function confirmAndSaveExoneration() {
     const nroExo = formData.get('nro_exoneracion');
     const btn = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
     const fileInput = document.getElementById('exo_documentFile');
+
+    // Validación final de sobrepago antes de confirmar
+    if (!validateExonerationOverpaymentImpact()) {
+        return; // El mensaje ya se muestra en el modal y el botón está bloqueado
+    }
 
     // Validación de archivo obligatoria
     if (!fileInput || !fileInput.files.length) {
@@ -3322,20 +3416,22 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     const tipoExoneracion = response.tipo_exoneracion || 'Anticipo';
                     
                     // DETERMINAR EL MONTO PARA LAS TARJETAS (Header, Card Izquierda, Restante)
-                    // El usuario pide que sea NEUTRAL: solo mostramos el presupuesto real de la DB.
-                    let montoBaseTarjetas = totalBudget;
+                    // El usuario pide que el Card de Presupuesto muestre el monto bruto (sin deducciones)
+                    let totalGrossBudget = parseFloat(response.gross_budget) || totalBudget;
                     
                     // El "Restante" para PAGAR se calcula restando tanto lo PAGADO como lo PENDIENTE
-                    // para evitar duplicidad de pagos mientras se revisan.
+                    // para evitar duplicidad de pagos mientras se revisan (usando el presupuesto NETO).
                     const coveredAmount = totalPaid + totalPending;
-                    const remaining = Math.max(0, montoBaseTarjetas - coveredAmount);
+                    const remaining = Math.max(0, totalBudget - coveredAmount);
                     
                     // Store in global variables for references and logic
                     window.currentTotalPaid = totalPaid;
                     window.currentTotalPending = totalPending;
-                    window.currentBudgetAmount = totalBudget; // Official budget (0 if none)
+                    window.currentBudgetAmount = totalBudget; // Official net budget (0 if none)
+                    window.currentGrossBudget = totalGrossBudget; // Official gross budget
                     window.currentRemaining = remaining;
                     window.currentExoneracionPorcentaje = exoneracionPorcentaje;
+                    window.currentExonerations = response.all_exonerations || []; // Guardamos el historial completo
                     
                     // Bandera para permitir carga de Anticipo ($30) aunque el presupuesto sea 0
                     window.isAnticipoPhase = (totalBudget <= 0 && exoneracionPorcentaje > 0);
@@ -3348,7 +3444,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     const labelPresupuesto = document.getElementById("labelMontoPresupuesto");
                     
                     if (montoPresupuestoDisplay) {
-                        montoPresupuestoDisplay.textContent = `$${montoBaseTarjetas.toFixed(2)}`;
+                        montoPresupuestoDisplay.textContent = `$${totalGrossBudget.toFixed(2)}`;
                         if (labelPresupuesto) {
                             labelPresupuesto.textContent = "Monto Presupuesto";
                         }
@@ -3421,7 +3517,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                         }
                     }
                     
-                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Total:", montoBaseTarjetas, "Restante:", remaining);
+                    console.log("DEBUG loadTotalPaid: Total Abonado:", totalPaid, "Presupuesto Bruto:", totalGrossBudget, "Neto:", totalBudget, "Restante:", remaining);
                 } else {
                     montoAbonadoElement.textContent = "$0.00";
                     montoRestanteElement.textContent = `Restante: $${(parseFloat(budgetAmount) || 0).toFixed(2)}`;

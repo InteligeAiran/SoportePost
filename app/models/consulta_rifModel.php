@@ -8310,45 +8310,70 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     /**
      * Verifica si existe una aprobación manual (exoneración o pago) para un ticket.
+     * BLOQUEA si detecta cualquier registro pendiente (estatus 5, 7 o 17).
+     * PERMITE si existe al menos una aprobación (estatus 4 o 6) y no hay pendientes.
      */
     public function CheckManualApprovalStatus($id_ticket, $id_status_payment) {
         try {
             $db_conn = $this->db->getConnection();
 
-            // 1. Obtener el número de ticket primero
+            // 1. Obtener el número de ticket
             $sqlTicket = "SELECT nro_ticket FROM public.tickets WHERE id_ticket = " . (int)$id_ticket;
             $resTicket = $this->db->pgquery($sqlTicket);
             if (!$resTicket || pg_num_rows($resTicket) == 0) return false;
             
             $rowTicket = pg_fetch_assoc($resTicket);
-            $nro_ticket = trim($rowTicket['nro_ticket']); // TRIM en PHP
+            $nro_ticket = trim($rowTicket['nro_ticket']); 
             $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
 
-            // 2. Lógica según el estatus
-            if ($id_status_payment == 5) { // Espera de Exoneración
-                // Usamos TRIM(nro_ticket) en la consulta SQL también por seguridad
-                $sqlExo = "SELECT COUNT(*) as total FROM public.exoneraciones 
-                           WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND id_status_payment = 4 
-                           AND (is_substituted IS NULL OR is_substituted = FALSE)";
-                $resExo = $this->db->pgquery($sqlExo);
-                if ($resExo && pg_num_rows($resExo) > 0) {
-                    $row = pg_fetch_assoc($resExo);
-                    return ((int)$row['total'] > 0);
-                }
-            } 
+            // 2. VERIFICAR PENDIENTES (BLOQUEANTES)
             
-            if ($id_status_payment == 7 || $id_status_payment == 17) { // Espera de Pagos
-                // Usamos TRIM(nro_ticket) en la consulta SQL también por seguridad
-                $sqlPago = "SELECT COUNT(*) as total FROM public.payment_records 
-                            WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND payment_status = 6";
-                $resPago = $this->db->pgquery($sqlPago);
-                if ($resPago && pg_num_rows($resPago) > 0) {
-                    $row = pg_fetch_assoc($resPago);
-                    return ((int)$row['total'] > 0);
-                }
+            // ¿Hay exoneraciones pendientes? (status 5)
+            $sqlPendingExo = "SELECT COUNT(*) as pending FROM public.exoneraciones 
+                             WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND id_status_payment = 5 
+                             AND (is_substituted IS NULL OR is_substituted = FALSE)";
+            $resPendingExo = $this->db->pgquery($sqlPendingExo);
+            if ($resPendingExo) {
+                $row = pg_fetch_assoc($resPendingExo);
+                if ((int)$row['pending'] > 0) return false;
             }
 
-            return false;
+            // ¿Hay pagos pendientes? (status 7 o 17)
+            $sqlPendingPago = "SELECT COUNT(*) as pending FROM public.payment_records 
+                              WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND payment_status IN (7, 17)
+                              AND (is_substituted IS NULL OR is_substituted = FALSE)";
+            $resPendingPago = $this->db->pgquery($sqlPendingPago);
+            if ($resPendingPago) {
+                $row = pg_fetch_assoc($resPendingPago);
+                if ((int)$row['pending'] > 0) return false;
+            }
+
+            // 3. VERIFICAR APROBACIONES (HABILITANTES)
+            
+            // ¿Hay al menos una exoneración aprobada (4)?
+            $sqlExo = "SELECT COUNT(*) as total FROM public.exoneraciones 
+                       WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND id_status_payment = 4 
+                       AND (is_substituted IS NULL OR is_substituted = FALSE)";
+            $resExo = $this->db->pgquery($sqlExo);
+            $hasApprovedExo = false;
+            if ($resExo && pg_num_rows($resExo) > 0) {
+                $row = pg_fetch_assoc($resExo);
+                $hasApprovedExo = ((int)$row['total'] > 0);
+            }
+
+            // ¿Hay al menos un pago aprobado (6)?
+            $sqlPago = "SELECT COUNT(*) as total FROM public.payment_records 
+                         WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND payment_status = 6";
+            $resPago = $this->db->pgquery($sqlPago);
+            $hasApprovedPago = false;
+            if ($resPago && pg_num_rows($resPago) > 0) {
+                $row = pg_fetch_assoc($resPago);
+                $hasApprovedPago = ((int)$row['total'] > 0);
+            }
+
+            // Si tiene aprobación de cualquiera de los dos (y no hay pendientes), se permite.
+            return ($hasApprovedExo || $hasApprovedPago);
+
         } catch (Exception $e) {
             error_log("Error en CheckManualApprovalStatus: " . $e->getMessage());
             return false;
