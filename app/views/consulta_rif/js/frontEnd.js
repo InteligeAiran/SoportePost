@@ -7534,7 +7534,7 @@ function SendRif() {
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRif`);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const tbody = document .getElementById("rifCountTable").getElementsByTagName("tbody")[0];
+  const tbody = document.getElementById("rifCountTable").getElementsByTagName("tbody")[0];
 
      if (welcomeMessage) {
         welcomeMessage.style.visibility = "visible";
@@ -7552,12 +7552,14 @@ function SendRif() {
   tbody.innerHTML = "";
 
   xhr.onload = function () {
+    console.log("DEBUG: SearchRif status:", xhr.status); // LOG CRITICO
     if (xhr.status >= 200 && xhr.status < 300) {
       if (welcomeMessage) {
         welcomeMessage.style.visibility = "hidden";
         welcomeMessage.style.opacity = "0";
       }
       try {
+        console.log("DEBUG: SearchRif response text:", xhr.responseText); // LOG CRITICO
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.rif && response.rif.length > 0) {
@@ -7600,23 +7602,15 @@ function SendRif() {
             serial_posCell.appendChild(enlaceSerial);
             desc_posCell.textContent = item.desc_pos;
 
-            // Modal de detalles del serial (tu código existente)
+            // Modal de detalles del serial (Usando sistema Premium)
             const modalSerial = document.getElementById("ModalSerial");
-            const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               console.log("DEBUG Click Serial:", item); // DEBUG
               const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
               bsModal.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
-            spanSerialClose.onclick = function () {
-              modalSerial.style.display = "none";
-            };
-            window.onclick = function (event) {
-              if (event.target == modalSerial) {
-                modalSerial.style.display = "none";
-              }
-            };
+            
             
             fechainstallCell.textContent = item.fechainstalacion;
             afiliacionCell.textContent = item.afiliacion;
@@ -8046,7 +8040,9 @@ function SendRif() {
             ]
           });
 
-          $("#rifCountTable").resizableColumns();
+          if ($.fn.resizableColumns) {
+            $("#rifCountTable").resizableColumns();
+          }
         } else {
           // Si no hay datos, muestra un mensaje de "no encontrado"
           tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para el RIF ingresado.</td></tr>';
@@ -8065,14 +8061,14 @@ function SendRif() {
         }
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center">No se encontraron usuarios.</td></tr>';
     } else {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error de conexión.</td></tr>';
     }
   };
 
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error de red.</td></tr>';
   };
   
   const datos = `action=SearchRif&rif=${encodeURIComponent(rifCompleto)}`;
@@ -8625,7 +8621,9 @@ function SendSerial() {
                 }
             ]
           });
-          $(newTable).resizableColumns();
+          if ($.fn.resizableColumns) {
+            $(newTable).resizableColumns();
+          }
 
           // 4. Delegar el evento de clic del enlace del serial
           $(newTable).on("click", "a.serial-link", function (e) {
@@ -8740,12 +8738,14 @@ function SendRazon() {
   tbody.innerHTML = "";
   
   xhr.onload = function () {
+    console.log("DEBUG: SearchRazonData status:", xhr.status); // LOG CRITICO
     if (xhr.status >= 200 && xhr.status < 300) {
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "hidden";
           welcomeMessage.style.opacity = "0";
         }
       try {
+        console.log("DEBUG: SearchRazonData response text:", xhr.responseText); // LOG CRITICO
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.RazonData && response.RazonData.length > 0) {
@@ -8788,21 +8788,14 @@ function SendRazon() {
             desc_posCell.textContent = item.desc_pos;
 
             // Modal de detalles del serial (tu código existente)
+            // Modal de detalles del serial (Usando sistema Premium)
             const modalSerial = document.getElementById("ModalSerial");
-            const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
               bsModal.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
-            spanSerialClose.onclick = function () {
-              modalSerial.style.display = "none";
-            };
-            window.onclick = function (event) {
-              if (event.target == modalSerial) {
-                modalSerial.style.display = "none";
-              }
-            };
+            
             
             fechainstallCell.textContent = item.fechainstalacion;
             afiliacionCell.textContent = item.afiliacion;
@@ -9231,10 +9224,12 @@ function SendRazon() {
                 }
             ]
           });
-          $("#rifCountTable").resizableColumns();
+          if ($.fn.resizableColumns) {
+            $("#rifCountTable").resizableColumns();
+          }
         } else {
           // Si no hay datos, muestra un mensaje de "no encontrado"
-          tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron datos para la razón social ingresada.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="12" class="text-center">No se encontraron datos para la razón social ingresada.</td></tr>';
               // Show the welcome message if no data is found
     if (welcomeMessage) {
       welcomeMessage.style.visibility = "visible";
@@ -9242,7 +9237,7 @@ function SendRazon() {
     }
         }
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error al procesar la respuesta.</td></tr>';
         // Show the welcome message on parsing error
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "visible";
@@ -9250,14 +9245,14 @@ function SendRazon() {
         }
       }
     } else if (xhr.status === 404) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">No se encontraron usuarios.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center">No se encontraron usuarios.</td></tr>';
       // Show the welcome message on 404 error
       if (welcomeMessage) {
         welcomeMessage.style.visibility = "visible";
         welcomeMessage.style.opacity = "1";
       }
     } else {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de conexión.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error de conexión.</td></tr>';
       // Show the welcome message on other HTTP errors
       if (welcomeMessage) {
         welcomeMessage.style.visibility = "visible";
@@ -9267,7 +9262,7 @@ function SendRazon() {
   };
 
   xhr.onerror = function () {
-    tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error de red.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error de red.</td></tr>';
     // Show the welcome message on network error
     if (welcomeMessage) {
       welcomeMessage.style.visibility = "visible";
@@ -9279,20 +9274,8 @@ function SendRazon() {
   xhr.send(datos);
 }
 
-// Lógica para cerrar el modal de serial fuera de la función principal
-const modalSerial = document.getElementById("ModalSerial");
-const spanSerialClose = document.getElementById("ModalSerial-close");
+// Lógica para cerrar el modal de serial fuera de la función principal (Obsoleta - Se eliminaron restos)
 
-if (spanSerialClose) {
-  spanSerialClose.onclick = function () {
-    modalSerial.style.display = "none";
-  };
-}
-window.onclick = function (event) {
-  if (event.target == modalSerial) {
-    modalSerial.style.display = "none";
-  }
-};
 
 function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
   // console.log("fetchSerialData Inputs:", { serial, rif, razonsocial, id_client, cod_adm }); // DEBUG
