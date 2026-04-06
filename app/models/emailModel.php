@@ -21,6 +21,16 @@ class emailModel extends Model{
         }
     }
 
+    public function GetRegionUser($id_user){
+        try{
+            $sql = "SELECT * FROM sp_verregionusers(".$id_user.")";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
     /* REALIZAR ESTA FUNCION EN POSTGRESQL*/
     public function GetEmailCoordByIdfun($id_coordinador){
         try{
@@ -249,6 +259,28 @@ class emailModel extends Model{
         }
     }
 
+    public function GetEmailAreaTesoreria(){
+       try{
+            $sql = "SELECT ar.id_area, ar.name_area, ar.email_area from areas ar WHERE ar.id_area = 2";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function GetUserByArea($id_area){
+        try{
+            $escaped_id_area = pg_escape_literal($this->db->getConnection(), $id_area);
+            $sql = "SELECT * FROM get_full_names_by_area(".$escaped_id_area.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetUserByArea: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
     public function GetTicketDataById($ticketId){
         try{
             $escaped_ticket_id = pg_escape_literal($this->db->getConnection(), $ticketId);
@@ -288,7 +320,12 @@ class emailModel extends Model{
     public function GetPaymentData($nro_ticket){
         try{
             $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
-            $sql = "SELECT * FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY id_payment_record DESC LIMIT 1;";
+            $sql = "SELECT *, 
+                           (SELECT SUM(reference_amount) FROM payment_records WHERE nro_ticket = p.nro_ticket AND (is_substituted IS NULL OR is_substituted = FALSE)) as total_reference_amount,
+                           (SELECT SUM(amount_bs) FROM payment_records WHERE nro_ticket = p.nro_ticket AND (is_substituted IS NULL OR is_substituted = FALSE)) as total_amount_bs
+                    FROM payment_records p 
+                    WHERE nro_ticket = " . $escaped_nro_ticket . " 
+                    ORDER BY id_payment_record DESC LIMIT 1;";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
@@ -340,6 +377,51 @@ class emailModel extends Model{
             return $result;
         } catch (Throwable $e) {
             error_log("Error en GetTicketCompleteDataByNroTicket: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+    public function GetLastPaymentByTicket($nro_ticket) {
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM payment_records WHERE nro_ticket = $escaped_nro_ticket ORDER BY id_payment_record DESC LIMIT 1";
+            return Model::getResult($sql, $this->db);
+        } catch (\Throwable $e) {
+            error_log("Error en GetLastPaymentByTicket: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function GetDataTicket2ByNro($nro_ticket) {
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $sql = "SELECT * FROM GetDataTicket2() WHERE nro_ticket = $escaped_nro_ticket LIMIT 1";
+            return Model::getResult($sql, $this->db);
+        } catch (\Throwable $e) {
+            error_log("Error en GetDataTicket2ByNro: " . $e->getMessage());
+            return null;
+        }
+    }
+    public function GetTicketStaffDetails($nro_ticket, $payment_reference) {
+        try {
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket);
+            $escaped_payment_reference = pg_escape_literal($this->db->getConnection(), $payment_reference);
+            $sql = "SELECT * FROM get_ticket_staff_details($escaped_nro_ticket, $escaped_payment_reference) LIMIT 1";
+            return Model::getResult($sql, $this->db);
+        } catch (\Throwable $e) {
+            error_log("Error en GetTicketStaffDetails: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function GetUsersByIds($ids){
+        try{
+            $ids_string = implode(',', array_map('intval', $ids));
+            $sql = "SELECT id_user, CONCAT(name, ' ', surname) as full_name, email as user_email FROM users WHERE id_user IN ($ids_string)";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetUsersByIds: " . $e->getMessage());
             return ['query' => null, 'row' => null, 'numRows' => 0];
         }
     }

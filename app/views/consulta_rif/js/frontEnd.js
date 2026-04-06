@@ -312,7 +312,8 @@ document.addEventListener("DOMContentLoaded", function () {
   originalFileChosenSpans.forEach((span) => {
     span.remove();
   });
-});
+
+  });
 
 function inicializeModal() {
   var modal = $("#miModal"); // Modal Nivel 2
@@ -861,7 +862,8 @@ function updateDocumentTypeVisibility() {
   } else {
     // Mostrar los radio buttons si no es Actualización de Software ni Sin Llaves/Dukpt Vacío
     checkExoneracionContainer.style.display = '';
-    checkAnticipoContainer.style.display = '';
+    // checkAnticipoContainer.style.display = ''; // Original - Comentado por petición del usuario
+    checkAnticipoContainer.style.display = 'none'; // Forzar oculto siempre
   }
   
   // Actualizar UpdateGuarantees para recalcular el id_status_payment
@@ -1169,14 +1171,17 @@ function getPosSerials(rif) {
 }
 
 function getUltimateTicket(serial) {
+  console.log("GetUltimateTicket DEBUG: Enviando serial = '" + serial + "'");
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetUltimateTicket`); // Asegúrate de usar la ruta correcta de tu API
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   xhr.onload = function () {
+    console.log("GetUltimateTicket DEBUG: XHR Status =", xhr.status);
     if (xhr.status === 200) {
       try {
         const response = JSON.parse(xhr.responseText);
+        console.log("GetUltimateTicket DEBUG: Response =", response);
         if (response && response.success) {
           if (response.fecha !== null) {
             fechaUltimoTicketGlobal = response.fecha;
@@ -1316,7 +1321,25 @@ let isInitialLoad = true;
 function getDiffMonths(date1, date2) {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
-  return (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  
+  // Diferencia básica en meses
+  let months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+  
+  // Ajustar si el día actual es menor al día de inicio (mes incompleto)
+  if (d2.getDate() < d1.getDate()) {
+    months--;
+    // Cálculo fraccional: días restantes del mes anterior + días del mes actual
+    const lastMonthDay = new Date(d2.getFullYear(), d2.getMonth(), 0).getDate();
+    const fraction = (lastMonthDay - d1.getDate() + d2.getDate()) / lastMonthDay;
+    return months + fraction;
+  } else if (d2.getDate() > d1.getDate()) {
+    // Cálculo fraccional: diferencia de días sobre total de días del mes actual
+    const currentMonthDays = new Date(d2.getFullYear(), d2.getMonth() + 1, 0).getDate();
+    const fraction = (d2.getDate() - d1.getDate()) / currentMonthDays;
+    return months + fraction;
+  }
+  
+  return months; // Exactamente el mismo día del mes
 }
 
 function validarGarantiaReingreso(fechaUltimoTicket) {
@@ -1355,10 +1378,12 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       const checkAnticipo = document.getElementById("checkAnticipoContainer");
       const checkEnvio = document.getElementById("checkEnvioContainer");
       if (checkExoneracion) checkExoneracion.style.display = "block";
-      if (checkAnticipo) checkAnticipo.style.display = "block";
+      // if (checkAnticipo) checkAnticipo.style.display = "block"; // Original
+      if (checkAnticipo) checkAnticipo.style.display = "none"; // Forzar oculto
       if (checkEnvio) checkEnvio.style.display = "block";
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
-      if (botonAnticipo) botonAnticipo.style.display = "inline-block";
+      // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
+      if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
     }
   }
@@ -1397,9 +1422,11 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
       const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
       if (checkExoneracionContainer) checkExoneracionContainer.style.display = "block";
-      if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block";
+      // if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block"; // Original
+      if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none"; // Forzar oculto
       if (botonExoneracion) botonExoneracion.style.display = "inline-block";
-      if (botonAnticipo) botonAnticipo.style.display = "inline-block";
+      // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
+      if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
     }
   }
@@ -1633,10 +1660,12 @@ function VerificarSucursales(rif) {
                         if (checkEnvioContainer) {
                             checkEnvioContainer.style.display = "none";
                             checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de exoneración
-                            checkAnticipoContainer.style.display = "block"; // Ocultar el checkbox de antic
+                            // checkAnticipoContainer.style.display = "block"; // Original
+                            checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         }
                       }else{
-                        checkAnticipoContainer.style.display = "block"; // Ocultar el checkbox de anticipo
+                        // checkAnticipoContainer.style.display = "block"; // Original
+                        checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de ex
                         checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
                       }
@@ -1836,6 +1865,8 @@ function verificarTicketEnProceso(serial) {
 }
 
 function SendDataFailure2(idStatusPayment) {
+  console.log("DEBUG SendDataFailure2 globals:", { globalRazon, globalIdClient, globalIdIntelipunto }); // DEBUG
+
   // AHORA: Obtener el valor (ID) y el texto de la falla
   const fallaSelect = document.getElementById("FallaSelect2");
   const descrpFailure_id = fallaSelect.value; // El valor (ID) de la falla
@@ -2242,6 +2273,9 @@ function SendDataFailure2(idStatusPayment) {
     formData.append("id_user", id_user);
     formData.append("rif", rif);
     formData.append("coordinadorNombre", coordinadorNombre);
+    formData.append("razonsocial", globalRazon || ""); // NUEVO
+    formData.append("id_client", globalIdClient || ""); // NUEVO
+    formData.append("id_intelipunto", globalIdIntelipunto || ""); // NUEVO
 
     // Usar uploadNowRadioLocal que se obtuvo al inicio de la función
     if (uploadNowRadioLocal && uploadNowRadioLocal.checked) {
@@ -2845,8 +2879,8 @@ document.addEventListener("DOMContentLoaded", function () {
         uploadNowChecked && exoneracionChecked ? "flex" : "none";
     }
     if (botonCargaAnticipo) {
-    botonCargaAnticipo.style.display =
-        uploadNowChecked && checkAnticipo && checkAnticipo.checked ? "flex" : "none";
+        // botonCargaAnticipo.style.display = uploadNowChecked && checkAnticipo && checkAnticipo.checked ? "flex" : "none"; // Original
+        botonCargaAnticipo.style.display = "none"; // Forzar oculto siempre (Petición del usuario)
     }
     
     // Actualizar el estado del botón de anticipo cuando se muestra (siempre habilitado)
@@ -5743,6 +5777,14 @@ checkEnvio.addEventListener("change", function() {
       }
     });
   }
+
+  // NUEVO: Obtener y establecer el estatus de pago automatizado
+      // Intentar obtener el nro_ticket si está disponible en algún campo oculto o variable global
+      // Si no hay nro_ticket (ej. creación de nuevo ticket), pasamos null para que el backend devuelva "Anticipo"
+      const nroTicketField = document.getElementById("nro_ticket_pago") || document.getElementById("Nr_ticket") || document.getElementById("nro_ticket_global");
+      const nroTicket = nroTicketField ? nroTicketField.value : "";
+      
+      getPagoEstatus(nroTicket);
   
   // Asegurar que el icono se actualice al cargar la página
   setTimeout(function() {
@@ -6117,6 +6159,9 @@ function SendDataFailure1() {
                 },
                 allowOutsideClick: false,
                 allowEscapeKey: false,
+                didClose: () => {
+                  window.location.reload();
+                }
               }); // Este cierra el .then()
             },
           });
@@ -6216,7 +6261,7 @@ function SendDataFailure1() {
     });
   };
   const rif = document.getElementById("InputRif1").value;
-  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}&descrpFailure_text=${encodeURIComponent(descrpFailure_text)}`;
+  const datos = `action=SaveDataFalla&serial=${encodeURIComponent(serial)}&falla=${encodeURIComponent(falla)}&nivelFalla=${encodeURIComponent(nivelFalla)}&id_user=${encodeURIComponent(id_user)}&rif=${encodeURIComponent(rif)}&falla_text=${encodeURIComponent(fallaText)}&nivelFalla_text=${encodeURIComponent(nivelFallaText)}&descrpFailure_text=${encodeURIComponent(descrpFailure_text)}&razonsocial=${encodeURIComponent(globalRazon || "")}&id_client=${encodeURIComponent(globalIdClient || "")}&id_intelipunto=${encodeURIComponent(globalIdIntelipunto || "")}`;
   xhr.send(datos);
   }
 }
@@ -6717,11 +6762,20 @@ function SendRif() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
+            /*const presupuestoCell = row.insertCell();
+            const abonadoCell = row.insertCell();
+            const deudaCell = row.insertCell();*/
 
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
+            
+            // Estilo condicional por deuda
+            if (parseFloat(item.deuda) > 0) {
+              row.style.backgroundColor = "#f8d7da";
+              row.style.color = "#721c24";
+            }
             
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
@@ -6736,8 +6790,9 @@ function SendRif() {
             const modalSerial = document.getElementById("ModalSerial");
             const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
+              console.log("DEBUG Click Serial:", item); // DEBUG
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -6783,6 +6838,14 @@ function SendRif() {
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
+            /*presupuestoCell.textContent = item.total_presupuesto || '0';
+            abonadoCell.textContent = item.total_abonado || '0';
+            deudaCell.textContent = item.deuda || '0';*/
+
+            // Asegurar color de texto blanco para los links si la fila es roja
+            if (parseFloat(item.deuda) > 0) {
+              enlaceSerial.style.color = "#004085";
+            }
           });
 
           // === FUNCIÓN SEGURA PARA CONVERTIR CUALQUIER VALOR A TEXTO (usada en DataTables y PDF) ===
@@ -6820,12 +6883,16 @@ function SendRif() {
           }
           $("#rifCountTable").DataTable({
 
-            pagingType: "simple_numbers",
-            scrollX: '60vh',
-            scrollY: '60vh',
+            scrollX: true,
+            scrollY: "500px",
             scrollCollapse: true,
-            fixedHeader: true,
-            autoWidth: false,
+            autoWidth: true,
+            columnDefs: [
+              { targets: "_all", className: "dt-nowrap" }
+            ],
+            pagingType: "simple_numbers",
+            lengthMenu: [5, 10, 50],
+            pageLength: 5,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -6898,7 +6965,7 @@ function SendRif() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: {
                             header: function(data, columnIdx) {
                                 if (typeof data === 'string') {
@@ -7010,7 +7077,7 @@ function SendRif() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: { body: (data) => safeValue(data) }
                     },
                     customize: function(doc) {
@@ -7354,6 +7421,9 @@ function SendSerial() {
             { data: "direccion_instalacion", title: "Dirección Instalación" },
             { data: "estado", title: "Estado" },
             { data: "municipio", title: "Municipio" },
+            /*{ data: "total_presupuesto", title: "Presupuesto", render: (data) => data || '0' },
+            { data: "total_abonado", title: "Abonado", render: (data) => data || '0' },
+            { data: "deuda", title: "Deuda", render: (data) => data || '0' },*/
           ];
 
             // Lógica para crear las columnas y el thead
@@ -7386,12 +7456,28 @@ function SendSerial() {
 
 
           $(newTable).DataTable({
+            scrollX: true,
+            scrollY: "500px",
+            scrollCollapse: true,
+            fixedHeader: true,
+            data: data,
+            columns: columnsConfig,
+            autoWidth: true,
+            columnDefs: [
+              { targets: "_all", className: "dt-nowrap" }
+            ],
+            createdRow: function (row, data, dataIndex) {
+              if (parseFloat(data.deuda) > 0) {
+                $(row).css({
+                  'background-color': '#f8d7da',
+                  'color': '#721c24'
+                });
+                $(row).find('a').css('color', '#004085');
+              }
+            },
             pagingType: "simple_numbers",
-              scrollX: '60vh',
-              scrollY: '60vh',
-              scrollCollapse: true,
-              fixedHeader: true,
-              autoWidth: false,
+            lengthMenu: [5, 10, 50],
+            pageLength: 5,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -7463,7 +7549,7 @@ function SendSerial() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: {
                             header: function(data, columnIdx) {
                                 if (typeof data === 'string') {
@@ -7571,7 +7657,7 @@ function SendSerial() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     format: { body: (data) => safeValue(data) }
   },
   customize: function(doc) {
@@ -7732,7 +7818,7 @@ function SendSerial() {
             const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
             const modalSerial = document.getElementById("ModalSerial");
             modalSerial.style.display = "block";
-            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial);
+            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm);
           });
         } else {
           // Si no hay datos, mostrar un mensaje y la imagen de bienvenida
@@ -7854,8 +7940,7 @@ function SendRazon() {
             const rifCell = row.insertCell();
             const name_modeloposCell = row.insertCell();
             const serial_posCell = row.insertCell();
-            serial_posCell.className = 'serial-pos-column'; // AÑADE ESTA LÍNEA
-
+            serial_posCell.className = 'serial-pos-column';
             const desc_posCell = row.insertCell();
             const afiliacionCell = row.insertCell();
             const fechainstallCell = row.insertCell();
@@ -7863,11 +7948,19 @@ function SendRazon() {
             const directionCell = row.insertCell();
             const estadoCell = row.insertCell();
             const municipioCell = row.insertCell();
-
+            /*const presupuestoCell = row.insertCell();
+            const abonadoCell = row.insertCell();
+            const deudaCell = row.insertCell();*/
             id_clienteCell.textContent = item.id_cliente;
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
+
+            // Estilo condicional por deuda
+            if (parseFloat(item.deuda) > 0) {
+              row.style.backgroundColor = "#f8d7da";
+              row.style.color = "#721c24";
+            }
 
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
@@ -7883,7 +7976,7 @@ function SendRazon() {
             const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               modalSerial.style.display = "block";
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             spanSerialClose.onclick = function () {
               modalSerial.style.display = "none";
@@ -7929,6 +8022,14 @@ function SendRazon() {
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
+            //presupuestoCell.textContent = item.total_presupuesto || '0';
+            //abonadoCell.textContent = item.total_abonado || '0';
+            //deudaCell.textContent = item.deuda || '0';
+
+            // Asegurar color de texto blanco para los links si la fila es roja
+            if (parseFloat(item.deuda) > 0) {
+              enlaceSerial.style.color = "#004085";
+            }
           });
 
           // Lógica para crear las columnas y el thead
@@ -7965,63 +8066,19 @@ function SendRazon() {
             $("#rifCountTable").DataTable().destroy();
           }
           $("#rifCountTable").DataTable({
-            dom: "Blfrtip",
-            buttons: [{
-              extend: "excelHtml5",
-              footer: true,
-              text: "Excel",
-              filename: () => {
-                  const razon = document.getElementById('RazonInput')?.value?.trim() || 'SIN_RAZON_SOCIAL';
-                  const razonLimpia = razon.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50).toUpperCase();
-                  const fecha = new Date().toISOString().split('T')[0];
-                  return `REPORTE CONSULTA - CONTEOS_RAZON_SOCIAL ${razonLimpia}_${fecha}`;
-              },
-              title: () => {
-                  return 'Conteos por Razón Social';
-              },
-              action: function(e, dt, button, config) {
-                  // Limpiar timeout anterior si existe
-                  if (exportTimeoutId) {
-                      clearTimeout(exportTimeoutId);
-                  }
-                  
-                  // Mostrar overlay inmediatamente
-                  showExportLoading();
-                  exportStartTime = Date.now();
-                  
-                  // Iniciar detección de descarga
-                  detectDownloadStart();
-                  
-                  // Calcular delay basado en número de registros (fallback si no se detecta descarga)
-                  const rowCount = dt.rows({search: 'applied'}).count();
-                  // Para Excel: aproximadamente 100ms por registro, mínimo 5 segundos, máximo 30 segundos
-                  const delay = Math.min(Math.max(rowCount * 100, 5000), 30000);
-                  
-                  // Llamar a la acción por defecto de forma asíncrona
-                  setTimeout(function() {
-                      $.fn.dataTable.ext.buttons.excelHtml5.action.call(this, e, dt, button, config);
-                  }.bind(this), 100);
-                  
-                  // Ocultar overlay después del delay calculado (fallback)
-                  exportTimeoutId = setTimeout(function() {
-                      if (!downloadDetected) {
-                          hideExportLoading();
-                          exportTimeoutId = null;
-                      }
-                  }, delay);
-              },
-            }, ],
-              pagingType: "simple_numbers",
-              scrollX: '60vh',
-              scrollY: '60vh',
-              scrollCollapse: true,
-              fixedHeader: true,
-              autoWidth: false, // Altura fija para el scroll vertical
-            //scrollCollapse: true, // Permite que la tabla se ajuste si hay pocos datos
-            //fixedHeader: true, // Fija el encabezado durante el scroll
-            //autoWidth: false,
-            //fixedHeader: true,
+            dom: '<"text-center"B>lfrtip',
 
+            responsive: false,
+            scrollX: true,
+            scrollY: "500px",
+            scrollCollapse: true,
+            autoWidth: false,
+            columnDefs: [
+              { targets: 10, width: "120px" },  // Estado
+              { targets: 11, width: "120px" }   // Municipio
+            ],
+            lengthMenu: [5, 10, 50],
+            pageLength: 5,
             language: {
               lengthMenu: "Mostrar _MENU_ Registros",
               emptyTable: "No hay Registros disponibles en la tabla",
@@ -8039,8 +8096,6 @@ function SendRazon() {
                 previous: "Anterior",
               },
             },
-
-            dom: 'Bfrtip',
             buttons: [
                 {
                     extend: 'excelHtml5',
@@ -8093,7 +8148,7 @@ function SendRazon() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
                         format: {
                             header: function(data, columnIdx) {
                                 if (typeof data === 'string') {
@@ -8206,7 +8261,7 @@ function SendRazon() {
                         }, delay);
                     },
                     exportOptions: {
-                        columns: ':visible',
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
     format: { body: (data) => safeValue(data) }
   },
   customize: function(doc) {
@@ -8422,13 +8477,16 @@ window.onclick = function (event) {
   }
 };
 
-function fetchSerialData(serial, rif,razonsocial) {
+function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
+  // console.log("fetchSerialData Inputs:", { serial, rif, razonsocial, id_client, cod_adm }); // DEBUG
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
   globalSerial = serial;
   globalRif = rif;
   globalRazon = razonsocial;
+  globalIdClient = id_client; 
+  globalIdIntelipunto = cod_adm; // Mapeamos cod_adm a globalIdIntelipunto para envío
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   const tbody = document
     .getElementById("serialCountTable")
@@ -8443,6 +8501,18 @@ function fetchSerialData(serial, rif,razonsocial) {
         const response = JSON.parse(xhr.responseText);
         if (response.success && response.serial && response.serial.length > 0) {
           const serialData = response.serial[0];
+          console.log("DEBUG fetchSerialData response:", serialData); // DEBUG
+
+          // Update globals if missing
+          if (!globalIdIntelipunto && serialData.cod_adm) {
+             globalIdIntelipunto = serialData.cod_adm;
+             console.log("Updated globalIdIntelipunto from serialData:", globalIdIntelipunto);
+          }
+          if (!globalIdIntelipunto && serialData.id) {
+             globalIdIntelipunto = serialData.id;
+             console.log("Updated globalIdIntelipunto from serialData (id):", globalIdIntelipunto);
+          }
+
 
           // Construye la tabla vertical, omitiendo las propiedades vacías
           for (const key in serialData) {

@@ -273,7 +273,7 @@ function getTicketData() {
           const shouldHideActionsForGarantia = isGarantia && isEstadoSinEnvio;
 
           if (
-            (ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4 || ticket.id_status_payment == 1 || ticket.id_status_payment == 3) &&
+            (ticket.id_status_payment == 13 || ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4 || ticket.id_status_payment == 1 || ticket.id_status_payment == 3) &&
             (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true) &&
             !shouldHideActionsForGarantia
           ) {
@@ -294,7 +294,13 @@ function getTicketData() {
                   data-convenio-file="${ticket.pdf_convenio_filename || ""}"
                   data-zoom-file="${ticket.pdf_zoom_filename || ""}"
                   data-estado-cliente="${ticket.nombre_estado_cliente}"
-                  data-id-failure="${ticket.id_failure || ""}">
+                  data-id-failure="${ticket.id_failure || ""}"
+                  data-motivo-pago="${ticket.motivo_rechazo_pago || ""}"
+                  data-has-rejected-document="${ticket.has_rejected_document}"
+                  data-id-payment-record="${ticket.id_payment_record || ""}"
+                  data-razon-social="${ticket.razonsocial_cliente || ""}"
+                  data-rif="${ticket.rif || ""}"
+                  data-estatus-pos="${ticket.estatus_inteliservices || ""}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
               </button>`;
           }
@@ -761,6 +767,38 @@ function getTicketData() {
                 return;
               }
 
+              // Validación de Gestión Comercial - Espera de Respuesta (id_status_domiciliacion = 3)
+              if (parseInt(id_domiciliacion) === 3) {
+                Swal.fire({
+                  icon: 'error',
+                  title: '<span style="color: #dc3545; font-size: 1.5em; font-weight: 700;">¡Acción Denegada!</span>',
+                  html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                        No se puede enviar el equipo al taller porque el cliente se encuentra en <strong style="color: #dc3545;">Gestión Comercial - Espera de Respuesta</strong> por deuda de domiciliación.
+                      </p>
+                      <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="color: #721c24; margin: 0; font-size: 1em; line-height: 1.6;">
+                          <strong>⚠️ Acción requerida:</strong><br>
+                          El cliente debe comunicarse para solventar la situación antes de poder proceder de forma operativa.
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: 'Entendido',
+                  confirmButtonColor: '#dc3545',
+                  color: 'black',
+                  width: '600px',
+                  padding: '2em',
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-container-custom'
+                  }
+                });
+                return;
+              }
+
               // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
               // Solo requiere documento de Envío, no anticipo ni exoneración
               if (isFallaSinPago) {
@@ -814,11 +852,31 @@ function getTicketData() {
                 if (showButton) {
                   Swal.fire({
                     icon: 'warning',
-                    title: '¡Advertencia!',
-                    text: 'Antes de enviar el equipo al taller, debe cargar los documentos.',
-                    confirmButtonText: 'Ok',
+                    iconColor: '#ff9800',
+                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Incompletos!</span>',
+                    html: `
+                      <div style="text-align: left; padding: 10px 0;">
+                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                          No es posible procesar el envío del equipo con la documentación actual.
+                        </p>
+                        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                            <strong>⚠️ Acción requerida:</strong><br>
+                            Antes de enviar el equipo al taller, es estrictamente necesario <strong>cargar todos los documentos correspondientes.</strong>
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                    confirmButtonText: 'Entendido',
                     confirmButtonColor: '#003594',
                     color: 'black',
+                    width: '600px',
+                    padding: '2em',
+                    customClass: {
+                      popup: 'swal2-popup-custom',
+                      title: 'swal2-title-custom',
+                      htmlContainer: 'swal2-html-container-custom'
+                    }
                   });
                   return;
                 }
@@ -828,21 +886,61 @@ function getTicketData() {
               if (id_document == 5 || id_document == 7) {
                 Swal.fire({
                   icon: 'warning',
-                  title: '¡Advertencia!',
-                  text: 'Se encuentran documentos pendientes por revisar.',
-                  confirmButtonText: 'Ok',
+                  iconColor: '#ff9800',
+                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Pendientes!</span>',
+                  html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                        El caso actual tiene <strong>documentos pendientes por revisar</strong> en el sistema.
+                      </p>
+                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                          <strong>⚠️ Acción requerida:</strong><br>
+                          Debe esperar a que Administración verifique y apruebe los documentos cargados antes de poder enviar el equipo a taller.
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: 'Entendido',
                   confirmButtonColor: '#003594',
                   color: 'black',
+                  width: '600px',
+                  padding: '2em',
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-container-custom'
+                  }
                 });
                 return;
               } else if (id_domiciliacion == 1) {
                 Swal.fire({
                   icon: 'warning',
-                  title: '¡Advertencia!',
-                  text: 'Debe revisar la domiciliación del cliente.',
-                  confirmButtonText: 'Ok',
+                  iconColor: '#ff9800',
+                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Revisión de Domiciliación!</span>',
+                  html: `
+                    <div style="text-align: left; padding: 10px 0;">
+                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                        Aún no han verificado el <strong>estatus de domiciliación</strong> de este cliente.
+                      </p>
+                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                          <strong>⚠️ Acción requerida:</strong><br>
+                          Deben revisar primero el <strong>estatus de domiciliación</strong> del cliente antes de poder continuar con el envío a taller.
+                        </p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: 'Entendido',
                   confirmButtonColor: '#003594',
                   color: 'black',
+                  width: '600px',
+                  padding: '2em',
+                  customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    htmlContainer: 'swal2-html-container-custom'
+                  }
                 });
                 return;
               } else {
@@ -1133,8 +1231,14 @@ function getTicketData() {
     const idFailure = $(this).data('id-failure') ? parseInt($(this).data('id-failure')) : null;
     const isActualizacionSoftware = idFailure === 9;
     const isSinLlavesDukpt = idFailure === 12;
-    const isGarantia = statusPayment == 1 || statusPayment == 3;
-    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt || isGarantia;
+     const isGarantia = statusPayment == 1 || statusPayment == 3;
+     const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt || isGarantia;
+     const motivoRechazoPago = $(this).data('motivo-pago');
+     const hasRejectedDocument = $(this).data('has-rejected-document') === true || $(this).data('has-rejected-document') === "true" || $(this).data('has-rejected-document') === "t";
+     const idPaymentRecord = $(this).data('id-payment-record');
+     const razonSocial = $(this).data('razon-social') || '';
+     const rif = $(this).data('rif') || '';
+     const estatusPos = $(this).data('estatus-pos') || '';
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');
@@ -1184,12 +1288,15 @@ function getTicketData() {
                         data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
                         Cargar Documento de Exoneración
                     </button>
+                    /* 
+                    OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
                     <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
                         data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
                         data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                        data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                        data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
                         Cargar Documento de Pago
                     </button>
+                    */
                 `;
             }
         } else {
@@ -1206,13 +1313,8 @@ function getTicketData() {
                     data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
                     data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                    Cargar Documento de Pago
                 </button>`;
+                 // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
             }
         }
     } else if (imgExoneracionUrl) {
@@ -1277,12 +1379,15 @@ function getTicketData() {
                         data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
                         Cargar Documento de Exoneración
                     </button>
+                    /* 
+                    OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
                     <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
                         data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
                         data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                        data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}">
+                        data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
                         Cargar Documento de Pago
                     </button>
+                    */
                 `;
             }
         } else {
@@ -1302,13 +1407,8 @@ function getTicketData() {
                     data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
                     data-status-payment="${statusPayment}" data-document-type="Exoneracion">
                     Cargar Documento de Exoneración
-                </button>
-                <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Anticipo">
-                    Cargar Documento de Pago
                 </button>`;
+                // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
             }
         }
     }
@@ -1327,7 +1427,85 @@ function getTicketData() {
         `;
     }
 
+    // Botón especial para pago rechazado (Estatus 13 o documento marcado como rechazado)
+    if (statusPayment == 13 || hasRejectedDocument) {
+        // OCULTADO POR SOLICITUD - La corrección de pagos la realizará Administración
+    }
+
     buttonsContainer.html(modalButtonsHTML);
+
+
+    // Manejador específico para mostrar el motivo al intentar corregir (siempre que el botón exista)
+    $('#PagoBotonRechazado').on('click', function() {
+        const motivo = $(this).data('motivo');
+        if (motivo) {
+            Swal.fire({
+                title: '<span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-size: 1.75rem;">Motivo de Rechazo</span>',
+                html: `
+                    <div style="padding: 1.5rem 0;">
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; box-shadow: 0 8px 16px rgba(245, 87, 108, 0.3); animation: pulse 2s infinite;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="white">
+                                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                            </svg>
+                        </div>
+                        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border-left: 4px solid #667eea; padding: 1.25rem; border-radius: 8px; margin: 1rem 0; text-align: left;">
+                            <p style="margin: 0; color: #2d3748; font-size: 1.1rem; line-height: 1.6; font-weight: 500;">${motivo}</p>
+                        </div>
+                        <p style="color: #718096; font-size: 0.9rem; margin-top: 1rem; font-style: italic;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.5rem;">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
+                            Por favor, corrija el documento según las observaciones indicadas
+                        </p>
+                    </div>
+                `,
+                icon: null,
+                showConfirmButton: true,
+                confirmButtonText: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.5rem;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Entendido',
+                confirmButtonColor: '#667eea',
+                customClass: {
+                    popup: 'swal-premium-popup',
+                    confirmButton: 'swal-premium-button'
+                },
+                backdrop: `
+                    rgba(0,0,0,0.6)
+                    left top
+                    no-repeat
+                `,
+                didOpen: () => {
+                    // Agregar estilos CSS dinámicamente si no existen
+                    if (!document.getElementById('swal-premium-styles')) {
+                        const style = document.createElement('style');
+                        style.id = 'swal-premium-styles';
+                        style.innerHTML = `
+                            @keyframes pulse {
+                                0%, 100% { transform: scale(1); }
+                                50% { transform: scale(1.05); }
+                            }
+                            .swal-premium-popup {
+                                border-radius: 16px !important;
+                                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+                            }
+                            .swal-premium-button {
+                                border-radius: 8px !important;
+                                padding: 0.75rem 2rem !important;
+                                font-weight: 600 !important;
+                                font-size: 1rem !important;
+                                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+                                transition: all 0.3s ease !important;
+                            }
+                            .swal-premium-button:hover {
+                                transform: translateY(-2px) !important;
+                                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                }
+            });
+        }
+    });
+
     documentActionsModal.show();
 });
 
@@ -4128,6 +4306,9 @@ function openDetailedPaymentModal(element) {
         return;
     }
 
+    // Fetch budget data for validation
+    fetchBudgetDataForValidation(nroTicket);
+
     // Establecer los valores en los campos del modal
     const serialPosPagoInput = document.getElementById('serialPosPago');
     const nroTicketPagoInput = document.getElementById('nro_ticket_pago');
@@ -4136,6 +4317,34 @@ function openDetailedPaymentModal(element) {
 
     if (serialPosPagoInput) serialPosPagoInput.value = serialPos || '';
     if (nroTicketPagoInput) nroTicketPagoInput.value = nroTicket || '';
+    
+    // Poblar sección de Información del Cliente
+    const razorSocialInput = document.getElementById('displayRazonSocial');
+    const rifInput = document.getElementById('displayRif');
+    const estatusPosInput = document.getElementById('displayEstatusPos');
+    
+    // Obtener datos del ticket actual (asumiendo que están disponibles globalmente o en el elemento)
+    const razonSocial = element.getAttribute('data-razon-social') || element.dataset.razonSocial || '';
+    const rif = element.getAttribute('data-rif') || element.dataset.rif || '';
+    const estatusPos = element.getAttribute('data-estatus-pos') || element.dataset.estatusPos || 'No disponible';
+    
+    if (razorSocialInput) razorSocialInput.value = razonSocial;
+    if (rifInput) rifInput.value = rif;
+    if (estatusPosInput) estatusPosInput.value = estatusPos;
+    
+    // Load old amount for substitution validation
+    const referenceAmount = element.getAttribute('data-reference-amount') || element.dataset.referenceAmount;
+    window.currentOldAmount = parseFloat(referenceAmount) || 0;
+    
+    // Poblar campos de sustitución si existen en el elemento
+    const idRec = element.getAttribute('data-id-payment-record') || element.dataset.idPaymentRecord;
+    const docType = element.getAttribute('data-document-type') || element.dataset.documentType;
+    
+    const idRecInput = document.getElementById('id_payment_record_loading');
+    const docTypeInput = document.getElementById('document_type_pago');
+    
+    if (idRecInput) idRecInput.value = idRec || '';
+    if (docTypeInput) docTypeInput.value = docType || '';
     
     if (fechaCargaInput) {
         const today = new Date();
@@ -4366,16 +4575,19 @@ $(document).on('input', '#montoBs, #montoRef', function() {
     const display = document.getElementById('montoEquipo');
     const rate = window.exchangeRate || 0;
 
-    if (!rate) return;
-
-    if (this.id === 'montoBs' && moneda === 'bs') {
+    // Siempre actualizar el display cuando cambie montoRef
+    if (this.id === 'montoRef') {
+        const val = parseFloat(ref.value) || 0;
+        if (display) display.textContent = `$${val.toFixed(2)}`;
+        
+        // Si hay tasa de cambio y la moneda es USD, calcular Bs
+        if (rate && moneda === 'usd') {
+            bs.value = (val * rate).toFixed(2);
+        }
+    } else if (this.id === 'montoBs' && moneda === 'bs' && rate) {
         const val = parseFloat(bs.value) || 0;
         ref.value = (val / rate).toFixed(2);
         if (display) display.textContent = `$${ref.value}`;
-    } else if (this.id === 'montoRef' && moneda === 'usd') {
-        const val = parseFloat(ref.value) || 0;
-        bs.value = (val * rate).toFixed(2);
-        if (display) display.textContent = `$${val.toFixed(2)}`;
     }
 });
 
@@ -4431,6 +4643,9 @@ $(document).on('click', '#btnGuardarDatosPago', async function() {
         }
     }
 
+    const saveBtn = document.getElementById("btnGuardarDatosPago");
+    if (saveBtn) saveBtn.disabled = true;
+
     Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     // 2. Preparar datos para SavePayment (Metadatos)
@@ -4464,7 +4679,26 @@ $(document).on('click', '#btnGuardarDatosPago', async function() {
     dataPayment.append("observations", getValue("obsAdministracion"));
     dataPayment.append("loadpayment_date", getValue("fechaCarga"));
     dataPayment.append("confirmation_number", "false");
-    dataPayment.append("payment_id", ""); // Para nuevo pago
+    
+    // --- Lógica de Sustitución y Estatus ---
+    const idPaymentOld = getValue("id_payment_record_loading");
+    const docTypeForStatus = getValue("document_type_pago");
+    
+    let newStatus = 17; // Pago Pendiente por Revisión por defecto
+    if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo') {
+        newStatus = 7; // Anticipo Pendiente por Revisión
+    }
+    
+    dataPayment.append("payment_status", newStatus);
+    
+    let endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SavePayment`;
+    if (idPaymentOld) {
+        endpoint = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SubstitutePayment`;
+        dataPayment.append("id_payment", idPaymentOld);
+    } else {
+        dataPayment.append("payment_id", ""); // Para nuevo pago
+    }
+    // ----------------------------------------
 
     // Bancos y Pago Móvil (usamos el idMethod ya declarado arriba)
 
@@ -4478,25 +4712,63 @@ $(document).on('click', '#btnGuardarDatosPago', async function() {
     }
 
     try {
-        // PASO 1: Guardar metadatos
-        const resSave = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SavePayment`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: dataPayment.toString()
-        });
-        const dataSave = await resSave.json();
+        let id_payment_record_result = null;
 
-        if (!dataSave.success) {
-            throw new Error(dataSave.message || "Error al guardar los datos del pago.");
+        if (idPaymentOld) {
+            // FLUJO ACTUALIZACIÓN (Sustitución de rechazo) - Igual a documentos_aprobar
+            Swal.update({ title: 'Actualizando datos del pago...' });
+            
+            const dataUpdate = new URLSearchParams();
+            dataUpdate.append("id_payment", idPaymentOld);
+            dataUpdate.append("amount_bs", getValue("montoBs"));
+            dataUpdate.append("reference_amount", getValue("montoRef"));
+            dataUpdate.append("payment_method", (formaPagoEl && formaPagoEl.selectedIndex >= 0) ? formaPagoEl.options[formaPagoEl.selectedIndex].text : '');
+            dataUpdate.append("currency", getValue("moneda") === 'bs' ? 'BS' : 'USD');
+            dataUpdate.append("payment_reference", getValue("referencia"));
+            dataUpdate.append("depositor", getValue("depositante"));
+            dataUpdate.append("record_number", recordNumber);
+            dataUpdate.append("payment_status", newStatus);
+            
+            if (idMethod === 2) { // Transferencia
+                dataUpdate.append("origen_bank", document.getElementById("bancoOrigen").options[document.getElementById("bancoOrigen").selectedIndex].text);
+                dataUpdate.append("destination_bank", document.getElementById("bancoDestino").options[document.getElementById("bancoDestino").selectedIndex].text);
+            } else if (idMethod === 5) { // Pago Móvil
+                dataUpdate.append("origen_bank", document.getElementById("origenBanco").options[document.getElementById("origenBanco").selectedIndex].text);
+                dataUpdate.append("destination_bank", document.getElementById("destinoBanco").options[document.getElementById("destinoBanco").selectedIndex].text);
+            }
+
+            const resUpdate = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SubstitutePayment`, {
+                method: 'POST',
+                body: dataUpdate.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            const dataUpdateRes = await resUpdate.json();
+            if (!dataUpdateRes.success) throw new Error(dataUpdateRes.message || "Error al actualizar el pago.");
+            
+            id_payment_record_result = dataUpdateRes.id_payment_record;
+        } else {
+            // FLUJO INSERCIÓN (Nuevo pago)
+            const resSave = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/SavePayment`, {
+                method: 'POST',
+                body: dataPayment.toString(),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            const dataSave = await resSave.json();
+            if (!dataSave.success) throw new Error(dataSave.message || "Error al guardar el pago.");
+            
+            id_payment_record_result = dataSave.id_payment_record || dataSave.data;
         }
 
-        // PASO 2: Subir documento
+        // PASO 2: Subir documento usando el endpoint de consulta para paridad
         Swal.update({ title: 'Subiendo comprobante...' });
         const formDataDoc = new FormData();
-        formDataDoc.append("payment_doc", fileInput.files[0]);
+        formDataDoc.append("payment_doc", fileInput.files[0]); // Parity with handleUploadPaymentDoc
         formDataDoc.append("nro_ticket", nroTicket);
         formDataDoc.append("record_number", recordNumber);
-        formDataDoc.append("user_loader", idUser);
+        formDataDoc.append("user_loader", idUser); // Parity with handleUploadPaymentDoc
+        formDataDoc.append("document_type", docTypeForStatus);
+        formDataDoc.append("ticket_id", getValue("id_ticket_pago")); 
+        formDataDoc.append("mime_type", fileInput.files[0].type); 
 
         const resUpload = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/UploadPaymentDoc`, {
             method: 'POST',
@@ -4516,6 +4788,8 @@ $(document).on('click', '#btnGuardarDatosPago', async function() {
         }
 
     } catch (e) {
+        if (saveBtn) saveBtn.disabled = false;
+        console.error("Error al procesar el pago:", e);
         Swal.fire({ icon: 'error', title: 'Error', text: e.message });
     }
 });
@@ -4632,3 +4906,106 @@ function clearPaymentModal() {
     if (fechaTasa) fechaTasa.innerHTML = '<i class="fas fa-calendar-day me-1"></i>Tasa: --';
     window.exchangeRate = null;
 }
+
+// ========== BUDGET VALIDATION LOGIC FOR SUBSTITUTIONS ==========
+
+function setupBudgetValidationListeners() {
+    $('#montoBs, #montoRef').on('input keyup change', function() {
+        validateEditBudget();
+    });
+}
+
+function showOverBudgetAlert(inputAmount, limit, isEdit = false) {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Límite de Presupuesto Excedido',
+        html: `
+            <div style="text-align: left;">
+                <p>El monto ingresado <b>($${inputAmount.toFixed(2)})</b> excede el presupuesto disponible.</p>
+                <p><b>Presupuesto Disponible:</b> $${limit.toFixed(2)}</p>
+                <hr>
+                <small>Por favor, ajuste el monto para continuar.</small>
+            </div>
+        `,
+        confirmButtonColor: '#003594',
+        target: document.getElementById('modalAgregarDatosPago'),
+        customClass: { container: 'payment-alert-modal' }
+    });
+}
+
+function validateEditBudget(showModal = false) {
+    const montoRefInput = document.getElementById("montoRef");
+    const btnGuardar = document.getElementById("btnGuardarDatosPago");
+    
+    // Only valid if we have budget data
+    if (typeof window.currentBudgetAmount === 'undefined' || window.currentBudgetAmount <= 0) {
+        if(btnGuardar) btnGuardar.disabled = false;
+        return true;
+    }
+
+    const inputAmount = parseFloat(montoRefInput.value) || 0;
+    const currentRemaining = window.currentRemaining || 0;
+    
+    // Check if we are in "Substitute" mode (have an old amount)
+    const idRec = document.getElementById("id_payment_record_loading") ? document.getElementById("id_payment_record_loading").value : "";
+    const originalAmount = (idRec && idRec !== "") ? (window.currentOldAmount || 0) : 0;
+    
+    // The "True Remaining" for THIS edit/substitute is (Current Remaining + Original Amount of this record)
+    const effectiveRemaining = currentRemaining + originalAmount;
+    
+    const isOverBudget = inputAmount > (effectiveRemaining + 0.001);
+
+    if (isOverBudget) {
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.title = "El monto excede el presupuesto disponible";
+        }
+        montoRefInput.style.borderColor = "#dc3545";
+        montoRefInput.style.backgroundColor = "#fff5f5";
+
+        if (showModal) {
+            showOverBudgetAlert(inputAmount, effectiveRemaining, true);
+        }
+        return false;
+    } else {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.title = "";
+        }
+        montoRefInput.style.borderColor = "";
+        montoRefInput.style.backgroundColor = "";
+        return true;
+    }
+}
+
+// Fetch budget data for validation
+async function fetchBudgetDataForValidation(nroTicket) {
+    try {
+        const response = await fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/handleGetTotalPaidByTicket`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `nro_ticket=${encodeURIComponent(nroTicket)}`
+        });
+
+        const resultBudget = await response.json();
+
+        if (resultBudget.success) {
+            window.currentBudgetAmount = parseFloat(resultBudget.total_budget || 0);
+            window.currentRemaining = window.currentBudgetAmount > 0 
+                ? (window.currentBudgetAmount - parseFloat(resultBudget.total_paid || 0)) 
+                : 0;
+        } else {
+            window.currentBudgetAmount = 0;
+            window.currentRemaining = 0;
+        }
+    } catch (error) {
+        console.error('Error fetching budget data:', error);
+        window.currentBudgetAmount = 0;
+        window.currentRemaining = 0;
+    }
+}
+
+// Initialize budget validation when modal opens
+$(document).on('shown.bs.modal', '#modalAgregarDatosPago', function() {
+    setupBudgetValidationListeners();
+});

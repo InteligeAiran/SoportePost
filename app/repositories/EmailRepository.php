@@ -32,6 +32,11 @@ class EmailRepository
         return $result;
     }
 
+    public function GetRegionUser($id_user){
+        $result = $this->model->GetRegionUser($id_user);
+        return $result;
+    }
+
     public function GetEmailUser($email){
         // Lógica para obtener un usuario por su ID usando el modelo
         $result = $this->model->GetEmailUser($email); 
@@ -184,6 +189,16 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetEmailAreaTesoreria(){
+         $result = $this->model->GetEmailAreaTesoreria();
+        return $result ? $result['row'] : null;
+    }
+
+    public function GetUserByArea($id_area){
+        $result = $this->model->GetUserByArea($id_area);
+        return $result ? $result['row'] : null;
+    }
+
     public function GetTicketDataById($ticketId){
         // Lógica para obtener datos del ticket por ID
         $result = $this->model->GetTicketDataById($ticketId);
@@ -258,5 +273,33 @@ class EmailRepository
             }
             return null;
         }
+    }
+
+    public function GetLastPaymentByTicket($nro_ticket) {
+        $result = $this->model->GetLastPaymentByTicket($nro_ticket);
+        return ($result && isset($result['row'])) ? $result['row'] : null;
+    }
+
+    public function GetDataTicket2ByNro($nro_ticket) {
+        $result = $this->model->GetDataTicket2ByNro($nro_ticket);
+        return ($result && isset($result['row'])) ? $result['row'] : null;
+    }
+
+    public function GetTicketStaffDetails($nro_ticket, $payment_reference) {
+        $result = $this->model->GetTicketStaffDetails($nro_ticket, $payment_reference);
+        return ($result && isset($result['row'])) ? $result['row'] : null;
+    }
+
+    public function GetUsersByIds($ids){
+        $result = $this->model->GetUsersByIds($ids);
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        }
+        return [];
     }
 }

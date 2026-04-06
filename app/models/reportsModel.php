@@ -167,29 +167,66 @@ class reportsModel extends Model
         $documentSize,
         $id_user,
         $document_type,
-        $id_ticket
+        $id_ticket,
+        $record_number = null
     ){
         try {
-            $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
-            $escapedStoredFilename = pg_escape_literal($this->db->getConnection(), $stored_filename);
-            $escapedFilePath = pg_escape_literal($this->db->getConnection(), $filePathForDatabase);
-            $escapedMimeType = pg_escape_literal($this->db->getConnection(), $mimeTypeFromFrontend);
-            $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
+            $db_conn = $this->db->getConnection();
+            $escapedOriginalFilename = pg_escape_literal($db_conn, $originalDocumentName);
+            $escapedStoredFilename = pg_escape_literal($db_conn, $stored_filename);
+            $escapedFilePath = pg_escape_literal($db_conn, $filePathForDatabase);
+            $escapedMimeType = pg_escape_literal($db_conn, $mimeTypeFromFrontend);
+            $escapedDocumentType = pg_escape_literal($db_conn, $document_type);
+            $escapedRecordNumber = $record_number ? pg_escape_literal($db_conn, $record_number) : 'NULL';
 
-            $sql = "SELECT save_document_to_db(
-                '" .$nro_ticket. "',
+            $sql = "INSERT INTO archivos_adjuntos (
+                nro_ticket,
+                original_filename,
+                stored_filename,
+                file_path,
+                mime_type,
+                file_size_bytes,
+                uploaded_by_user_id,
+                document_type,
+                record_number,
+                uploaded_at
+            ) VALUES (
+                '" . $nro_ticket . "',
                 " . $escapedOriginalFilename . ",
                 " . $escapedStoredFilename . ",
                 " . $escapedFilePath . ",
                 " . $escapedMimeType . ",
                 " . ((int) $documentSize) . ",
                 " . ((int) $id_user) . ",
-                " . $escapedDocumentType . "
-            )";
+                " . $escapedDocumentType . ",
+                " . $escapedRecordNumber . ",
+                NOW()
+            ) RETURNING id;";
             
             $result = Model::getResult($sql, $this->db);
 
-            if($result){
+            if($result && isset($result['row'][0])){
+                $new_img_id = (int)$result['row'][0];
+                error_log("reportsModel::saveDocument: New Image ID: " . $new_img_id);
+
+                // Vínculo Documento-a-Documento (Sustitución)
+                // Vincular cualquier versión anterior RECHAZADA de este mismo tipo (o grupo de pago) al nuevo ID
+                $escaped_Nr_ticket = pg_escape_literal($db_conn, $nro_ticket);
+                
+                $linkageTypeCondition = "document_type = $escapedDocumentType";
+                if (in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago'])) {
+                     $linkageTypeCondition = "document_type IN ('Anticipo', 'pago', 'Pago', 'comprobante_pago')";
+                }
+
+                $sqlUpdateOldDoc = "UPDATE archivos_adjuntos 
+                                   SET substituted_by_id_payment_record = $new_img_id 
+                                   WHERE nro_ticket = $escaped_Nr_ticket 
+                                   AND $linkageTypeCondition 
+                                   AND rechazado = TRUE";
+                
+                error_log("reportsModel::saveDocument: Linkage Query: " . $sqlUpdateOldDoc);
+                pg_query($db_conn, $sqlUpdateOldDoc);
+
                 $id_status_lab = 0;
                 $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
                 $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
@@ -282,28 +319,70 @@ class reportsModel extends Model
     $documentSize,
     $id_user,
     $document_type,
-    $id_ticket
+    $id_ticket,
+    $record_number = null
 ){
     try {
         $db_conn = $this->db->getConnection();
 
-        $escapedOriginalFilename = pg_escape_literal($this->db->getConnection(), $originalDocumentName);
-        $escapedStoredFilename = pg_escape_literal($this->db->getConnection(), $stored_filename);
-        $escapedFilePath = pg_escape_literal($this->db->getConnection(), $filePathForDatabase);
-        $escapedMimeType = pg_escape_literal($this->db->getConnection(), $mimeTypeFromFrontend);
-        $escapedDocumentType = pg_escape_literal($this->db->getConnection(), $document_type);
+        $escapedOriginalFilename = pg_escape_literal($db_conn, $originalDocumentName);
+        $escapedStoredFilename = pg_escape_literal($db_conn, $stored_filename);
+        $escapedFilePath = pg_escape_literal($db_conn, $filePathForDatabase);
+        $escapedMimeType = pg_escape_literal($db_conn, $mimeTypeFromFrontend);
+        $escapedDocumentType = pg_escape_literal($db_conn, $document_type);
+        $escapedRecordNumber = $record_number ? pg_escape_literal($db_conn, $record_number) : 'NULL';
 
-        $sql = "SELECT save_document_to_db(
-            '" .$nro_ticket. "',
+        $sql = "INSERT INTO archivos_adjuntos (
+            nro_ticket,
+            original_filename,
+            stored_filename,
+            file_path,
+            mime_type,
+            file_size_bytes,
+            uploaded_by_user_id,
+            document_type,
+            record_number,
+            uploaded_at
+        ) VALUES (
+            '" . $nro_ticket . "',
             " . $escapedOriginalFilename . ",
             " . $escapedStoredFilename . ",
             " . $escapedFilePath . ",
             " . $escapedMimeType . ",
             " . ((int) $documentSize) . ",
             " . ((int) $id_user) . ",
-            " . $escapedDocumentType . "
-        )";
-        $result = Model::getResult($sql, $this->db);
+            " . $escapedDocumentType . ",
+            " . $escapedRecordNumber . ",
+            NOW()
+        ) RETURNING id;";
+            $result = Model::getResult($sql, $this->db);
+
+            if($result && isset($result['row'][0])){
+                $new_img_id = (int)$result['row'][0];
+                error_log("reportsModel::saveDocument1: New Image ID: " . $new_img_id);
+
+                // Vínculo Documento-a-Documento (Sustitución)
+                // Vincular cualquier versión anterior RECHAZADA de este mismo tipo (o grupo de pago) al nuevo ID
+                $db_conn = $this->db->getConnection();
+                $escaped_Nr_ticket = pg_escape_literal($db_conn, $nro_ticket);
+                
+                $linkageTypeCondition = "document_type = $escapedDocumentType";
+                if (in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago'])) {
+                     $linkageTypeCondition = "document_type IN ('Anticipo', 'pago', 'Pago', 'comprobante_pago')";
+                }
+
+                $sqlUpdateOldDoc = "UPDATE archivos_adjuntos 
+                                   SET substituted_by_id_payment_record = $new_img_id 
+                                   WHERE nro_ticket = $escaped_Nr_ticket 
+                                   AND $linkageTypeCondition 
+                                   AND rechazado = TRUE";
+                
+                error_log("reportsModel::saveDocument1: Linkage Query: " . $sqlUpdateOldDoc);
+                $resLink = pg_query($db_conn, $sqlUpdateOldDoc);
+                if ($resLink) {
+                    error_log("reportsModel::saveDocument1: Linkage Affected Rows: " . pg_affected_rows($resLink));
+                }
+            }
 
         if($result){
             
@@ -315,7 +394,7 @@ class reportsModel extends Model
 
             if($result1){
 
-                $sql2 = "UPDATE archivos_adjuntos SET rechazado = FALSE WHERE nro_ticket = '".$nro_ticket."' AND document_type = '".$document_type."';";
+                $sql2 = "UPDATE archivos_adjuntos SET rechazado = FALSE, id_motivo_rechazo = NULL WHERE nro_ticket = '".$nro_ticket."' AND document_type = '".$document_type."';";
                 $result2 = Model::getResult($sql2, $this->db);
 
                 if($result2){
@@ -388,8 +467,8 @@ class reportsModel extends Model
             }
         }
 
-        if ($result && isset($result['query'])) {
-            return pg_fetch_result($result['query'], 0, 0) === 't';
+        if ($result && isset($result['row'][0])) {
+            return (int)$result['row'][0] > 0;
         } else {
             error_log("Error: La consulta SQL no devolvió un resultado válido.");
             return false;
@@ -552,6 +631,171 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
     }
 }
 
+public function saveDocumentNewRecha($nro_ticket,
+        $originalDocumentName,
+        $stored_filename,
+        $filePathForDatabase,
+        $mimeTypeFromFrontend,
+        $documentSize,
+        $id_user,
+        $document_type,
+        $id_ticket,
+        $record_number = null
+    ){
+        try {
+            $db_conn = $this->db->getConnection();
+            $escapedOriginalFilename = pg_escape_literal($db_conn, $originalDocumentName);
+            $escapedStoredFilename = pg_escape_literal($db_conn, $stored_filename);
+            $escapedFilePath = pg_escape_literal($db_conn, $filePathForDatabase);
+            $escapedMimeType = pg_escape_literal($db_conn, $mimeTypeFromFrontend);
+            $escapedDocumentType = pg_escape_literal($db_conn, $document_type);
+            $escapedRecordNumber = $record_number ? pg_escape_literal($db_conn, $record_number) : 'NULL';
+
+            $sql = "INSERT INTO archivos_adjuntos (
+                nro_ticket,
+                original_filename,
+                stored_filename,
+                file_path,
+                mime_type,
+                file_size_bytes,
+                uploaded_by_user_id,
+                document_type,
+                record_number,
+                uploaded_at
+            ) VALUES (
+                '" . $nro_ticket . "',
+                " . $escapedOriginalFilename . ",
+                " . $escapedStoredFilename . ",
+                " . $escapedFilePath . ",
+                " . $escapedMimeType . ",
+                " . ((int) $documentSize) . ",
+                " . ((int) $id_user) . ",
+                " . $escapedDocumentType . ",
+                " . $escapedRecordNumber . ",
+                NOW()
+            ) RETURNING id;";
+            
+            $result = Model::getResult($sql, $this->db);
+
+            if($result && isset($result['row'][0])){
+                $new_img_id = (int)$result['row'][0];
+                error_log("reportsModel::saveDocument2: New Image ID: " . $new_img_id);
+
+                // Vínculo Documento-a-Documento (Sustitución)
+                $db_conn = $this->db->getConnection();
+                $escaped_Nr_ticket = pg_escape_literal($db_conn, $nro_ticket);
+                
+                $linkageTypeCondition = "document_type = $escapedDocumentType";
+                if (in_array($document_type, ['Anticipo', 'pago', 'Pago', 'comprobante_pago'])) {
+                     $linkageTypeCondition = "document_type IN ('Anticipo', 'pago', 'Pago', 'comprobante_pago')";
+                }
+
+                $sqlUpdateOldDoc = "UPDATE archivos_adjuntos 
+                                   SET substituted_by_id_payment_record = $new_img_id 
+                                   WHERE nro_ticket = $escaped_Nr_ticket 
+                                   AND $linkageTypeCondition 
+                                   AND rechazado = TRUE";
+                
+                error_log("reportsModel::saveDocument2: Linkage Query: " . $sqlUpdateOldDoc);
+                $resLink = pg_query($db_conn, $sqlUpdateOldDoc);
+                if ($resLink) {
+                    error_log("reportsModel::saveDocument2: Linkage Affected Rows: " . pg_affected_rows($resLink));
+                }
+            }
+
+            if($result){
+                // DETERMINAR EL id_status_payment BASÁNDOSE EN LOS DOCUMENTOS EXISTENTES
+                            error_log("Determinando status payment para ticket: " . $nro_ticket . " y documento: " . $document_type);
+
+                // ✅ USAR determineStatusPaymentAfterUpload PARA ACTUALIZAR DOMICILIACIÓN CUANDO ES convenio_firmado
+                $id_status_payment = $this->determineStatusPaymentAfterUpload($nro_ticket, $document_type);
+            error_log("Status payment determinado: " . $id_status_payment);
+
+                $sqlticket = "UPDATE tickets SET id_status_payment = ".$id_status_payment." WHERE nro_ticket = '".$nro_ticket."';";
+                $resultticket = Model::getResult($sqlticket, $this->db);
+        
+            }else{
+                error_log("Error: La consulta SQL no devolvió un resultado válido.");
+                return false;
+            }
+
+            if ($resultticket) {
+                $id_status_lab = 0;
+                $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_lab_result = pg_query($this->db->getConnection(), $status_lab_sql);
+
+                if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                    $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab')?? 0;
+                }
+
+                $new_status_domiciliacion = 'NULL';
+                $status_domiciliacion_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_domiciliacion_result = pg_query($this->db->getConnection(), $status_domiciliacion_sql);
+
+                if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+                    $new_status_domiciliacion = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion')!== null? (int)pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion') : 'NULL';
+                }
+
+                $id_status_ticket = 'NULL';
+                $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
+
+                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                }
+
+                $id_accion_ticket = 'NULL';
+                $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
+                $accion_ticket_result = pg_query($this->db->getConnection(), $accion_ticket_sql);
+
+                if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+                    $id_accion_ticket = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket')!== null? (int)pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket') : 'NULL';
+                }
+
+                 $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
+                    $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
+                    if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
+                        $row_coordinador = pg_fetch_assoc($resultcoordinador);
+                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
+                        pg_free_result($resultcoordinador);
+                    }else{ 
+                        $id_coordinador = null;
+                    }
+
+                // USAR EL id_status_payment CALCULADO ANTERIORMENTE
+                $sqlInsertHistory = sprintf(
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %d::integer, %s::integer, %d::integer);",
+                    (int)$id_ticket,
+                    (int)$id_user,
+                    (int)$id_status_ticket,
+                    (int)$id_accion_ticket,
+                    $id_status_lab,
+                    $id_status_payment, // AQUÍ USAS EL VALOR CALCULADO
+                    $new_status_domiciliacion,
+                    $id_coordinador // AQUÍ USAS EL VALOR CALCULADO
+                );
+
+                $resultsqlInsertHistory = pg_query($this->db->getConnection(), $sqlInsertHistory);
+
+                if ($resultsqlInsertHistory === false) {
+                    error_log("Error al insertar en ticket_status_history para ticket ID: {$id_ticket}. PG Error: ". pg_last_error($this->db->getConnection()));
+                    return false;
+                }      
+            }
+
+            if ($result && isset($result['row'][0])) {
+                return (int)$result['row'][0] > 0;
+            } else {
+                error_log("Error: La consulta SQL no devolvió un resultado válido.");
+                return false;
+            }
+
+        } catch (Throwable $e) {
+            error_log("Error al llamar a la función SQL 'save_document_to_db': " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function saveDocument2($nro_ticket,
         $originalDocumentName,
         $stored_filename,
@@ -619,9 +863,9 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
                 $status_ticket_sql = "SELECT id_status_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";
                 $status_ticket_result = pg_query($this->db->getConnection(), $status_ticket_sql);
 
-                if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
-                    $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
-                }
+                    if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+                        $id_status_ticket = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket')!== null? (int)pg_fetch_result($status_ticket_result, 0, 'id_status_ticket') : 'NULL';
+                    }
 
                 $id_accion_ticket = 'NULL';
                 $accion_ticket_sql = "SELECT id_accion_ticket FROM tickets WHERE id_ticket = ". (int)$id_ticket. ";";

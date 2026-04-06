@@ -21,6 +21,8 @@ use App\Services\EmailService;
 use Controller;
 use DatabaseCon;
 use DateTime;
+require_once __DIR__ . '/../../../models/consulta_rifModel.php';
+use consulta_rifModel;
 
 class Consulta extends Controller
 {
@@ -125,6 +127,10 @@ class Consulta extends Controller
 
                 case 'GetTicketData':
                     $this->handleGetTicketData();
+                    break;
+
+                case 'GetTicketDataPagos':
+                    $this->handleGetTicketDataPagos();
                     break;
                 
                 case 'GetTicketDataGestionComercial':
@@ -279,6 +285,16 @@ class Consulta extends Controller
                     $this->handleGetDocumentByType();
                     break;
 
+                case 'GetNonRejectedDocumentByType':
+                    $this->handleGetNonRejectedDocumentByType();
+                    break;
+
+                case 'GetPaymentStatusByTicket':
+                    $this->handleGetPaymentStatusByTicket();
+                    break;
+
+
+
                 case 'GetMotivos':
                     $this->handleGetMotivos();
                     break;
@@ -303,12 +319,20 @@ class Consulta extends Controller
                     $this->handleapprovedocument();
                     break;
 
+                case 'get-payment-attachment':
+                    $this->handleGetPaymentAttachment();
+                    break;
+
                 case 'globalSearchTicket':
                     $this->handleglobalSearchTicket();
                     break;
 
                 case 'getEstatusTicket':
                     $this->handleGetEstatusTicket();
+                    break;
+
+                case 'finalizarRevisionTicket':
+                    $this->handleFinalizarRevisionTicket();
                     break;
 
                 case 'getRegionTicket':
@@ -429,6 +453,10 @@ class Consulta extends Controller
                 
                 case 'UpdatePayment':
                     $this->handleUpdatePayment();
+                    break;
+                
+                case 'SubstitutePayment':
+                    $this->handleSubstitutePayment();
                     break;
 
 
@@ -795,6 +823,9 @@ class Consulta extends Controller
     $falla_text = isset($_POST['falla_text']) ? $_POST['falla_text'] : '';
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
     $descripcion_falla = isset($_POST['descrpFailure_text']) ? $_POST['descrpFailure_text'] : '';
+    $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : ''; // NUEVO
+    $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
+    $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
 
     $repository = new technicalConsultionRepository();
 
@@ -843,7 +874,7 @@ class Consulta extends Controller
         // **Paso clave:** Llama al SaveDataFalla del REPOSITORIO
         // Este $result ahora es el array que el Model::SaveDataFalla devuelve,
         // conteniendo 'idTicketCreado' y 'status_info'.
-        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket, $descripcion_falla);
+        $result = $repository->SaveDataFalla($serial, $falla_id, $nivelFalla_id, $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto);
 
         // Verifica si la operación fue exitosa y si el array de resultado es válido
         if ($result && isset($result['success']) && $result['success'] === true) {
@@ -904,8 +935,12 @@ class Consulta extends Controller
     $nivelFalla_text = isset($_POST['nivelFalla_text']) ? $_POST['nivelFalla_text'] : '';
     $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
+    $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
     // NUEVO: Obtener record_number para Anticipo
     $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+    $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
+    $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
+    $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : ''; // NUEVO
     
     // Ahora estas variables se pasarán por referencia a la función auxiliar
     $archivoEnvioInfo = null;
@@ -970,7 +1005,10 @@ class Consulta extends Controller
         $id_status_payment,
         $id_user,
         $rif,
-        $Nr_ticket
+        $Nr_ticket,
+        $razonsocial, // NUEVO
+        $id_client,   // NUEVO
+        $id_intelipunto // NUEVO
     );
 
     if (isset($result['success']) && $result['success']) {
@@ -1115,6 +1153,7 @@ class Consulta extends Controller
             }
             
             // Si es Anticipo (id_status_payment = 7) y se guardó el documento
+            // NOTA: Este correo se activa cuando se carga el documento de anticipo AL MOMENTO DE CREAR EL TICKET.
             if ($id_status_payment_actual == 7 && $anticipoOk) {
                 $result_email_finanzas = $emailRepository->GetEmailAreaFinanzas();
                 if ($result_email_finanzas && !empty($result_email_finanzas['email_area'])) {
@@ -1131,8 +1170,11 @@ class Consulta extends Controller
                     $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? $rif ?? 'N/A';
                     $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? $razonsocial ?? 'N/A';
                     
+                    require_once __DIR__ . '/../email/emailApi.php';
+                    $emailApi = new \App\Controllers\Api\email\email();
+                    
                     $subject_finanzas = '📋 NOTIFICACIÓN FINANCIERA - Revisar Anticipo del Ticket';
-                    $body_finanzas = $this->getFinanzasEmailBodyForAnticipo(
+                    $body_finanzas = $emailApi->getFinanzasEmailBodyForAnticipo(
                         $name_finanzas,
                         $nombre_tecnico_email,
                         $Nr_ticket,
@@ -1154,6 +1196,7 @@ class Consulta extends Controller
             }
             
             // Si es Exoneración (id_status_payment = 5) y se guardó el documento
+            // NOTA: Este correo se activa cuando se carga el documento de exoneración AL MOMENTO DE CREAR EL TICKET.
             if ($id_status_payment_actual == 5 && $exoneracionOk) {
                 // Correos específicos para exoneración
                 $emails_admin = [
@@ -1173,8 +1216,11 @@ class Consulta extends Controller
                 $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? $rif ?? 'N/A';
                 $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? $razonsocial ?? 'N/A';
                 
+                require_once __DIR__ . '/../email/emailApi.php';
+                $emailApi = new \App\Controllers\Api\email\email();
+                
                 $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Exoneración del Ticket';
-                $body_admin = $this->getAdminEmailBodyForExoneracion(
+                $body_admin = $emailApi->getAdminEmailBodyForExoneracion(
                     $name_admin,
                     $nombre_tecnico_email,
                     $Nr_ticket,
@@ -1284,10 +1330,12 @@ class Consulta extends Controller
     public function handleGetUltimateTicket()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
+        error_log("GetUltimateTicket DEBUG: Serial recibido = '" . $serial . "'");
         $repository = new technicalConsultionRepository(); // Inicializa el repositorio
 
         if ($serial != '') {
             $result = $repository->UltimateDateTicket($serial);
+            error_log("GetUltimateTicket DEBUG: Resultado del repositorio = " . print_r($result, true));
 
             if ($result) {
                 $this->response(['success' => true, 'fecha' => $result['fecha'], 'nro_ticket' => $result['nro_ticket']], 200);
@@ -1404,6 +1452,24 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }
+
+
+    public function handleGetTicketDataPagos(){
+          {
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataPagos($id_user);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+        }
+        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }
     }
 
     public function handleGetTecnico2()
@@ -2209,6 +2275,61 @@ class Consulta extends Controller
         ], 200);
     }
 
+
+
+    public function handleGetNonRejectedDocumentByType() {
+        // Support both snake_case (new) and camelCase (old)
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : (isset($_POST['ticketId']) ? $_POST['ticketId'] : '');
+        $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : (isset($_POST['documentType']) ? $_POST['documentType'] : '');
+
+        if (!$nro_ticket || !$document_type) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket y tipo de documento requeridos.'], 400);
+            return;
+        }
+
+        // Bypass repository due to file stability issues, use Model directly
+        $model = new consulta_rifModel();
+        $attachment = $model->getNonRejectedDocumentByType($nro_ticket, $document_type);
+
+        if ($attachment === false || empty($attachment)) {
+            $this->response(['success' => false, 'message' => 'No se encontró el documento solicitado (no rechazado).'], 404);
+            return;
+        }
+
+        $this->response([
+            'success' => true,
+            'document' => [
+                'file_path' => $attachment['file_path'],
+                'mime_type' => $attachment['mime_type'],
+                'original_filename' => $attachment['original_filename'],
+                'document_type' => $attachment['document_type']
+            ]
+        ], 200);
+    }
+
+
+    public function handleGetPaymentStatusByTicket() {
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : '';
+
+        if (!$nro_ticket) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket requerido.'], 400);
+            return;
+        }
+
+        // Bypass repository due to file stability issues, use Model directly
+        $model = new consulta_rifModel();
+        
+        // This method in the model is documented to return 17 if multiple payments exist, or 7 if none.
+        $result = $model->GetPaymentStatusByTicket($nro_ticket);
+
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+             $status = pg_fetch_assoc($result['query'], 0);
+             $this->response(['success' => true, 'status' => $status], 200);
+        } else {
+             $this->response(['success' => false, 'message' => 'No se pudo determinar el estatus de pago.'], 500);
+        }
+    }
+
     public function handleGetMotivosDomiciliacion(){
         $documentType = 'Convenio_Firmado';
 
@@ -2285,6 +2406,7 @@ class Consulta extends Controller
         $nro_ticket = isset($_POST['nroTicket'])? $_POST['nroTicket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $document_type = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+        $id_payment_record = isset($_POST['id_payment_record']) ? $_POST['id_payment_record'] : null;
 
         if (!$id_ticket || !$id_motivo || !$nro_ticket || !$id_user || !$document_type) {
             $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
@@ -2293,7 +2415,7 @@ class Consulta extends Controller
         
 
         $repository = new technicalConsultionRepository();
-        $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
+        $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record);
 
         if ($result) {
             $this->response(['success' => true,'message' => 'El Documento ha sido rechazado correctamente.'], 200);
@@ -2309,6 +2431,8 @@ class Consulta extends Controller
         $document_type = isset($_POST['document_type'])? $_POST['document_type'] : '';
         $nro_payment_reference_verified = isset($_POST['nro_payment_reference_verified'])? trim($_POST['nro_payment_reference_verified']) : '';
         $payment_date_verified = isset($_POST['payment_date_verified'])? trim($_POST['payment_date_verified']) : '';
+        $amount_verified = isset($_POST['amount_verified'])? trim($_POST['amount_verified']) : '';
+        $id_payment_record = isset($_POST['id_payment_record']) ? $_POST['id_payment_record'] : null;
         
         // Log para debug
         error_log("Datos recibidos - nro_ticket: $nro_ticket, id_ticket: $id_ticket, id_user: $id_user, document_type: $document_type");
@@ -2321,7 +2445,7 @@ class Consulta extends Controller
 
         $repository = new technicalConsultionRepository();
         // Pasar los datos verificados directamente a AprobarDocumento
-        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
+        $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified, $id_payment_record, $amount_verified);
 
         // Log del resultado
         error_log("Resultado de AprobarDocumento: " . ($result ? 'true' : 'false'));
@@ -2330,6 +2454,26 @@ class Consulta extends Controller
             $this->response(['success' => true,'message' => 'El Documento ha sido aprobado correctamente.'], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        }
+    }
+
+    public function handleGetPaymentAttachment(){
+        $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
+        if (!$record_number) {
+            $this->response(['success' => false, 'message' => 'Falta el record_number.'], 400);
+            return;
+        }
+
+        $repository = new technicalConsultionRepository();
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number);
+
+        if ($attachment) {
+            $this->response([
+                'success' => true, 
+                'attachment' => $attachment
+            ], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontró archivo adjunto para este pago.'], 404);
         }
     }
 
@@ -2344,7 +2488,24 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los coordinadores'], 500); // Código 500 Internal Server Error
         }
-        $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
+    }
+
+    public function handleFinalizarRevisionTicket()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nroTicket = $_POST['nroTicket'] ?? null;
+            $id_user = $_POST['id_user'] ?? null;
+
+            if ($nroTicket && $id_user) {
+                $repository =  new technicalConsultionRepository(); // Inicializa el repositorio
+                $result = $repository->FinalizarRevisionTicket($nroTicket, $id_user);
+                $this->response($result, 200);
+            } else {
+                $this->response(['success' => false, 'message' => 'Parámetros incompletos'], 400);
+            }
+        } else {
+            $this->response(['error' => 'Método no permitido'], 405);
+        }
     }
 
 
@@ -2646,7 +2807,8 @@ class Consulta extends Controller
         $this->response([
             'success' => true, 
             'total_paid' => $result['total_paid'],
-            'total_budget' => $result['total_budget']
+            'total_budget' => $result['total_budget'],
+            'presupuesto_diferencia' => isset($result['presupuesto_diferencia']) ? $result['presupuesto_diferencia'] : 0
         ], 200);
     }
 
@@ -2689,6 +2851,24 @@ class Consulta extends Controller
         $result = $repository->InsertPaymentRecord($data);
 
         if ($result) {
+            // Enviar notificación por correo a Tesorería
+            try {
+                require_once __DIR__ . '/../email/emailApi.php';
+                $emailApi = new \App\Controllers\Api\email\email();
+                // Simular el POST para el handler
+                $_POST['nro_ticket'] = $data['nro_ticket'];
+                $_POST['serial_pos'] = $data['serial_pos'];
+                $_POST['amount_bs'] = $data['amount_bs'];
+                $_POST['reference_amount'] = $data['reference_amount'];
+                $_POST['payment_method'] = $data['payment_method'];
+                $_POST['payment_reference'] = $data['payment_reference'];
+                $_POST['payment_date'] = $data['payment_date'];
+                
+                $emailApi->handleSendPaymentRegistrationEmail();
+            } catch (\Exception $e) {
+                error_log("Error al intentar enviar notificación de pago por correo: " . $e->getMessage());
+            }
+
             $this->response(['success' => true, 'message' => 'Pago registrado con éxito.', 'id_payment' => $result], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al registrar el pago.'], 500);
@@ -2709,6 +2889,9 @@ class Consulta extends Controller
 
     public function handleGetPaymentData(){
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        $id_payment_record = isset($_POST['id_payment_record']) ? trim($_POST['id_payment_record']) : null;
+        $payment_reference = isset($_POST['payment_reference']) ? trim($_POST['payment_reference']) : null;
+        $record_number = isset($_POST['record_number']) ? trim($_POST['record_number']) : null;
         
         if (empty($nro_ticket)) {
             $this->response(['success' => false, 'message' => 'Número de ticket no proporcionado'], 400);
@@ -2716,7 +2899,7 @@ class Consulta extends Controller
         }
 
         $repository = new technicalConsultionRepository();
-        $result = $repository->GetPaymentData($nro_ticket);
+        $result = $repository->GetPaymentData($nro_ticket, $id_payment_record, $payment_reference, $record_number);
 
         if ($result !== null && !empty($result)) {
             // Asegurarse de que los campos estén presentes
@@ -2725,8 +2908,11 @@ class Consulta extends Controller
                 'payment_date' => isset($result['payment_date']) ? $result['payment_date'] : '',
                 'nro_ticket' => isset($result['nro_ticket']) ? $result['nro_ticket'] : $nro_ticket,
                 'serial_pos' => isset($result['serial_pos']) ? $result['serial_pos'] : '',
-                'amount_bs' => isset($result['amount_bs']) ? $result['amount_bs'] : '',
-                'reference_amount' => isset($result['reference_amount']) ? $result['reference_amount'] : (isset($result['amount_usd']) ? $result['amount_usd'] : ''),
+                'amount_bs' => isset($result['amount_bs']) ? $result['amount_bs'] : (isset($result['total_amount_bs']) ? $result['total_amount_bs'] : ''),
+                'reference_amount' => isset($result['reference_amount']) ? $result['reference_amount'] : (isset($result['total_reference_amount']) ? $result['total_reference_amount'] : (isset($result['amount_usd']) ? $result['amount_usd'] : '')),
+                // Agregar los totales de TODOS los pagos del ticket
+                'total_reference_amount' => isset($result['total_reference_amount']) ? $result['total_reference_amount'] : '',
+                'total_amount_bs' => isset($result['total_amount_bs']) ? $result['total_amount_bs'] : '',
                 'currency' => isset($result['currency']) ? $result['currency'] : '',
                 'payment_method' => isset($result['payment_method']) ? $result['payment_method'] : '',
                 'origen_bank' => isset($result['origen_bank']) ? $result['origen_bank'] : '',
@@ -2817,8 +3003,9 @@ class Consulta extends Controller
         $depositor = isset($_POST['depositor']) && $_POST['depositor'] !== '' ? trim($_POST['depositor']) : null;
         $observations = isset($_POST['observations']) && $_POST['observations'] !== '' ? trim($_POST['observations']) : null;
         $loadpayment_date = isset($_POST['loadpayment_date']) && $_POST['loadpayment_date'] !== '' ? trim($_POST['loadpayment_date']) : date('Y-m-d H:i:s');
-        $confirmation_number = isset($_POST['confirmation_number']) ? (bool)$_POST['confirmation_number'] : false;
-        $payment_status = isset($_POST['payment_id']) && $_POST['payment_id'] !== '' ? (int)$_POST['payment_id'] : 1;
+        $raw_confirmation = isset($_POST['confirmation_number']) ? $_POST['confirmation_number'] : 'false';
+        $confirmation_number = ($raw_confirmation === 'true' || $raw_confirmation === 'TRUE' || $raw_confirmation === '1' || $raw_confirmation === true);
+        $payment_status = isset($_POST['payment_id']) && $_POST['payment_id'] !== '' ? (int)$_POST['payment_id'] : 7;
         
         // ============================================
         // 5. OBTENER DATOS DEL POST - Pago Móvil (Destino)
@@ -3163,638 +3350,10 @@ class Consulta extends Controller
         
         if ($id_budget) {
             $this->response(['success' => true, 'id_budget' => $id_budget], 200);
-        } else {
             $this->response(['success' => false, 'message' => 'No se encontró un presupuesto para este ticket.'], 404);
         }
     }
 
-    private function getFinanzasEmailBodyForAnticipo($nombre_area_finanzas, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion) {
-        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
-        $nivelValue = htmlspecialchars($ticketNivelFalla);
-        // Si el valor ya contiene "Nivel", extraer solo el número
-        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
-            $nivelValue = $matches[1]; // Solo el número
-        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
-            $nivelValue = $matches[1]; // Solo el número si hay uno
-        }
-        
-        $map = [
-            'ticket' => htmlspecialchars($ticketnro),
-            'rif' => htmlspecialchars($clientRif),
-            'razon' => htmlspecialchars($clientName),
-            'serial' => htmlspecialchars($ticketserial),
-            'falla' => htmlspecialchars($name_failure),
-            'nivel' => $nivelValue, // Solo el número
-            'fecha' => htmlspecialchars($ticketfinished),
-            'accion' => htmlspecialchars($ticketaccion),
-            'status' => htmlspecialchars($ticketstatus),
-            'pago' => htmlspecialchars($ticketpaymnet),
-            'domi' => htmlspecialchars($ticketdomiciliacion),
-            'area' => htmlspecialchars($nombre_area_finanzas),
-            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
-        ];
-        $currentYear = date("Y");
-        
-        // Preparar el logo HTML si está definido
-        $logoHtml = '';
-        if (defined('FIRMA_CORREO')) {
-            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
-        }
-
-        return <<<HTML
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Notificación Financiera - Revisar Anticipo</title>
-            <style>
-        body{
-            margin:0;
-            padding:30px 0;
-            background:#f8f9fa;
-            font-family:'Inter','Segoe UI',sans-serif;
-        }
-        .card{
-            background:#ffffff;
-            max-width:650px;
-            margin:0 auto;
-            border-radius:24px;
-            box-shadow:0 25px 80px rgba(0,0,0,0.12);
-            overflow:hidden;
-        }
-        .header{
-            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
-            color:#ffffff;
-            padding:30px;
-            text-align:center;
-        }
-        .header h1{
-            margin:0;
-            font-size:26px;
-            letter-spacing:0.5px;
-        }
-        .header p{
-            margin:6px 0 0;
-            font-size:15px;
-            opacity:0.85;
-        }
-        .body{
-            padding:30px 34px 24px;
-        }
-        .hello{
-            text-align:center;
-            font-size:17px;
-            color:#0f172a;
-            margin-bottom:22px;
-        }
-        .hello span{
-            color:#6f42c1;
-            font-weight:700;
-        }
-        .hero-badge{
-            background:#f3e5f5;
-            border:1px solid rgba(111,66,193,0.2);
-            border-radius:18px;
-            padding:14px 18px;
-            text-align:center;
-            font-size:14px;
-            color:#6f42c1;
-            margin-bottom:28px;
-        }
-        .detail{
-            display:flex;
-            align-items:center;
-            padding:14px 0;
-            border-bottom:1px solid #edf2f7;
-        }
-        .detail:last-child{
-            border-bottom:none;
-        }
-        .icon{
-            width:45px;
-            height:45px;
-            border-radius:14px;
-            background:#f8f0fc;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            margin-right:14px;
-            font-size:22px;
-        }
-        .label{
-            font-size:12px;
-            letter-spacing:0.6px;
-            text-transform:uppercase;
-            color:#94a3b8;
-            margin-bottom:3px;
-        }
-        .value{
-            font-size:16px;
-            color:#0f172a;
-            font-weight:600;
-        }
-        .value-serial{
-            font-family:"JetBrains Mono","Courier New",monospace;
-            font-size:15px;
-            background:#f1f5f9;
-            padding:4px 10px;
-            border-radius:8px;
-            color:#0f172a;
-        }
-        .status-row{
-            display:flex;
-            gap:12px;
-            flex-wrap:wrap;
-            margin:24px 0 6px;
-            width:100%;
-        }
-        .status-pill{
-            flex:1 1 calc(33.333% - 8px);
-            min-width:180px;
-            max-width:100%;
-            background:#f3e5f5;
-            border-radius:18px;
-            padding:13px 18px;
-            display:flex;
-            flex-direction:column;
-            border:1px solid rgba(111,66,193,0.2);
-            box-sizing:border-box;
-            word-wrap:break-word;
-            overflow-wrap:break-word;
-        }
-        .status-pill strong{
-            color:#6f42c1;
-            font-size:11px;
-            letter-spacing:0.5px;
-            word-wrap:break-word;
-            overflow-wrap:break-word;
-            margin-right:8%;
-        }
-        .status-pill span{
-            color:#0f172a;
-            font-weight:700;
-            font-size:11px;
-            word-wrap:break-word;
-            overflow-wrap:break-word;
-            line-height:1.4;
-            hyphens:auto;
-        }
-        .attention-box{
-            background:#f0e6fa;
-            border:2px solid #d8bcfc;
-            border-radius:12px;
-            padding:20px;
-            margin-top:25px;
-            text-align:center;
-        }
-        .attention-box p{
-            margin:0;
-            font-size:1.1em;
-            color:#6f42c1;
-            font-weight:600;
-            line-height:1.5;
-        }
-        .logo-container{
-            text-align:center;
-            margin:30px 0 20px;
-        }
-        .logo{
-            max-width:50%;
-            height:auto;
-            display:block;
-            margin:0 auto;
-            margin-top:-5px;
-            margin-top:-25%;
-        }
-        .footer{
-            padding:20px;
-            text-align:center;
-            font-size:12px;
-            color:#94a3b8;
-            background:#f8fafc;
-            margin-top:-17%;
-        }
-        @media(max-width:580px){
-            .body{padding:24px 20px;}
-            .detail{flex-direction:column; align-items:flex-start;}
-            .icon{margin-bottom:10px;}
-            .status-row{flex-direction:column;}
-            .status-pill{
-                flex:1 1 100%;
-                min-width:100%;
-                max-width:100%;
-            }
-            .hero-badge{font-size:13px;}
-        }
-            </style>
-        </head>
-        <body>
-    <div class="card">
-        <div class="header">
-            <h1>Revisar Anticipo</h1>
-            <p>Notificación Financiera</p>
-                </div>
-        <div class="body">
-            <div class="hello">Hola, <span>Área de {$map['area']}</span></div>
-            <div class="hero-badge">
-                El técnico <strong>{$map['tecnico']}</strong> ha cargado un documento de anticipo. Por favor, revise el documento asociado.
-                    </div>
-            <div class="detail">
-                <div class="icon">🎫</div>
-                <div>
-                    <div class="label">Número de Ticket</div>
-                    <div class="value">#{$map['ticket']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">🏢</div>
-                <div>
-                    <div class="label">RIF / Razón Social</div>
-                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">🔧</div>
-                <div>
-                    <div class="label">Serial del Dispositivo</div>
-                    <div class="value value-serial">{$map['serial']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">🚨</div>
-                <div>
-                    <div class="label">Nivel / Falla Reportada</div>
-                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">👤</div>
-                <div>
-                    <div class="label">Técnico Responsable</div>
-                    <div class="value">{$map['tecnico']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">📅</div>
-                <div>
-                    <div class="label">Fecha de Creación</div>
-                    <div class="value">{$map['fecha']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">📝</div>
-                <div>
-                    <div class="label">Acción del Ticket</div>
-                    <div class="value">{$map['accion']}</div>
-                        </div>
-                        </div>
-
-            <div class="status-row">
-                <div class="status-pill">
-                    <strong>Estatus del Ticket</strong>
-                    <span>{$map['status']}</span>
-                    </div>
-                <div class="status-pill">
-                    <strong>Estatus de Pago</strong>
-                    <span>{$map['pago']}</span>
-                    </div>
-                <div class="status-pill">
-                    <strong>Estatus Domiciliación</strong>
-                    <span>{$map['domi']}</span>
-                </div>
-            </div>
-
-            <div class="attention-box">
-                <p><strong>¡Atención!</strong> Por favor, verifique el documento de anticipo de este ticket.</p>
-            </div>
-
-            {$logoHtml}
-                </div>
-                <div class="footer">
-                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
-                </div>
-            </div>
-        </body>
-</html>
-HTML;
-    }
-
-    private function getAdminEmailBodyForExoneracion($nombre_area_admin, $nombre_tecnico_ticket, $ticketnro, $clientRif, $clientName, $ticketserial, $ticketNivelFalla, $name_failure, $ticketfinished, $ticketaccion, $ticketstatus, $ticketpaymnet, $ticketdomiciliacion) {
-        // Asegurar que el nivel solo contenga el número, sin "Nivel" duplicado
-        $nivelValue = htmlspecialchars($ticketNivelFalla);
-        // Si el valor ya contiene "Nivel", extraer solo el número
-        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
-            $nivelValue = $matches[1]; // Solo el número
-        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
-            $nivelValue = $matches[1]; // Solo el número si hay uno
-        }
-        
-        $map = [
-            'ticket' => htmlspecialchars($ticketnro),
-            'rif' => htmlspecialchars($clientRif),
-            'razon' => htmlspecialchars($clientName),
-            'serial' => htmlspecialchars($ticketserial),
-            'falla' => htmlspecialchars($name_failure),
-            'nivel' => $nivelValue, // Solo el número
-            'fecha' => htmlspecialchars($ticketfinished),
-            'accion' => htmlspecialchars($ticketaccion),
-            'status' => htmlspecialchars($ticketstatus),
-            'pago' => htmlspecialchars($ticketpaymnet),
-            'domi' => htmlspecialchars($ticketdomiciliacion),
-            'area' => htmlspecialchars($nombre_area_admin),
-            'tecnico' => htmlspecialchars($nombre_tecnico_ticket)
-        ];
-        $currentYear = date("Y");
-        
-        // Preparar el logo HTML si está definido
-        $logoHtml = '';
-        if (defined('FIRMA_CORREO')) {
-            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
-        }
-
-        return <<<HTML
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Notificación Administrativa - Revisar Exoneración</title>
-            <style>
-        body{
-            margin:0;
-            padding:30px 0;
-            background:#f8f9fa;
-            font-family:'Inter','Segoe UI',sans-serif;
-        }
-        .card{
-            background:#ffffff;
-            max-width:650px;
-            margin:0 auto;
-            border-radius:24px;
-            box-shadow:0 25px 80px rgba(0,0,0,0.12);
-            overflow:hidden;
-        }
-        .header{
-            background:linear-gradient(135deg,#6f42c1 0%,#8a2be2 100%);
-            color:#ffffff;
-            padding:30px;
-            text-align:center;
-        }
-        .header h1{
-            margin:0;
-            font-size:26px;
-            letter-spacing:0.5px;
-        }
-        .header p{
-            margin:6px 0 0;
-            font-size:15px;
-            opacity:0.85;
-        }
-        .body{
-            padding:30px 34px 24px;
-        }
-        .hello{
-            text-align:center;
-            font-size:17px;
-            color:#0f172a;
-            margin-bottom:22px;
-        }
-        .hello span{
-            color:#6f42c1;
-            font-weight:700;
-        }
-        .hero-badge{
-            background:#f3e5f5;
-            border:1px solid rgba(111,66,193,0.2);
-            border-radius:18px;
-            padding:14px 18px;
-            text-align:center;
-            font-size:14px;
-            color:#6f42c1;
-            margin-bottom:28px;
-        }
-        .detail{
-            display:flex;
-            align-items:center;
-            padding:14px 0;
-            border-bottom:1px solid #edf2f7;
-        }
-        .detail:last-child{
-            border-bottom:none;
-        }
-        .icon{
-            width:45px;
-            height:45px;
-            border-radius:14px;
-            background:#f8f0fc;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            margin-right:14px;
-            font-size:22px;
-        }
-        .label{
-            font-size:12px;
-            letter-spacing:0.6px;
-            text-transform:uppercase;
-            color:#94a3b8;
-            margin-bottom:3px;
-        }
-        .value{
-            font-size:16px;
-            color:#0f172a;
-            font-weight:600;
-        }
-        .value-serial{
-            font-family:"JetBrains Mono","Courier New",monospace;
-            font-size:15px;
-            background:#f1f5f9;
-            padding:4px 10px;
-            border-radius:8px;
-            color:#0f172a;
-        }
-        .status-row{
-            display:flex;
-            gap:12px;
-            flex-wrap:wrap;
-            margin:24px 0 6px;
-            width:100%;
-        }
-        .status-pill{
-            flex:1 1 calc(33.333% - 8px);
-            min-width:180px;
-            max-width:100%;
-            background:#f3e5f5;
-            border-radius:18px;
-            padding:13px 18px;
-            display:flex;
-            flex-direction:column;
-            border:1px solid rgba(111,66,193,0.2);
-            box-sizing:border-box;
-            word-wrap:break-word;
-            overflow-wrap:break-word;
-        }
-        .status-pill strong{
-            color:#6f42c1;
-            font-size:11px;
-            letter-spacing:0.5px;
-            word-wrap:break-word;
-            overflow-wrap:break-word;
-            margin-right:8%;
-        }
-        .status-pill span{
-            color:#0f172a;
-            font-weight:700;
-            font-size:11px;
-            word-wrap:break-word;
-            overflow-wrap:break-word;
-            line-height:1.4;
-            hyphens:auto;
-        }
-        .attention-box{
-            background:#f0e6fa;
-            border:2px solid #d8bcfc;
-            border-radius:12px;
-            padding:20px;
-            margin-top:25px;
-            text-align:center;
-        }
-        .attention-box p{
-            margin:0;
-            font-size:1.1em;
-            color:#6f42c1;
-            font-weight:600;
-            line-height:1.5;
-        }
-        .logo-container{
-            text-align:center;
-            margin:30px 0 20px;
-        }
-        .logo{
-            max-width:50%;
-            height:auto;
-            display:block;
-            margin:0 auto;
-            margin-top:-5px;
-            margin-top:-25%;
-        }
-        .footer{
-            padding:20px;
-            text-align:center;
-            font-size:12px;
-            color:#94a3b8;
-            background:#f8fafc;
-            margin-top:-17%;
-        }
-        @media(max-width:580px){
-            .body{padding:24px 20px;}
-            .detail{flex-direction:column; align-items:flex-start;}
-            .icon{margin-bottom:10px;}
-            .status-row{flex-direction:column;}
-            .status-pill{
-                flex:1 1 100%;
-                min-width:100%;
-                max-width:100%;
-            }
-            .hero-badge{font-size:13px;}
-        }
-            </style>
-        </head>
-        <body>
-    <div class="card">
-        <div class="header">
-            <h1>Revisar Exoneración</h1>
-            <p>Notificación Administrativa</p>
-                </div>
-        <div class="body">
-            <div class="hello">Hola, <span>Área de {$map['area']}</span></div>
-            <div class="hero-badge">
-                El técnico <strong>{$map['tecnico']}</strong> ha cargado un documento de exoneración. Por favor, revise el documento asociado.
-                    </div>
-            <div class="detail">
-                <div class="icon">🎫</div>
-                <div>
-                    <div class="label">Número de Ticket</div>
-                    <div class="value">#{$map['ticket']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">🏢</div>
-                <div>
-                    <div class="label">RIF / Razón Social</div>
-                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">🔧</div>
-                <div>
-                    <div class="label">Serial del Dispositivo</div>
-                    <div class="value value-serial">{$map['serial']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">🚨</div>
-                <div>
-                    <div class="label">Nivel / Falla Reportada</div>
-                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">👤</div>
-                <div>
-                    <div class="label">Técnico Responsable</div>
-                    <div class="value">{$map['tecnico']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">📅</div>
-                <div>
-                    <div class="label">Fecha de Creación</div>
-                    <div class="value">{$map['fecha']}</div>
-                            </div>
-                            </div>
-            <div class="detail">
-                <div class="icon">📝</div>
-                <div>
-                    <div class="label">Acción del Ticket</div>
-                    <div class="value">{$map['accion']}</div>
-                        </div>
-                        </div>
-
-            <div class="status-row">
-                <div class="status-pill">
-                    <strong>Estatus del Ticket</strong>
-                    <span>{$map['status']}</span>
-                    </div>
-                <div class="status-pill">
-                    <strong>Estatus de Pago</strong>
-                    <span>{$map['pago']}</span>
-                    </div>
-                <div class="status-pill">
-                    <strong>Estatus Domiciliación</strong>
-                    <span>{$map['domi']}</span>
-                </div>
-            </div>
-
-            <div class="attention-box">
-                <p><strong>¡Atención!</strong> Por favor, verifique el documento de exoneración de este ticket.</p>
-            </div>
-
-            {$logoHtml}
-                </div>
-                <div class="footer">
-                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
-                    <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
-            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
-                </div>
-            </div>
-        </body>
-</html>
-HTML;
-    }
 
     public function handleglobalSearchTicket(){
         $repository = new technicalConsultionRepository();
@@ -3894,7 +3453,10 @@ HTML;
             'origen_bank', 
             'destination_bank',
             'origen_rif_numero',
-            'origen_telefono'
+            'origen_telefono',
+            'record_number',
+            'payment_status',
+            'confirmation_number'
         ];
 
         foreach ($possibleFields as $field) {
@@ -3921,6 +3483,54 @@ HTML;
         } else {
             // This might fail if payment is confirmed or ID is wrong
             $this->response(['success' => false, 'message' => 'No se pudo actualizar el pago. Verifique que no esté confirmado.'], 400);
+        }
+    }
+
+    public function handleSubstitutePayment() {
+        $repository = new technicalConsultionRepository();
+        $id_payment_old = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
+        
+        if (empty($id_payment_old)) {
+            $this->response(['success' => false, 'message' => 'ID de pago original no proporcionado'], 400);
+            return;
+        }
+
+        // Collect fields for the NEW record from POST
+        $data = [];
+        $possibleFields = [
+            'amount_bs', 
+            'reference_amount', 
+            'payment_method', 
+            'currency', 
+            'payment_reference', 
+            'depositor', 
+            'origen_bank', 
+            'destination_bank',
+            'record_number',
+            'payment_status',
+            'confirmation_number',
+            'payment_date',
+            'document_type'
+        ];
+
+        foreach ($possibleFields as $field) {
+            if (isset($_POST[$field])) {
+                $data[$field] = $_POST[$field];
+            }
+        }
+
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
+        $data['user_loader'] = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
+
+        // Perform substitution (Insert new record based on old one + new data)
+        $new_id = $repository->CreatePaymentSubstitution($id_payment_old, $data);
+        
+        if ($new_id) {
+            $this->response(['success' => true, 'message' => 'Nuevo registro de pago creado', 'id_payment_record' => $new_id], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se pudo crear la sustitución del pago.'], 500);
         }
     }
 
@@ -3984,22 +3594,24 @@ HTML;
         $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : __DIR__ . '/../../../../public/documentos/';
         
         $folderName = 'Pagos';
-        $documentType = isset($_POST['document_type']) && !empty($_POST['document_type']) ? $_POST['document_type'] : 'Pago';
+        $documentType = isset($_POST['document_type']) && !empty($_POST['document_type']) ? $_POST['document_type'] : null;
 
         if ($ticketInfo && isset($ticketInfo['serial_pos'])) {
-             // Si el documentType NO viene del POST, intentamos adivinarlo (fallback)
-             if (!isset($_POST['document_type']) || empty($_POST['document_type'])) {
-                 // Verificar si ya existe un Anticipo (usando nro_ticket)
-                 $existingAnticipo = $repository->getDocumentByType($ticketInfo['nro_ticket'], 'Anticipo');
+             // Si el documentType NO viene del POST, lo determinamos inteligentemente
+             if (!$documentType) {
+                 // Verificar si ya existe un Anticipo VALIDO (NO RECHAZADO)
+                 $validAnticipo = $repository->getNonRejectedDocumentByType($ticketInfo['nro_ticket'], 'Anticipo');
                  
-                 // Si NO existe anticipo, este pago será el Anticipo
-                 if (!$existingAnticipo) {
+                 // Si NO existe un anticipo válido, este debe ser el Anticipo (o su sustitución)
+                 if (!$validAnticipo) {
                      $documentType = 'Anticipo';
+                 } else {
+                     $documentType = 'Pago';
                  }
              }
              
              // Establecer la carpeta basada en el documentType final
-             $folderName = ($documentType === 'Anticipo') ? 'Anticipo' : 'Pagos';
+             $folderName = ($documentType === 'Anticipo' || $documentType === 'anticipo') ? 'Anticipo' : 'Pagos';
              
              $serial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $ticketInfo['serial_pos']);
              $ticketFolder = preg_replace("/[^a-zA-Z0-9]/", "", $nro_ticket); 

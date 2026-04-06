@@ -872,11 +872,14 @@ function mi_navbar() {}
                                                 <th style="width: 15%;">Direcci&oacuten Instalaci&oacuten</th>
                                                 <th style="width: 5%;">Estado</th>
                                                 <th style="width: 5%;">Municipio</th>
+                                                <!--th style="width: 5%;">Presupuesto ($)</th>
+                                                <th style="width: 5%;">Abonado ($)</th>
+                                                <th style="width: 5%;">Deuda ($)</th-->
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td colspan="3">No hay datos</td>
+                                                <td colspan="15">No hay datos</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -1098,7 +1101,8 @@ function mi_navbar() {}
                                             <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
                                             <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Exoneración</label>
                                         </div>
-                                        <div id="checkAnticipoContainer" class="form-check">
+                                        <!-- <div id="checkAnticipoContainer" class="form-check"> --> <!-- Original -->
+                                        <div id="checkAnticipoContainer" class="form-check" style="display: none !important;">
                                             <input class="form-check-input" type="radio" id="checkAnticipo" name="documentType" value="anticipo">
                                             <label class="form-check-label" id="checkAnticipoLabel" for="checkAnticipo">Anticipo</label>
                                         </div>
@@ -1123,7 +1127,8 @@ function mi_navbar() {}
                                             <div id="exoneracionStatus"></div>
                                         </div><br>
 
-                                        <div style="display: flex; align-items: center; margin-top: 15px; margin-bottom: 2%; display: none; position: relative;"
+                                        <!-- Original: <div style="display: flex; align-items: center; margin-top: 15px; margin-bottom: 2%; display: none; position: relative;" id="botonCargaAnticipo"> -->
+                                        <div style="display: none !important; align-items: center; margin-top: 15px; margin-bottom: 2%; position: relative;"
                                             id="botonCargaAnticipo">
                                             <button id="DownloadAntici" class="btn btn-outline-secondary btn-sm" type="button">
                                                 <span>Adjunte Documento Anticipo</span>
@@ -1364,7 +1369,7 @@ function mi_navbar() {}
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-cash me-1 text-primary" viewBox="0 0 16 16"><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>Monto Bs
                                             </label>
                                             <div class="position-relative">
-                                                <input type="number" class="form-control" id="montoBs" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
+                                                <input type="text" class="form-control" id="montoBs" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
                                                 <span class="currency-suffix" id="montoBsSuffix" style="display: none;">Bs</span>
                                             </div>
                                         </div>
@@ -1373,7 +1378,7 @@ function mi_navbar() {}
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-left-right me-1 text-primary" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>Monto REF
                                             </label>
                                             <div class="position-relative">
-                                                <input type="number" class="form-control" id="montoRef" step="0.01" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
+                                                <input type="text" class="form-control" id="montoRef" placeholder="0.00" disabled style="font-size: 0.95rem; padding: 8px 12px; padding-right: 40px;">
                                                 <span class="currency-suffix" id="montoRefSuffix" style="display: none;">USD</span>
                                             </div>
                                         </div>
