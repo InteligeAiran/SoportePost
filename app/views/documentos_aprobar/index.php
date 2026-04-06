@@ -827,13 +827,94 @@ function mi_navbar() {}
         }
 
         /* Estado de los Badges en el modal */
-        #modalPagosDetalle .badge {
+        #modalPagosDetalle .badge, #modalExonerationDetalle .badge {
             padding: 0.5rem 0.75rem;
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.02em;
+        }
+
+        /* Estilos específicos para el botón Cerrar del modal de Exoneración */
+        #modalExonerationDetalle .btn-close {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 50% !important;
+            padding: 0.6rem !important;
+            transition: all 0.3s ease !important;
+            opacity: 0.8 !important;
+            filter: brightness(0) invert(1) !important;
+            margin-top: -5px;
+        }
+
+        #modalExonerationDetalle .btn-close:hover {
+            background-color: rgba(255, 255, 255, 0.25) !important;
+            opacity: 1 !important;
+            transform: rotate(90deg) scale(1.1);
+        }
+
+        /* Hover effect for Table Rows (Exoneration and Payments) */
+        #modalExonerationDetalle .table tbody tr, #modalPagosDetalle .table tbody tr {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: default;
+        }
+
+        #modalExonerationDetalle .table tbody tr:hover td, #modalPagosDetalle .table tbody tr:hover td {
+            background-color: #f0f7ff !important;
+            color: #0d47a1 !important;
+            font-weight: 500;
+        }
+
+        #modalExonerationDetalle .table tbody td:first-child, #modalPagosDetalle .table tbody td:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        #modalExonerationDetalle .table tbody td:last-child, #modalPagosDetalle .table tbody td:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        /* Custom Scrollbar for Modal Tables */
+        #modalExonerationDetalle .table-responsive, 
+        #modalPagosDetalle .table-responsive {
+            overflow-x: auto !important;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        #modalExonerationDetalle .table-responsive::-webkit-scrollbar, 
+        #modalPagosDetalle .table-responsive::-webkit-scrollbar {
+            height: 10px;
+            width: 10px;
+        }
+
+        #modalExonerationDetalle .table-responsive::-webkit-scrollbar-track,
+        #modalPagosDetalle .table-responsive::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        #modalExonerationDetalle .table-responsive::-webkit-scrollbar-thumb,
+        #modalPagosDetalle .table-responsive::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+            border: 2px solid #f1f5f9;
+        }
+
+        #modalExonerationDetalle .table-responsive::-webkit-scrollbar-thumb:hover,
+        #modalPagosDetalle .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Ensure table headers don't wrap and force scroll */
+        #modalExonerationDetalle .table th, #modalPagosDetalle .table th,
+        #modalExonerationDetalle .table td, #modalPagosDetalle .table td {
+            white-space: nowrap !important;
+        }
+
+        #modalExonerationDetalle .table, #modalPagosDetalle .table {
+            min-width: 900px !important;
         }
 
         #modalPagosDetalle .bg-success {
@@ -936,6 +1017,21 @@ function mi_navbar() {}
             background: #f1f5f9;
             color: #003594;
             border-color: #003594;
+            transform: scale(1.1);
+        }
+
+        /* Viewed indicator for Exonerations */
+        #modalExonerationDetalle .view-individual-exoneration-btn.viewed {
+            background-color: #0d47a1;
+            color: white;
+            border-color: #0d47a1;
+            box-shadow: 0 4px 8px rgba(13, 71, 161, 0.2);
+        }
+
+        #modalExonerationDetalle .view-individual-exoneration-btn:hover {
+            background: #f1f5f9;
+            color: #0d47a1;
+            border-color: #0d47a1;
             transform: scale(1.1);
         }
     /* ==========================================================================
@@ -1590,6 +1686,7 @@ function mi_navbar() {}
                                 <div id="pdfViewViewer" style="width: 100%; height: 100%; display: none;"></div>
                             </div>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Ticket: <span id="currentTicketIdDisplay"></span></p>
+                            <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Nro Registro: <span id="currentRecordNumberDisplay"></span></p>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Tipo de Documento: <span id="currentImageTypeDisplay"></span></p>
                             <p class="mt-3 mb-1" style="color: black; font-weight: bold;">Serial POS: <span id="currentSerialDisplay"></span></p>
                             
@@ -2137,6 +2234,102 @@ function mi_navbar() {}
             </div>
         <!--END MODAL AGREGAR DATOS DE PAGO-->
 
+        <!--MODAL DETALLE DE EXONERACIÓN-->
+        <div class="modal fade" id="modalExonerationDetalle" tabindex="-1" role="dialog" aria-labelledby="modalExonerationDetalleLabel" aria-hidden="true" data-bs-backdrop="static">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #0d47a1 0%, #002171 100%) !important; border-bottom: none; padding: 1.25rem 1.5rem;">
+                        <h5 class="modal-title" id="modalExonerationDetalleLabel" style="color: white; font-weight: 700; letter-spacing: -0.02em;">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-white rounded-circle d-flex align-items-center justify-content-center me-3 shadow-premium" style="width: 38px; height: 38px; background: rgba(255,255,255,0.2) !important; backdrop-filter: blur(4px);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" class="bi bi-file-earmark-check" viewBox="0 0 16 16">
+                                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                                    </svg>
+                                </div>
+                                <span>Detalle de Exoneración - Ticket <span id="exoDetailTicketNro" class="text-info-cyan" style="color: #4fc3f7 !important;"></span></span>
+                            </div>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- SECCIÓN: IDENTIFICACIÓN DEL COMERCIO -->
+                        <div class="info-card-3d" style="background: linear-gradient(to right, #ffffff, #f0f7ff);">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 32px; height: 32px; background: linear-gradient(135deg, #003594 0%, #001f54 100%) !important;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-person-badge" viewBox="0 0 16 16">
+                                        <path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                        <path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0h-7zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2.5z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="mb-0 fw-bold text-dark" style="letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.85rem;">Identificación del Comercio</h6>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-primary shadow-sm h-100 transition-hover">
+                                        <label class="small text-muted text-uppercase fw-bold mb-0 d-block" style="font-size: 0.70rem; letter-spacing: 0.5px;">Razón Social</label>
+                                        <div id="exoDetailRazonSocial" class="fw-bold text-dark" style="font-size: 0.76rem; line-height: 1.2;">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-info shadow-sm h-100 transition-hover">
+                                        <label class="small text-muted text-uppercase fw-bold mb-0 d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">RIF / CI</label>
+                                        <div id="exoDetailRif" class="fw-bold text-dark" style="font-size: 0.76rem;">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-2 rounded-3 bg-light border-start border-4 border-success shadow-sm h-100 transition-hover">
+                                        <label class="small text-muted text-uppercase fw-bold mb-0 d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Serial POS</label>
+                                        <div id="exoDetailSerialPos" class="fw-bold text-dark" style="font-size: 0.76rem;">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN: LISTA DE EXONERACIONES -->
+                        <div class="info-card-3d mt-4 p-0 overflow-hidden" style="border: none; box-shadow: 0 8px 30px rgba(0,0,0,0.12); border-radius: 15px;">
+                            <div class="d-flex align-items-center mb-0 p-3" style="background: linear-gradient(to right, #f8f9fa, #e3f2fd); border-bottom: 2px solid #0d47a1;">
+                                <div class="bg-primary-gradient rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 28px; height: 28px; background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16">
+                                        <path d="M8.5 1a.5.5 0 0 1 .5.5V4a.5.5 0 0 0 .5.5H11a.5.5 0 0 1 0 1h-1.5A1.5 1.5 0 0 1 8 4V1.5a.5.5 0 0 1 .5-.5z"/>
+                                        <path d="M4 0h5.5v1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h1V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                                        <path d="M5 11h6v1H5v-1zm0-2h6v1H5V9zm0-2h6v1H5V7z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="mb-0 fw-bold text-dark" style="letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.8rem; color: #0d47a1 !important;">Registros de Exoneración</h6>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+                                            <th class="ps-3 py-3" style="width: 15%; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Exoneracion</th>
+                                            <th class="text-center py-3" style="width: 25%; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">FECHA</th>
+                                            <th class="text-center py-3" style="width: 20%; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">TIPO</th>
+                                            <th class="text-center py-3" style="width: 15%; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">PORCENTAJE</th>
+                                            <th class="text-center py-3" style="width: 15%; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">ESTATUS</th>
+                                            <th class="text-center pe-3 py-3" style="min-width: 150px; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Visualizar Imagen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bodyExonerationDetalle">
+                                        <!-- Se llena dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btnCerrarExonerationDetalle" class="btn btn-secondary px-4 shadow-sm" style="border-radius: 12px; font-weight: 600;">
+                            Cerrar
+                        </button>
+                        <button type="button" id="btnAprobarExoneracion" class="btn btn-success" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); border: none; box-shadow: 0 4px 14px rgba(40, 167, 69, 0.25);">
+                            <i class="fas fa-check-double me-1"></i> Aprobar Exoneración
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--END MODAL DETALLE DE EXONERACIÓN-->
+
         <!--MODAL DETALLE DE PAGOS-->
         <div class="modal fade" id="modalPagosDetalle" tabindex="-1" role="dialog" aria-labelledby="modalPagosDetalleLabel" aria-hidden="true" data-bs-backdrop="static">
             <div class="modal-dialog modal-xl" role="document">
@@ -2221,22 +2414,34 @@ function mi_navbar() {}
                             </div>
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table" id="tablePagosDetalle">
-                                <thead>
-                                    <tr>
-                                        <th>Ref.</th>
-                                        <th>Fecha</th>
-                                        <th>Monto (Bs)</th>
-                                        <th>Monto (Ref.)</th>
-                                        <th>Estatus</th>
-                                        <th>Vizualizar Imagen</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bodyPagosDetalle">
-                                    <!-- Se poblará dinámicamente -->
-                                </tbody>
-                            </table>
+                        <!-- SECCIÓN: REGISTROS DE PAGOS -->
+                        <div class="info-card-3d mt-4 p-0 overflow-hidden" style="border: none; box-shadow: 0 8px 30px rgba(0,0,0,0.12); border-radius: 15px;">
+                            <div class="d-flex align-items-center mb-0 p-3" style="background: linear-gradient(to right, #f8f9fa, #e3f2fd); border-bottom: 2px solid #003594;">
+                                <div class="bg-primary-gradient rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 28px; height: 28px; background: linear-gradient(135deg, #003594 0%, #0056b3 100%);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="white" class="bi bi-cash-stack" viewBox="0 0 16 16">
+                                        <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                                        <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/>
+                                    </svg>
+                                </div>
+                                <h6 class="mb-0 fw-bold text-dark" style="letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.8rem; color: #003594 !important;">Registros de Pagos</h6>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" id="tablePagosDetalle" style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr style="background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+                                            <th class="ps-3 py-3" style="color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Ref.</th>
+                                            <th class="text-center py-3" style="color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Fecha</th>
+                                            <th class="text-center py-3" style="color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Monto (Bs)</th>
+                                            <th class="text-center py-3" style="color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Monto (Ref.)</th>
+                                            <th class="text-center py-3" style="color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Estatus</th>
+                                            <th class="text-center pe-3 py-3" style="color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.75rem;">Visualizar Imagen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bodyPagosDetalle">
+                                        <!-- Se poblará dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">

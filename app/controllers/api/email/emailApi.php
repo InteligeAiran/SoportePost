@@ -642,9 +642,9 @@ class email extends Controller {
             $results['admin'] = false; // Inicializar
             // Correos específicos para domiciliación
             $emails_admin = [
-                'domiciliacion.intelipunto@inteligensa.com',
-                'olga.rojas@intelipunto.com',
-                'neishy.tupano@inteligensa.com'
+                'domiciliacion1.intelipunto@inteligensa.com',
+                'olga1.rojas@intelipunto.com',
+                'neishy1.tupano@inteligensa.com'
             ];
             $name_area_admin = 'Administración';
             
@@ -811,7 +811,13 @@ class email extends Controller {
     $nombre_area = $result_email_area['name_area'];
 
     // 2. Obtener datos del ticket cerrado
-    $result_ticket = $repository->GetDataTicketClosed();
+    $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : null;
+    if ($nro_ticket) {
+        $result_ticket = $repository->GetDataTicketClosedByNro($nro_ticket);
+    } else {
+        $result_ticket = $repository->GetDataTicketClosed();
+    }
+    
     if (!$result_ticket) {
         $this->response(['success' => false, 'message' => 'No se encontraron datos del ticket.', 'color' => 'red']);
         return;

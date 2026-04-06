@@ -886,7 +886,9 @@ function mi_navbar() {}
                             </div>
                             <div id="ModalSerial" class="modal">
                                 <div id="ModalSerial-content" class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-                                    <span id="ModalSerial-close" class="close">&times;</span>
+                                    <button type="button" class="btn-close-custom" onclick="closeDetailsModal()" aria-label="Close" style="position: absolute; right: 20px; top: 20px; z-index: 999;">
+                                        <i class="bi bi-x-lg" style="font-weight: 800;"></i>
+                                    </button>
                                     <div style="text-align: center; margin-bottom: 20px;">
                                         <h2>Detalles del POS</h2>
                                     </div>
@@ -900,9 +902,22 @@ function mi_navbar() {}
                                             <img src="" alt="Imagen del POS"> </img>
                                         </div>
                                     </div>
-                                    <div class="mt-4 w-100 d-flex justify-content-center align-items-center">
-                                        <button type="button" class="btn btn-success me-2" id="createTicketFalla1Btn">Crear Ticket Falla 1</button>
-                                        <button type="button" class="btn btn-warning" id="createTicketFalla2Btn">Crear Ticket Falla 2</button>
+                                    <div class="mt-4 w-100 d-flex justify-content-center align-items-center flex-wrap gap-3">
+                                        <button type="button" class="btn-custom-action btn-falla1" id="createTicketFalla1Btn">
+                                            Ticket Falla 1
+                                        </button>
+                                        <button type="button" class="btn-custom-action btn-falla2" id="createTicketFalla2Btn">
+                                            Ticket Falla 2
+                                        </button>
+                                        <button type="button" class="btn-custom-action btn-visita" id="registrarVisitaBtn">
+                                            <i class="bi bi-calendar-check-fill me-2"></i>Registrar Visita
+                                        </button>
+                                        <button type="button" class="btn-custom-action btn-cambio-razon" id="cambioRazonBtn">
+                                            <i class="bi bi-person-badge-fill me-2"></i>Cambio Razón Social
+                                        </button>
+                                        <button type="button" class="btn-custom-action btn-cambio-banco" id="cambioBancoBtn">
+                                            <i class="bi bi-bank2 me-2"></i>Cambio de Banco
+                                        </button>
                                     </div>
                                     <div class="mt-3 w-100 d-flex justify-content-center" id="txtDescripcion"></div>
                                     <!--div class="mt-3 w-100 d-flex justify-content-center">
@@ -1011,7 +1026,7 @@ function mi_navbar() {}
                         <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalToggleLabel" style = "color: grey;">Falla Nivel 2</h1>
                         </div>
-                        <div class="modal-body" style="margin-left: 0; max-height: 70vh; overflow-y: auto;">
+                        <div class="modal-body" style="margin-left: 0; max-height: 60vh; overflow-y: auto;">
                             <form id="miFormulario" class="row g-3">
                                 <div id="detalle1" class="col-md-6">
                                     <div><br>
@@ -1097,7 +1112,7 @@ function mi_navbar() {}
                                             <input class="form-check-input" type="checkbox" id="checkEnvio" value="envio">
                                             <label class="form-check-label" for="checkEnvio"> Documento de Envío</label>
                                         </div>
-                                        <div id="checkExoneracionContainer" class="form-check">
+                                        <div id="checkExoneracionContainer" class="form-check" style="display: none;">
                                             <input class="form-check-input" type="radio" id="checkExoneracion" name="documentType" value="exoneracion">
                                             <label class="form-check-label" id="checkExoneracionLabel" for="checkExoneracion">Exoneración</label>
                                         </div>
@@ -1141,6 +1156,7 @@ function mi_navbar() {}
                                     <div id="RightSelects">
                                         </div>
                                     <input type="hidden" id="id_user" name="userId" value=<?php echo $_SESSION['id_user']?>>
+                                    <input type="hidden" id="nombre_tecnico" value="<?php echo $_SESSION['nombres'] . ' ' . $_SESSION['apellidos']; ?>">
                                 </div>
                             </form>
                         </div>
@@ -1443,6 +1459,136 @@ function mi_navbar() {}
             </div>
         <!--END MODAL AGREGAR DATOS DE PAGO-->
 
+        <!-- Modal Agregar Datos Exoneración -->
+        <div class="modal fade" id="modalAgregarExoneracion" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalAgregarExoneracionLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #FF8C00 0%, #FF4500 100%); border-radius: 12px 12px 0 0; padding: 20px 25px;">
+                            Detalles de Exoneración
+                        </h5>
+                        <button type="button" class="btn-close-custom" id="btnCloseExoModal" aria-label="Close">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="formExoneracion">
+                            <div class="mb-4 text-center">
+                                <label style="font-size: 120%; margin-left: -29%;" class="form-label fw-bold text-muted mb-3 d-block">Tipo de Exoneración</label>
+                                <div class="btn-group w-100" role="group" aria-label="Tipo Exoneracion">
+                                    <input type="radio" class="btn-check" name="tipo_exoneracion" id="exo_pago" value="Anticipo" autocomplete="off" checked>
+                                    <label class="btn btn-outline-warning py-2" for="exo_pago">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash-stack me-2" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>
+                                        Anticipo
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="tipo_exoneracion" id="exo_taller" value="Pago taller" autocomplete="off">
+                                    <label class="btn btn-outline-warning py-2" for="exo_taller">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tools me-2" viewBox="0 0 16 16"><path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.605-.183-1.164-.497-1.631L12.873 3.648a1 1 0 0 1-1.415 0l-1.06-1.06a1 1 0 0 1 0-1.415l2.279-2.63A2.996 2.996 0 0 0 13 0a3 3 0 0 0-3 3 3.003 3.003 0 0 0 .149 1.012L7.493 6.666 4.818 3.99A1 1 0 0 0 4.11 3.7h-.07a1 1 0 0 0-.814-.419L1 0Zm11.354 9.646a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708l3-3a.5.5 0 0 1 .708 0Z"/></svg>
+                                        Pago taller
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-4 p-3 bg-light" style="border-radius: 10px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="porcentaje_exoneracion" class="form-label fw-bold text-muted mb-0">Porcentaje Aplicado</label>
+                                    <span class="badge bg-warning text-dark fs-5 shadow-sm" id="val_porcentaje" style="min-width: 15%;">100%</span>
+                                </div>
+                                <input type="range" class="form-range custom-range" id="porcentaje_exoneracion" min="0" max="100" step="5" value="100" disabled style="cursor: not-allowed; opacity: 0.7;">
+                                <div class="d-flex justify-content-between px-1 mt-1" style="font-size: 0.75rem; color: #6c757d; font-weight: 500;">
+                                    <span>0%</span>
+                                    <span>25%</span>
+                                    <span>50%</span>
+                                    <span>75%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label fw-bold text-muted mb-1 small" for="nro_exoneracion_display">Código de Exoneración (Auto)</label>
+                                <div class="input-group input-group-lg shadow-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-warning" id="basic-addon1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-upc-scan" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v2a.5.5 0 0 1-1 0v-2A1.5 1.5 0 0 1 1.5 0h2a.5.5 0 0 1 0 1h-2zM13 .5a.5.5 0 0 1 .5-.5h2A1.5 1.5 0 0 1 17 1.5v2a.5.5 0 0 1-1 0v-2a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 1-.5-.5zM.5 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 1 0 1h-2A1.5 1.5 0 0 1 0 15.5v-2a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v2a1.5 1.5 0 0 1-1.5 1.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 .5-.5zM2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11zm9.5 1h-8v9h8v-9z"/></svg>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 fw-bold text-center" id="nro_exoneracion_display" readonly style="color: #003594 !important; background-color: #ffffff !important; letter-spacing: 2px;">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-top-0 d-flex gap-2 p-4 pt-0">
+                        <button type="button" class="btn btn-warning px-4 flex-grow-1 shadow" id="btnGuardarDatosExoneracion" style="border-radius: 8px; font-weight: 700; background: linear-gradient(135deg, #FFB700 0%, #FFA000 100%); border: none; color: #fff;">Sincronizar Datos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        #modalAgregarExoneracion .custom-range::-webkit-slider-thumb {
+            background: #FF8C00 !important;
+            box-shadow: 0 0 0 4px rgba(255, 140, 0, 0.2);
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        #modalAgregarExoneracion .custom-range::-moz-range-thumb {
+            background: #FF8C00 !important;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        #modalAgregarExoneracion .btn-outline-warning:hover {
+            background-color: rgba(255, 140, 0, 0.1);
+            color: #FF8C00;
+        }
+        #modalAgregarExoneracion .btn-check:checked + .btn-outline-warning {
+            background-color: #FF8C00;
+            border-color: #FF8C00;
+            color: #fff;
+        }
+
+        /* Estilo para el botón de cierre personalizado */
+        .btn-close-custom {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+            z-index: 1060;
+            padding: 0;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-close-custom:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-close-custom:active {
+            transform: rotate(90deg) scale(0.95);
+        }
+
+        .btn-close-custom svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+            stroke-width: 2.5;
+            transition: all 0.3s ease;
+        }
+        </style>
+
         <input type="hidden" id="payment_id_to_save" value="">
 
         <!--MODAL FALLA NIVEL 1-->
@@ -1511,6 +1657,303 @@ function mi_navbar() {}
 
 
         <!--   Core JS Files   -->
+        <!-- MODAL REGISTRAR VISITA TÉCNICA (NUEVO) -->
+        <div class="modal fade" id="modalVisitaTecnica" tabindex="-1" aria-labelledby="modalVisitaLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                    <div class="modal-header bg-gradient-info p-4 border-0" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(4px);">
+                                <i class="bi bi-calendar-check-fill text-white fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title text-white fw-bold mb-0" id="modalVisitaLabel" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Registro de Visita Técnica</h5>
+                                <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.85rem; font-weight: 500;">Complete los detalles de la visita preventiva o correctiva</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close-custom ms-auto" onclick="closeVisitaModal()" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body p-4 bg-light">
+                        <form id="formVisitaTecnica">
+                            <div class="row g-3">
+                                <!-- Datos de Identificación y Responsable -->
+                                <div class="col-12">
+                                    <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 15px; border: 1px solid #e0e0e0; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                                        <div class="form-section-header mb-3 pb-2 border-bottom">
+                                            <i class="bi bi-info-circle-fill text-info me-2"></i>
+                                            <span class="form-section-title fw-bold text-dark">Información del Dispositivo</span>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-label small fw-bold text-uppercase text-muted">Serial POS</label>
+                                                <input type="text" class="form-control bg-light border-0 fw-bold" id="visitaSerial" readonly style="font-size: 0.85rem;">
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-label small fw-bold text-uppercase text-muted">RIF Comercio</label>
+                                                <input type="text" class="form-control bg-light border-0 fw-bold" id="visitaRif" readonly style="font-size: 0.85rem;">
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label class="form-label small fw-bold text-uppercase text-muted">Razón Social</label>
+                                                <div class="name-marquee-container shadow-sm">
+                                                    <div class="name-marquee-text" id="visitaRazonSocialText">...</div>
+                                                </div>
+                                                <input type="hidden" id="visitaRazonSocial">
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label small fw-bold text-uppercase text-muted">Teléfono Actual</label>
+                                                <div class="name-marquee-container shadow-sm">
+                                                    <div class="name-marquee-text" id="visitaTelefonoActualText">...</div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label small fw-bold text-uppercase text-muted">Correo Actual</label>
+                                                <div class="name-marquee-container shadow-sm">
+                                                    <div class="name-marquee-text" id="visitaCorreoActualText">...</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Detalles de la Visita -->
+                                <div class="col-12">
+                                    <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 10px; border: 1px solid #e0e0e0; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                                        <div class="form-section-header mb-3 pb-2 border-bottom">
+                                            <i class="bi bi-tools text-info me-2"></i>
+                                            <span class="form-section-title fw-bold text-dark">Detalles Técnicos</span>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="tipoVisita" class="form-label fw-semibold">Tipo de Visita</label>
+                                                <select class="form-select border shadow-sm" id="tipoVisita" required>
+                                                    <option value="" selected disabled>Seleccione tipo...</option>
+                                                    <option value="Preventiva">Preventiva</option>
+                                                    <option value="Correctiva">Correctiva</option>
+                                                    <option value="Instalacion">Instalación</option>
+                                                    <option value="Retiro">Retiro / Desinstalación</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label fw-bold small text-uppercase text-muted" style="letter-spacing: 0.5px;">Fecha de Visita</label>
+                                                <div class="custom-radio-group-premium shadow-sm mb-2">
+                                                    <input type="radio" class="btn-check" name="tipoFechaVisita" id="fechaHoy" value="hoy" autocomplete="off" checked onchange="toggleFechaManual(false)">
+                                                    <label class="btn btn-sm w-100" for="fechaHoy">HOY</label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="tipoFechaVisita" id="fechaOtra" value="otra" autocomplete="off" onchange="toggleFechaManual(true)">
+                                                    <label class="btn btn-sm w-100" for="fechaOtra">OTRA FECHA</label>
+                                                </div>
+                                                
+                                                <div id="containerFechaManual" class="mt-3" style="display: none; animation: slideDown 0.3s ease;">
+                                                    <div class="p-2" style="background: rgba(13, 202, 240, 0.05); border-radius: 12px; border: 1.5px solid #0dcaf0;">
+                                                        <input type="date" class="form-control border-0 bg-transparent shadow-none" id="fechaVisita" required style="font-weight: 700; color: #003594; font-size: 0.95rem;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 mb-3">
+                                                <label for="observacionesVisita" class="form-label fw-semibold">Observaciones / Diagnóstico</label>
+                                                <textarea class="form-control border shadow-sm" id="observacionesVisita" rows="4" placeholder="Escriba aquí los detalles encontrados durante la visita..."></textarea>
+                                            </div>
+                                        </div>
+                                     <!-- Selección de Técnico Responsable -->
+                                <div class="col-12">
+                                    <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 10px; border: 1px solid #e0e0e0; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                                        <div class="form-section-header mb-4 pb-2 border-bottom">
+                                            <i class="bi bi-person-check-fill text-info me-3" style="font-size: 1.15rem;"></i>
+                                            <span class="form-section-title fw-bold text-dark" style="letter-spacing: 0.5px;">Responsable de la Visita</span>
+                                        </div>
+                                        <div class="row align-items-center g-3">
+                                            <div class="col-md-7">
+                                                <div class="mb-2">
+                                                    <span class="text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">¿Quién realizó la visita?</span>
+                                                </div>
+                                                <div class="custom-radio-group-premium shadow-sm" style="max-width: 400px;">
+                                                    <input type="radio" class="btn-check" name="tipoTecnico" id="visitaPorMi" value="propio" autocomplete="off" checked onchange="toggleTechSelect(false)">
+                                                    <label class="btn btn-sm w-100" for="visitaPorMi">REALIZADA POR MÍ</label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="tipoTecnico" id="visitaPorTecnico" value="otro" autocomplete="off" onchange="toggleTechSelect(true)">
+                                                    <label class="btn btn-sm w-100" for="visitaPorTecnico">SELECCIONAR TÉCNICO</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-5" id="containerSelectTecnico" style="display: none; animation: fadeIn 0.3s ease;">
+                                                <div class="mb-2">
+                                                    <span class="text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">Busque al técnico</span>
+                                                </div>
+                                                <select class="form-select shadow-sm" id="selectTecnicoVisita" style="border-radius: 12px; border: 1.5px solid #e2e8f0; font-weight: 600; color: #1e293b; height: 42px;">
+                                                    <option value="">Seleccione un Técnico...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+
+                                <!-- Actualización de Datos -->
+                                <div class="col-12">
+                                    <div class="form-section highlight-section" style="background: #fdfdfd; border-radius: 12px; padding: 15px; border: 1.5px dashed #0dcaf0; margin-bottom: 20px;">
+                                        <div class="form-section-header mb-3 pb-2 border-bottom d-flex justify-content-between align-items-center">
+                                            <div style="font-size: 1.1rem; color: #334155; font-weight: 600;">
+                                                <i class="bi bi-person-lines-fill text-info me-2"></i>
+                                                Información de Contacto
+                                            </div>
+                                            <span class="badge" style="background-color: #0dcaf0; color: white; padding: 8px 15px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; box-shadow: 0 4px 6px rgba(13, 202, 240, 0.2);">VERIFICACIÓN REQUERIDA</span>
+                                        </div>
+                                        <div class="row g-3">
+                                            <!-- Teléfono Card Premium -->
+                                            <div class="col-md-6">
+                                                <div class="contact-update-card">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="icon-badge-premium">
+                                                            <i class="bi bi-telephone-plus-fill"></i>
+                                                        </div>
+                                                        <div class="contact-card-title">¿Actualizar<br>Teléfono?</div>
+                                                    </div>
+                                                    <!-- Dato Actual Marquee -->
+                                                    <div class="mt-2 mb-1">
+                                                        <div class="name-marquee-container shadow-sm" style="height: 32px; background: rgba(13, 202, 240, 0.05); border: 1px solid #c8eef5;">
+                                                            <div class="name-marquee-text" id="visitaTelefonoCardText" style="font-size: 0.75rem; color: #003594;">Cargando...</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="custom-radio-group-premium mt-1">
+                                                        <input type="radio" class="btn-check" name="updatePhone" id="phoneSi" value="Si" autocomplete="off" onchange="toggleContactInput('phone', true)">
+                                                        <label class="btn btn-sm w-100" for="phoneSi">SÍ</label>
+                                                        
+                                                        <input type="radio" class="btn-check" name="updatePhone" id="phoneNo" value="No" autocomplete="off" checked onchange="toggleContactInput('phone', false)">
+                                                        <label class="btn btn-sm w-100" for="phoneNo">NO</label>
+                                                    </div>
+                                                    <div id="containerNuevoTelefono" style="display: none; animation: fadeIn 0.3s ease;">
+                                                        <div class="mt-3 p-2 swappable-input-container shadow-sm" style="background: #fff; border: 1.5px solid #0dcaf0; border-radius: 12px; position: relative;">
+                                                            <!-- Modo Visualización (Marquee) -->
+                                                            <div class="name-marquee-container marquee-display-layer" id="displayNuevoTelefono" style="display: none; height: 30px; border: none; background: transparent; cursor: text;">
+                                                                <div class="name-marquee-text" id="textNuevoTelefono" style="color: #003594; font-size: 0.9rem;"></div>
+                                                            </div>
+                                                            <!-- Modo Edición (Input) -->
+                                                            <input type="text" class="form-control border-0 p-0 shadow-none input-edit-layer" id="nuevoTelefonoVisita" placeholder="Ingrese el nuevo número" maxlength="11" onKeyPress="return soloNumeros(event)" style="font-size: 0.9rem; font-weight: 600; color: #003594; background: transparent; height: 30px;">
+                                                        </div>
+                                                        <div id="phoneFeedback" class="mt-1"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Correo Card Premium -->
+                                            <div class="col-md-6">
+                                                <div class="contact-update-card">
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <div class="icon-badge-premium">
+                                                            <i class="bi bi-envelope-plus-fill"></i>
+                                                        </div>
+                                                        <div class="contact-card-title">¿Actualizar<br>Correo?</div>
+                                                    </div>
+                                                    <!-- Dato Actual Marquee -->
+                                                    <div class="mt-2 mb-1">
+                                                        <div class="name-marquee-container shadow-sm" style="height: 32px; background: rgba(13, 202, 240, 0.05); border: 1px solid #c8eef5;">
+                                                            <div class="name-marquee-text" id="visitaCorreoCardText" style="font-size: 0.75rem; color: #003594;">Cargando...</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="custom-radio-group-premium mt-1">
+                                                        <input type="radio" class="btn-check" name="updateEmail" id="emailSi" value="Si" autocomplete="off" onchange="toggleContactInput('email', true)">
+                                                        <label class="btn btn-sm w-100" for="emailSi">SÍ</label>
+                                                        
+                                                        <input type="radio" class="btn-check" name="updateEmail" id="emailNo" value="No" autocomplete="off" checked onchange="toggleContactInput('email', false)">
+                                                        <label class="btn btn-sm w-100" for="emailNo">NO</label>
+                                                    </div>
+                                                    <div id="containerNuevoCorreo" style="display: none; animation: fadeIn 0.3s ease;">
+                                                        <div class="mt-3 p-2 swappable-input-container shadow-sm" style="background: #fff; border: 1.5px solid #0dcaf0; border-radius: 12px; position: relative;">
+                                                            <!-- Modo Visualización (Marquee) -->
+                                                            <div class="name-marquee-container marquee-display-layer" id="displayNuevoCorreo" style="display: none; height: 30px; border: none; background: transparent; cursor: text;">
+                                                                <div class="name-marquee-text" id="textNuevoCorreo" style="color: #003594; font-size: 0.9rem;"></div>
+                                                            </div>
+                                                            <!-- Modo Edición (Input) -->
+                                                            <input type="email" class="form-control border-0 p-0 shadow-none input-edit-layer" id="nuevoCorreoVisita" placeholder="correo@ejemplo.com" style="font-size: 0.9rem; font-weight: 600; color: #003594; background: transparent; height: 30px;">
+                                                        </div>
+                                                        <div id="correoFeedback" class="mt-1"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Documento de Soporte (Tarjeta Independiente) -->
+                                <div class="col-12 mt-4">
+                                    <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e0e0e0; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                                        <div class="form-section-header mb-4 pb-2 border-bottom">
+                                            <div style="font-size: 1.1rem; color: #334155; font-weight: 600;">
+                                                <i class="bi bi-camera-fill text-info me-2"></i>
+                                                Soporte Digital
+                                            </div>
+                                        </div>
+                                        <div class="row align-items-center">
+                                            <div class="col-12 text-center" id="containerBtnPlantilla">
+                                                <p class="text-muted small mb-3">Primero debe generar la plantilla para poder adjuntar el reporte.</p>
+                                                <button type="button" class="btn btn-primary shadow-sm px-4" id="btnImprimirPlantilla">
+                                                    <i class="bi bi-printer-fill me-2"></i>Generar e Imprimir Plantilla de Visita
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="col-12" id="dropzoneSoporte" style="display: none;">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <h6 class="text-info fw-bold small mb-0"><i class="bi bi-file-earmark-text-fill me-1"></i>Documento de Visita</h6>
+                                                    <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 shadow-sm" id="btnRegenerarPlantilla" title="Regenerar plantilla" style="font-size: 0.65rem; border-radius: 6px; border: 1.2px solid #ddd; color: #64748b; font-weight: 800; background: #f8fafc;">
+                                                        <i class="bi bi-arrow-clockwise me-1"></i>REGENERAR
+                                                    </button>
+                                                </div>
+                                                <div class="soporte-dropzone" id="areaDropzone">
+                                                    <input type="file" id="soporteVisita" accept=".pdf,image/*">
+                                                    <i class="bi bi-camera main-icon"></i>
+                                                    <span class="soporte-dropzone-text" id="textoDropzone">Adjunte el Reporte de Visita Técnica</span>
+                                                </div>
+                                                <div class="text-center mt-2">
+                                                    <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Archivos permitidos: JPG, JPEG, PNG, PDF (Máx. 5MB)</small>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                                <!-- Estatus y Confirmación -->
+                                <div class="col-12">
+                                    <div class="visit-footer-container shadow-lg">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-7">
+                                                <div class="visit-status-header">
+                                                    <i class="bi bi-shield-check text-info me-2"></i>
+                                                    <span>Estatus Final del Equipo</span>
+                                                </div>
+                                                <div class="d-flex gap-4 mt-1" style="width: 105%;">
+                                                    <div class="custom-status-check status-operativo">
+                                                        <input class="form-check-input" type="radio" name="estatusFinal" id="estatusOperativo" value="Operativo" checked>
+                                                        <label class="form-check-label" for="estatusOperativo">
+                                                            <i class="bi bi-check2-circle me-1"></i>Operativo
+                                                        </label>
+                                                    </div>
+                                                    <div class="custom-status-check status-falla">
+                                                        <input class="form-check-input" type="radio" name="estatusFinal" id="estatusFalla" value="Con Falla">
+                                                        <label class="form-check-label" for="estatusFalla">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>Con Falla
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-5 text-end">
+                                                <button type="button" class="btn btn-info text-white btn-footer-save" id="btnGuardarVisita" onclick="guardarVisitaTecnica()">
+                                                    <i class="bi bi-cloud-check-fill me-2"></i>Registrar Visita
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END MODAL REGISTRAR VISITA TÉCNICA -->
+
         <script src="<?php echo APP; ?>app/plugins/js/popper.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/perfect-scrollbar.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/js/smooth-scrollbar.min.js"></script>
@@ -1567,5 +2010,73 @@ function mi_navbar() {}
                 require 'app/footer.php';
             ?>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
-    </body>
+        <!-- ==========================================
+         MODAL: GESTIÓN ADMINISTRATIVA DINÁMICO (RAZÓN SOCIAL / BANCO)
+         ========================================== -->
+    <div class="modal fade" id="modalGestionAdministrativa" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
+            <div class="modal-content border-0 shadow-2xl" style="border-radius: 28px; overflow: hidden; background: #f8fafc;">
+                <!-- Header con Gradiente Dinámico -->
+                <div class="modal-header border-0 p-4" id="headerGestionAdmin" style="background: linear-gradient(135deg, #20c997 0%, #004b57 100%); position: relative;">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box-premium me-3" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+                            <i id="iconGestionAdmin" class="bi bi-person-badge-fill text-white fs-3"></i>
+                        </div>
+                        <div>
+                            <h4 class="modal-title fw-bold text-white mb-0" id="titleGestionAdmin" style="letter-spacing: -0.5px;">Gestión de Cambio</h4>
+                            <p class="text-white-50 small mb-0 fw-500">Complete los datos para procesar la solicitud</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close-custom ms-auto" onclick="closeModalGestionAdmin()" aria-label="Close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <form id="formGestionAdmin">
+                        <!-- Tarjeta de Info del POS (Compacta) -->
+                        <div class="card border-0 mb-4 shadow-sm" style="background: #ffffff; border-radius: 18px; border-left: 5px solid #0dcaf0; box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;">
+                            <div class="card-body p-3">
+                                <div class="row text-center">
+                                    <div class="col-4 border-end">
+                                        <label class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Serial</label>
+                                        <span id="txtAdminSerial" class="fw-bold text-dark" style="font-size: 0.85rem;">...</span>
+                                    </div>
+                                    <div class="col-4 border-end">
+                                        <label class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">RIF</label>
+                                        <span id="txtAdminRif" class="fw-bold text-dark" style="font-size: 0.85rem;">...</span>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Banco Act.</label>
+                                        <span id="txtAdminBanco" class="fw-bold text-dark" style="font-size: 0.85rem;">...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de Nuevo Valor -->
+                        <div class="mb-4">
+                            <label id="labelNuevoValor" class="form-label fw-bold text-dark mb-2" style="font-size: 0.95rem; color: #334155 !important;">Nuevo Dato a Registrar</label>
+                            <div class="input-group shadow-sm" style="border-radius: 14px; overflow: hidden; border: 2px solid #f1f5f9; background: #fff;">
+                                <span class="input-group-text border-0 bg-light" style="width: 50px; justify-content: center;"><i id="inputIconAdmin" class="bi bi-pencil-square text-info fs-5"></i></span>
+                                <input type="text" id="valNuevoAdmin" class="form-control border-0 py-3 px-3" placeholder="Ingrese el nuevo valor..." style="font-size: 1rem; font-weight: 600; color: #1e293b; background: #fff !important;">
+                            </div>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark" style="font-size: 0.95rem;">Observaciones Adicionales</label>
+                            <textarea id="obsAdmin" class="form-control shadow-sm" rows="3" placeholder="Explique brevemente el motivo del cambio..." style="border-radius: 12px; border: 1.5px solid #e2e8f0;"></textarea>
+                        </div>
+
+                        <!-- Botón de Acción -->
+                        <button type="submit" id="btnSubmitAdmin" class="btn w-100 btn-footer-save text-white fw-bold py-3" style="font-size: 1.1rem; border-radius: 15px;">
+                            PROCESAR SOLICITUD
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
 </html>

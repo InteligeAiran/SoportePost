@@ -1959,8 +1959,9 @@ function enviarCorreoTicketCerrado(ticketData) {
     // Obtener el coordinador del ticket (ajusta según tu estructura de datos)
     const coordinador = ticketData.user_coordinator_id || ticketData.id_coordinator || '';
     const id_user = ticketData.user_id || ticketData.id_user_gestion || '';
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
-    const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}`;
+    const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}&nro_ticket=${encodeURIComponent(ticketNumber)}`;
     xhrEmail.send(params);
 }
 

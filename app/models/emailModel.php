@@ -154,7 +154,18 @@ class emailModel extends Model{
         } catch (Throwable $e) {
             // Handle exception
         }
-    }  
+    }
+
+    public function GetDataTicketClosedByNro($nro_ticket){
+        try{
+            $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket); 
+            $sql = "SELECT * FROM GetDataTicketClosedByNro(".$escaped_nro_ticket.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
 
     public function GetDataTicketConsultation(){
         try{
@@ -165,7 +176,7 @@ class emailModel extends Model{
             // Handle exception
         }
     }
-
+    
     public function GetClientInfo($serial){
         try{
             $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); 

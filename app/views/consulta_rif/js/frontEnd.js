@@ -546,7 +546,6 @@ function inicializeModal() {
             document.getElementById("miModal")
           );
           miModalInstance.hide();
-          preventDefault();
         }
         // Abre el modal miModal
         const miModalInstance = new bootstrap.Modal(
@@ -557,6 +556,437 @@ function inicializeModal() {
         alert(
           "Por favor, selecciona un POS y asegúrate de tener RIF y Serial para crear el ticket."
         );
+      }
+    });
+  }
+
+  // NUEVA: Función para alternar entre Mi Visita y Otro Técnico
+  window.toggleTechSelect = function(show) {
+    const container = document.getElementById("containerSelectTecnico");
+    const select = document.getElementById("selectTecnicoVisita");
+    
+    if (!container) return;
+    
+    if (show) {
+      container.style.display = "block";
+      // Cargar técnicos si el select está vacío o solo con el placeholder
+      if (select && select.options.length <= 1) {
+        cargarTecnicosVisita();
+      }
+    } else {
+      container.style.display = "none";
+      // RESETEAR EL SELECT al ocultarlo para que si vuelve a entrar tenga que elegir de nuevo
+      if (select) {
+        select.selectedIndex = 0;
+      }
+    }
+  };
+
+  // NUEVA: Función para cargar la lista de técnicos desde el servidor
+  function cargarTecnicosVisita() {
+    const select = document.getElementById("selectTecnicoVisita");
+    if (!select) return;
+    
+    select.innerHTML = '<option value="" selected disabled>Cargando técnicos...</option>';
+    
+    const xhr = new XMLHttpRequest();
+    // Endpoint oficial usado en el módulo de asignación
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success && response.tecnicos) {
+            select.innerHTML = '<option value="" selected disabled>Seleccione un Técnico...</option>';
+            response.tecnicos.forEach(tecnico => {
+                const option = document.createElement("option");
+                option.value = tecnico.full_name; // Guardamos el nombre completo como valor para el reporte
+                option.textContent = tecnico.full_name;
+                select.appendChild(option);
+            });
+          } else {
+            select.innerHTML = '<option value="" disabled>No se encontraron técnicos</option>';
+          }
+        } catch (e) {
+          select.innerHTML = '<option value="" disabled>Error al cargar técnicos</option>';
+        }
+      }
+    };
+    xhr.send();
+  }
+  
+  // NUEVO: Event Listeners para Gestión Administrativa (Razón Social / Banco)
+  const registrarVisitaBtn = document.getElementById("registrarVisitaBtn");
+  const cambioRazonBtn = document.getElementById("cambioRazonBtn");
+  const cambioBancoBtn = document.getElementById("cambioBancoBtn");
+
+  if (cambioRazonBtn) {
+    cambioRazonBtn.addEventListener("click", () => openGestionAdmin('razon'));
+  }
+  if (cambioBancoBtn) {
+    cambioBancoBtn.addEventListener("click", () => openGestionAdmin('banco'));
+  }
+
+  if (registrarVisitaBtn) {
+    registrarVisitaBtn.addEventListener("click", () => {
+      // 1. Intentar obtener datos de variables globales (prioridad)
+      let serial = globalSerial || "";
+      let rif = globalRif || "";
+      let razon = globalRazon || "";
+      let telefono = "";
+      let correo = "";
+
+      // 2. FAILSAFE: Extraer datos de la tabla de detalles
+      const detailRows = document.querySelectorAll("#serialCountTable tr");
+      detailRows.forEach(row => {
+          const th = row.querySelector("th")?.textContent?.toLowerCase() || "";
+          const td = row.querySelector("td")?.textContent?.trim() || "";
+          
+          if ((th.includes("rif") || th.includes("j-")) && !rif) rif = td;
+          if ((th.includes("razon social") || th.includes("razón social") || th.includes("empresa")) && !razon) razon = td;
+          if (th.includes("serial") && !serial) serial = td;
+          if (th.includes("telefono") || th.includes("teléfono") || th.includes("celular")) telefono = td;
+          if (th.includes("correo") || th.includes("email") || th.includes("e-mail")) correo = td;
+      });
+
+      if (serial) {
+        // Rellenar campos del modal de visita
+        const inputSerial = document.getElementById("visitaSerial");
+        const inputRif = document.getElementById("visitaRif");
+        const inputRazonHidden = document.getElementById("visitaRazonSocial");
+        const textRazonMarquee = document.getElementById("visitaRazonSocialText");
+        const textTelMarquee = document.getElementById("visitaTelefonoActualText");
+        const textCorMarquee = document.getElementById("visitaCorreoActualText");
+        const textTelCard = document.getElementById("visitaTelefonoCardText");
+        const textCorCard = document.getElementById("visitaCorreoCardText");
+
+        if (inputSerial) inputSerial.value = serial;
+        if (inputRif) inputRif.value = rif || "N/A";
+        
+        if (rif) globalRif = rif;
+        if (razon) globalRazon = razon;
+
+        if (inputRazonHidden) inputRazonHidden.value = razon || "N/A";
+        
+        // FUNCIÓN MEJORADA: Comparar ancho de texto vs ancho de contenedor
+        const applyMarqueeIfOverflow = (element, text) => {
+          if (!element) return;
+          element.textContent = text || "N/A";
+          
+          // DAR TIEMPO AL DOM
+          setTimeout(() => {
+            const containerWidth = element.parentElement.offsetWidth;
+            const textWidth = element.scrollWidth;
+            
+            // Si el texto es más ancho que su contenedor padre (con un margen de 5px), activamos el Marquee
+            const isOverflowing = textWidth > (containerWidth + 5); 
+            element.classList.toggle("with-marquee", isOverflowing);
+            element.classList.toggle("no-scroll", !isOverflowing); // Mantener por compatibilidad visual
+          }, 200);
+        };
+
+        // Las llamadas se movieron abajo para esperar al modal open
+        if (inputRazonHidden) inputRazonHidden.value = razon || "N/A";
+        
+        // Inicializar fecha
+        const fechaInput = document.getElementById("fechaVisita");
+        if (fechaInput) {
+          fechaInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        const modalVisitaElement = document.getElementById("modalVisitaTecnica");
+        if (modalVisitaElement) {
+          const modalVisita = new bootstrap.Modal(modalVisitaElement);
+          modalVisita.show();
+          
+          // ESPERAR a que el modal se abra para medir desbordamientos reales
+          setTimeout(() => {
+            if (textRazonMarquee) applyMarqueeIfOverflow(textRazonMarquee, razon);
+            if (textTelMarquee) applyMarqueeIfOverflow(textTelMarquee, telefono);
+            if (textCorMarquee) applyMarqueeIfOverflow(textCorMarquee, correo);
+            if (textTelCard) applyMarqueeIfOverflow(textTelCard, telefono);
+            if (textCorCard) applyMarqueeIfOverflow(textCorCard, correo);
+          }, 500);
+
+          // Configurar el comportamiento Swappable para los nuevos inputs
+          setupSwappableContactInput("nuevoTelefonoVisita", "displayNuevoTelefono", "textNuevoTelefono");
+          setupSwappableContactInput("nuevoCorreoVisita", "displayNuevoCorreo", "textNuevoCorreo");
+          
+          // Inicializar fecha
+          toggleFechaManual(false);
+        }
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Selección Requerida",
+          text: "No se pudo identificar el equipo. Por favor, cierre y vuelva a abrir los detalles del POS.",
+          confirmButtonColor: "#0dcaf0"
+        });
+      }
+    });
+  }
+
+  // Listener para cerrar el modal de Visita Técnica
+  const closeModalVisita = document.getElementById("closeModalVisita");
+  if (closeModalVisita) {
+    closeModalVisita.addEventListener("click", () => {
+      console.log("Cerrando modal de visita...");
+    });
+  }
+
+  // Lógica para el Soporte Digital de Visita
+  const btnImprimirPlantilla = document.getElementById("btnImprimirPlantilla");
+  const dropzoneSoporte = document.getElementById("dropzoneSoporte");
+  const containerBtnPlantilla = document.getElementById("containerBtnPlantilla");
+  const soporteVisitaInput = document.getElementById("soporteVisita");
+  const areaDropzone = document.getElementById("areaDropzone");
+  const textoDropzone = document.getElementById("textoDropzone");
+
+  if (btnImprimirPlantilla) {
+    btnImprimirPlantilla.addEventListener("click", () => {
+      // 1. Validar que tengamos datos mínimos necesarios para la plantilla
+      const serial = document.getElementById("visitaSerial").value;
+      const razonSocial = document.getElementById("visitaRazonSocialText").innerText;
+      const tipo = document.getElementById("tipoVisita").value;
+      const fecha = document.getElementById("fechaVisita").value;
+
+      if (!tipo) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Faltan Datos',
+          text: 'Por favor, seleccione el Tipo de Visita antes de generar la plantilla.',
+          confirmButtonColor: '#0dcaf0'
+        });
+        return;
+      }
+
+      // 2. Simular generación con éxito
+      Swal.fire({
+        title: 'Generando Documento...',
+        text: 'Preparando vista de impresión.',
+        timer: 1000,
+        showConfirmButton: false,
+        willOpen: () => { Swal.showLoading(); }
+      }).then(() => {
+        imprimirPlantillaVisita();
+        containerBtnPlantilla.style.display = "none";
+        dropzoneSoporte.style.display = "block";
+      });
+    });
+
+    // NUEVO: Botón para volver atrás y permitir otra impresión
+    const btnRegenerar = document.getElementById("btnRegenerarPlantilla");
+    if (btnRegenerar) {
+      btnRegenerar.addEventListener("click", () => {
+        containerBtnPlantilla.style.display = "block";
+        dropzoneSoporte.style.display = "none";
+      });
+    }
+  }
+
+  function imprimirPlantillaVisita() {
+    const serial = document.getElementById("visitaSerial").value;
+    const rifComercio = document.getElementById("visitaRif").value;
+    const razonSocial = document.getElementById("visitaRazonSocialText").innerText;
+    const tipo = document.getElementById("tipoVisita").value;
+    const fecha = document.getElementById("fechaVisita").value;
+    const observaciones = document.getElementById("observacionesVisita").value || "N/A";
+    const estatusElement = document.querySelector('input[name="estatusFinal"]:checked');
+    const estatus = estatusElement ? estatusElement.value : "No especificado";
+    const updatePhone = document.querySelector('input[name="updatePhone"]:checked').value;
+    const updateEmail = document.querySelector('input[name="updateEmail"]:checked').value;
+    const nuevoTlf = updatePhone === 'Si' ? document.getElementById("nuevoTelefonoVisita").value : "N/A";
+    const nuevoEm = updateEmail === 'Si' ? document.getElementById("nuevoCorreoVisita").value : "N/A";
+
+    // Lógica inteligente para el nombre del técnico
+    let finalTechName = "";
+    const isOtherTech = document.getElementById("visitaPorTecnico") ? document.getElementById("visitaPorTecnico").checked : false;
+    const selectTech = document.getElementById("selectTecnicoVisita");
+    const currentTechName = document.getElementById("nombre_tecnico") ? document.getElementById("nombre_tecnico").value : "Dependencia Técnica";
+
+    if (isOtherTech && selectTech && selectTech.selectedIndex > 0) {
+        // Obtenemos el texto del técnico (Nombre y Apellido) en lugar del VALUE (ID)
+        finalTechName = selectTech.options[selectTech.selectedIndex].text;
+    } else {
+        finalTechName = currentTechName;
+    }
+
+    const techName = finalTechName;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Acta de Visita Técnica - ${serial}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap');
+            body { font-family: 'Open Sans', sans-serif; background-color: #e9ecef; margin: 0; padding: 0; color: #333; }
+            
+            /* UI Header */
+            .no-print-header { background-color: #003594; color: white; padding: 15px; text-align: center; position: fixed; top: 0; left: 0; right: 0; z-index: 9999; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .no-print-header h2 { margin: 0 0 8px 0; font-size: 18px; }
+            .btn-action { background-color: #ffc107; color: #000; border: none; padding: 10px 30px; border-radius: 6px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 14px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+            .btn-action:hover { background-color: #e0a800; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+
+            /* Page Wrapper */
+            .page-wrapper { padding: 40px 0; margin-top: 100px; display: flex; justify-content: center; }
+            .a4-page { background: white; width: 210mm; min-height: 290mm; padding: 15mm; box-sizing: border-box; box-shadow: 0 0 15px rgba(0,0,0,0.1); position: relative; }
+
+            /* Content Styles */
+            .branding-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+            .logo-text { font-weight: 800; color: #003594; font-size: 20px; font-style: italic; }
+            .logo-text span { color: #0dcaf0; }
+            .rif-label { font-weight: 700; color: #333; font-size: 13px; }
+            
+            hr.separator { border: 0; border-top: 1px solid #ddd; margin: 5px 0 10px 0; }
+            .address-box { text-align: center; font-size: 11px; color: #666; font-weight: 400; line-height: 1.4; margin-bottom: 20px; }
+            
+            .main-title { background-color: #f8f9fa; border-top: 4px solid #003594; padding: 5px; margin-bottom: 10px; text-align: center; }
+            .main-title h1 { margin: 0; color: #003594; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+            .data-section { border: 1px solid #eee; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+            .section-label { background: #003594; color: white; padding: 6px 15px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+            .data-grid { display: grid; grid-template-columns: repeat(2, 1fr); padding: 5px; gap: 5px; }
+            .data-item { padding: 10px; background: #fafafa; border-radius: 4px; border-left: 4px solid #0dcaf0; }
+            .d-label { font-size: 10px; color: #888; text-transform: uppercase; display: block; font-weight: 700; margin-bottom: 2%;}
+            .d-value { font-size: 13px; font-weight: 600; color: #222; }
+
+            .obs-header { font-size: 13px; font-weight: 700; color: #003594; margin-bottom: 5px; border-bottom: 2px solid #0dcaf0; display: inline-block; padding-bottom: 2px; }
+            .obs-content { border: 1px solid #eee; padding: 10px; border-radius: 8px; min-height: 40px; font-size: 13px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; background-color: #fdfdfd; margin-bottom: 15px; }
+
+            .sigs-container { display: flex; gap: 40px; margin-top: 10px; margin-bottom: 15px; }
+            .sig-box { flex: 1; border-top: 1px solid #333; padding-top: 10px; text-align: center; }
+            .sig-name { font-size: 12px; font-weight: 700; color: #003594; display: block; margin-bottom: 6%;}
+            .sig-id { font-size: 10px; color: #777; }
+
+            .footer-legal { border-top: 1px solid #eee; padding-top: 10px; }
+            .footer-meta { text-align: center; font-size: 10px; color: #aaa; line-height: 1.2; }
+
+            @media print {
+              @page { size: A4; margin: 0; }
+              body { background: white !important; }
+              .no-print-header { display: none !important; }
+              .page-wrapper { padding: 0; margin: 0; display: block; }
+              .a4-page { 
+                width: 210mm; 
+                min-height: 297mm; 
+                margin: 0; 
+                padding: 15mm; 
+                box-shadow: none; 
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+              }
+              .footer-legal { margin-top: auto; padding-bottom: 5mm; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print-header">
+            <h2>📜 Acta de Visita Técnica Generada</h2>
+            <button class="btn-action" onclick="window.print()">Guardar o Imprimir PDF</button>
+          </div>
+
+          <div class="page-wrapper">
+            <div class="a4-page">
+              <div class="branding-row">
+                <div class="logo-text">Inteligensa<span>.</span></div>
+                <div class="rif-label">RIF: J-002916150</div>
+              </div>
+              <hr class="separator">
+              <div class="address-box">
+                Urbanización El Rosal. Av. Francisco de Miranda. Edif. Centro Sudamérica PH-A<br>
+                Caracas. Edo. Miranda - Venezuela
+              </div>
+              
+              <div class="main-title">
+                <h1>Acta de Visita Técnica</h1>
+              </div>
+
+              <!-- Sección 1: Identificación -->
+              <div class="data-section">
+                <div class="section-label">Identificación del Comercio y POS</div>
+                <div class="data-grid">
+                  <div class="data-item"><span class="d-label">Serial Dispositivo</span><span class="d-value">${serial}</span></div>
+                  <div class="data-item"><span class="d-label">RIF del Comercio</span><span class="d-value">${rifComercio}</span></div>
+                  <div class="data-item" style="grid-column: span 2;"><span class="d-label">Razón Social</span><span class="d-value">${razonSocial}</span></div>
+                </div>
+              </div>
+
+              <!-- Sección 2: Detalles del Servicio -->
+              <div class="data-section">
+                <div class="section-label">Detalles de la Intervención</div>
+                <div class="data-grid">
+                  <div class="data-item"><span class="d-label">Tipo de Servicio</span><span class="d-value">${tipo}</span></div>
+                  <div class="data-item"><span class="d-label">Fecha Ejecución</span><span class="d-value">${fecha}</span></div>
+                  <div class="data-item" style="grid-column: span 2;">
+                    <span class="d-label">Técnico Responsable</span>
+                    <span class="d-value">${techName}</span>
+                  </div>
+                  <div class="data-item" style="grid-column: span 2;">
+                    <span class="d-label">Estatus Final del Equipo</span>
+                    <span class="d-value" style="color: ${estatus === 'Operativo' ? '#198754' : '#dc3545'}; font-size: 15px;">● ${estatus}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sección 3: Actualización de Contactos -->
+              <div class="data-section">
+                <div class="section-label">Actualización de Información de Contacto</div>
+                <div class="data-grid">
+                  <div class="data-item">
+                    <span class="d-label">¿Actualizar Teléfono?</span>
+                    <span class="d-value">${updatePhone} ${updatePhone === 'Si' ? ' - <strong>' + nuevoTlf + '</strong>' : ''}</span>
+                  </div>
+                  <div class="data-item">
+                    <span class="d-label">¿Actualizar Correo?</span>
+                    <span class="d-value">${updateEmail} ${updateEmail === 'Si' ? ' - <strong>' + nuevoEm + '</strong>' : ''}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="obs-header">OBSERVACIONES Y DIAGNÓSTICO TÉCNICO</div>
+              <div class="obs-content">${observaciones}</div>
+
+              <div class="sigs-container">
+                <div class="sig-box">
+                  <span class="sig-name">Firma del Técnico Responsable</span>
+                  <span class="sig-id">${techName}</span>
+                </div>
+                <div class="sig-box">
+                  <span class="sig-name">Sello y Firma de Conformidad</span>
+                  <span class="sig-id">Nombre del Representante: ____________________</span>
+                </div>
+              </div>
+
+              <div class="footer-legal">
+                <div class="footer-meta">
+                  Documento auténtico de constancia técnica oficial.<br>
+                  Generado el ${new Date().toLocaleDateString()} a las ${new Date().toLocaleTimeString()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+  }
+
+  if (soporteVisitaInput) {
+    soporteVisitaInput.addEventListener("change", function() {
+      if (this.files && this.files[0]) {
+        const fileName = this.files[0].name;
+        textoDropzone.innerHTML = `<span class="text-info">${fileName}</span>`;
+        areaDropzone.classList.add("file-selected");
+        // Cambiar icono a un check
+        const icon = areaDropzone.querySelector("i.main-icon");
+        if (icon) {
+          icon.className = "bi bi-check-circle-fill main-icon text-info";
+        }
       }
     });
   }
@@ -591,7 +1021,343 @@ function inicializeModal() {
 
 $(document).ready(function () {
   inicializeModal();
+  
+  // Aplicar máscara al nuevo teléfono de visita
+  if ($.fn.mask) {
+    $("#nuevoTelefonoVisita").mask("9999-9999999");
+  }
 });
+
+function toggleContactInput(type, show) {
+  const containerId = type === 'phone' ? 'containerNuevoTelefono' : 'containerNuevoCorreo';
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.style.display = show ? 'block' : 'none';
+    if (show) {
+      if (type === 'phone') {
+        const phoneInput = $("#nuevoTelefonoVisita");
+        if ($.fn.mask) {
+          phoneInput.mask("9999-9999999");
+        }
+      }
+      setTimeout(() => {
+        const inputId = type === 'phone' ? 'nuevoTelefonoVisita' : 'nuevoCorreoVisita';
+        document.getElementById(inputId).focus();
+      }, 100);
+    }
+    if (!show) {
+      const inputId = type === 'phone' ? 'nuevoTelefonoVisita' : 'nuevoCorreoVisita';
+      const input = document.getElementById(inputId);
+      input.value = '';
+      input.style.borderColor = "#0dcaf0";
+      input.style.backgroundColor = "#fdfdfd";
+      const feedbackId = type === 'phone' ? 'telefonoFeedback' : 'correoFeedback';
+      const feedback = document.getElementById(feedbackId);
+      if (feedback) feedback.innerHTML = "";
+    }
+  }
+}
+
+function validarCorreoVisita(input) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const feedback = document.getElementById("correoFeedback");
+  if (input.value === "") {
+    input.style.borderColor = "#dc3545";
+    input.style.backgroundColor = "#fdecea";
+    feedback.innerHTML = '<span class="text-danger" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-exclamation-circle-fill me-1"></i>Requerido</span>';
+    return;
+  }
+  if (emailRegex.test(input.value)) {
+    input.style.borderColor = "#28a745";
+    input.style.backgroundColor = "#e8f5e9";
+    feedback.innerHTML = '<span class="text-success" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-check-circle-fill me-1"></i>Verificado</span>';
+  } else {
+    input.style.borderColor = "#dc3545";
+    input.style.backgroundColor = "#fdecea";
+    feedback.innerHTML = '<span class="text-danger" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-x-circle-fill me-1"></i>Formato Incorrecto</span>';
+  }
+}
+
+// NUEVA: Función para restringir a solo números
+function soloNumeros(e) {
+  var key = window.Event ? e.which : e.keyCode;
+  return (key >= 48 && key <= 57);
+}
+
+// NUEVA: Configurar el intercambio entre Input y Marquee
+function setupSwappableContactInput(inputId, displayId, textId) {
+  const input = document.getElementById(inputId);
+  const display = document.getElementById(displayId);
+  const textElem = document.getElementById(textId);
+  
+  if (!input || !display || !textElem) return;
+
+  // Al entrar a la casilla: Mostrar input, ocultar marquee
+  input.addEventListener("focus", function() {
+    display.style.display = "none";
+    input.style.display = "block";
+    input.focus();
+  });
+
+  // Al salir de la casilla: Validar y mostrar marquee si es necesario
+  input.addEventListener("blur", function() {
+    const val = input.value.trim();
+    
+    // Validar según el tipo
+    if (inputId.includes("Telefono")) {
+      validarTelefonoVisita(input);
+    } else {
+      validarCorreoVisita(input);
+    }
+
+    if (val !== "") {
+      textElem.textContent = val;
+      input.style.display = "none";
+      display.style.display = "block";
+      
+      // Aplicar efecto Marquee si desborda
+      setTimeout(() => {
+        const isOverflowing = textElem.scrollWidth > display.offsetWidth;
+        textElem.classList.toggle("no-scroll", !isOverflowing);
+      }, 50);
+    }
+  });
+
+  // Al hacer clic en el marquee: Volver al modo edición
+  display.addEventListener("click", function() {
+    display.style.display = "none";
+    input.style.display = "block";
+    input.focus();
+  });
+}
+
+// NUEVA: Manejar toggle de fecha de visita
+function toggleFechaManual(show) {
+  const container = document.getElementById("containerFechaManual");
+  const input = document.getElementById("fechaVisita");
+  
+  if (show) {
+    container.style.display = "block";
+  } else {
+    container.style.display = "none";
+    // Si es hoy, poner la fecha actual automáticamente
+    const today = new Date().toISOString().split('T')[0];
+    input.value = today;
+  }
+}
+
+// NUEVA: Modal Dinámico para Cambio de Razón Social / Banco
+function openGestionAdmin(type) {
+    const modal = document.getElementById("modalGestionAdministrativa");
+    const header = document.getElementById("headerGestionAdmin");
+    const title = document.getElementById("titleGestionAdmin");
+    const icon = document.getElementById("iconGestionAdmin");
+    const label = document.getElementById("labelNuevoValor");
+    const inputIcon = document.getElementById("inputIconAdmin");
+    const inputVal = document.getElementById("valNuevoAdmin");
+    const btnSubmit = document.getElementById("btnSubmitAdmin");
+    const form = document.getElementById("formGestionAdmin");
+
+    // Limpiar formulario y resetear posibles estilos
+    form.reset();
+    
+    // Extraer datos del modal de detalles que ya tenemos abiertos (usados en registrarVisita)
+    let serial = globalSerial || "N/A";
+    let rif = globalRif || "N/A";
+    
+    // Failsafe: Si no hay globales, intentar de la tabla de detalles (txt_serial, txt_rif)
+    if (serial === "N/A") {
+       const elSerial = Array.from(document.querySelectorAll("#serialCountTable th")).find(th => th.textContent.includes("Serial"))?.nextElementSibling?.textContent;
+       if (elSerial) serial = elSerial;
+    }
+
+    document.getElementById("txtAdminSerial").textContent = serial;
+    document.getElementById("txtAdminRif").textContent = rif;
+    document.getElementById("txtAdminBanco").textContent = "Verificar en Sistema";
+
+    if (type === 'razon') {
+        header.style.background = "linear-gradient(135deg, #20c997 0%, #004b57 100%)";
+        title.textContent = "Cambio de Razón Social";
+        icon.className = "bi bi-person-badge-fill text-white fs-3";
+        label.textContent = "Nueva Razón Social a Registrar";
+        inputIcon.className = "bi bi-pencil-square text-success fs-5";
+        inputVal.placeholder = "Ingrese el nombre del nuevo comercio...";
+        btnSubmit.style.background = "linear-gradient(135deg, #20c997 0%, #004b57 100%)";
+    } else if (type === 'banco') {
+        header.style.background = "linear-gradient(135deg, #6610f2 0%, #3d0891 100%)";
+        title.textContent = "Cambio de Banco";
+        icon.className = "bi bi-bank2 text-white fs-3";
+        label.textContent = "Nuevo Banco de Afiliación";
+        inputIcon.className = "bi bi-bank text-primary fs-5";
+        inputVal.placeholder = "Ingrese el nombre de la nueva entidad...";
+        btnSubmit.style.background = "linear-gradient(135deg, #6610f2 0%, #3d0891 100%)";
+    }
+
+    // Instancia para abrir
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+
+// NUEVA: Cerrar modal con instancia de BS5
+function closeModalGestionAdmin() {
+    const modalEl = document.getElementById('modalGestionAdministrativa');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) {
+        modalInstance.hide();
+    } else {
+        const tempModal = new bootstrap.Modal(modalEl);
+        tempModal.hide();
+    }
+}
+
+// NUEVA: Cerrar modal de detalles del POS
+function closeDetailsModal() {
+    const modalEl = document.getElementById('ModalSerial');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) {
+        modalInstance.hide();
+    } else {
+        const tempModal = new bootstrap.Modal(modalEl);
+        tempModal.hide();
+    }
+}
+
+// NUEVA: Cerrar modal de visita técnica
+function closeVisitaModal() {
+    const modalEl = document.getElementById('modalVisitaTecnica');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) {
+        modalInstance.hide();
+    } else {
+        const tempModal = new bootstrap.Modal(modalEl);
+        tempModal.hide();
+    }
+}
+
+function validarTelefonoVisita(input) {
+  const feedback = document.getElementById("phoneFeedback");
+  const value = input.value.replace(/\D/g, ""); // Solo dígitos
+  
+  if (input.value === "" || value === "") {
+    if (feedback) feedback.innerHTML = '<span class="text-danger" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-exclamation-circle-fill me-1"></i>Requerido</span>';
+  } else if (value.length < 11) {
+    if (feedback) feedback.innerHTML = '<span class="text-danger" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-exclamation-circle-fill me-1"></i>Incompleto</span>';
+  } else {
+    if (feedback) feedback.innerHTML = '<span class="text-success" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-check-circle-fill me-1"></i>Verificado</span>';
+  }
+}
+
+function validarCorreoVisita(input) {
+  const feedback = document.getElementById("correoFeedback");
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (input.value === "") {
+    if (feedback) feedback.innerHTML = '<span class="text-danger" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-exclamation-circle-fill me-1"></i>Requerido</span>';
+  } else if (!re.test(input.value)) {
+    if (feedback) feedback.innerHTML = '<span class="text-danger" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-exclamation-circle-fill me-1"></i>Formato inválido</span>';
+  } else {
+    if (feedback) feedback.innerHTML = '<span class="text-success" style="font-size: 0.75rem; font-weight: 700;"><i class="bi bi-check-circle-fill me-1"></i>Verificado</span>';
+  }
+}
+
+// Función para guardar la visita técnica
+function guardarVisitaTecnica() {
+  const serial = document.getElementById("visitaSerial").value;
+  const razonSocial = document.getElementById("visitaRazonSocial").value;
+  const tipo = document.getElementById("tipoVisita").value;
+  const fecha = document.getElementById("fechaVisita").value;
+  const observaciones = document.getElementById("observacionesVisita").value;
+  const estatus = document.querySelector('input[name="estatusFinal"]:checked').value;
+  const updatePhone = document.querySelector('input[name="updatePhone"]:checked').value;
+  const updateEmail = document.querySelector('input[name="updateEmail"]:checked').value;
+  const nuevoTelefono = document.getElementById("nuevoTelefonoVisita").value;
+  const nuevoCorreo = document.getElementById("nuevoCorreoVisita").value;
+
+  const suporteInput = document.getElementById("soporteVisita");
+  const file = suporteInput.files[0];
+
+  if (!tipo || !fecha || !observaciones) {
+    Swal.fire({
+      icon: "warning",
+      title: "Faltan Datos",
+      text: "Todos los campos de la visita son obligatorios (Tipo, Fecha y Observaciones).",
+      confirmButtonColor: "#0dcaf0"
+    });
+    return;
+  }
+
+  // Validaciones de nuevos datos si se marcó SI
+  if (updatePhone === 'Si' && !nuevoTelefono) {
+    Swal.fire({
+      icon: "warning",
+      title: "Teléfono Requerido",
+      text: "Ha marcado actualizar teléfono, por favor ingrese el nuevo número.",
+      confirmButtonColor: "#0dcaf0"
+    });
+    return;
+  }
+
+  if (updateEmail === 'Si' && !nuevoCorreo) {
+    Swal.fire({
+      icon: "warning",
+      title: "Correo Requerido",
+      text: "Ha marcado actualizar correo, por favor ingrese el nuevo email.",
+      confirmButtonColor: "#0dcaf0"
+    });
+    return;
+  }
+
+  // Validación de formato de correo si se marcó SI
+  if (updateEmail === 'Si' && nuevoCorreo) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(nuevoCorreo)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Correo Inválido",
+        text: "El formato del correo ingresado no es válido (Ej: ejemplo@correo.com).",
+        confirmButtonColor: "#0dcaf0"
+      });
+      return;
+    }
+  }
+
+  if (!file) {
+    Swal.fire({
+      icon: "warning",
+      title: "Falta Soporte",
+      text: "Debe adjuntar el Reporte de Visita Técnica firmado digitalmente para continuar.",
+      confirmButtonColor: "#0dcaf0"
+    });
+    return;
+  }
+
+  // Bloquear botón para evitar doble clic
+  const btnGuardar = document.getElementById("btnGuardarVisita");
+  const originalHtml = btnGuardar.innerHTML;
+  btnGuardar.disabled = true;
+  btnGuardar.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Guardando...`;
+
+  // Simulación de envío al backend (aquí iría el fetch/xhr real)
+  setTimeout(() => {
+    Swal.fire({
+      icon: "success",
+      title: "Visita Registrada",
+      text: `Se ha registrado la visita ${tipo} para el equipo ${serial} de forma exitosa.`,
+      confirmButtonColor: "#0dcaf0",
+      timer: 3000,
+      timerProgressBar: true
+    }).then(() => {
+      // Cerrar modal y limpiar
+      const modalElement = document.getElementById("modalVisitaTecnica");
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      if (modalInstance) modalInstance.hide();
+      
+      btnGuardar.disabled = false;
+      btnGuardar.innerHTML = originalHtml;
+      document.getElementById("formVisitaTecnica").reset();
+    });
+  }, 1500);
+}
 
 // Obtener los elementos del DOM una sola v
 const inputEnvio1 = document.getElementById("DownloadEnvi");
@@ -861,7 +1627,7 @@ function updateDocumentTypeVisibility() {
     }
   } else {
     // Mostrar los radio buttons si no es Actualización de Software ni Sin Llaves/Dukpt Vacío
-    checkExoneracionContainer.style.display = '';
+    checkExoneracionContainer.style.display = 'none'; // Forzar oculto
     // checkAnticipoContainer.style.display = ''; // Original - Comentado por petición del usuario
     checkAnticipoContainer.style.display = 'none'; // Forzar oculto siempre
   }
@@ -1377,11 +2143,11 @@ function validarGarantiaReingreso(fechaUltimoTicket) {
       const checkExoneracion = document.getElementById("checkExoneracionContainer");
       const checkAnticipo = document.getElementById("checkAnticipoContainer");
       const checkEnvio = document.getElementById("checkEnvioContainer");
-      if (checkExoneracion) checkExoneracion.style.display = "block";
+      if (checkExoneracion) checkExoneracion.style.display = "none";
       // if (checkAnticipo) checkAnticipo.style.display = "block"; // Original
       if (checkAnticipo) checkAnticipo.style.display = "none"; // Forzar oculto
       if (checkEnvio) checkEnvio.style.display = "block";
-      if (botonExoneracion) botonExoneracion.style.display = "inline-block";
+      if (botonExoneracion) botonExoneracion.style.display = "none";
       // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
       if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
@@ -1421,10 +2187,10 @@ function validarGarantiaInstalacion(fechaInstalacion) {
       resultadoElemento.style.color = "";
       const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
       const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
-      if (checkExoneracionContainer) checkExoneracionContainer.style.display = "block";
+      if (checkExoneracionContainer) checkExoneracionContainer.style.display = "none";
       // if (checkAnticipoContainer) checkAnticipoContainer.style.display = "block"; // Original
       if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none"; // Forzar oculto
-      if (botonExoneracion) botonExoneracion.style.display = "inline-block";
+      if (botonExoneracion) botonExoneracion.style.display = "none";
       // if (botonAnticipo) botonAnticipo.style.display = "inline-block"; // Original
       if (botonAnticipo) botonAnticipo.style.display = "none"; // Forzar oculto siempre
       return null;
@@ -1659,14 +2425,14 @@ function VerificarSucursales(rif) {
                         }
                         if (checkEnvioContainer) {
                             checkEnvioContainer.style.display = "none";
-                            checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de exoneración
+                            checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de exoneración
                             // checkAnticipoContainer.style.display = "block"; // Original
                             checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         }
                       }else{
                         // checkAnticipoContainer.style.display = "block"; // Original
                         checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
-                        checkExoneracionContainer.style.display = "block"; // Ocultar el checkbox de ex
+                        checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de ex
                         checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
                       }
                 } else {
@@ -2258,6 +3024,44 @@ function SendDataFailure2(idStatusPayment) {
         });
         return; // Detener la ejecución
       }
+
+      // NUEVA VALIDACIÓN: Exoneración Estricta
+      const archivoExoneracionFinalValidacion = archivoExoneracionGuardado || window.archivoExoneracionPreservado || null;
+      
+      if (checkExoneracion && checkExoneracion.checked) {
+          // Si el checkbox de exoneración está marcado, DEBE haber tanto datos sincronizados como archivo
+          if (archivoExoneracionFinalValidacion && !window.nroExoneracionActual) {
+              Swal.fire({
+                  icon: "warning",
+                  title: "<strong style='font-size: 24px; color: #d9534f;'>Detalles de Exoneración Requeridos</strong>",
+                  html: `
+                    <div style="text-align: center; padding: 10px 0;">
+                      <p style="font-size: 16px; color: #333; margin-bottom: 15px; line-height: 1.6;">
+                        Ha seleccionado/cargado una <strong>Exoneración</strong>, pero aún no ha registrado los detalles (tipo y porcentaje).
+                      </p>
+                      <p style="font-size: 15px; color: #666; margin-bottom: 20px;">
+                        Por favor, haga clic en el botón <span style="display: inline-block; padding: 2px 10px; background: orange; color: white; border-radius: 4px; font-weight: bold;">Detalles Exoneración</span> 
+                        para sincronizar los datos antes de guardar el ticket.
+                      </p>
+                    </div>
+                  `,
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#FF8C00"
+              });
+              return;
+          }
+
+          if (window.nroExoneracionActual && !archivoExoneracionFinalValidacion) {
+              Swal.fire({
+                  icon: "warning",
+                  title: "<strong style='font-size: 24px; color: #d9534f;'>Documento de Exoneración Requerido</strong>",
+                  text: "Ha sincronizado los datos de exoneración, pero falta adjuntar el documento correspondiente.",
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#FF8C00"
+              });
+              return;
+          }
+      }
     }
 
     // Crear FormData
@@ -2291,6 +3095,11 @@ function SendDataFailure2(idStatusPayment) {
       if (checkExoneracion && checkExoneracion.checked && archivoExoneracionFinal) {
         formData.append("archivoExoneracion", archivoExoneracionFinal);
         formData.append("documento_exoneracion", "Sí"); // NUEVO: Marcar que se cargó exoneración
+
+        // NUEVO: Agregar record_number de exoneración para archivos_adjuntos
+        if (window.nroExoneracionActual) {
+            formData.append("record_number_exoneracion", window.nroExoneracionActual);
+        }
       }
       
       // Usar archivoAnticipoActual que puede venir del parámetro, del preservado globalmente, o del DOM
@@ -2299,12 +3108,12 @@ function SendDataFailure2(idStatusPayment) {
         formData.append("archivoAnticipo", archivoAnticipoFinal);
         formData.append("documento_anticipo", "Sí"); // NUEVO: Marcar que se cargó anticipo
         
-        // NUEVO: Agregar record_number si existe el campo 'registro'
+        // NUEVO: Agregar record_number para Anticipo
         const registroInput = document.getElementById("registro");
         if (window.lastPaymentRecordNumber) {
-             formData.append("record_number", window.lastPaymentRecordNumber);
+             formData.append("record_number_anticipo", window.lastPaymentRecordNumber);
         } else if (registroInput && registroInput.value) {
-             formData.append("record_number", registroInput.value);
+             formData.append("record_number_anticipo", registroInput.value);
         }
       }
     }
@@ -6348,7 +7157,12 @@ function clearFormFields() {
     const botonCargaAnticipo = document.getElementById("botonCargaAnticipo");
     
     if (botonCargaPDFEnv) botonCargaPDFEnv.style.display = "none";
-    if (botonCargaExoneracion) botonCargaExoneracion.style.display = "none";
+    if (botonCargaExoneracion) {
+      const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
+      if (checkExoneracionContainer) {
+        checkExoneracionContainer.style.display = "none";
+      }
+    }
     if (botonCargaAnticipo) botonCargaAnticipo.style.display = "none";
   }
 
@@ -6370,7 +7184,7 @@ function restaurarVisibilidadCompleta() {
   const checkEnvioContainer = document.getElementById("checkEnvioContainer");
   
   if (checkExoneracionContainer) {
-    checkExoneracionContainer.style.display = "block";
+    checkExoneracionContainer.style.display = "none";
   }
   if (checkAnticipoContainer) {
     checkAnticipoContainer.style.display = "block";
@@ -6791,7 +7605,8 @@ function SendRif() {
             const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
               console.log("DEBUG Click Serial:", item); // DEBUG
-              modalSerial.style.display = "block";
+              const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
+              bsModal.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             spanSerialClose.onclick = function () {
@@ -7817,7 +8632,8 @@ function SendSerial() {
             e.preventDefault();
             const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
             const modalSerial = document.getElementById("ModalSerial");
-            modalSerial.style.display = "block";
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
+            bsModal.show();
             fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm);
           });
         } else {
@@ -7975,7 +8791,8 @@ function SendRazon() {
             const modalSerial = document.getElementById("ModalSerial");
             const spanSerialClose = document.getElementById("ModalSerial-close");
             enlaceSerial.onclick = function () {
-              modalSerial.style.display = "block";
+              const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
+              bsModal.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             spanSerialClose.onclick = function () {
@@ -8513,6 +9330,26 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
              console.log("Updated globalIdIntelipunto from serialData (id):", globalIdIntelipunto);
           }
 
+          // Detección inteligente de RIF y Razón Social (Case-insensitive y múltiples nombres)
+          const findInObj = (obj, search) => {
+              const keys = Object.keys(obj);
+              const foundKey = keys.find(k => k.toLowerCase() === search.toLowerCase());
+              return foundKey ? obj[foundKey] : null;
+          };
+
+          const rifRecuperado = findInObj(serialData, 'rif') || findInObj(serialData, 'RIF') || findInObj(serialData, 'rif_comercio');
+          const razonRecuperada = findInObj(serialData, 'razonsocial') || findInObj(serialData, 'razon_social') || findInObj(serialData, 'nombre_comercio');
+
+          if (rifRecuperado) {
+            globalRif = String(rifRecuperado).trim();
+          }
+          if (razonRecuperada) {
+            globalRazon = String(razonRecuperada).trim();
+          }
+
+          // Caso especial para cuando el argumento inicial estaba vacío
+          if (!globalRif && rif) globalRif = rif;
+          if (!globalRazon && razonsocial) globalRazon = razonsocial;
 
           // Construye la tabla vertical, omitiendo las propiedades vacías
           for (const key in serialData) {
@@ -9493,3 +10330,281 @@ function mostrarEstadoCola() {
 
 // Exponer función globalmente para debugging (opcional)
 window.mostrarEstadoCola = mostrarEstadoCola;
+
+/* =========================================================================
+   LÓGICA DE EXONERACIÓN (NUEVA)
+   ========================================================================= */
+
+/**
+ * Actualiza el código de exoneración dinámicamente según el tipo seleccionado.
+ */
+function updateExoCodeByType(tipo, serial) {
+    const inputExo = document.getElementById("nro_exoneracion_display");
+    if (!inputExo) return;
+
+    // 1. Obtener los ÚLTIMOS 4 dígitos del serial (ej: 8956)
+    let last4Serial = "0000";
+    if (serial) {
+        const serialStr = String(serial).trim();
+        last4Serial = serialStr.slice(-4); 
+    }
+
+    // 2. Obtener los PRIMEROS 4 dígitos del ID de Cliente (id_cliente)
+    // Priorizamos globalIdClient como solicitaste
+    const clientIdRaw = (typeof globalIdClient !== 'undefined' && globalIdClient) ? String(globalIdClient).trim() : '0';
+    
+    // Tomamos solo los primeros 4 del ID de cliente
+    const exoIdPart = clientIdRaw.substring(0, 4); 
+
+    // 3. Sufijo por tipo
+    const typeIndicator = (tipo === 'Anticipo') ? '-A' : '-T';
+    
+    // 4. Formato final: Exo[ID_CLIENTE_4]-[SERIAL_4]-[TIPO]
+    // Ejemplo esperado: Exo7473-8956-A
+    const nroExo = `Exo${exoIdPart}-${last4Serial}${typeIndicator}`;
+    
+    inputExo.value = nroExo;
+    
+    // Consola para que verifiques en el trabajo si los datos son correctos
+    console.log("Generando Exo Code:", {
+        clienteOriginal: clientIdRaw,
+        clienteCortado: exoIdPart,
+        serialOriginal: serial,
+        serialCortado: last4Serial,
+        resultado: nroExo
+    });
+}
+
+/**
+ * Ajusta el estado del slider de porcentaje según el tipo de exoneración.
+ * Para Anticipo: 100% y deshabilitado.
+ */
+function adjustExoSliderByType(tipo) {
+    const slider = document.getElementById("porcentaje_exoneracion");
+    const badge = document.getElementById("val_porcentaje");
+    
+    if (!slider || !badge) return;
+
+    if (tipo === 'Anticipo') {
+        slider.value = 100;
+        slider.disabled = true;
+        badge.textContent = "100%";
+        slider.style.cursor = "not-allowed";
+        slider.style.opacity = "0.7";
+    } else {
+        slider.disabled = false;
+        slider.style.cursor = "pointer";
+        slider.style.opacity = "1";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const checkExoneracion = document.getElementById("checkExoneracion");
+    const porcentajeExo = document.getElementById("porcentaje_exoneracion");
+    const valPorcentaje = document.getElementById("val_porcentaje");
+    const btnGuardarExo = document.getElementById("btnGuardarDatosExoneracion");
+    
+    // 1. Abrir Modal al seleccionar Exoneración
+    if (checkExoneracion) {
+        checkExoneracion.addEventListener("change", function() {
+            if (this.checked) {
+                // Buscar el serial en los posibles IDs (serialSelect o serialSelect1)
+                let serial = "";
+                const ss = document.getElementById("serialSelect");
+                const ss1 = document.getElementById("serialSelect1");
+                
+                if (ss && ss.value) {
+                    serial = ss.value;
+                } else if (ss1 && ss1.value) {
+                    serial = ss1.value;
+                }
+                
+                // Obtener el tipo seleccionado actualmente
+                const tipoRadio = document.querySelector('input[name="tipo_exoneracion"]:checked');
+                const tipo = tipoRadio ? tipoRadio.value : 'Anticipo';
+
+                // Actualizar el código inicial y el slider según el tipo
+                updateExoCodeByType(tipo, serial);
+                adjustExoSliderByType(tipo);
+                
+                // Abrir Modal con Bootstrap 5
+                const modalEl = document.getElementById('modalAgregarExoneracion');
+                if (modalEl) {
+                  // Si ya existe una instancia guardada, usarla, si no crear una y guardarla globalmente
+                  if (!window.modalExoInstance) {
+                    window.modalExoInstance = new bootstrap.Modal(modalEl, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                  }
+
+                  window.modalExoInstance.show();
+
+                  const navbar = document.getElementById("sidenav-main");
+                  if (navbar) {
+                    navbar.style.display = "none";
+                  }
+                }
+            }
+        });
+    }
+    
+    // 2. Escuchar cambios en el tipo de exoneración para actualizar el código
+    const radiosTipoExo = document.querySelectorAll('input[name="tipo_exoneracion"]');
+    radiosTipoExo.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                let serial = "";
+                const ss = document.getElementById("serialSelect");
+                const ss1 = document.getElementById("serialSelect1");
+                if (ss && ss.value) serial = ss.value;
+                else if (ss1 && ss1.value) serial = ss1.value;
+
+                updateExoCodeByType(this.value, serial);
+                adjustExoSliderByType(this.value);
+            }
+        });
+    });
+
+    // 2. Actualizar Valor del Porcentaje (Range)
+    if (porcentajeExo && valPorcentaje) {
+        porcentajeExo.addEventListener("input", function() {
+            valPorcentaje.textContent = this.value + "%";
+        });
+    }
+    
+    // 3. Botón Guardar (Sincronizar)
+    if (btnGuardarExo) {
+        btnGuardarExo.addEventListener("click", function() {
+            saveExoneracionData();
+        });
+    }
+});
+
+function saveExoneracionData() {
+    const tipoRadio = document.querySelector('input[name="tipo_exoneracion"]:checked');
+    const tipo = tipoRadio ? tipoRadio.value : 'Anticipo';
+    const porcentaje = document.getElementById("porcentaje_exoneracion").value;
+    const nroExoneracion = document.getElementById("nro_exoneracion_display").value;
+    // Buscar el serial en los posibles IDs
+    let serial = "";
+    const ss = document.getElementById("serialSelect");
+    const ss1 = document.getElementById("serialSelect1");
+    
+    if (ss && ss.value) {
+        serial = ss.value;
+    } else if (ss1 && ss1.value) {
+        serial = ss1.value;
+    }
+    
+    if (!serial) {
+        Swal.fire("Error", "Debe seleccionar un serial primero", "error");
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append("serial_pos", serial);
+    formData.append("tipo_exoneracion", tipo);
+    formData.append("porcentaje", porcentaje);
+    formData.append("nro_exoneracion", nroExoneracion);
+
+    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/SaveExoneracion";
+
+    fetch(apiUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: formData.toString()
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: "¡Sincronizado!",
+                text: "Los datos de exoneración se han vinculado correctamente. Ahora proceda a cargar el documento.",
+                icon: "success",
+                confirmButtonColor: "#FF8C00",
+                color: 'black'
+            });
+            
+            // Cerrar el modal usando la instancia guardada de Bootstrap 5
+            if (window.modalExoInstance) {
+                window.modalExoInstance.hide();
+
+                 const navbar = document.getElementById("sidenav-main");
+                  if (navbar) {
+                    navbar.style.display = "inline-block";
+                  }
+            } else {
+                // Fallback con new bootstrap
+                const modalEl = document.getElementById('modalAgregarExoneracion');
+                if (modalEl) {
+                   const bsModal = new bootstrap.Modal(modalEl);
+                   if (bsModal) bsModal.hide();
+                }
+            }
+            
+            // IMPORTANTE: Preservar el nro_exoneracion para enviarlo como record_number en la carga de archivo
+            window.nroExoneracionActual = nroExoneracion;
+            
+            // Actualizar status visual si existe
+            /*const exoStatus = document.getElementById("exoneracionStatus");
+            if (exoStatus) {
+                exoStatus.innerHTML = `<span class="badge bg-success" style="font-size: 0.85rem; padding: 8px 12px; border-radius: 6px;">
+                    <i class="bi bi-check-circle me-1"></i> Datos Sincronizados: ${nroExoneracion}
+                </span>`;
+            }*/
+        } else {
+            Swal.fire("Error", data.error || "No se pudieron guardar los datos", "error");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving exemption:", error);
+        Swal.fire("Error", "Error de servidor al guardar exoneración", "error");
+    });
+}
+
+// Delegación de eventos para el botón de cierre
+document.addEventListener("click", function(e) {
+    const closeExoBtn = e.target.closest('.btn-close-custom');
+    if (closeExoBtn) {
+        const modalEl = document.getElementById('modalAgregarExoneracion');
+        if (modalEl) {
+            // Según requerimiento explícito: utilizar new bootstrap.Modal
+            const bsModal = new bootstrap.Modal(modalEl);
+            bsModal.hide();
+
+            // Limpieza manual drástica por si quedan backdrops residuales
+            if (window.modalExoInstance) {
+                window.modalExoInstance.hide();
+            }
+            
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            
+            // Restaurar el navbar
+            const navbar = document.getElementById("sidenav-main");
+            if (navbar) {
+                navbar.style.display = "inline-block";
+            }
+            
+            // Deseleccionar el radio button al cerrar con la X
+            const checkExoneracion = document.getElementById("checkExoneracion");
+            if (checkExoneracion) {
+                checkExoneracion.checked = false;
+            }
+            const radiosDocType = document.querySelectorAll('input[name="documentType"]');
+            radiosDocType.forEach(radio => radio.checked = false);
+
+            // Ocultar el botón para cargar documentos al cerrar con la X
+            const botonCargaExoneracion = document.getElementById("botonCargaExoneracion");
+            if (botonCargaExoneracion) {
+                botonCargaExoneracion.style.display = "none";
+            }
+        }
+    }
+});

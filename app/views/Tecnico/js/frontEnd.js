@@ -18,6 +18,11 @@ let url_exoneracion;
 let url_pago;
 let url_convenio;
 
+// Exoneration Modal Globals
+let modalRegistroExoInstance = null;
+let currentExonerationHistory = [];
+let idClienteSQL = '';
+
 function getTicketData() {
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
   const detailsPanel = document.getElementById("ticket-details-panel");
@@ -296,11 +301,12 @@ function getTicketData() {
                   data-estado-cliente="${ticket.nombre_estado_cliente}"
                   data-id-failure="${ticket.id_failure || ""}"
                   data-motivo-pago="${ticket.motivo_rechazo_pago || ""}"
-                  data-has-rejected-document="${ticket.has_rejected_document}"
+                  data-has-rejected-document="${(ticket.has_rejected_document === true || ticket.has_rejected_document === 't' || ticket.has_rejected_document === 'true')}"
                   data-id-payment-record="${ticket.id_payment_record || ""}"
                   data-razon-social="${ticket.razonsocial_cliente || ""}"
                   data-rif="${ticket.rif || ""}"
-                  data-estatus-pos="${ticket.estatus_inteliservices || ""}">
+                  data-estatus-pos="${ticket.estatus_inteliservices || ""}"
+                  data-id-cliente-sql="${ticket.id_cliente || ""}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707z"/></svg>
               </button>`;
           }
@@ -321,7 +327,7 @@ function getTicketData() {
               <button class="btn btn-sm btn-wrench-custom"
                   data-bs-toggle="tooltip" data-bs-placement="top"
                   title="Enviar a Taller"
-                  data-rechazado="${ticket.has_rejected_document}"
+                  data-rechazado="${(ticket.has_rejected_document === true || ticket.has_rejected_document === 't' || ticket.has_rejected_document === 'true')}"
                   data-ticket-id="${ticket.id_ticket}"
                   data-nro_ticket="${ticket.nro_ticket}"
                   data-id_document="${ticket.id_status_payment}"
@@ -611,53 +617,6 @@ function getTicketData() {
                 }
               });
 
-            // Listeners para botones de acción específicos
-            $("#tabla-ticket tbody")
-              .off("click", ".btn-exoneracion-img")
-              .on("click", ".btn-exoneracion-img", function (e) {
-                e.stopPropagation();
-                const ticketId = $(this).data("ticket-id");
-                const documentType = $(this).data("document-type");
-                if (uploadDocumentModalInstance) {
-                  $("#uploadDocumentModal").data("ticket-id", ticketId);
-                  $("#uploadDocumentModal").data("document-type", documentType);
-                  $("#type_document").val(documentType);
-                  $('#generateNotaEntregaBtn').hide();
-                  uploadDocumentModalInstance.show();
-                }
-              });
-
-            $("#tabla-ticket tbody")
-              .off("click", ".btn-pago-pdf")
-              .on("click", ".btn-pago-pdf", function (e) {
-                e.stopPropagation();
-                const ticketId = $(this).data("ticket-id");
-                const documentType = $(this).data("document-type");
-                if (uploadDocumentModalInstance) {
-                  $("#uploadDocumentModal").data("ticket-id", ticketId);
-                  $("#uploadDocumentModal").data("document-type", documentType);
-                  $("#type_document").val(documentType);
-                  $('#generateNotaEntregaBtn').hide();
-                  uploadDocumentModalInstance.show();
-                }
-              });
-
-            $("#tabla-ticket tbody")
-              .off("click", ".btn-zoom-pdf")
-              .on("click", ".btn-zoom-pdf", function (e) {
-                e.stopPropagation();
-                const ticketId = $(this).data("ticket-id");
-                const documentType = $(this).data("document-type");
-                if (uploadDocumentModalInstance) {
-                  const $modal = $("#uploadDocumentModal");
-                  $modal.data("ticket-id", ticketId);
-                  $modal.data("document-type", documentType);
-                  $("#id_ticket").val(ticketId);
-                  $("#type_document").val(documentType);
-                  $("#htmlTemplateTicketId").val(ticketId);
-                  uploadDocumentModalInstance.show();
-                }
-              });
 
             $("#tabla-ticket tbody")
               .off("click", ".btn-view-document")
@@ -692,7 +651,7 @@ function getTicketData() {
                 const rechazado = $(this).data("rechazado");
                 const idFailure = $(this).data("id-failure") ? parseInt($(this).data("id-failure")) : null;
 
-                if (rechazado === true || rechazado === "t") {
+                if (rechazado === true || rechazado === "true" || rechazado === "t") {
                   Swal.fire({
                     icon: 'warning',
                     iconColor: '#ff9800',
@@ -754,7 +713,7 @@ function getTicketData() {
               let showButton = false;
               const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
 
-              // Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
+              // 1. Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
               if (id_domiciliacion == 4 && (url_convenio === "" || url_convenio === null || url_convenio === undefined)) {
                 Swal.fire({
                   icon: 'warning',
@@ -767,7 +726,7 @@ function getTicketData() {
                 return;
               }
 
-              // Validación de Gestión Comercial - Espera de Respuesta (id_status_domiciliacion = 3)
+              // 2. Validación de Gestión Comercial - Espera de Respuesta (id_status_domiciliacion = 3)
               if (parseInt(id_domiciliacion) === 3) {
                 Swal.fire({
                   icon: 'error',
@@ -799,8 +758,7 @@ function getTicketData() {
                 return;
               }
 
-              // VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
-              // Solo requiere documento de Envío, no anticipo ni exoneración
+              // 3. VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
               if (isFallaSinPago) {
                 if (url_envio === "" || url_envio === null || url_envio === undefined) {
                   Swal.fire({
@@ -813,12 +771,44 @@ function getTicketData() {
                   });
                   return;
                 }
-                // Si tiene documento de envío, permitir continuar (no validar anticipo ni exoneración)
               } else {
-                // VALIDACIÓN NORMAL PARA OTRAS FALLAS (id_failure != 9 y id_failure != 12)
-                // MODIFICACION: Si el estatus es 1 (Garantia Instalacion) o 3 (Garantia Reingreso)
+                // 4. VALIDACIÓN DE APROBACIÓN ADMINISTRATIVA (FLEXIBLE: PERMITIR INTENTO DE ENVÍO PARA PENDIENTES 5, 7, 10 Y 17)
+                // El estatus 13 (Anticipo Rechazado) se mantiene bloqueado. 10, 11 y 17 pasan a la validación manual.
+                const forbiddenStatus = [13]; // Sólo rechazo total bloquea de inmediato
+                if (forbiddenStatus.includes(parseInt(id_document))) {
+                    let statusLabel = "Documentación Incompleta";
+                    if (parseInt(id_document) === 17) statusLabel = "Pago Pendiente por Revisión";
+                    if (parseInt(id_document) === 13) statusLabel = "Documentación Rechazada (Anticipo)";
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">Aprobación Requerida</span>',
+                        html: `
+                            <div style="text-align: left; padding: 10px 0;">
+                                <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                    El ticket <strong style="color: #003594;">#${currentnroTicket}</strong> tiene su estatus como <strong style="color: #ff9800;">${statusLabel}</strong>.
+                                </p>
+                                <div style="background: #e7f3ff; border-left: 4px solid #003594; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                                    <p style="color: #003594; margin: 0; font-size: 1em; line-height: 1.6;">
+                                        Por favor, espere a que la administración apruebe los soportes definitivamente para avanzar a taller.
+                                    </p>
+                                </div>
+                            </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#003594',
+                        customClass: { popup: 'swal2-modern-popup' }
+                    });
+                    return;
+                }
+                
+                // Los estatus 5 (Exoneración en Revisión) y 7 (Anticipo en Revisión) NO SE BLOQUEAN AQUÍ.
+                // Esto permite que el servidor verifique si al menos una exoneración o pago individual ya está aprobado.
+
+
+                // 5. VALIDACIÓN DE DOCUMENTOS (FÍSICOS)
+
                 if (id_document == 1 || id_document == 3) {
-                    // Solo validar Envio si NO es region central
                     if (!isEstadoSinEnvio && (url_envio === "" || url_envio === null || url_envio === undefined)) {
                         Swal.fire({
                             icon: 'warning',
@@ -830,7 +820,6 @@ function getTicketData() {
                         });
                         return;
                     }
-                    // Si es region central o ya tiene envio, permitir (showButton se mantiene false)
                 } else if (id_document === 9 || (url_envio === "" && url_exoneracion === "" && url_pago === "")) {
                     showButton = true;
                 } else if (id_document === 10 && !isEstadoSinEnvio && url_envio !== "" && (url_pago === "" || url_exoneracion === "")) {
@@ -850,19 +839,201 @@ function getTicketData() {
                 }
 
                 if (showButton) {
+                  const isDocumentoPendienteManual = (id_document === 10 || id_document === 11 || id_document === 17);
+                  let detallePendiente = "documentación incompleta";
+                  if (id_document === 10) detallePendiente = "carga de <strong>Anticipo</strong> o <strong>Exoneración</strong>";
+                  if (id_document === 11) detallePendiente = "<strong>PDF de envío ZOOM</strong>";
+                  if (id_document === 17) detallePendiente = "revisión de <strong>Pago Pendiente</strong>";
+
                   Swal.fire({
                     icon: 'warning',
                     iconColor: '#ff9800',
-                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Incompletos!</span>',
+                    title: `<span style="color: #003594; font-size: 1.5em; font-weight: 700;">${isDocumentoPendienteManual ? '¡Documentos Incompletos!' : '¡Documentos Incompletos!'}</span>`,
                     html: `
                       <div style="text-align: left; padding: 10px 0;">
                         <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                          No es posible procesar el envío del equipo con la documentación actual.
+                          ${isDocumentoPendienteManual 
+                            ? `Este ticket requiere la ${detallePendiente}. Puede intentar enviarlo si ya fue aprobado manualmente.` 
+                            : 'No es posible procesar el envío del equipo con la documentación actual.'}
+                        </p>
+                        <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                            <strong>⚠️ Nota:</strong><br>
+                            El servidor realizará la validación final basada en el registro de aprobaciones administrativas.
+                          </p>
+                        </div>
+                      </div>
+                    `,
+                    showCancelButton: isDocumentoPendienteManual,
+                    confirmButtonText: isDocumentoPendienteManual ? 'Entendido' : 'Aceptar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#003594',
+                    cancelButtonColor: '#8392ab',
+                    color: 'black',
+                    width: '600px',
+                    padding: '2em',
+                    customClass: {
+                      popup: 'swal2-popup-custom',
+                      title: 'swal2-title-custom',
+                      htmlContainer: 'swal2-html-container-custom'
+                    }
+                  }).then((result) => {
+                    if (isDocumentoPendienteManual && result.isConfirmed) {
+                      continuarFlujoEnviarTaller();
+                    }
+                  });
+                  return;
+                }
+              }
+
+              // Funciones de utilidad
+              const continuarFlujoEnviarTaller = () => {
+                if (id_domiciliacion == 2 || id_domiciliacion == 3) {
+                  Swal.fire({
+                    title: '<span style="color: #003594; font-size: 1.6em; font-weight: 800;">¿Confirmar Envío?</span>',
+                    html: `
+                      <div style="text-align: center; padding: 15px 0;">
+                        <div class="mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="85" height="85" fill="#ffc107" class="bi bi-question-circle-fill custom-icon-animation" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.24-2.673-2.24-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                          </svg>
+                        </div>
+                        <p style="font-size: 1.25em; color: #495057; margin-bottom: 25px; line-height: 1.4;">
+                          ¿Deseas enviar a taller el POS asociado al ticket actual?
+                        </p>
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; border: 1px solid #e9ecef; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
+                          <div style="margin-bottom: 18px;">
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Serial POS</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentSerial}
+                            </span>
+                          </div>
+                          <div>
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Número de Ticket</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentnroTicket}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-paper-plane me-2"></i>Enviar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#003594',
+                    cancelButtonColor: '#8392ab',
+                    width: '550px',
+                    padding: '2.5em'
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      handleSendToTallerClick();
+                    }
+                  });
+
+                } else if (id_domiciliacion == 5) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡No se puede procesar!',
+                        text: 'Aun no es validada la domiciliación de la cuenta de cliente.',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#003594',
+                        color: 'black',
+                    });
+                } else if (id_domiciliacion == 6) {
+                    Swal.fire({
+                        icon: 'warning',
+                        iconColor: '#dc3545',
+                        title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Validación Rechazada!</span>',
+                        html: `
+                        <div style="text-align: left; padding: 10px 0;">
+                            <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                            El caso actual tiene un estatus de <strong>Domiciliación Rechazada</strong> por parte de Administración.
+                            </p>
+                            <div style="background: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                            <p style="color: #721c24; margin: 0; font-size: 1em; line-height: 1.6;">
+                                <strong>⚠️ Acción requerida:</strong><br>
+                                Comuníquese con el coordinador para más información y solventar el rechazo de la cuenta del cliente para poder enviar el equipo al taller.
+                            </p>
+                            </div>
+                        </div>
+                        `,
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#003594',
+                        color: 'black',
+                        width: '600px',
+                        padding: '2em',
+                        customClass: {
+                            popup: 'swal2-popup-custom',
+                            title: 'swal2-title-custom',
+                            htmlContainer: 'swal2-html-container-custom'
+                        }
+                    });
+                } else {
+                  Swal.fire({
+                    title: '<span style="color: #003594; font-size: 1.6em; font-weight: 800;">¿Confirmar Envío?</span>',
+                    html: `
+                      <div style="text-align: center; padding: 15px 0;">
+                        <div class="mb-4">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="85" height="85" fill="#ffc107" class="bi bi-question-circle-fill custom-icon-animation" viewBox="0 0 16 16">
+                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.496 6.033h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.24-2.673-2.24-1.267 0-2.655.59-2.75 2.286a.237.237 0 0 0 .241.247zm2.325 6.443c.61 0 1.029-.394 1.029-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94 0 .533.425.927 1.01.927z"/>
+                          </svg>
+                        </div>
+                        <p style="font-size: 1.25em; color: #495057; margin-bottom: 25px; line-height: 1.4;">
+                          ¿Deseas enviar a taller el POS asociado al ticket actual?
+                        </p>
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 25px; border: 1px solid #e9ecef; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);">
+                          <div style="margin-bottom: 18px;">
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Serial POS</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentSerial}
+                            </span>
+                          </div>
+                          <div>
+                            <span style="display: block; font-size: 0.9em; color: #8392ab; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Número de Ticket</span>
+                            <span style="display: inline-block; padding: 10px 20px; background-color: #e0f7fa; color: #007bff; border-radius: 8px; font-weight: 700; font-size: 1.25em; border: 1px solid #b3e5fc;">
+                              ${currentnroTicket}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-paper-plane me-2"></i>Enviar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#003594',
+                    cancelButtonColor: '#8392ab',
+                    width: '550px',
+                    padding: '2.5em'
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      const modalTicketNrSpan = document.getElementById("modalTicketNr");
+                      const modalSerialPosSpan = document.getElementById("serialpos");
+                      if (modalTicketNrSpan && currentnroTicket && modalSerialPosSpan) {
+                        modalTicketNrSpan.textContent = currentnroTicket;
+                        modalSerialPosSpan.textContent = currentSerial;
+                      }
+                      if (actionSelectionModalInstance) actionSelectionModalInstance.hide();
+                      if (staticBackdropModalInstance) staticBackdropModalInstance.show();
+                    }
+                  });
+                }
+              };
+
+
+              const mostrarValidacionDocumentosPendientes = (tipoDoc = "de pago o exoneración") => {
+                  Swal.fire({
+                    icon: 'warning',
+                    iconColor: '#ff9800',
+                    title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Pendientes!</span>',
+                    html: `
+                      <div style="text-align: left; padding: 10px 0;">
+                        <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                          El caso actual tiene <strong>documentos de ${tipoDoc} pendientes por revisar</strong> en el sistema.
                         </p>
                         <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
                           <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
                             <strong>⚠️ Acción requerida:</strong><br>
-                            Antes de enviar el equipo al taller, es estrictamente necesario <strong>cargar todos los documentos correspondientes.</strong>
+                            Debe esperar a que Administración verifique y apruebe los documentos cargados antes de poder enviar el equipo a taller.
                           </p>
                         </div>
                       </div>
@@ -878,42 +1049,10 @@ function getTicketData() {
                       htmlContainer: 'swal2-html-container-custom'
                     }
                   });
-                  return;
-                }
-              }
+              };
 
-              // Validaciones adicionales que aplican a todos los casos
-              if (id_document == 5 || id_document == 7) {
-                Swal.fire({
-                  icon: 'warning',
-                  iconColor: '#ff9800',
-                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Documentos Pendientes!</span>',
-                  html: `
-                    <div style="text-align: left; padding: 10px 0;">
-                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                        El caso actual tiene <strong>documentos pendientes por revisar</strong> en el sistema.
-                      </p>
-                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
-                          <strong>⚠️ Acción requerida:</strong><br>
-                          Debe esperar a que Administración verifique y apruebe los documentos cargados antes de poder enviar el equipo a taller.
-                        </p>
-                      </div>
-                    </div>
-                  `,
-                  confirmButtonText: 'Entendido',
-                  confirmButtonColor: '#003594',
-                  color: 'black',
-                  width: '600px',
-                  padding: '2em',
-                  customClass: {
-                    popup: 'swal2-popup-custom',
-                    title: 'swal2-title-custom',
-                    htmlContainer: 'swal2-html-container-custom'
-                  }
-                });
-                return;
-              } else if (id_domiciliacion == 1) {
+              // 5. Validación de Revisión de Domiciliación (id_domiciliacion = 1)
+              if (id_domiciliacion == 1) {
                 Swal.fire({
                   icon: 'warning',
                   iconColor: '#ff9800',
@@ -943,26 +1082,133 @@ function getTicketData() {
                   }
                 });
                 return;
-              } else {
-                const modalTicketNrSpan = document.getElementById("modalTicketNr");
-                const modalSerialPosSpan = document.getElementById("serialpos");
-                if (modalTicketNrSpan && currentnroTicket && modalSerialPosSpan) {
-                  modalTicketNrSpan.textContent = currentnroTicket;
-                  modalSerialPosSpan.textContent = currentSerial;
-                } else {
-                  modalTicketNrSpan.textContent = "seleccionado";
-                  console.warn("No se pudo inyectar el número de ticket en el modal de taller.");
-                }
-
-                if (actionSelectionModalInstance) {
-                  actionSelectionModalInstance.hide();
-                }
-
-                if (staticBackdropModalInstance) {
-                  staticBackdropModalInstance.show();
-                }
               }
+
+              // 6. Validación de Exoneración/Pago Pendiente (MODIFICADA: Mostrar tipo de documento específico)
+              if (parseInt(id_document) === 5) {
+                  mostrarValidacionDocumentosPendientes("Exoneración");
+                  return;
+              }
+              if (parseInt(id_document) === 7) {
+                  mostrarValidacionDocumentosPendientes("Anticipo");
+                  return;
+              }
+
+
+              // 8. Validación Mandatoria de Exoneración (Sin importar si el estatus actual es Exoneración Aprobada o Pago Aprobado)
+              const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${currentnroTicket}&serial_pos=${currentSerial}`;
+              fetch(checkExoUrl)
+                  .then(response => response.json())
+                  .then(data => {
+                      let idStatusExoneracion = 0;
+                      let porcentaje = 0;
+                      let tipoExoneracion = '';
+                      if (data.success && data.data) {
+                          porcentaje = parseInt(data.data.porcentaje) || 0;
+                          tipoExoneracion = data.data.tipo_exoneracion || '';
+                          idStatusExoneracion = parseInt(data.data.id_status_payment) || 0;
+                      }
+
+                      // 1. PRIORIDAD: Si la exoneración está PENDIENTE (5), mostrar el modal original de documentos pendientes
+                      if (idStatusExoneracion === 5) {
+                          mostrarValidacionDocumentosPendientes("Exoneración");
+                          return;
+                      }
+
+                      // 2. Si la exoneración ya está APROBADA (4)
+                      if (idStatusExoneracion === 4) {
+                          // Si es una exoneración TOTAL (100%), enviamos directo al taller (Confirmar Envío)
+                          if (porcentaje === 100) {
+                              continuarFlujoEnviarTaller();
+                              return;
+                          }
+                          // Si es parcial, NO HACEMOS RETURN para que siga abajo y muestre el modal de la factura.
+                      }
+
+
+
+                      // 3. Solo si no es 4 ni 5 (otros casos), y es parcial, validamos pagos
+                      const isAnticipoExo = (tipoExoneracion || '').toLowerCase().includes('anticipo');
+                      if (porcentaje > 0 && porcentaje < 100 && isAnticipoExo) {
+
+
+                          const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                          const params = new URLSearchParams();
+                          params.append('action', 'GetTotalPaidByTicket');
+                          params.append('nro_ticket', currentnroTicket);
+
+                          fetch(checkPaymentUrl, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                              body: params
+                          })
+                          .then(p => p.json())
+                          .then(payData => {
+                              let totalPaid = parseFloat(payData.total_paid) || 0;
+                              let totalPending = parseFloat(payData.total_pending) || 0;
+                              let montoBase = 30; // Ajustar si es dinámico
+                              let montoExonerado = (montoBase * porcentaje) / 100;
+                              let montoNetoRequerido = montoBase - montoExonerado;
+
+                              // Verificamos si la totalidad de lo pagado YA CUBRE el diagnóstico base
+                              if (totalPaid >= (montoNetoRequerido - 0.01)) {
+                                  // Ya cubrió la exoneración, puede enviarse a taller sin problema
+                                  continuarFlujoEnviarTaller();
+                              } else {
+                                  // NO CUBRE. Faltan pagos por aprobar antes de poder enviar a taller
+                                  let tipoExoText = tipoExoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+                                  let montoRestante = montoNetoRequerido - totalPaid;
+                                  
+                                  Swal.fire({
+                                      icon: 'warning',
+                                      title: '<span style="color: #003594;">Pago Restante Requerido</span>',
+                                      html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                          <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                              Este equipo posee una Exoneración Parcial. No se puede enviar a Taller hasta que los pagos asociados sumen la totalidad requerida y <strong>sean aprobados</strong> por Administración.
+                                          </p>
+                                          <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                              <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                              <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                          </div>
+                                          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #003594;">
+                                              <span>Ya Pagado (Aprobado):</span><strong>$${totalPaid.toFixed(2)}</strong>
+                                           </div>
+                                           <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #f39c12;">
+                                               <span>Pendiente por Revisar:</span><strong>$${totalPending.toFixed(2)}</strong>
+                                           </div>
+
+                                          <hr style="border-color: #adb5bd;">
+                                          <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                              <span>Falta por Pagar:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                          </div>
+                                      </div>`,
+                                      confirmButtonText: 'Entendido',
+                                      confirmButtonColor: '#003594',
+                                      color: 'black',
+                                      width: '500px'
+                                  });
+                              }
+                          })
+                          .catch(err => {
+                              console.error("Error validando pagos para exoneración:", err);
+                              continuarFlujoEnviarTaller();
+                          });
+                          
+                          return; // Evita que se ejecute el continuarFlujoEnviarTaller principal mientras el fetch asíncrono termina
+                      }
+                      
+                      // Si no tiene exoneración o la exoneración no es parcial, simplemente envía el equipo.
+                      continuarFlujoEnviarTaller();
+                  })
+                  .catch(error => {
+                      console.error("Error validando exoneración:", error);
+                      // Si falla la red, continuamos por defecto para no trancar al personal o avisamos error
+                      Swal.fire("Error", "Ocurrió un error de red al validar los datos de exoneración del ticket.", "error");
+                  });
             });
+
 
             $("#BtnCerrarSelecionAccion").off("click").on("click", function () {
               if (actionSelectionModalInstance) {
@@ -1239,6 +1485,8 @@ function getTicketData() {
      const razonSocial = $(this).data('razon-social') || '';
      const rif = $(this).data('rif') || '';
      const estatusPos = $(this).data('estatus-pos') || '';
+     const idClienteSQLFromBtn = $(this).data('id-cliente-sql') || '';
+     idClienteSQL = idClienteSQLFromBtn; // Guardar en global
 
     const modalTitle = $('#modalTicketId');
     const buttonsContainer = $('#modal-buttons-container');
@@ -1282,12 +1530,7 @@ function getTicketData() {
             // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
             if (!isFallaSinPago) {
                 modalButtonsHTML = `
-                    <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" 
-                        data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                        data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                        data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
-                        Cargar Documento de Exoneración
-                    </button>
+
                     /* 
                     OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
                     <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
@@ -1307,13 +1550,6 @@ function getTicketData() {
                 </button>`;
             // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
             if (!isFallaSinPago) {
-                modalButtonsHTML += `
-                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                    Cargar Documento de Exoneración
-                </button>`;
                  // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
             }
         }
@@ -1373,12 +1609,7 @@ function getTicketData() {
             // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
             if (!isFallaSinPago) {
                 modalButtonsHTML = `
-                    <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" 
-                        data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                        data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                        data-status-payment="${statusPayment}" data-document-type="Exoneracion" data-estado-cliente="${estado_cliente}">
-                        Cargar Documento de Exoneración
-                    </button>
+
                     /* 
                     OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
                     <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
@@ -1401,13 +1632,6 @@ function getTicketData() {
                 </button>`;
             // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
             if (!isFallaSinPago) {
-                modalButtonsHTML += `
-                <button id="ExoBoton" class="btn btn-primary btn-block btn-exoneracion-img mb-2" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Exoneracion">
-                    Cargar Documento de Exoneración
-                </button>`;
                 // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
             }
         }
@@ -1433,7 +1657,6 @@ function getTicketData() {
     }
 
     buttonsContainer.html(modalButtonsHTML);
-
 
     // Manejador específico para mostrar el motivo al intentar corregir (siempre que el botón exista)
     $('#PagoBotonRechazado').on('click', function() {
@@ -1646,6 +1869,15 @@ $(document).on('click', '.btn-exoneracion-img, .btn-pago-pdf, .btn-zoom-pdf', fu
     // NUEVA LÓGICA: Si es Anticipo o Pago, abrir el modal detallado
     if (documentType === 'Anticipo' || documentType === 'Pago') {
         openDetailedPaymentModal(this);
+        return;
+    }
+
+    // NUEVA LÓGICA: Si es Exoneracion, abrir el modal de Registro de Exoneración
+    if (documentType === 'Exoneracion') {
+        const nro_ticket_exo = $(this).data('nro-ticket');
+        const serial_pos_exo = $(this).data('serial-pos');
+        const id_cliente_sql_exo = $(this).data('id-cliente-sql') || '';
+        openModalRegistroExoneracion(nro_ticket_exo, ticketId, serial_pos_exo, id_cliente_sql_exo);
         return;
     }
 
@@ -1896,6 +2128,18 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 $('#ne_banco').val(d.ibp || 'Sin banco');
                 $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
 
+                // Bloquear botón de Imprimir y limpiar iframe al abrir
+                $('#printHtmlTemplateBtn').prop('disabled', true);
+                const iframePreview = document.getElementById('htmlTemplatePreview');
+                if (iframePreview) {
+                    const doc = iframePreview.contentDocument || iframePreview.contentWindow.document;
+                    if (doc) {
+                        doc.open();
+                        doc.write('');
+                        doc.close();
+                    }
+                }
+
                 // 1. Obtiene la instancia del modal o la crea si no existe
                 const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
                 htmlModal.show();
@@ -1944,6 +2188,9 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
   doc.open();
   doc.write(html);
   doc.close();
+
+  // Habilitar el botón de Imprimir/Guardar PDF ahora que hay una previsualización
+  $('#printHtmlTemplateBtn').prop('disabled', false);
 });
 
 function buildDeliveryNoteHtml(d) {
@@ -2731,141 +2978,6 @@ function showDocumentSelectionModal(ticketId, nroTicket) {
     });
 }
 
-// Función corregida para mostrar el modal de visualización
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
-    // Verificar que el modal existe antes de continuar
-    const modalElementView = document.getElementById("viewDocumentModal");
-    if (!modalElementView) {
-        console.error("Error: No se encontró el modal 'viewDocumentModal'");
-        Swal.fire({
-            icon: 'error',
-            title: 'Error del Sistema',
-            text: 'No se pudo abrir el modal de visualización.',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-        });
-        return;
-    }
-
-    // Verificar que todos los elementos necesarios existen
-    const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
-    const imageViewPreview = document.getElementById("imageViewPreview");
-    const pdfViewViewer = document.getElementById("pdfViewViewer");
-    const messageContainer = document.getElementById("viewDocumentMessage");
-    const nameDocumento = document.getElementById("NombreImage");
-
-    // Verificar que los elementos críticos existen
-    if (!modalTicketIdSpanView || !imageViewPreview || !pdfViewViewer || !messageContainer || !nameDocumento) {
-        console.error("Error: Faltan elementos necesarios en el modal");
-        Swal.fire({
-            icon: 'error',
-            title: 'Error del Sistema',
-            text: 'El modal no está configurado correctamente.',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-        });
-        return;
-    }
-
-    // Limpiar contenido previo
-    imageViewPreview.style.display = "none";
-    pdfViewViewer.style.display = "none";
-    pdfViewViewer.innerHTML = "";
-    messageContainer.textContent = "";
-    messageContainer.classList.add("hidden");
-
-    // Configurar información del ticket
-    modalTicketIdSpanView.textContent = nroTicket || ticketId;
-    nameDocumento.textContent = documentName || 'Documento';
-
-    // Función para limpiar la ruta del archivo
-    function cleanFilePath(filePath) {
-        if (!filePath) return null;
-
-        // Reemplazar barras invertidas con barras normales
-        let cleanPath = filePath.replace(/\\/g, '/');
-
-        // Extraer la parte después de 'Documentos_SoportePost/'
-        const pathSegments = cleanPath.split('Documentos_SoportePost/');
-        if (pathSegments.length > 1) {
-            cleanPath = pathSegments[1];
-        }
-
-        // Construir la URL completa
-        return `http://${HOST}/Documentos/${cleanPath}`;
-    }
-
-    // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
-    if (imageUrl) {
-        // Es una imagen
-        const fullUrl = cleanFilePath(imageUrl);
-        imageViewPreview.src = fullUrl;
-        imageViewPreview.style.display = "block";
-        
-        // Manejar errores de carga de imagen
-        imageViewPreview.onerror = function() {
-            messageContainer.textContent = "Error al cargar la imagen.";
-            messageContainer.classList.remove("hidden");
-            imageViewPreview.style.display = "none";
-        };
-
-    } else if (pdfUrl) {
-        // Es un PDF
-        const fullUrl = cleanFilePath(pdfUrl);
-        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
-        pdfViewViewer.style.display = "block";
-        
-        // Manejar errores de carga de PDF
-        const iframe = pdfViewViewer.querySelector('iframe');
-        if (iframe) {
-            iframe.onerror = function() {
-                messageContainer.textContent = "Error al cargar el PDF.";
-                messageContainer.classList.remove("hidden");
-                pdfViewViewer.style.display = "none";
-            };
-        }
-        
-    } else {
-        // No hay documento
-        messageContainer.textContent = "No hay documento disponible para este ticket.";
-        messageContainer.classList.remove("hidden");
-    }
-
-    // Mostrar el modal usando Bootstrap
-    try {
-        const viewDocumentModal = new bootstrap.Modal(modalElementView);
-        viewDocumentModal.show();
-
-        const accionsDocument = document.getElementById("documentActionsModal");
-        const accionsdocumentsIntance = new bootstrap.Modal(accionsDocument);
-
-        const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
-        if (buttonCerrarModal) {
-            buttonCerrarModal.addEventListener("click", function() {
-                viewDocumentModal.hide();
-                accionsdocumentsIntance.hide();
-                setTimeout(() => {
-                    accionsdocumentsIntance.show();
-                    setTimeout(() => {
-                        documentActionsModal.show();
-                    }, 300); //
-                }, 300); //
-            });
-        }
-    } catch (error) {
-        console.error("Error al mostrar el modal:", error);
-        Swal.fire({
-            icon: 'error',
-            title: 'Error del Sistema',
-            text: 'No se pudo mostrar el modal de visualización.',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-        });
-    }
-}
 
 // 5. Previsualización de la imagen - MANEJADA EN handleFileSelectForUpload
 // Este handler fue removido para evitar conflictos con la validación
@@ -3589,31 +3701,46 @@ function handleSendToTallerClick() {
         const response = JSON.parse(xhr.responseText);
         Swal.fire({
             icon: "success",
-            title: "¡Notificación!", // <-- FIX IS HERE
+            title: "¡Notificación!", 
             html:`El POS asociado <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialpos}</span> al ticket Nro: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroticket}</span> fue enviado a Taller`,
             color: "black",
-            // Eliminamos 'timer' y 'timerProgressBar' si quieres un botón explícito
-            showConfirmButton: true, // Muestra el botón de confirmación
-            confirmButtonText: "Ok", // Texto del botón
-            confirmButtonColor: "#003594", // Color del botón (puedes ajustar)
-            allowOutsideClick: false, // Opcional: para que el usuario DEBA hacer clic en el botón
-            allowEscapeKey: false,   // Opcional: para que no se pueda cerrar con la tecla Escape
+            showConfirmButton: true, 
+            confirmButtonText: "Ok", 
+            confirmButtonColor: "#003594", 
+            allowOutsideClick: false, 
+            allowEscapeKey: false,   
             didOpen: () => {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                location.reload(); // Recarga la página
+                location.reload(); 
             }
         });
             if (staticBackdropModalInstance) {
-            staticBackdropModalInstance.hide(); // Cierra el modal "Deseas Enviar al Taller"
+            staticBackdropModalInstance.hide(); 
         
             getTicketData(); 
-        } else {
-          alert("Error al enviar el ticket: " + response.message);
         }
       } else {
-        alert("Error de conexión: " + xhr.statusText);
+        // MANEJO DE ERRORES MEJORADO: Capturamos el mensaje del backend (ej. 403 de validación)
+        let errorMsg = "Error de conexión: " + xhr.statusText;
+        try {
+            const response = JSON.parse(xhr.responseText);
+            if (response && response.message) {
+                errorMsg = response.message;
+            }
+        } catch (e) {
+            // No es un JSON válido, mantenemos el mensaje por defecto
+        }
+
+        Swal.fire({
+            icon: "error",
+            title: "¡No se puede enviar!",
+            text: errorMsg,
+            confirmButtonText: "Entendido",
+            confirmButtonColor: "#003594",
+            color: "black"
+        });
       }
     };
     xhr.onerror = function () {
@@ -4589,6 +4716,9 @@ $(document).on('input', '#montoBs, #montoRef', function() {
         ref.value = (val / rate).toFixed(2);
         if (display) display.textContent = `$${ref.value}`;
     }
+    
+    // Validate budget at the end of every change
+    if (typeof validateEditBudget === 'function') validateEditBudget(false);
 });
 
 $(document).on('change', '#moneda', function() {
@@ -4609,6 +4739,13 @@ $(document).on('change', '#moneda', function() {
     
     const display = document.getElementById('montoEquipo');
     if (display) display.textContent = "$0.00";
+    
+    // Re-validate budget after switching currency/state
+    if (typeof validateEditBudget === 'function') validateEditBudget(false);
+});
+
+$(document).on('blur', '#montoBs, #montoRef', function() {
+    if (typeof validateEditBudget === 'function') validateEditBudget(true);
 });
 
 // Guardar Pago
@@ -4643,10 +4780,108 @@ $(document).on('click', '#btnGuardarDatosPago', async function() {
         }
     }
 
+    let nroTicketForExo = document.getElementById("nro_ticket_pago") ? document.getElementById("nro_ticket_pago").value : '';
+    let serialPosForExo = document.getElementById("serialPosPago") ? document.getElementById("serialPosPago").value : '';
+    let montoRefActual = parseFloat(document.getElementById("montoRef").value) || 0;
+
     const saveBtn = document.getElementById("btnGuardarDatosPago");
     if (saveBtn) saveBtn.disabled = true;
 
+    Swal.fire({ title: 'Validando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        // Validacion de Exoneracion Parcial
+        const docTypeForStatus = document.getElementById("document_type_pago") ? document.getElementById("document_type_pago").value : '';
+        if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo' || docTypeForStatus === 'Pago' || docTypeForStatus === 'pago') {
+            const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${nroTicketForExo}&serial_pos=${serialPosForExo}`;
+            const exoResponse = await fetch(checkExoUrl);
+            const exoData = await exoResponse.json();
+
+            if (exoData.success && exoData.data) {
+                const porcentaje = parseInt(exoData.data.porcentaje);
+                if (porcentaje > 0 && porcentaje < 100) {
+                    const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                    const params = new URLSearchParams();
+                    params.append('action', 'GetTotalPaidByTicket');
+                    params.append('nro_ticket', nroTicketForExo);
+
+                    const payResponse = await fetch(checkPaymentUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+                    const payData = await payResponse.json();
+
+                    let totalPaidAnterior = parseFloat(payData.total_paid) || 0;
+                    let tipoExoData = exoData.data.tipo_exoneracion || 'Anticipo';
+                    
+                    let montoBase = 30; // Monto base estándar para Anticipo
+                    if (tipoExoData === 'Presupuesto') {
+                        // totalBudget ya viene en la respuesta de GetTotalPaidByTicket actualizada
+                        montoBase = parseFloat(payData.total_budget) || 0;
+                    }
+
+                    let montoExonerado = (montoBase * porcentaje) / 100;
+                    let montoNetoRequerido = montoBase - montoExonerado;
+                    
+                    // Si lo que ya se pagó y aprobó es IGUAL o MAYOR al monto neto requerido
+                    // por el diagnóstico base o presupuesto, entonces ya no validamos.
+                    // El usuario es libre de subir pagos por $5 o lo que sea.
+                    if (totalPaidAnterior < montoNetoRequerido) {
+                        let totalConPagoActual = totalPaidAnterior + montoRefActual;
+
+                        if (totalConPagoActual < (montoNetoRequerido - 0.01)) {
+                        let montoRestante = montoNetoRequerido - totalPaidAnterior;
+                        let faltaPorPagar = montoNetoRequerido - totalConPagoActual;
+                        let tipoExoText = exoData.data.tipo_exoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+
+                        if (saveBtn) saveBtn.disabled = false;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '<span style="color: #003594;">Pago Insuficiente</span>',
+                            html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                    El ticket tiene una <strong>Exoneración Parcial</strong>. El pago que intenta registrar más lo ya pagado no cubre el saldo pendiente requerido.
+                                </p>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                    <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                    <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #003594;">
+                                    <span>Ya Pagado (Aprobado):</span><strong>$${totalPaidAnterior.toFixed(2)}</strong>
+                                </div>
+                                <hr style="border-color: #adb5bd;">
+                                <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.2em; color: #dc3545; font-weight: bold;">
+                                    <span>Saldo Pendiente Actual:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.1em; color: #ff9800; font-weight: bold;">
+                                    <span>Pago que intenta registrar:</span><span>$${montoRefActual.toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                    <span>Faltaría por pagar:</span><span>$${Math.max(0, faltaPorPagar).toFixed(2)}</span>
+                                </div>
+                            </div>`,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                            width: '500px'
+                        });
+                        return; // Detiene el guardado
+                    }
+                 } // Fin de verificación `totalPaidAnterior < montoNetoRequerido`
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error validando pagos para exoneración antes de guardar:", err);
+        // Continuamos si falla la validación por error de red
+    }
+
     Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+
 
     // 2. Preparar datos para SavePayment (Metadatos)
     // Helper interno para obtener el valor de un elemento de forma segura
@@ -4990,10 +5225,43 @@ async function fetchBudgetDataForValidation(nroTicket) {
         const resultBudget = await response.json();
 
         if (resultBudget.success) {
+            const totalPaid = parseFloat(resultBudget.total_paid || 0);
+            const totalPending = parseFloat(resultBudget.total_pending || 0);
             window.currentBudgetAmount = parseFloat(resultBudget.total_budget || 0);
-            window.currentRemaining = window.currentBudgetAmount > 0 
-                ? (window.currentBudgetAmount - parseFloat(resultBudget.total_paid || 0)) 
-                : 0;
+            window.currentGrossBudget = parseFloat(resultBudget.gross_budget || 0);
+            window.currentTotalPaid = totalPaid;
+            window.currentExonerations = resultBudget.all_exonerations || [];
+            
+            // Calculamos el restante restando tanto el monto pagado (6) como el pendiente (7, 17, etc.)
+            const coveredAmount = totalPaid + totalPending;
+            const remaining = Math.max(0, window.currentBudgetAmount - coveredAmount);
+            window.currentRemaining = remaining;
+
+            // --- ACTUALIZACIÓN DE UI SI EXISTE ---
+            const montoAbonado = document.getElementById("montoAbonado");
+            const montoRestante = document.getElementById("montoRestante");
+            const montoEquipoHeader = document.getElementById("montoEquipo");
+            const btnGuardar = document.getElementById("btnGuardarDatosPago");
+
+            if (montoAbonado) montoAbonado.textContent = `$${totalPaid.toFixed(2)}`;
+            if (montoRestante) montoRestante.textContent = `Restante: $${remaining.toFixed(2)}`;
+            if (montoEquipoHeader) montoEquipoHeader.textContent = `$${remaining.toFixed(2)}`;
+            
+            // Bloqueo proactivo del botón si ya está cubierto y no es una edición
+            const idRec = document.getElementById("id_payment_record_loading") ? document.getElementById("id_payment_record_loading").value : "";
+            if (window.currentBudgetAmount > 0 && remaining <= 0.001 && (!idRec || idRec === "")) {
+                if (btnGuardar) {
+                    btnGuardar.disabled = true;
+                    if (totalPending > 0 && (totalPaid + totalPending) >= window.currentBudgetAmount) {
+                        btnGuardar.innerHTML = '<i class="fas fa-clock me-2"></i>Pago en Revisión';
+                    } else {
+                        btnGuardar.innerHTML = '<i class="fas fa-check-circle me-2"></i>Pagado Completo';
+                    }
+                    btnGuardar.style.background = '#6c757d'; 
+                }
+            }
+
+            console.log("DEBUG fetchBudgetDataForValidation: Budget:", window.currentBudgetAmount, "Paid:", totalPaid, "Pending:", totalPending, "Remaining:", window.currentRemaining);
         } else {
             window.currentBudgetAmount = 0;
             window.currentRemaining = 0;
@@ -5009,3 +5277,828 @@ async function fetchBudgetDataForValidation(nroTicket) {
 $(document).on('shown.bs.modal', '#modalAgregarDatosPago', function() {
     setupBudgetValidationListeners();
 });
+
+/**
+ * =========================================================================
+ * FUNCIONES PARA GESTIÓN DE EXONERACIONES (INTEGRADO)
+ * =========================================================================
+ */
+
+function openModalRegistroExoneracion(nroTicket, ticketId, serialPos, idIntelipunto = '') {
+    const modalElement = document.getElementById('modalRegistroExoneracion');
+    if (!modalElement) {
+        console.error("Error: No se encontró el elemento modalRegistroExoneracion");
+        return;
+    }
+    
+    modalRegistroExoInstance = new bootstrap.Modal(modalElement);
+    const form = document.getElementById('formRegistroExoneracion');
+    if (form) form.reset();
+
+    idClienteSQL = idIntelipunto; 
+    
+    document.getElementById('exo_ticket_id').value = ticketId;
+    document.getElementById('exo_nro_ticket').value = nroTicket;
+    document.getElementById('exo_serial_pos').value = serialPos;
+    
+    const intelInput = document.getElementById('exo_id_cliente');
+    if (intelInput) intelInput.value = idIntelipunto || '';
+    
+    document.getElementById('subtituloExo').innerText = `Ticket #${nroTicket}`;
+    
+    // 4. Resetear UI del Slider de Porcentaje (Aplica regla del 100% para Anticipo)
+    adjustExoSliderByType('Anticipo');
+    
+    document.querySelectorAll('.exoneration-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.remove('disabled');
+        btn.style.pointerEvents = 'auto';
+        btn.style.opacity = '1';
+    });
+
+    const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
+    if (btnAnticipo) {
+        btnAnticipo.classList.add('active');
+        const typeInput = document.getElementById('exo_tipo_seleccionado');
+        if (typeInput) typeInput.value = 'Anticipo';
+    }
+
+    updateExoCodeByType('Anticipo', idIntelipunto);
+    loadExonerationHistory(nroTicket);
+    
+    const fileInput = document.getElementById('exo_documentFile');
+    const fileStatus = document.getElementById('exo_fileStatus');
+    const dropZone = document.getElementById('exo_fileDropZone');
+    
+    if (fileInput) fileInput.value = '';
+    if (fileStatus) fileStatus.classList.add('d-none');
+    if (dropZone) dropZone.classList.remove('d-none');
+    
+    modalRegistroExoInstance.show();
+}
+
+function updateExoCodeByType(tipo, idClienteSQL) {
+    const serial = (document.getElementById('exo_serial_pos')?.value || '').toString();
+    const digits = serial.replace(/\D/g, '');
+    let last4 = digits.length >= 4 ? digits.slice(-4) : digits.padStart(4, '0');
+
+    const idPart = String(idClienteSQL || "0");
+    let tipoFinal = tipo;
+    if (!tipoFinal) {
+        const btnActivo = document.querySelector('.exoneration-type-btn.active');
+        tipoFinal = btnActivo ? btnActivo.getAttribute('data-type') : 'Anticipo';
+    }
+
+    const typeIndicator = (tipoFinal === 'Anticipo') ? 'A' : 'T';
+    const autoCode = `Exo${idPart}-${last4}-${typeIndicator}`;
+    
+    const display = document.getElementById('exo_nro_generado');
+    if (display) display.innerText = autoCode;
+
+    const hidden = document.getElementById('exo_nro_hidden');
+    if (hidden) hidden.value = autoCode;
+}
+
+/**
+ * Ajusta el slider de exoneración según el tipo seleccionado.
+ * Para 'Anticipo', se fija en 100% y se deshabilita.
+ */
+function adjustExoSliderByType(type, isEdit = false) {
+    const sliderId = isEdit ? 'edit_porcentaje_slider' : 'exo_slider';
+    const badgeId = isEdit ? 'edit_porcentaje_badge' : 'exo_porcentaje_valor';
+    
+    const slider = document.getElementById(sliderId);
+    const badge = document.getElementById(badgeId);
+
+    if (!slider) return;
+
+    if (type === 'Anticipo') {
+        slider.value = 100;
+        slider.disabled = true;
+        slider.style.cursor = 'not-allowed';
+        slider.style.opacity = '0.7';
+        if (badge) badge.innerText = '100%';
+    } else {
+        slider.disabled = false;
+        slider.style.cursor = 'pointer';
+        slider.style.opacity = '1';
+    }
+}
+
+function loadExonerationHistory(nroTicket) {
+    const tableBody = document.getElementById("historyExonerationBody");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Cargando historial...</td></tr>`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExonerationHistory`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success && data.history) {
+                    currentExonerationHistory = data.history;
+                    let hasAnticipo = false;
+                    let hasTaller = false;
+                    let rejectionCount = 0;
+                    let dataAnticipo = null;
+                    let dataTaller = null;
+                    
+                    if (data.history.length === 0) {
+                        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay exoneraciones registradas.</td></tr>`;
+                    } else {
+                        let html = '';
+                        data.history.forEach(exo => {
+                            const isRejected = parseInt(exo.id_status_payment) === 12;
+                            if (isRejected) rejectionCount++;
+
+                            if (exo.tipo_exoneracion === 'Anticipo' && !isRejected) {
+                                hasAnticipo = true;
+                                dataAnticipo = exo;
+                            }
+                            if (exo.tipo_exoneracion === 'Pago taller' && !isRejected) {
+                                hasTaller = true;
+                                dataTaller = exo;
+                            }
+
+                             const date = new Date(exo.fecha_creacion).toLocaleDateString('es-VE');
+                             const typeBadgeClass = exo.tipo_exoneracion === 'Anticipo' ? 'bg-warning' : 'bg-danger';
+                             
+                             let statusLabel = 'Desconocido';
+                             let statusBadgeClass = 'bg-secondary';
+                             const statusId = parseInt(exo.id_status_payment);
+                             if (statusId === 4) {
+                                 statusLabel = 'Aprobado';
+                                 statusBadgeClass = 'bg-success';
+                             } else if (statusId === 5) {
+                                 statusLabel = 'Pendiente';
+                                 statusBadgeClass = 'bg-warning';
+                             } else if (statusId === 12) {
+                                 statusLabel = 'Rechazado';
+                                 statusBadgeClass = 'bg-danger';
+                             }
+                            
+                            const btnView = `<button class="btn btn-sm shadow-none border-0 px-2 py-1 m-1" 
+                                               onclick="viewExonerationSupportByNro('${exo.nro_exoneracion}', '${nroTicket}')" 
+                                               title="Ver Soporte" 
+                                               style="display: inline-flex; align-items: center; justify-content: center; background: #3b82f6; color: white; border-radius: 8px; width: 32px; height: 32px; transition: all 0.2s;">
+                                               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                               </svg>
+                                            </button>`;
+
+                            const btnEdit = (statusId !== 4) ? `<button class="btn btn-sm shadow-none border-0 px-2 py-1 m-1" 
+                                                onclick="openEditExonerationModal(${exo.id_exoneracion})" 
+                                                title="Editar Datos" 
+                                                style="display: inline-flex; align-items: center; justify-content: center; background: #17ad37; color: white; border-radius: 8px; width: 32px; height: 32px; transition: all 0.2s;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>` : '';
+
+                            html += `
+                                 <tr>
+                                     <td class="text-center align-middle"><span class="badge ${typeBadgeClass}" style="font-size: 0.75rem; border-radius: 4px; padding: 4px 8px;">${exo.tipo_exoneracion}</span></td>
+                                     <td class="font-weight-bold text-center align-middle" style="font-size: 0.95rem;">${Math.round(parseFloat(exo.porcentaje))}%</td>
+                                     <td class="text-center align-middle"><span class="text-primary font-weight-bold" style="font-size: 0.9rem;">${exo.nro_exoneracion}</span></td>
+                                     <td class="text-xxs text-center align-middle">${date}</td>
+                                     <td class="text-center align-middle"><span class="badge ${statusBadgeClass}" style="font-size: 0.75rem; border-radius: 4px; padding: 4px 8px;">${statusLabel}</span></td>
+                                    <td class="text-center align-middle" style="min-width: 100px;">
+                                        ${btnView}
+                                        ${btnEdit}
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        tableBody.innerHTML = html;
+                    }
+
+                    const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
+                    const btnTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
+                    
+                    if (btnAnticipo) {
+                        if (hasAnticipo) {
+                            btnAnticipo.classList.add('disabled');
+                            btnAnticipo.classList.remove('active');
+                            btnAnticipo.style.opacity = '0.5';
+                            btnAnticipo.style.background = '#e9ecef';
+                            btnAnticipo.style.color = '#adb5bd';
+                            btnAnticipo.style.borderColor = '#dee2e6';
+                            btnAnticipo.title = "Ya existe una exoneración de este tipo";
+                        } else {
+                            btnAnticipo.classList.remove('disabled');
+                            btnAnticipo.style.opacity = '1';
+                            btnAnticipo.style.background = ''; 
+                            btnAnticipo.style.color = '';
+                            btnAnticipo.style.borderColor = '';
+                        }
+                    }
+                    
+                    if (btnTaller) {
+                        if (hasTaller) {
+                            btnTaller.classList.add('disabled');
+                            btnTaller.classList.remove('active');
+                            btnTaller.style.opacity = '0.5';
+                            btnTaller.style.background = '#e9ecef';
+                            btnTaller.style.color = '#adb5bd';
+                            btnTaller.style.borderColor = '#dee2e6';
+                            btnTaller.title = "Ya existe una exoneración de este tipo";
+                        } else {
+                            btnTaller.classList.remove('disabled');
+                            btnTaller.style.opacity = '1';
+                            btnTaller.style.background = '';
+                            btnTaller.style.color = '';
+                            btnTaller.style.borderColor = '';
+                        }
+                    }
+
+                    const btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+                    const infoContainer = document.getElementById('exo_limit_info_container');
+
+                    if (rejectionCount >= 2 || (hasAnticipo && hasTaller)) {
+                        if (btnGuardar) {
+                            btnGuardar.disabled = true;
+                            btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+                            btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Límite Alcanzado`;
+                        }
+                        if (infoContainer) {
+                             infoContainer.innerHTML = `<div class="alert alert-warning">Límite de exoneraciones alcanzado para este ticket.</div>`;
+                        }
+                    } else {
+                        if (btnGuardar) {
+                            btnGuardar.disabled = false;
+                            btnGuardar.style.background = 'linear-gradient(135deg, #da1b60 0%, #ff8a00 100%)';
+                            btnGuardar.innerHTML = `Guardar Exoneración`;
+                        }
+                        if (infoContainer) infoContainer.innerHTML = '';
+                    }
+
+                }
+            } catch (e) {
+                console.error("Error parsing history JSON:", e);
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error al procesar el historial.</td></tr>`;
+            }
+        }
+    };
+    xhr.send(`nro_ticket=${nroTicket}`);
+}
+
+function confirmAndSaveExoneration() {
+    const form = document.getElementById('formRegistroExoneracion');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    const nroTicket = formData.get('nro_ticket');
+    const tipo = formData.get('tipo_exoneracion');
+    
+    // FIX: Si el slider está deshabilitado (como en Anticipo), FormData lo ignora.
+    if (!formData.has('porcentaje')) {
+        const slider = document.getElementById('exo_slider');
+        if (slider) formData.append('porcentaje', slider.value);
+    }
+    
+    const porcentaje = formData.get('porcentaje');
+    const btn = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+    const fileInput = document.getElementById('exo_documentFile');
+
+    // Validación final de sobrepago antes de confirmar
+    if (!validateExonerationOverpaymentImpact()) return;
+
+    // Validación de archivo obligatoria
+    if (!fileInput || !fileInput.files.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Soporte Requerido',
+            text: 'Debe adjuntar el documento de soporte digital para procesar la exoneración.',
+            confirmButtonColor: '#da1b60'
+        });
+        return;
+    }
+
+    const nroExo = formData.get('nro_exoneracion');
+
+
+    Swal.fire({
+        title: '',
+        html: `
+            <div style="text-align: center; margin-bottom: 25px; margin-top: -15px;">
+                <div style="
+                    display: inline-block;
+                    width: 76px;
+                    height: 76px;
+                    background-color: #f0fdf4;
+                    border-radius: 22px;
+                    border: 2px solid #dcfce7;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 15px auto;
+                    box-shadow: 0 8px 16px rgba(34, 197, 94, 0.08);
+                ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="#22c55e" viewBox="0 0 16 16" style="display: block;">
+                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                        <path d="M4 0h3v2.5A1.5 1.5 0 0 0 8.5 4H11v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        <path d="M4 0h5.5v3h3V1h-11v11a2 2 0 0 1-2 2h8a2 2 0 0 1 2-2V4.707A1 1 0 0 0 11.707 4L8.5 0.793A1 1 0 0 0 7.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0z" opacity="0.1"/>
+                    </svg>
+                </div>
+
+                
+                <h2 style="color: #0f172a; font-weight: 800; font-size: 1.65rem; margin: 0; letter-spacing: -0.02em; font-family: 'Inter', sans-serif;">Confirmar Registro</h2>
+                <p style="color: #64748b; font-size: 0.95rem; margin-top: 6px; font-weight: 400; font-family: 'Inter', sans-serif;">¿Los datos ingresados son correctos?</p>
+            </div>
+
+            <div style="padding: 0 5px;">
+                <div style="
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 24px;
+                    padding: 20px;
+                    text-align: left;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div>
+                            <span style="display: block; font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; font-family: 'Inter', sans-serif;">Número de Ticket</span>
+                            <span style="font-size: 1.1rem; font-weight: 800; color: #1e293b; font-family: 'Inter', sans-serif;">#${nroTicket}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="display: block; font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; font-family: 'Inter', sans-serif;">Tipo Aplicado</span>
+                            <span style="
+                                display: inline-block;
+                                padding: 4px 12px;
+                                border-radius: 8px;
+                                font-size: 0.75rem;
+                                font-weight: 700;
+                                font-family: 'Inter', sans-serif;
+                                background: ${tipo === 'Anticipo' ? '#fffbeb' : '#fef2f2'};
+                                color: ${tipo === 'Anticipo' ? '#b45309' : '#b91c1c'};
+                                border: 1px solid ${tipo === 'Anticipo' ? '#fde68a' : '#fecaca'};
+                            ">
+                                ${tipo.toUpperCase()}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="
+                        background: #f8fafc;
+                        border-radius: 18px;
+                        padding: 15px;
+                        text-align: center;
+                        margin-bottom: 20px;
+                        border: 1px dashed #cbd5e1;
+                    ">
+                        <span style="display: block; font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-family: 'Inter', sans-serif;">Código de Identificación</span>
+                        <span style="
+                            font-family: 'Monaco', 'Consolas', monospace;
+                            font-size: 1.25rem;
+                            font-weight: 800;
+                            color: #da1b60;
+                            letter-spacing: 1px;
+                        ">${nroExo || '—'}</span>
+                    </div>
+
+                    <div style="display: grid; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
+                            <span style="color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2563eb" viewBox="0 0 16 16"><path d="M13.5 1a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11A1.5 1.5 0 0 1 2.5 1h11zM2.5 2a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11z"/><path d="M4 4.5a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zM9 4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V4zm1 .5v1h1v-1h-1zM9 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V8zm1 .5v1h1v-1h-1z"/></svg>
+                                Descuento Aplicado
+                            </span>
+                            <span style="font-weight: 800; color: #2563eb; font-size: 1.1rem;">${porcentaje}%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#16a34a" viewBox="0 0 16 16"><path d="M4.5 3a.5.5 0 0 0-.5.5V11h8V3.5a.5.5 0 0 0-.5-.5h-7z"/><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3z"/></svg>
+                                Documento Soporte
+                            </span>
+                            <span style="color: #1e293b; font-size: 0.75rem; font-weight: 500; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${fileInput.files[0].name}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'GUARDAR REGISTRO',
+        cancelButtonText: 'CANCELAR',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#f1f5f9',
+        reverseButtons: true,
+        padding: '2rem',
+        background: '#ffffff',
+        customClass: {
+            popup: 'swal2-modern-popup',
+            confirmButton: 'swal2-modern-confirm',
+            cancelButton: 'swal2-modern-cancel'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .swal2-modern-popup {
+                    border-radius: 32px !important;
+                    font-family: 'Inter', -apple-system, sans-serif !important;
+                }
+                .swal2-modern-confirm {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+                    color: white !important;
+                    border-radius: 16px !important;
+                    padding: 14px 32px !important;
+                    font-weight: 700 !important;
+                    font-size: 0.9rem !important;
+                    letter-spacing: 0.02em !important;
+                    border: none !important;
+                    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2) !important;
+                    margin-left: 10px !important;
+                    cursor: pointer !important;
+                }
+                .swal2-modern-cancel {
+                    background: #f8fafc !important;
+                    color: #64748b !important;
+                    border-radius: 16px !important;
+                    padding: 14px 32px !important;
+                    font-weight: 700 !important;
+                    font-size: 0.9rem !important;
+                    border: 1px solid #e2e8f0 !important;
+                    cursor: pointer !important;
+                }
+                .swal2-html-container {
+                    margin: 1.5rem 0 0 0 !important;
+                    overflow: visible !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+            btn.disabled = true;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveExoneracionDirect`);
+            xhr.onload = function() {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '<span style="color: #0f172a; font-weight: 800; font-family: \'Inter\', sans-serif;">¡Registro Exitoso!</span>',
+                                html: '<p style="color: #64748b; font-size: 0.95rem; font-weight: 400; font-family: \'Inter\', sans-serif;">La exoneración y su soporte digital se han guardado correctamente.</p>',
+                                timer: 2500,
+                                showConfirmButton: false,
+                                background: '#ffffff',
+                                padding: '2rem',
+                                iconColor: '#10b981',
+                                customClass: {
+                                    popup: 'swal2-premium-success-popup'
+                                },
+                                didOpen: () => {
+                                    const style = document.createElement('style');
+                                    style.innerHTML = `
+                                        .swal2-premium-success-popup {
+                                            border-radius: 32px !important;
+                                            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+                                        }
+                                    `;
+                                    document.head.appendChild(style);
+                                }
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                            loadExonerationHistory(nroTicket);
+
+                            getTicketData(); // Refrescar tabla principal
+                            form.reset();
+                            const fileStatus = document.getElementById('exo_fileStatus');
+                            const dropZone = document.getElementById('exo_fileDropZone');
+                            if (fileStatus) fileStatus.classList.add('d-none');
+                            if (dropZone) dropZone.classList.remove('d-none');
+                        } else {
+
+                            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                        }
+                    } catch (e) { Swal.fire({ icon: 'error', title: 'Error', text: 'Error de respuesta.' }); }
+                }
+            };
+            xhr.send(formData);
+        }
+    });
+}
+
+function openEditExonerationModal(idExoneracion) {
+    const exoData = currentExonerationHistory.find(e => parseInt(e.id_exoneracion) === parseInt(idExoneracion));
+    if (!exoData) return;
+
+    document.getElementById('edit_id_exoneracion').value = exoData.id_exoneracion;
+    document.getElementById('edit_tipo_exoneracion').value = exoData.tipo_exoneracion;
+    const slider = document.getElementById('edit_porcentaje_slider');
+    if (slider) {
+        slider.value = exoData.porcentaje || 50;
+        // Aplicar regla del 100% si es anticipo
+        adjustExoSliderByType(exoData.tipo_exoneracion, true);
+        
+        // Si no es Anticipo, actualizar el badge con el valor real
+        if (exoData.tipo_exoneracion !== 'Anticipo') {
+            const badge = document.getElementById('edit_porcentaje_badge');
+            if (badge) badge.textContent = `${Math.round(slider.value)}%`;
+        }
+    }
+
+    const editModalEl = document.getElementById('modalEditExoneracion');
+    let editModal = new bootstrap.Modal(editModalEl);
+    editModal.show();
+}
+
+function confirmAndUpdateExoneration() {
+    const form = document.getElementById('formEditExoneracion');
+    const formData = new FormData(form);
+    
+    // FIX: Si el slider está deshabilitado, FormData lo ignora.
+    if (!formData.has('porcentaje')) {
+        const slider = document.getElementById('edit_porcentaje_slider');
+        if (slider) formData.append('porcentaje', slider.value);
+    }
+
+    const nroTicket = document.getElementById('exo_nro_ticket').value;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateExoneration`);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            Swal.fire({ icon: 'success', title: '¡Actualizado!', timer: 2000, showConfirmButton: false });
+            loadExonerationHistory(nroTicket);
+            getTicketData(); // Refrescar tabla principal
+        }
+    };
+    xhr.send(formData);
+}
+
+function viewExonerationSupportByNro(nroExoneracion, nroTicket = '') {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentAttachmentByRecordNumber`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            const response = JSON.parse(xhr.responseText);
+            if (response.success && response.attachment && response.attachment.file_path) {
+                const path = response.attachment.file_path;
+                const isPdf = path.toLowerCase().endsWith('.pdf');
+                if (isPdf) showViewModal('', nroTicket, null, path, 'Soporte', false);
+                else showViewModal('', nroTicket, path, null, 'Soporte', false);
+            }
+        }
+    };
+    xhr.send(`record_number=${nroExoneracion}&document_type=Exoneracion`);
+}
+
+function cleanFilePath(filePath) {
+    if (!filePath) return null;
+    let path = filePath.replace(/\\/g, '/');
+    const rootMarker = "Documentos_SoportePost/";
+    const index = path.toLowerCase().indexOf(rootMarker.toLowerCase());
+    if (index !== -1) path = path.substring(index + rootMarker.length);
+    const origin = new URL(ENDPOINT_BASE).origin;
+    return `${origin}/Documentos/${path}`;
+}
+
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null, subtitle = null) {
+  const modalElementView = document.getElementById("viewDocumentModal");
+  const modalTitleView = document.getElementById("viewModalTicketId") || document.getElementById("viewDocumentModalLabel");
+  const imageViewPreview = document.getElementById("imageViewPreview");
+  const pdfViewViewer = document.getElementById("pdfViewViewer");
+  const messageContainer = document.getElementById("viewDocumentMessage");
+  const nameDocumento = document.getElementById("NombreImage");
+  const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+
+  if (customTitle) {
+    modalTitleView.innerHTML = customTitle;
+  } else {
+    modalTitleView.textContent = nroTicket;
+  }
+
+  // Limpiar vistas
+  imageViewPreview.style.display = "none";
+  pdfViewViewer.style.display = "none";
+  if (messageContainer) {
+    messageContainer.textContent = "";
+    messageContainer.classList.add("hidden");
+  }
+  
+  if (imageUrl) {
+    imageViewPreview.src = cleanFilePath(imageUrl);
+    imageViewPreview.style.display = "block";
+    if (nameDocumento) nameDocumento.textContent = documentName;
+  } else if (pdfUrl) {
+    pdfViewViewer.innerHTML = `<iframe src="${cleanFilePath(pdfUrl)}" width="100%" height="800px" style="border:none;"></iframe>`;
+    pdfViewViewer.style.display = "block";
+    if (nameDocumento) nameDocumento.textContent = documentName;
+  }
+
+  const modalInstance = new bootstrap.Modal(modalElementView);
+  modalInstance.show();
+  
+  if (BotonCerrarModal) {
+    BotonCerrarModal.onclick = function () {
+        modalInstance.hide();
+        if (fromSelector) {
+            setTimeout(() => {
+              const selectDocModal = document.getElementById('documentActionsModal');
+              if (selectDocModal) {
+                  const selectModalInstance = new bootstrap.Modal(selectDocModal);
+                  selectModalInstance.show();
+              }
+            }, 300); 
+        }
+    };
+  }
+}
+
+/**
+ * Valida el impacto de la exoneración propuesta contra lo ya pagado 
+ * para evitar sobrepagos/excedentes de dinero (Copia sincronizada de Exoneración)
+ */
+function validateExonerationOverpaymentImpact() {
+    const selectedType = document.getElementById('exo_tipo_seleccionado')?.value || 'Anticipo';
+    const sliderVal = parseFloat(document.getElementById('exo_slider')?.value) || 0;
+    if (typeof window.currentGrossBudget === 'undefined' || window.currentGrossBudget <= 0) return true;
+    const gross = window.currentGrossBudget || 0;
+    const currentPaid = window.currentTotalPaid || 0;
+    const currentHistory = window.currentExonerations || [];
+    let workshopSavingsTotal = 0;
+    let anticipoSavingsTotal = 0;
+
+    currentHistory.forEach(exo => {
+        let type = (exo.tipo_exoneracion || 'Anticipo').toLowerCase();
+        let pct = parseFloat(exo.porcentaje) || 0;
+        if (type === 'pago taller' || type === 'taller' || type === 'presupuesto') {
+            workshopSavingsTotal += (gross * pct) / 100;
+        } else if (type === 'anticipo') {
+            anticipoSavingsTotal += (30.00 * pct) / 100;
+        }
+    });
+
+    if (selectedType.toLowerCase() === 'pago taller' || selectedType.toLowerCase() === 'taller' || selectedType.toLowerCase() === 'presupuesto') {
+        workshopSavingsTotal += (gross * sliderVal) / 100;
+    } else if (selectedType.toLowerCase() === 'anticipo') {
+        anticipoSavingsTotal += (30.00 * sliderVal) / 100;
+    }
+
+    let finalTotalSavings = Math.max(workshopSavingsTotal, anticipoSavingsTotal);
+    let proposedNetBudget = Math.max(0, gross - finalTotalSavings);
+    let infoContainer = document.getElementById('exo_limit_info_container');
+    let btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+
+    if (currentPaid > (proposedNetBudget + 0.05) && gross > 0) {
+        const overflow = currentPaid - proposedNetBudget;
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="alert alert-danger border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+                     style="background: #fff5f5; border-radius: 12px; border-left: 5px solid #ff4d4f !important; padding: 15px; margin-top:-10px;">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-danger" style="font-weight: 700; font-size: 0.95rem;">Excedente de Pago</h6>
+                            <p class="mb-0 text-muted" style="font-size: 0.85rem; line-height: 1.4;">
+                                El cliente ya pagó <span class="fw-bold text-dark">$${currentPaid.toFixed(2)}</span>. 
+                                Con esta exoneración, el monto total baja a <span class="fw-bold text-dark">$${proposedNetBudget.toFixed(2)}</span>.
+                                <br><span class="text-danger fw-bold">Sobrante: $${overflow.toFixed(2)}</span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+            btnGuardar.innerHTML = `<i class="fas fa-ban me-2"></i>Monto Excedido`;
+        }
+        return false;
+    } else {
+        if (infoContainer) infoContainer.innerHTML = "";
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.style.background = 'linear-gradient(135deg, #da1b60 0%, #ff8a00 100%)';
+            btnGuardar.innerHTML = `<i class="fas fa-save me-2"></i>Guardar Exoneración`;
+        }
+        return true;
+    }
+}
+
+// Listeners adicionales para el modal de exoneración (Slider y Botones de Tipo)
+document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'exo_slider') {
+        const display = document.getElementById('exo_porcentaje_valor');
+        if (display) display.innerText = `${e.target.value}%`;
+        validateExonerationOverpaymentImpact();
+    }
+});
+
+document.addEventListener('click', function(e) {
+    const typeBtn = e.target.closest('.exoneration-type-btn');
+    if (typeBtn && !typeBtn.classList.contains('disabled')) {
+        document.querySelectorAll('.exoneration-type-btn').forEach(btn => btn.classList.remove('active'));
+        typeBtn.classList.add('active');
+        const selectedType = typeBtn.getAttribute('data-type');
+        document.getElementById('exo_tipo_seleccionado').value = selectedType;
+        updateExoCodeByType(selectedType, idClienteSQL);
+        
+        // REGLA DEL 100% PARA ANTICIPO
+        adjustExoSliderByType(selectedType);
+        validateExonerationOverpaymentImpact();
+    }
+    
+    if (e.target.closest('#btnSincronizarExoneracion')) {
+        confirmAndSaveExoneration();
+    }
+
+     // Botón Cerrar Modal Exoneración
+    const closeExoBtn = e.target.closest('.btn-close-custom');
+    if (closeExoBtn) {
+        if (typeof modalRegistroExoInstance !== 'undefined' && modalRegistroExoInstance) {
+            modalRegistroExoInstance.hide();
+        } else {
+            const modalElement = document.getElementById('modalRegistroExoneracion');
+            if (modalElement) {
+                bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+            }
+        }
+    }
+    
+    if (e.target.closest('#btnGuardarEdicionExo')) {
+        confirmAndUpdateExoneration();
+    }
+});
+
+// ========== MANEJO DE ARCHIVOS - MODAL EXONERACIÓN ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const exoFileInput = document.getElementById('exo_documentFile');
+    const exoDropZone = document.getElementById('exo_fileDropZone');
+    const exoFileStatus = document.getElementById('exo_fileStatus');
+    const exoFileName = document.getElementById('exo_fileName');
+    const btnClearExoFile = document.getElementById('btn_clear_exo_file');
+
+    if (!exoFileInput || !exoDropZone) return;
+
+    // Actualizar vista al seleccionar archivo
+    exoFileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const file = this.files[0];
+            exoFileName.innerText = file.name;
+            exoFileStatus.classList.remove('d-none');
+            exoDropZone.classList.add('d-none');
+        }
+    });
+
+    // Botón para limpiar archivo seleccionado
+    if (btnClearExoFile) {
+        btnClearExoFile.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            exoFileInput.value = '';
+            exoFileStatus.classList.add('d-none');
+            exoDropZone.classList.remove('d-none');
+        });
+    }
+
+    // Drag & Drop events
+    exoDropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.style.borderColor = '#da1b60';
+        this.style.background = 'rgba(218, 27, 96, 0.05)';
+    });
+
+    exoDropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.style.borderColor = '#94a3b8';
+        this.style.background = 'transparent';
+    });
+
+    exoDropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.style.borderColor = '#94a3b8';
+        this.style.background = 'transparent';
+        
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            exoFileInput.files = e.dataTransfer.files;
+            // Trigger change manually since setting .files doesn't fire it
+            exoFileInput.dispatchEvent(new Event('change'));
+        }
+    });
+});
+
+
+
