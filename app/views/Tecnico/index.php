@@ -455,6 +455,7 @@ function mi_navbar() {}
 
             /* Botón de Cargar Exoneración (morado) */
             #ExoBoton {
+                display: none !important;
                 background-color: #805ad5;
                 border-color: #805ad5;
                 color: white;
@@ -660,6 +661,211 @@ function mi_navbar() {}
                 font-size: 1.2rem;
                 margin-top: 4px;
             }
+
+            /* Estilos para el Modal de Exoneración */
+            .exoneration-type-group {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .exoneration-type-btn {
+                flex: 1;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                background: white;
+                color: #666;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                cursor: pointer;
+            }
+            .exoneration-type-btn.active[data-type="Anticipo"] {
+                background: #ff9800;
+                border-color: #ff9800;
+                color: white;
+                box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+            }
+            .exoneration-type-btn.active[data-type="Pago taller"] {
+                background: #f44336;
+                border-color: #f44336;
+                color: white;
+                box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+            }
+            .exoneration-type-btn.disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: #f5f5f5 !important;
+                color: #aaa !important;
+                border-color: #eee !important;
+                pointer-events: none;
+                box-shadow: none !important;
+            }
+            .percentage-slider-container {
+                background: #f1f3f9;
+                padding: 25px 20px;
+                border-radius: 15px;
+                margin-bottom: 25px;
+                position: relative;
+            }
+            .percentage-display {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: #ff7043;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 1.2rem;
+                box-shadow: 0 4px 10px rgba(255, 112, 67, 0.3);
+                z-index: 5;
+            }
+            .custom-range {
+                width: 100%;
+                height: 8px;
+                border-radius: 5px;
+                background: #dee2e6;
+                outline: none;
+                -webkit-appearance: none;
+            }
+            .custom-range::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: #ff9800;
+                cursor: pointer;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                transition: all 0.2s ease;
+            }
+            .custom-range::-webkit-slider-thumb:hover {
+                transform: scale(1.2);
+            }
+            .exo-code-container {
+                display: flex;
+                align-items: center;
+                background: white;
+                border: 2px solid #e0e0e0;
+                border-radius: 12px;
+                overflow: hidden;
+                margin-bottom: 25px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+            .exo-code-icon {
+                background: #0d47a1;
+                padding: 12px 18px;
+                color: white;
+            }
+            .exo-code-value {
+                padding: 12px 20px;
+                font-family: 'Courier New', Courier, monospace;
+                font-weight: 700;
+                color: #0d47a1;
+                letter-spacing: 2px;
+                flex: 1;
+                text-align: center;
+                font-size: 1.1rem;
+            }
+
+            /* Soporte Digital Styles Reused from Payment Module */
+            .exo-upload-container {
+                position: relative;
+                margin-bottom: 20px;
+            }
+            .exo-file-drop-zone {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 40px 20px;
+                border: 2px dashed #cbd5e0 !important;
+                border-radius: 20px;
+                background: #ffffff;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-align: center;
+                min-height: 190px;
+                width: 100%;
+            }
+            .exo-file-drop-zone:hover {
+                border-color: #da1b60 !important;
+                background: #fff5f7;
+            }
+            .exo-file-status {
+                padding: 15px;
+                background: #f0fdf4;
+                border: 1px solid #86efac;
+                border-radius: 12px;
+                margin-top: 10px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                cursor: pointer;
+            }
+            .btn-sync-exo {
+                background: orange;
+                color: white;
+                font-weight: 700;
+                width: 100%;
+                padding: 14px;
+                border-radius: 12px;
+                border: none;
+                box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .btn-sync-exo:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6);
+                background: #e69500;
+                color: white;
+            }
+            .history-section-title {
+                font-size: 1rem;
+                font-weight: 700;
+                color: #333;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #eee;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            /* Botón de cierre personalizado */
+            .btn-close-custom {
+                position: absolute;
+                top: 25px;
+                right: 25px;
+                background-color: rgba(255, 255, 255, 0.2);
+                border-radius: 50%;
+                padding: 10px;
+                width: 35px;
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s ease;
+                border: none;
+                opacity: 0.8;
+                outline: none;
+                z-index: 10;
+            }
+            .btn-close-custom:hover {
+                background-color: rgba(255, 255, 255, 0.4);
+                transform: rotate(90deg);
+                opacity: 1;
+            }
+            .btn-close-custom svg {
+                fill: white;
+                width: 20px;
+                height: 20px;
+            }
         </style>
     </head>
 
@@ -744,18 +950,41 @@ function mi_navbar() {}
                             <form id="formAgregarDatosPago">
                                 <input type="hidden" id="id_user_pago" name="userId" value="<?php echo isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; ?>">
                                 <input type="hidden" id="nro_ticket_pago" name="nro_ticket_pago">
+                                <input type="hidden" id="id_payment_record_loading">
+                                <input type="hidden" id="document_type_pago">
                                 
+                                <!-- Sección: Información del Cliente -->
                                 <div class="form-section">
                                     <div class="form-section-header">
-                                        <i class="fas fa-desktop"></i>
-                                        <h6 class="form-section-title">Información del Equipo</h6>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-circle me-2" viewBox="0 0 16 16"><path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/></svg>
+                                        <h6 class="form-section-title">Información del Cliente</h6>
                                     </div>
                                     <div class="row g-2">
-                                        <div class="col-md-12 mb-2">
-                                            <label for="serialPosPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                                <i class="fas fa-barcode me-1 text-primary"></i>Serial POS
+                                        <div class="col-md-6 mb-2">
+                                            <label for="displayRazonSocial" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-building me-1 text-primary" viewBox="0 0 16 16"><path d="M4 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 8.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zM4 11.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5z"/><path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zm11 0H3v14h3v-2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V15h3z"/></svg>Razón Social
                                             </label>
-                                            <input type="text" class="form-control" id="serialPosPago" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px;">
+                                            <input type="text" class="form-control" id="displayRazonSocial" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label for="displayRif" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-card-list me-1 text-primary" viewBox="0 0 16 16"><path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/><path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A1.5 1.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>RIF
+                                            </label>
+                                            <input type="text" class="form-control" id="displayRif" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                        </div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-6 mb-2">
+                                            <label for="serialPosPago" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-barcode me-1 text-primary" viewBox="0 0 16 16"><path d="M1 11.107V4.893C1 4.4 1.398 4 1.889 4H14.11C14.6 4 15 4.398 15 4.893v6.214C15 11.6 14.602 12 14.111 12H1.89C1.4 12 1 11.602 1 11.107ZM1.889 5v6h12.222V5H1.889Z"/><path d="M2 5v6h1V5H2Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1ZM11 5v6h1V5h-1Zm1.5 0v6h1V5h-1Zm1.5 0v6h1V5h-1Z"/></svg>Serial POS
+                                            </label>
+                                            <input type="text" class="form-control" id="serialPosPago" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label for="displayEstatusPos" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-broadcast-pin me-1 text-primary" viewBox="0 0 16 16"><path d="M3.05 3.05a7 7 0 0 0 0 9.9.5.5 0 0 1-.707.707 8 8 0 0 1 0-11.314.5.5 0 0 1 .707.707m2.122 2.122a4 4 0 0 0 0 5.656.5.5 0 1 1-.708.708 5 5 0 0 1 0-7.072.5.5 0 0 1 .708.708m5.656 0a.5.5 0 0 1 .708 0 5 5 0 0 1 0 7.072.5.5 0 0 1-.708-.708 4 4 0 0 0 0-5.656.5.5 0 0 1 0-.708m2.122-2.122a.5.5 0 0 1 .707 0 8 8 0 0 1 0 11.314.5.5 0 0 1-.707-.707 7 7 0 0 0 0-9.9.5.5 0 0 1 0-.707zM6 8a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"/></svg>Estatus POS
+                                            </label>
+                                            <input type="text" class="form-control" id="displayEstatusPos" readonly style="background-color: #e9ecef; cursor: not-allowed; font-size: 0.95rem; padding: 8px 12px; font-weight: 500;">
                                         </div>
                                     </div>
                                 </div>
@@ -918,18 +1147,34 @@ function mi_navbar() {}
                                     </div>
                                 </div>
 
+                                <!-- Sección: Soporte Digital -->
                                 <div class="form-section">
                                     <div class="form-section-header">
-                                        <i class="fas fa-file-upload"></i>
-                                        <h6 class="form-section-title">Archivo de Soporte</h6>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cloud-arrow-up me-2" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/><path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383m.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/></svg>
+                                        <h6 class="form-section-title">Soporte Digital</h6>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-md-12 mb-2">
                                             <label for="documentFileDetailed" class="form-label fw-semibold mb-1" style="font-size: 0.9rem;">
-                                                <i class="fas fa-file-image me-1 text-primary"></i>Seleccionar Comprobante <span style="color: #dc3545;">*</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-file-earmark-arrow-up me-1 text-primary" viewBox="0 0 16 16"><path d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>Documento de Pago <span style="color: #dc3545;">*</span>
                                             </label>
-                                            <input type="file" class="form-control" id="documentFileDetailed" accept="image/jpg, image/png, image/gif, application/pdf" required style="font-size: 0.95rem;">
-                                            <small class="text-muted">Formatos permitidos: JPG, PNG, GIF o PDF</small>
+                                            <!-- Drop zone container -->
+                                            <div id="fileDropZone" style="border: 2px dashed #cbd5e0; border-radius: 8px; padding: 30px; text-align: center; background: #f8f9fa; cursor: pointer; transition: all 0.3s ease;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#a0aec0" class="bi bi-camera mb-2" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/></svg>
+                                                <p style="color: #4a5568; font-size: 1rem; margin: 10px 0 5px 0; font-weight: 500;">Adjunte el Documento de Pago</p>
+                                                <small style="color: #a0aec0; font-size: 0.85rem;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-info-circle me-1" viewBox="0 0 16 16" style="vertical-align: middle;"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/></svg>
+                                                    Formatos permitidos: JPG, PNG, GIF o PDF (Máx. 5MB)
+                                                </small>
+                                            </div>
+                                            <input type="file" class="d-none" id="documentFileDetailed" accept="image/jpg, image/png, image/gif, application/pdf" required>
+                                            <!-- File name display with green indicator -->
+                                            <div id="fileNameDisplay" style="display: none; margin-top: 10px; padding: 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;">
+                                                <div style="display: flex; align-items: center; gap: 10px;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                                                    <span id="fileNameText" style="color: #16a34a; font-weight: 500; font-size: 0.95rem;"></span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1186,7 +1431,9 @@ function mi_navbar() {}
                                     <i class="bi bi-box-seam-fill me-2"></i>Lista de Componentes del Dispositivo
                                 </h5>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body p-4" id="detailedPaymentForm">
+                                <input type="hidden" id="id_payment_record_loading">
+                                <input type="hidden" id="document_type_pago">
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="alert bg-gradient-primary text-white" role="alert">
@@ -1352,7 +1599,7 @@ function mi_navbar() {}
 
                             <div class="col-12">
                                 <button type="button" class="btn btn-secondary" id="previewHtmlTemplateBtn">Previsualizar</button>
-                                <button type="button" class="btn btn-success" id="printHtmlTemplateBtn">Imprimir / Guardar PDF</button>
+                                <button type="button" class="btn btn-success" id="printHtmlTemplateBtn" disabled>Imprimir / Guardar PDF</button>
                             </div>
                             <div class="col-12" style="height: 400px;">
                                 <iframe id="htmlTemplatePreview" style="width:100%; height:100%; border:1px solid #ddd;"></iframe>
@@ -1418,6 +1665,264 @@ function mi_navbar() {}
                 }
             }
         ?>
+
+        <!-- File Drop Zone Script -->
+        <!-- MODAL REGISTRO EXONERACION -->
+        <div class="modal fade" id="modalRegistroExoneracion" tabindex="-1" aria-labelledby="modalRegistroExoneracionLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="border-radius: 15px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.3);">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #ff8a00 0%, #da1b60 100%); color: white; padding: 20px 25px; border: none; position: relative;">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-white p-2 rounded-circle me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#da1b60" class="bi bi-file-earmark-check" viewBox="0 0 16 16">
+                                    <path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0z"/>
+                                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h5 class="modal-title mb-0" id="modalRegistroExoneracionLabel" style="color: white; font-weight: 700; letter-spacing: 0.5px;">Detalles de Exoneración</h5>
+                                <small id="subtituloExo" style="opacity: 0.9;">Ticket #00000000</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close-custom" aria-label="Close" data-bs-dismiss="modal">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                                <path d="M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="background: white; padding: 30px;">
+                        <form id="formRegistroExoneracion">
+                            <input type="hidden" id="exo_ticket_id" name="ticketId">
+                            <input type="hidden" id="exo_nro_ticket" name="nro_ticket">
+                            <input type="hidden" id="exo_serial_pos" name="serial_pos">
+                            <input type="hidden" id="exo_id_cliente" name="id_intelipunto">
+                            <input type="hidden" id="exo_tipo_seleccionado" name="tipo_exoneracion" value="Anticipo">
+
+                            <h6 class="text-muted mb-3 font-weight-bold" style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">Tipo de Exoneración</h6>
+                            <div class="exoneration-type-group">
+                                <div class="exoneration-type-btn active" data-type="Anticipo">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cash-coin" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M11 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8m5-4a5 5 0 1 1-10 0 5 5 0 0 1 10 0"/>
+                                        <path d="M9.438 11.944c.047.596.518 1.06 1.363 1.116v.44h.375v-.443c.875-.061 1.386-.529 1.386-1.207 0-.618-.39-.936-1.09-1.1l-.296-.07v-1.2c.376.043.614.248.671.532h.658c-.047-.575-.54-1.039-1.329-1.129V8.5h-.375v.45c-.747.073-1.255.522-1.255 1.158 0 .562.378.92 1.007 1.066l.248.061v1.272c-.384-.058-.639-.27-.696-.563h-.668zm1.36-1.354c-.369-.085-.569-.26-.569-.522 0-.294.216-.514.572-.578v1.1zm.432.746c.449.104.655.272.655.569 0 .339-.257.571-.709.614v-1.195z"/>
+                                        <path d="M1 0a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h.308c.191.05.39.091.597.122V1h12v.122c.207-.031.406-.071.597-.122H15a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1z"/>
+                                        <path d="M14 12.5a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1 0-1H7a.5.5 0 0 1 .5.5"/>
+                                    </svg>
+                                    Anticipo
+                                </div>
+                                <div class="exoneration-type-btn" data-type="Pago taller">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-tools" viewBox="0 0 16 16">
+                                        <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.427h1.01a1 1 0 0 1 .808.409l1.49 2.038a4.4 4.4 0 0 0 6.645 0l1.49-2.038a1 1 0 0 1 .808-.409h1.01a1 1 0 0 0 .815-.427L16 0h-3l-1.1 1.02a1 1 0 0 1-1.142.181l-1.04-.647a1 1 0 0 0-1.055-.006l-1.04.647a1 1 0 0 1-1.142-.181L5 0zM5 7l2 5h2l2-5V5L9 9l-2-4z"/>
+                                    </svg>
+                                    Pago taller
+                                </div>
+                            </div>
+
+                            <div class="percentage-slider-container">
+                                <h6 class="text-muted font-weight-bold mb-4" style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">Porcentaje Aplicado</h6>
+                                <div class="percentage-display" id="exo_porcentaje_valor">100%</div>
+                                <input type="range" class="custom-range" id="exo_slider" name="porcentaje" min="0" max="100" value="100" disabled style="cursor: not-allowed; opacity: 0.7;">
+                                <div class="d-flex justify-content-between mt-2 px-1">
+                                    <span class="text-muted small">0%</span>
+                                    <span class="text-muted small">25%</span>
+                                    <span class="text-muted small">50%</span>
+                                    <span class="text-muted small">75%</span>
+                                    <span class="text-muted small">100%</span>
+                                </div>
+                            </div>
+
+                            <h6 class="text-muted mb-2 font-weight-bold" style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;">Código de Exoneración (Auto)</h6>
+                            <div class="exo-code-container">
+                                <div class="exo-code-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-qr-code-scan" viewBox="0 0 16 16">
+                                        <path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 1v1h1v-1H4zM4.5 9a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-2zM5 10h1v1H5v-1zm5.5-1a.5.5 0 0 0-.5.5v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-2zM11 10h1v1h-1v-1zM9 4.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2zm1 1v1h1v-1h-1z"/>
+                                    </svg>
+                                </div>
+                                <div class="exo-code-value" id="exo_nro_generado">Exo0000-0000</div>
+                                <input type="hidden" id="exo_nro_hidden" name="nro_exoneracion">
+                            </div>
+
+                            <h6 class="mb-3" style="text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: #64748b; letter-spacing: 1.2px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cloud-upload me-2" viewBox="0 0 16 16" style="vertical-align: middle; margin-top: -2px;">
+                                    <path fill-rule="evenodd" d="M4.406 1.342A5.53 5.53 0 0 1 8 0c2.69 0 4.923 2 5.508 4.56a4.5 4.5 0 1 1-1.122 8.835l.23-.974a3.5 3.5 0 1 0-.965-6.837l-.234.027c-.046-.01-.09-.022-.132-.033-.424-.111-.83-.166-1.226-.166-1.554 0-2.83 1.054-3.15 2.454l-.234.027a3 3 0 0 0-2.43 2.502H3a1 1 0 0 0-1-1c0-.422.25-.78.614-.945a.5.5 0 1 0-.414-.91A2 2 0 0 1 3 13.5h.341l.23-.974H3a1.5 1.5 0 0 1 0-3h.341l.23-.974A3.5 3.5 0 0 1 4.406 1.342Z"/><path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708z"/>
+                                </svg>Soporte Digital
+                            </h6>
+                            <div class="exo-upload-container">
+                                <input type="file" id="exo_documentFile" name="documentoSoporte" accept="image/*,.pdf" style="display: none;">
+                                <label for="exo_documentFile" class="exo-file-drop-zone" id="exo_fileDropZone">
+                                    <div class="mb-3" id="exo_iconDoc">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 18.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                                        </svg>
+                                    </div>
+                                    <span class="d-block mb-1" id="exo_textDoc" style="font-size: 1.3rem; font-weight: 800; color: #475569 !important; letter-spacing: -0.5px;">Adjunte el Documento de Soporte</span>
+                                    <span class="d-block" style="font-size: 1rem; font-weight: 600; color: #94a3b8 !important;">JPG, PNG o PDF (Máx. 5MB)</span>
+                                </label>
+                                <div id="exo_fileStatus" class="d-none w-100 text-center animate__animated animate__fadeIn mt-2">
+                                    <div class="d-flex align-items-center p-3 shadow-sm mx-auto" style="max-width: 95%; background: #ffffff; border: 1px solid #d1fae5; border-radius: 16px;">
+                                        <div class="file-icon-bg me-3" style="background: #ecfdf5; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#059669" class="bi bi-file-earmark-check" viewBox="0 0 16 16"><path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>
+                                        </div>
+                                        <div class="text-start flex-grow-1 overflow-hidden">
+                                            <p id="exo_fileName" class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.85rem; letter-spacing: -0.2px;">archivo.pdf</p>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge rounded-pill me-2" style="background: #10b981; font-size: 0.65rem; font-weight: 700;">PDF / IMG</span>
+                                                <small class="text-success fw-bold" style="font-size: 0.7rem;">Listo para actualizar</small>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="btn_clear_exo_file" class="btn btn-sm btn-light rounded-circle shadow-sm ms-2" style="width: 30px; height: 30px; padding: 0; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; transition: all 0.2s ease;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#64748b" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn w-100 mt-3" id="btnSincronizarExoneracion" style="background: linear-gradient(135deg, #da1b60 0%, #ff8a00 100%); color: white; border-radius: 12px; padding: 12px; font-weight: 700; border: none; box-shadow: 0 4px 15px rgba(218, 27, 96, 0.3); transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" class="me-2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                Guardar Exoneración
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL VISUALIZAR SOPORTE EXONERACION -->
+        <div class="modal fade" id="modalViewExoSupport" tabindex="-1" aria-labelledby="modalViewExoSupportLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.3); overflow: hidden;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; border-radius: 16px 16px 0 0; border: none; padding: 18px 25px;">
+                        <h5 class="modal-title mb-0 d-flex align-items-center" id="modalViewExoSupportLabel" style="font-weight: 600; color: white;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-text me-2" viewBox="0 0 16 16">
+                                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v3.75a.5.5 0 0 0 .5.5H14zM3 2a1 1 0 0 1 1-1h5.5v3.5A1.5 1.5 0 0 0 11 6h3.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                            </svg>
+                            Vista Previa del Soporte
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0" style="background: #f1f5f9; min-height: 400px; display: flex; align-items: center; justify-content: center;">
+                        <img id="viewExoSupportImg" src="" class="img-fluid d-none" style="object-fit: contain; max-height: 80vh; width: 100%;">
+                        <iframe id="viewExoSupportPdf" src="" class="d-none" style="width: 100%; height: 80vh; border: none;"></iframe>
+                    </div>
+                    <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 25px;">
+                        <button type="button" class="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal" style="border-radius: 10px;">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL EDITAR EXONERACIÓN -->
+        <div class="modal fade" id="modalEditExoneracion" tabindex="-1" aria-labelledby="modalEditExoneracionLabel" aria-hidden="true" style="background-color: rgba(15, 23, 42, 0.7); backdrop-filter: blur(15px);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; background: #ffffff;">
+                    <div class="modal-header d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; padding: 20px 25px; position: relative;">
+                        <h5 class="modal-title mb-0" id="modalEditExoneracionLabel" style="font-weight: 800; letter-spacing: -0.5px; font-size: 1.25rem;">Editar Exoneración</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 25px; background: #ffffff;">
+                        <form id="formEditExoneracion">
+                            <input type="hidden" id="edit_id_exoneracion" name="id_exoneracion">
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">Tipo de Exoneración</label>
+                                <input type="text" class="form-control" id="edit_tipo_exoneracion" name="tipo_exoneracion" readonly style="background: #f8fafc; font-weight: 700; color: #1e293b;">
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-uppercase text-muted m-0" style="font-size: 0.7rem; letter-spacing: 1px;">Porcentaje Aplicado</label>
+                                <span id="edit_porcentaje_badge" class="badge bg-light text-dark mb-2">100%</span>
+                                <input type="range" class="form-range" id="edit_porcentaje_slider" name="porcentaje" min="0" max="100" value="100">
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label fw-bold text-uppercase text-muted mb-2" style="font-size: 0.7rem; letter-spacing: 1px;">Documento de Soporte</label>
+                                <input type="file" id="edit_documentFile" name="documentoSoporte" accept="image/*,.pdf" class="form-control">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 15px 25px;">
+                        <button type="button" class="btn btn-light px-4 py-2" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success px-5 py-2" id="btnGuardarEdicionExo">Guardar Cambios</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        // ========== FILE DROP ZONE FUNCTIONALITY ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileDropZone = document.getElementById('fileDropZone');
+            const fileInput = document.getElementById('documentFileDetailed');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const fileNameText = document.getElementById('fileNameText');
+            
+            if (!fileDropZone || !fileInput) return;
+            
+            // Click to upload
+            fileDropZone.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // File input change event
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    const file = this.files[0];
+                    showFileSuccess(file.name);
+                }
+            });
+            
+            // Drag and drop events
+            fileDropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.style.borderColor = '#667eea';
+                this.style.background = '#f0f4ff';
+            });
+            
+            fileDropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.style.borderColor = '#cbd5e0';
+                this.style.background = '#f8f9fa';
+            });
+            
+            fileDropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.style.borderColor = '#cbd5e0';
+                this.style.background = '#f8f9fa';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    showFileSuccess(files[0].name);
+                }
+            });
+            
+            function showFileSuccess(filename) {
+                if (fileNameDisplay && fileNameText) {
+                    fileNameText.textContent = filename;
+                    fileNameDisplay.style.display = 'block';
+                    
+                    // Hide drop zone, show success indicator
+                    fileDropZone.style.display = 'none';
+                }
+            }
+            
+            // Reset when modal closes
+            const modal = document.getElementById('modalAgregarDatosPago');
+            if (modal) {
+                modal.addEventListener('hidden.bs.modal', function() {
+                    if (fileInput) fileInput.value = '';
+                    if (fileNameDisplay) fileNameDisplay.style.display = 'none';
+                    if (fileDropZone) fileDropZone.style.display = 'block';
+                });
+            }
+        });
+        </script>
 
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
             <?php

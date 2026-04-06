@@ -535,6 +535,11 @@ function formatTicketDetailsPanel(d) {
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
+                        <div class="col-sm-6 mb-2">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || ""}" data-serial-pos = "${d.serial_pos || ""}">
+                            <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
+                          </button>
+                        </div>    
                     </div>
                 </div>
             </div>
@@ -927,8 +932,10 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showComponentsChanges = cleanString(item.components_changes); // Nuevo campo con cambios específicos
                     const shouldHighlightComponents = showComponents && (accionChanged || componentsChanged);
 
-                    const rejectedActions = ['Documento de Exoneracion Rechazado', 'Documento de Anticipo Rechazado'];
-                    const showMotivoRechazo = rejectedActions.includes(cleanString(item.name_status_payment)) && cleanString(item.name_motivo_rechazo);
+                    // Robust check for Rejection Details: show if there's a rejection reason, a record number, or if the status implies rejection
+                    const itemStatusPayment = cleanString(item.name_status_payment) || "";
+                    const hasRejectionStatus = itemStatusPayment.toLowerCase().includes('rechazado');
+                    const showMotivoRechazo = hasRejectionStatus || cleanString(item.name_motivo_rechazo) || cleanString(item.record_number);
 
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
@@ -1088,7 +1095,10 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                 ${cleanString(item.pago) === 'Sí' ? `
                                                     <tr>
                                                         <th class="text-start">Documento de Pago:</th>
-                                                        <td class="${pagoChanged ? "highlighted-change" : ""}">✓ Cargado</td>
+                                                        <td class="${pagoChanged ? "highlighted-change" : ""}">
+                                                            ${cleanString(item.record_number) ? cleanString(item.record_number) : '✓ Cargado'}
+                                                            ${cleanString(item.name_motivo_rechazo) ? `<br><span style="color: #dc3545; font-weight: bold;">Rechazado: ${cleanString(item.name_motivo_rechazo)}</span>` : ''}
+                                                        </td>
                                                     </tr>
                                                 ` : ''}
                                                 ${cleanString(item.exoneracion) === 'Sí' ? `
@@ -1391,17 +1401,19 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_payment) || 'N/A'}</td></tr>
                         ${cleanString(item.components_list) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.components_list)}</td></tr>` : ''}
                         ${cleanString(item.components_changes) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Cambios en Periféricos</strong></td><td style="padding:4px; border-bottom:1px solid #eee; color: #dc3545;">${cleanString(item.components_changes)}</td></tr>` : ''}
-                        ${cleanString(item.name_motivo_rechazo) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Motivo Rechazo</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.name_motivo_rechazo)}</td></tr>` : ''}
+                         ${cleanString(item.name_motivo_rechazo) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Motivo Rechazo Documento:</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${cleanString(item.name_motivo_rechazo)}</strong></td></tr>` : ''}
+                         ${cleanString(item.nro_payment_reference) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Nro de Pago:</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${cleanString(item.nro_payment_reference)}</strong></td></tr>` : ''}
+                         ${cleanString(item.record_number) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Nro de Registro:</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${cleanString(item.record_number)}</strong></td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago) || 'No'}</td></tr>
-                        ${cleanString(item.pago_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Pago Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.pago_fecha)}</td></tr>` : ''}
+                        ${cleanString(item.pago_fecha) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Pago Fecha</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.pago_fecha)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Exoneración</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.exoneracion) || 'No'}</td></tr>
-                        ${cleanString(item.exoneracion_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Exoneración Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.exoneracion_fecha)}</td></tr>` : ''}
+                        ${cleanString(item.exoneracion_fecha) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Exoneración Fecha</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.exoneracion_fecha)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio) || 'No'}</td></tr>
-                        ${cleanString(item.envio_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.envio_fecha)}</td></tr>` : ''}
+                        ${cleanString(item.envio_fecha) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío Fecha</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio_fecha)}</td></tr>` : ''}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío a Destino</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio_destino) || 'No'}</td></tr>
-                        ${cleanString(item.envio_destino_fecha) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Envío Destino Fecha</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.envio_destino_fecha)}</td></tr>` : ''}
-                        ${cleanString(item.comment_devolution) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Devolución</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_devolution)}</td></tr>` : ''}
-                        ${cleanString(item.comment_reasignation) ? `<tr><td style=\"padding:4px; border-bottom:1px solid #eee;\"><strong>Comentario Reasignación</strong></td><td style=\"padding:4px; border-bottom:1px solid #eee;\">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
+                        ${cleanString(item.envio_destino_fecha) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Envío Destino Fecha</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.envio_destino_fecha)}</td></tr>` : ''}
+                        ${cleanString(item.comment_devolution) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Comentario Devolución</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.comment_devolution)}</td></tr>` : ''}
+                        ${cleanString(item.comment_reasignation) ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Comentario Reasignación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.comment_reasignation)}</td></tr>` : ''}
                     </tbody>
                 </table>
                 </div>

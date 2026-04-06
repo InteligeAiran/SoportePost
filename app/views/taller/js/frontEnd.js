@@ -108,10 +108,10 @@ function getTicketData() {
     // Definir findFirstButtonWithData fuera de initComplete
     function findFirstButtonWithData(api) {
         const searchTerms = [
-            { button: "btn-por-asignar", column: 9, term: "^Recibido en Taller$", status: "En proceso", action: "Recibido en Taller" },
-            { button: "btn-asignados", column: 8, term: "^Enviado a taller$", status: "En proceso", action: ["En proceso de Reparación", "Reparado", "Pendiente por repuesto", "Gestión Comercial (Irreparable)"] },
-            { button: "btn-recibidos", column: 8, term: "^En espera confirmación carga de llaves$", status: "En proceso", action: "En espera confirmación carga de llaves" },
-            { button: "btn-devuelto", column: 8, term: "^En el Rosal$", status: "En proceso", action: "En el Rosal" }
+            { button: "btn-por-asignar", column: "name_status_lab:name", term: "^Recibido en Taller$", status: "En proceso", action: "Recibido en Taller" },
+            { button: "btn-asignados", column: "name_accion_ticket:name", term: "^Enviado a taller$", status: "En proceso", action: ["En proceso de Reparación", "Reparado", "Pendiente por repuesto", "Gestión Comercial (Irreparable)"] },
+            { button: "btn-recibidos", column: "name_accion_ticket:name", term: "^En espera confirmación carga de llaves$", status: "En proceso", action: "En espera confirmación carga de llaves" },
+            { button: "btn-devuelto", column: "name_accion_ticket:name", term: "^En el Rosal$", status: "En proceso", action: "En el Rosal" }
         ];
 
         // Si hay un nroTicket, buscar el filtro que contenga ese ticket
@@ -125,25 +125,26 @@ function getTicketData() {
                     if (button === "btn-por-asignar") {
                         api.column('carga_de_llave:name').visible(false);
                         api.column('Enviar_AlRosal:name').visible(false);
-                        api.column(11).visible(false);
-                        api.column(10).visible(false);
-                        api.column(9).search(term, true, false).draw();
+                        api.column('date_sendkey:name').visible(false);
+                        api.column('date_send_torosal_fromlab:name').visible(false);
+                        api.column('name_status_lab:name').search(term, true, false).draw();
                         showTicketStatusIndicator(status, action);
                     } else if (button === "btn-asignados") {
                         api.column('carga_de_llave:name').visible(true);
                         api.column('Enviar_AlRosal:name').visible(true);
-                        api.column(11).visible(false);
-                        api.column(10).visible(false);
-                        api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
+                        api.column('date_sendkey:name').visible(false);
+                        api.column('date_send_torosal_fromlab:name').visible(false);
+                        api.column('name_accion_ticket:name').search("^Enviado a taller$", true, false);
+                        api.column('name_status_lab:name').search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
                         showTicketStatusIndicator(status, action);
                     } else if (button === "btn-recibidos") {
                         api.column('carga_de_llave:name').visible(false);
                         api.column('Enviar_AlRosal:name').visible(true);
-                        api.column(11).visible(true);
-                        api.column(8).search(term, true, false).draw();
+                        api.column('date_sendkey:name').visible(true);
+                        api.column('name_accion_ticket:name').search(term, true, false).draw();
                         showTicketStatusIndicator(status, action);
                     } else if (button === "btn-devuelto") {
-                        api.column(8).search(term, true, false).draw();
+                        api.column('name_accion_ticket:name').search(term, true, false).draw();
                         document.querySelectorAll(".load-key-button").forEach(button => button.style.display = "none");
                         document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => checkbox.style.display = "none");
                         showTicketStatusIndicator(status, action);
@@ -170,25 +171,26 @@ function getTicketData() {
                 if (button === "btn-por-asignar") {
                     api.column('carga_de_llave:name').visible(false);
                     api.column('Enviar_AlRosal:name').visible(false);
-                    api.column(11).visible(false);
-                    api.column(10).visible(false);
-                    api.column(9).search(term, true, false).draw();
+                    api.column('date_sendkey:name').visible(false);
+                    api.column('date_send_torosal_fromlab:name').visible(false);
+                    api.column('name_status_lab:name').search(term, true, false).draw();
                     showTicketStatusIndicator(status, action);
                 } else if (button === "btn-asignados") {
                     api.column('carga_de_llave:name').visible(true);
                     api.column('Enviar_AlRosal:name').visible(true);
-                    api.column(11).visible(false);
-                    api.column(10).visible(false);
-                    api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
+                    api.column('date_sendkey:name').visible(false);
+                    api.column('date_send_torosal_fromlab:name').visible(false);
+                    api.column('name_accion_ticket:name').search("^Enviado a taller$", true, false);
+                    api.column('name_status_lab:name').search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
                     showTicketStatusIndicator(status, action);
                 } else if (button === "btn-recibidos") {
                     api.column('carga_de_llave:name').visible(false);
                     api.column('Enviar_AlRosal:name').visible(true);
-                    api.column(11).visible(true);
-                    api.column(8).search(term, true, false).draw();
+                    api.column('date_sendkey:name').visible(true);
+                    api.column('name_accion_ticket:name').search(term, true, false).draw();
                     showTicketStatusIndicator(status, action);
                 } else if (button === "btn-devuelto") {
-                    api.column(8).search(term, true, false).draw();
+                    api.column('name_accion_ticket:name').search(term, true, false).draw();
                     document.querySelectorAll(".load-key-button").forEach(button => button.style.display = "none");
                     document.querySelectorAll(".receive-key-checkbox").forEach(checkbox => checkbox.style.display = "none");
                     showTicketStatusIndicator(status, action);
@@ -201,7 +203,7 @@ function getTicketData() {
 
         // Si no hay datos
         clearFilters(api);
-        api.column(8).search("NO_DATA_FOUND").draw();
+        api.column('name_accion_ticket:name').search("NO_DATA_FOUND").draw();
         setActiveButton("btn-por-asignar");
         showTicketStatusIndicator('Cerrado', 'No hay datos');
         const tbody = document.querySelector("#tabla-ticket tbody");
@@ -295,6 +297,7 @@ function getTicketData() {
 
                                 const columnDef = {
                                     data: key,
+                                    name: key,
                                     title: columnTitles[key],
                                     defaultContent: "",
                                     visible: isVisible,
@@ -484,13 +487,13 @@ function getTicketData() {
                                 // Event listeners for filter buttons
                                 $("#btn-por-asignar").on("click", function () {
                                     clearFilters(api);
-                                    api.column(9).search("^Recibido en Taller$", true, false).draw();
+                                    api.column('name_status_lab:name').search("^Recibido en Taller$", true, false).draw();
                                     const rowCount = api.rows({ filter: 'applied' }).count();
                                     if (rowCount === 0) return findFirstButtonWithData(api);
                                     api.column('carga_de_llave:name').visible(false);
                                     api.column('Enviar_AlRosal:name').visible(false);
-                                    api.column(11).visible(false);
-                                    api.column(10).visible(false);
+                                    api.column('date_sendkey:name').visible(false);
+                                    api.column('date_send_torosal_fromlab:name').visible(false);
                                     setActiveButton("btn-por-asignar");
                                     showTicketStatusIndicator('En proceso', 'Recibido en Taller');
                                     applyNroTicketSearch(api);
@@ -498,14 +501,14 @@ function getTicketData() {
 
                                 $("#btn-asignados").on("click", function () {
                                     clearFilters(api);
-                                    api.column(8).search("^Enviado a taller$", true, false).draw();
-                                    api.column(9).search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
+                                    api.column('name_accion_ticket:name').search("^Enviado a taller$", true, false);
+                                    api.column('name_status_lab:name').search("En proceso de Reparación|Reparado|Pendiente por repuesto|Gestión Comercial \\(Irreparable\\)", true, false).draw();
                                     const rowCount = api.rows({ filter: 'applied' }).count();
                                     if (rowCount === 0) return findFirstButtonWithData(api);
                                     api.column('carga_de_llave:name').visible(true);
                                     api.column('Enviar_AlRosal:name').visible(true);
-                                    api.column(11).visible(false);
-                                    api.column(10).visible(false);
+                                    api.column('date_sendkey:name').visible(false);
+                                    api.column('date_send_torosal_fromlab:name').visible(false);
                                     setActiveButton("btn-asignados");
                                     showTicketStatusIndicator('En proceso', ['En proceso de Reparación', 'Reparado', 'Pendiente por repuesto', 'Gestión Comercial (Irreparable)']);
                                     applyNroTicketSearch(api);
@@ -513,12 +516,12 @@ function getTicketData() {
 
                                 $("#btn-recibidos").on("click", function () {
                                     clearFilters(api);
-                                    api.column(8).search("^En espera confirmación carga de llaves$", true, false).draw();
+                                    api.column('name_accion_ticket:name').search("^En espera confirmación carga de llaves$", true, false).draw();
                                     const rowCount = api.rows({ filter: 'applied' }).count();
                                     if (rowCount === 0) return findFirstButtonWithData(api);
                                     api.column('carga_de_llave:name').visible(false);
                                     api.column('Enviar_AlRosal:name').visible(true);
-                                    api.column(11).visible(true);
+                                    api.column('date_sendkey:name').visible(true);
                                     setActiveButton("btn-recibidos");
                                     showTicketStatusIndicator('En proceso', 'Confirmación carga de llaves');
                                     applyNroTicketSearch(api);
@@ -526,7 +529,7 @@ function getTicketData() {
 
                                 $("#btn-devuelto").on("click", function () {
                                     clearFilters(api);
-                                    api.column(8).search("^En el Rosal$", true, false).draw();
+                                    api.column('name_accion_ticket:name').search("^En el Rosal$", true, false).draw();
                                     const rowCount = api.rows({ filter: 'applied' }).count();
                                     if (rowCount === 0) return findFirstButtonWithData(api);
                                     document.querySelectorAll(".load-key-button").forEach(button => button.style.display = "none");

@@ -1,10 +1,15 @@
+-- Script para corregir el motivo_rechazo_pago en getdataticketbyidaccion1
+-- Actualmente trae el motivo desde payment_records.observations
+-- Debe traerlo desde archivos_adjuntos.id_motivo_rechazo -> motivos_rechazo.name_motivo_rechazo
+
 CREATE OR REPLACE FUNCTION public.getdataticketbyidaccion1(
 	p_id_user integer)
-     RETURNS TABLE(id_ticket integer, create_ticket text, serial_pos character varying, name_status_ticket character varying, name_process_ticket character varying, name_accion_ticket character varying, name_status_payment character varying, id_status_domiciliacion integer, name_status_domiciliacion character, id_status_payment integer, name_failure character varying, full_name_tecnico text, full_name_tecnico_n2_actual text, razonsocial_cliente character varying, rif character varying, nro_ticket character varying, fecha_instalacion text, estatus_inteliservices character varying, confirmcoord boolean, confirmtecn boolean, garantia_instalacion boolean, garantia_reingreso boolean, fecha_cierre_anterior text, nombre_estado_cliente text, pdf_zoom_url text, img_exoneracion_url text, pdf_pago_url text, pdf_zoom_filename text, img_exoneracion_filename text, pdf_pago_filename text, comment_devolution text, pdf_convenio_url text, pdf_convenio_filename text, has_rejected_document boolean, id_failure integer, motivo_rechazo_pago text, id_payment_record integer) 
+    RETURNS TABLE(id_ticket integer, create_ticket text, serial_pos character varying, name_status_ticket character varying, name_process_ticket character varying, name_accion_ticket character varying, name_status_payment character varying, id_status_domiciliacion integer, name_status_domiciliacion character, id_status_payment integer, name_failure character varying, full_name_tecnico text, full_name_tecnico_n2_actual text, razonsocial_cliente character varying, rif character varying, nro_ticket character varying, fecha_instalacion text, estatus_inteliservices character varying, confirmcoord boolean, confirmtecn boolean, garantia_instalacion boolean, garantia_reingreso boolean, fecha_cierre_anterior text, nombre_estado_cliente text, pdf_zoom_url text, img_exoneracion_url text, pdf_pago_url text, pdf_zoom_filename text, img_exoneracion_filename text, pdf_pago_filename text, comment_devolution text, pdf_convenio_url text, pdf_convenio_filename text, has_rejected_document boolean, id_failure integer, motivo_rechazo_pago text, id_payment_record integer) 
     LANGUAGE 'plpgsql'
     COST 100
     VOLATILE SECURITY DEFINER PARALLEL UNSAFE
     ROWS 1000
+
 AS $BODY$
 DECLARE
 	v_user_role_id INT;
@@ -78,7 +83,8 @@ BEGIN
             )
         ) AS has_rejected_document,
         fail.id_failure,
-        latest_payment_info.observations AS motivo_rechazo_pago,
+        -- ✅ CAMBIO PRINCIPAL: Traer motivo desde archivos_adjuntos en lugar de payment_records
+        COALESCE(rejected_payment_docs.motivo_rechazo, latest_payment_info.observations) AS motivo_rechazo_pago,
         latest_payment_info.id_payment_record
 	FROM tickets tik
 	INNER JOIN status_tickets stutik ON stutik.id_status_ticket = tik.id_status_ticket
@@ -92,6 +98,18 @@ BEGIN
             pr.loadpayment_date DESC
         LIMIT 1
     ) AS latest_payment_info ON TRUE
+	-- ✅ NUEVO LATERAL JOIN: Obtener motivo de rechazo desde archivos_adjuntos
+	LEFT JOIN LATERAL (
+        SELECT mr.name_motivo_rechazo AS motivo_rechazo
+        FROM archivos_adjuntos adj
+        LEFT JOIN motivos_rechazo mr ON mr.id_motivo_rechazo = adj.id_motivo_rechazo
+        WHERE adj.nro_ticket = tik.nro_ticket
+            AND adj.document_type IN ('Anticipo', 'Pago', 'pago', 'comprobante_pago')
+            AND adj.rechazado = TRUE
+            AND adj.substituted_by_id_payment_record IS NULL
+        ORDER BY adj.uploaded_at DESC
+        LIMIT 1
+    ) AS rejected_payment_docs ON TRUE
 	INNER JOIN process_tickets procs ON procs.id_process_ticket = tik.id_process_ticket
 	INNER JOIN tickets_status_domiciliacion tikst ON tikst.id_ticket = tik.id_ticket
 	INNER JOIN status_domiciliacion stdom ON stdom.id_status_domiciliacion = tikst.id_status_domiciliacion
@@ -143,3 +161,6 @@ BEGIN
 	ORDER BY usrtik_initial.date_create_ticket DESC, tik.id_ticket; 	
 END;
 $BODY$;
+
+ALTER FUNCTION public.getdataticketbyidaccion1(integer)
+    OWNER TO postgres;

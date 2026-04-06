@@ -157,7 +157,8 @@ class ReportRepository
             $documentSize,
             $id_user,
             $document_type,
-            $id_ticket
+            $id_ticket,
+            $record_number = null
         ) {
         // Pasar los parámetros al modelo en el mismo orden
         $result = $this->model->saveDocument(
@@ -169,7 +170,8 @@ class ReportRepository
             $documentSize,
             $id_user,
             $document_type,
-            $id_ticket
+            $id_ticket,
+            $record_number
         );
         return $result;
     }
@@ -182,7 +184,8 @@ class ReportRepository
             $documentSize,
             $id_user,
             $document_type,
-            $id_ticket) {
+            $id_ticket,
+            $record_number = null) {
         // Pasar los parámetros al modelo en el mismo orden
         $result = $this->model->saveDocument1(
             $nro_ticket,
@@ -193,7 +196,8 @@ class ReportRepository
             $documentSize,
             $id_user,
             $document_type,
-            $id_ticket
+            $id_ticket,
+            $record_number
         );
         return $result;
     }
@@ -206,7 +210,8 @@ class ReportRepository
             $documentSize,
             $id_user,
             $document_type,
-            $id_ticket) {
+            $id_ticket,
+            $record_number = null) {
         // Pasar los parámetros al modelo en el mismo orden
         $result = $this->model->saveDocument2(
             $nro_ticket,
@@ -217,7 +222,34 @@ class ReportRepository
             $documentSize,
             $id_user,
             $document_type,
-            $id_ticket
+            $id_ticket,
+            $record_number
+        );
+        return $result;
+    }
+
+    public function saveDocumentNewRecha($nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type,
+            $id_ticket,
+            $record_number = null) {
+        // Pasar los parámetros al modelo en el mismo orden
+        $result = $this->model->saveDocumentNewRecha(
+            $nro_ticket,
+            $originalDocumentName,
+            $stored_filename,
+            $filePathForDatabase,
+            $mimeTypeFromFrontend,
+            $documentSize,
+            $id_user,
+            $document_type,
+            $id_ticket,
+            $record_number
         );
         return $result;
     }

@@ -1,4 +1,7 @@
-<?php namespace App\Repositories; // Usar namespaces para organizar tus clases
+<?php 
+
+namespace App\Repositories;
+
 require_once __DIR__. '/../models/consulta_rifModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use consulta_rifModel; // Asegúrate de que tu modelo de usuario exista
 use \DateTime;
@@ -128,11 +131,11 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla)
+    public function SaveDataFalla($serial, $falla, $nivelFalla, $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto)
     {
         // Llama al método SaveDataFalla del modelo.
         // Este método ahora devolverá el array con 'idTicketCreado' y 'status_info'.
-        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla,  $id_user, $rif, $Nr_ticket, $descripcion_falla);
+        $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla,  $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto);
         return $result_from_model;
     }
 
@@ -229,7 +232,7 @@ class TechnicalConsultionRepository
     }
 
     
-    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket){
+    public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket, $razonsocial, $id_client, $id_intelipunto){
         try {
             // El modelo SaveDataFalla2 ahora devuelve un array con 'success', 'id_ticket_creado', y 'status_info'.
             $result = $this->model->SaveDataFalla2(
@@ -240,7 +243,10 @@ class TechnicalConsultionRepository
                 $id_status_payment,
                 $id_user,
                 $rif,
-                $Nr_ticket
+                $Nr_ticket, // Se pasa el número de ticket
+                $razonsocial,
+                $id_client,
+                $id_intelipunto
             );
             
             // CORRECCIÓN: Asegurar que se retorne el ID real de la BD
@@ -294,6 +300,38 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetTicketDataPagos($id_user){
+        $result = $this->model->GetTicketDataPagos($id_user);
+        if ($result) {
+            //var_dump($result);  
+            $ticket = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            //var_dump($agente);
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
+    public function GetTicketDataExoneracion($id_user){
+        $result = $this->model->GetTicketDataExoneracion($id_user);
+        if ($result) {
+            $ticket = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
     public function GetTicketData1($id_user){
         $result = $this->model->GetTicketData1($id_user);
         if ($result) {
@@ -308,6 +346,19 @@ class TechnicalConsultionRepository
             return $ticket;
         } else {
             return null;
+        }
+    }
+
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos = null) {
+        $result = $this->model->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+        if ($result && $result['numRows'] > 0) {
+            $exonerations = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $exonerations[] = pg_fetch_assoc($result['query'], $i);
+            }
+            return $exonerations;
+        } else {
+            return [];
         }
     }
 
@@ -506,7 +557,7 @@ class TechnicalConsultionRepository
 
                 // Genera la URL para el submódulo
                 $submodule_url = $this->getUrlForMenuItem($submodule_row['desc_submodulo']);
-                var_dump($submodule_url);
+
                 $current_submodule = [
                     'id_submodulo' => $submodule_row['id_submodulo'],
                     'desc_submodulo' => $submodule_row['desc_submodulo'],
@@ -793,6 +844,14 @@ class TechnicalConsultionRepository
         return $this->model->getDocumentByType($ticketId, $documentType);
     }
 
+    public function getDocumentExoneracionByType($ticketId, $documentType) {
+        return $this->model->getDocumentExoneracionByType($ticketId, $documentType);
+    }
+
+    public function getNonRejectedDocumentByType($ticketId, $documentType) {
+        return $this->model->getNonRejectedDocumentByType($ticketId, $documentType);
+    }
+
     public function getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType) {
         return $this->model->getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType);
     }
@@ -812,14 +871,18 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type){
-        $result = $this->model->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type);
+    public function RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record = null){
+        $result = $this->model->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record);
         return $result;
     }
 
-    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = ''){
-        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified);
+    public function AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified = '', $payment_date_verified = '', $id_payment_record = null, $amount_verified = ''){
+        $result = $this->model->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified, $id_payment_record, $amount_verified);
         return $result;
+    }
+
+    public function FinalizarRevisionTicket($nro_ticket, $id_user){
+        return $this->model->FinalizarRevisionTicket($nro_ticket, $id_user);
     }
 
     public function GetEstatusTicket(){
@@ -1067,8 +1130,8 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function GetPaymentData($nro_ticket){
-        $result = $this->model->GetPaymentData($nro_ticket);
+    public function GetPaymentData($nro_ticket, $id_payment_record = null, $payment_reference = null, $record_number = null){
+        $result = $this->model->GetPaymentData($nro_ticket, $id_payment_record, $payment_reference, $record_number);
         if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
             $payment_data = pg_fetch_assoc($result['query'], 0);
             pg_free_result($result['query']);
@@ -1301,14 +1364,78 @@ class TechnicalConsultionRepository
         return $this->model->UpdatePayment($id_payment, $data);
     }
 
+    public function CreatePaymentSubstitution($id_payment_old, $data) {
+        return $this->model->CreatePaymentSubstitution($id_payment_old, $data);
+    }
+
     /**
      * Get payment attachment by record number
      * 
      * @param string $record_number Payment record number
      * @return array|null Attachment info or null if not found
      */
-    public function GetPaymentAttachment($record_number) {
-        return $this->model->GetPaymentAttachmentByRecordNumber($record_number);
+    public function GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket = null, $document_type = null) {
+        return $this->model->GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket, $document_type);
+    }
+
+    /**
+     * Guarda los datos de exoneración en la tabla temporal.
+     */
+    public function GetExonerationCount($serial_pos) {
+        return $this->model->GetExonerationCount($serial_pos);
+    }
+
+    public function SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        return $this->model->SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user);
+    }
+
+    public function SaveExoneracionDirect($nro_ticket, $serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        return $this->model->SaveExoneracionDirect($nro_ticket, $serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user);
+    }
+
+    public function GetExonerationHistory($nro_ticket) {
+        $result = $this->model->GetExonerationHistory($nro_ticket);
+        if ($result && $result['numRows'] > 0) {
+            $history = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $history[] = pg_fetch_assoc($result['query'], $i);
+            }
+            return $history;
+        }
+        return [];
+    }
+
+    /**
+     * Transfiere la exoneración de la tabla temporal a la tabla principal.
+     */
+    public function TransferExoneracionFromTempToMain($serial_pos, $nro_ticket) {
+        return $this->model->TransferExoneracionFromTempToMain($serial_pos, $nro_ticket);
+    }
+
+    public function GetExonerationDataByTicket($nro_ticket) {
+        return $this->model->GetExonerationDataByTicket($nro_ticket);
+    }
+
+    public function AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion = null, $is_final_approval = false) {
+        return $this->model->AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion, $is_final_approval);
+    }
+
+    public function CheckManualApprovalStatus($id_ticket, $id_status_payment)
+    {
+        return $this->model->CheckManualApprovalStatus($id_ticket, $id_status_payment);
+    }
+
+    /**
+     * Verifica si el ticket ya pasó por taller (id_status 15)
+     * @param string $nro_ticket
+     * @return bool
+     */
+    public function CheckTicketWorkshopHistory($nro_ticket) {
+        $ticketInfo = $this->GetTicketByNro($nro_ticket);
+        if ($ticketInfo && isset($ticketInfo[0]['id_ticket'])) {
+            return $this->model->CheckTicketWorkshopHistory($ticketInfo[0]['id_ticket']);
+        }
+        return false;
     }
 }
 ?>
