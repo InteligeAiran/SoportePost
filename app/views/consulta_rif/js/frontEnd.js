@@ -695,8 +695,8 @@ function inicializeModal() {
 
         const modalVisitaElement = document.getElementById("modalVisitaTecnica");
         if (modalVisitaElement) {
-          const modalVisita = new bootstrap.Modal(modalVisitaElement);
-          modalVisita.show();
+          window.modalVisitaInstance = new bootstrap.Modal(modalVisitaElement);
+          window.modalVisitaInstance.show();
           
           // ESPERAR a que el modal se abra para medir desbordamientos reales
           setTimeout(() => {
@@ -1191,8 +1191,8 @@ function openGestionAdmin(type) {
     }
 
     // Instancia para abrir
-    const bsModal = new bootstrap.Modal(modal);
-    bsModal.show();
+    window.modalAdminInstance = new bootstrap.Modal(modal);
+    window.modalAdminInstance.show();
 
     // NUEVO: Evitar recarga del formulario al procesar
     form.onsubmit = function(e) {
@@ -1216,37 +1216,87 @@ function openGestionAdmin(type) {
 // NUEVA: Cerrar modal con instancia de BS5
 function closeModalGestionAdmin() {
     const modalEl = document.getElementById('modalGestionAdministrativa');
-    const modalInstance = new bootstrap.Modal(modalEl);
-    if (modalInstance) {
-        modalInstance.hide();
-    } else {
-        const tempModal = new bootstrap.Modal(modalEl);
-        tempModal.hide();
+    
+    // 1. Intentar con la instancia global
+    if (window.modalAdminInstance) {
+        window.modalAdminInstance.hide();
     }
+    
+    // 2. Fallback
+    try {
+        const modalInstance = new bootstrap.Modal(modalEl);
+        if (modalInstance) modalInstance.hide();
+    } catch(e) {}
+
+    // 3. FUERZA BRUTA
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        if (modalEl) {
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+        }
+    }, 300);
 }
 
 // NUEVA: Cerrar modal de detalles del POS
 function closeDetailsModal() {
     const modalEl = document.getElementById('ModalSerial');
-    const modalInstance = new bootstrap.Modal(modalEl);
-    if (modalInstance) {
-        modalInstance.hide();
-    } else {
-        const tempModal = new bootstrap.Modal(modalEl);
-        tempModal.hide();
+    
+    // 1. Intentar con la instancia global
+    if (window.modalSerialInstance) {
+        window.modalSerialInstance.hide();
     }
+    
+    // 2. Fallback con nueva instancia
+    try {
+        const modalInstance = new bootstrap.Modal(modalEl);
+        if (modalInstance) modalInstance.hide();
+    } catch(e) {
+        console.log("Error al intentar cerrar con nueva instancia");
+    }
+
+    // 3. FUERZA BRUTA: Limpiar manual
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        if (modalEl) {
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+        }
+    }, 300);
 }
 
 // NUEVA: Cerrar modal de visita técnica
 function closeVisitaModal() {
     const modalEl = document.getElementById('modalVisitaTecnica');
-    const modalInstance = new bootstrap.Modal(modalEl);
-    if (modalInstance) {
-        modalInstance.hide();
-    } else {
-        const tempModal = new bootstrap.Modal(modalEl);
-        tempModal.hide();
+    
+    // 1. Intentar con la instancia global
+    if (window.modalVisitaInstance) {
+        window.modalVisitaInstance.hide();
     }
+    
+    // 2. Fallback
+    try {
+        const modalInstance = new bootstrap.Modal(modalEl);
+        if (modalInstance) modalInstance.hide();
+    } catch(e) {}
+
+    // 3. FUERZA BRUTA
+    setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        if (modalEl) {
+            modalEl.classList.remove('show');
+            modalEl.style.display = 'none';
+        }
+    }, 300);
 }
 
 function validarTelefonoVisita(input) {
@@ -7620,9 +7670,8 @@ function SendRif() {
             // Modal de detalles del serial (Usando sistema Premium)
             const modalSerial = document.getElementById("ModalSerial");
             enlaceSerial.onclick = function () {
-              console.log("DEBUG Click Serial:", item); // DEBUG
-              const bsModal = new bootstrap.Modal(modalSerial);
-              bsModal.show();
+              window.modalSerialInstance = new bootstrap.Modal(modalSerial);
+              window.modalSerialInstance.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             
@@ -8646,8 +8695,8 @@ function SendSerial() {
             e.preventDefault();
             const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
             const modalSerial = document.getElementById("ModalSerial");
-            const bsModal = new bootstrap.Modal(modalSerial);
-            bsModal.show();
+            window.modalSerialInstance = new bootstrap.Modal(modalSerial);
+            window.modalSerialInstance.show();
             fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm);
           });
         } else {
@@ -8808,8 +8857,8 @@ function SendRazon() {
             // Modal de detalles del serial (Usando sistema Premium)
             const modalSerial = document.getElementById("ModalSerial");
             enlaceSerial.onclick = function () {
-              const bsModal = new bootstrap.Modal(modalSerial);
-              bsModal.show();
+              window.modalSerialInstance = new bootstrap.Modal(modalSerial);
+              window.modalSerialInstance.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
             
@@ -9296,7 +9345,6 @@ function SendRazon() {
 
 
 function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
-  // console.log("fetchSerialData Inputs:", { serial, rif, razonsocial, id_client, cod_adm }); // DEBUG
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
@@ -9304,13 +9352,9 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
   globalRif = rif;
   globalRazon = razonsocial;
   globalIdClient = id_client; 
-  globalIdIntelipunto = cod_adm; // Mapeamos cod_adm a globalIdIntelipunto para envío
+  globalIdIntelipunto = cod_adm;
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  const tbody = document
-    .getElementById("serialCountTable")
-    .getElementsByTagName("tbody")[0];
-
-  // Limpia el contenido de la tabla antes de agregar nuevos datos
+  const tbody = document.getElementById("serialCountTable").getElementsByTagName("tbody")[0];
   tbody.innerHTML = "";
 
   xhr.onload = function () {
@@ -9319,19 +9363,10 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
         const response = JSON.parse(xhr.responseText);
         if (response.success && response.serial && response.serial.length > 0) {
           const serialData = response.serial[0];
-          console.log("DEBUG fetchSerialData response:", serialData); // DEBUG
 
-          // Update globals if missing
-          if (!globalIdIntelipunto && serialData.cod_adm) {
-             globalIdIntelipunto = serialData.cod_adm;
-             console.log("Updated globalIdIntelipunto from serialData:", globalIdIntelipunto);
-          }
-          if (!globalIdIntelipunto && serialData.id) {
-             globalIdIntelipunto = serialData.id;
-             console.log("Updated globalIdIntelipunto from serialData (id):", globalIdIntelipunto);
-          }
+          if (!globalIdIntelipunto && serialData.cod_adm) globalIdIntelipunto = serialData.cod_adm;
+          if (!globalIdIntelipunto && serialData.id) globalIdIntelipunto = serialData.id;
 
-          // Detección inteligente de RIF y Razón Social (Case-insensitive y múltiples nombres)
           const findInObj = (obj, search) => {
               const keys = Object.keys(obj);
               const foundKey = keys.find(k => k.toLowerCase() === search.toLowerCase());
@@ -9341,97 +9376,56 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
           const rifRecuperado = findInObj(serialData, 'rif') || findInObj(serialData, 'RIF') || findInObj(serialData, 'rif_comercio');
           const razonRecuperada = findInObj(serialData, 'razonsocial') || findInObj(serialData, 'razon_social') || findInObj(serialData, 'nombre_comercio');
 
-          if (rifRecuperado) {
-            globalRif = String(rifRecuperado).trim();
-          }
-          if (razonRecuperada) {
-            globalRazon = String(razonRecuperada).trim();
-          }
+          if (rifRecuperado) globalRif = String(rifRecuperado).trim();
+          if (razonRecuperada) globalRazon = String(razonRecuperada).trim();
 
-          // Caso especial para cuando el argumento inicial estaba vacío
           if (!globalRif && rif) globalRif = rif;
           if (!globalRazon && razonsocial) globalRazon = razonsocial;
 
-          // Construye la tabla vertical, omitiendo las propiedades vacías
           for (const key in serialData) {
-            if (
-              serialData.hasOwnProperty(key) &&
-              serialData[key] !== null &&
-              serialData[key] !== undefined &&
-              serialData[key] !== ""
-            ) {
+            if (serialData.hasOwnProperty(key) && serialData[key] !== null && serialData[key] !== undefined && serialData[key] !== "") {
               const tr = document.createElement("tr");
               const th = document.createElement("th");
               const td = document.createElement("td");
 
-              const formattedKey = key
-                .replace(/_/g, " ")
-                .replace(/([A-Z])/g, " $1")
-                .trim();
-
+              const formattedKey = key.replace(/_/g, " ").replace(/([A-Z])/g, " $1").trim();
               th.textContent = formattedKey;
               td.textContent = serialData[key];
               td.setAttribute("data-column-name", formattedKey);
 
-              // Obtén referencias a los botones
-              const createTicketFalla1Btn = document.getElementById("createTicketFalla1Btn");
-              const createTicketFalla2Btn = document.getElementById("createTicketFalla2Btn");
-              const descEstatus=document.getElementById("txtDescripcion");
+              const btnFalla1 = document.getElementById("createTicketFalla1Btn");
+              const btnFalla2 = document.getElementById("createTicketFalla2Btn");
+              const btnVisita = document.getElementById("registrarVisitaBtn");
+              const btnRazon = document.getElementById("cambioRazonBtn");
+              const btnBanco = document.getElementById("cambioBancoBtn");
+              const descEstatus = document.getElementById("txtDescripcion");
 
-              // Verifica si los botones existen antes de intentar manipularlos
-              if (createTicketFalla1Btn && createTicketFalla2Btn) {
-                // Si la clave es 'Estatus_pos' y el valor es 'Equipo Desafiliado' o 'Equipo Inactivo'
-                if (key === "Estatus_Pos") {
-                  globalEstatusPos = serialData[key]; // ¡Aquí se asigna el valor!
-
-                  // El resto de tu lógica para poner la fila en rojo
-                  if (
-                    serialData[key] === "Equipo Desafiliado" ||
-                    serialData[key] === "Equipo Inactivo"
-                  ) {
-                    tr.id = `status-row-${serialData.Serial_pos || "unknown"}`; // Esto es para la fila, no para los botones.
-
-                    // Ocultar los botones:
-                    createTicketFalla1Btn.style.display = "none"; // Oculta el primer botón
-                    createTicketFalla2Btn.style.display = "none"; // Oculta el segundo botón
+              if (key === "Estatus_Pos") {
+                  globalEstatusPos = serialData[key];
+                  if (serialData[key] === "Equipo Desafiliado" || serialData[key] === "Equipo Inactivo") {
+                    if (btnFalla1) btnFalla1.style.display = "none";
+                    if (btnFalla2) btnFalla2.style.display = "none";
+                    if (btnVisita) btnVisita.style.display = "none";
+                    if (btnRazon) btnRazon.style.display = "none";
+                    if (btnBanco) btnBanco.style.display = "none";
                     
-                    // Crear mensaje elegante para equipo desafiliado
-                    descEstatus.innerHTML = `
-                      <div class="alert alert-danger d-flex align-items-center mb-0" style="
-                        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-                        border: none;
-                        border-radius: 12px;
-                        padding: 16px 20px;
-                        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-                        color: white;
-                        font-weight: 500;
-                        font-size: 14px;
-                        margin: 0;
-                        border-left: 4px solid #dc3545;
-                      ">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill me-3" viewBox="0 0 16 16" style="flex-shrink: 0;">
-                          <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                        </svg>
-                        <div>
-                          <strong>El equipo no se encuentra instalado</strong><br>
-                          <small style="opacity: 0.9;">No puede generar tickets en este momento</small>
-                        </div>
-                      </div>
-                    `;
-
+                    if (descEstatus) {
+                      descEstatus.innerHTML = `
+                        <div class="alert alert-danger d-flex align-items-center mb-0" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); border: none; border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); color: white; font-weight: 500; font-size: 14px; margin: 0; border-left: 4px solid #dc3545;">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill me-3" viewBox="0 0 16 16" style="flex-shrink: 0;">
+                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                          </svg>
+                          <div><strong>El equipo no se encuentra instalado</strong><br><small style="opacity: 0.9;">No puede generar tickets en este momento</small></div>
+                        </div>`;
+                    }
                   } else {
-                    // Si el estatus NO es "Equipo Desafiliado" ni "Equipo Inactivo", asegúrate de que los botones estén visibles:
-                    createTicketFalla1Btn.style.display = "block"; // Restablece el display a su valor por defecto
-                    createTicketFalla2Btn.style.display = "block"; // Restablece el display a su valor por defecto
-                    
-                    // Limpiar el mensaje de estado
-                    descEstatus.innerHTML = "";
+                    if (btnFalla1) btnFalla1.style.display = "block";
+                    if (btnFalla2) btnFalla2.style.display = "block";
+                    if (btnVisita) btnVisita.style.display = "block";
+                    if (btnRazon) btnRazon.style.display = "block";
+                    if (btnBanco) btnBanco.style.display = "block";
+                    if (descEstatus) descEstatus.innerHTML = "";
                   }
-                }
-              } else {
-                console.warn(
-                  "Los botones de creación de ticket no fueron encontrados en el DOM."
-                );
               }
               tr.appendChild(th);
               tr.appendChild(td);

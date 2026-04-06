@@ -23,9 +23,14 @@ function mi_navbar() {}
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
-        <link type="text/css" rel="stylesheet" href="<?php echo APP;?>DataTable/buttons.dataTables.min1.css">
+        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+
         <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css"/>
 
         <style>
@@ -797,14 +802,375 @@ function mi_navbar() {}
                 margin-top: 4px;
             }
 
-            #rifCountTable {
-                white-space: nowrap !important;
+            /* Estilos específicos para el Modal de Visita Técnica */
+            .highlight-section {
+                border-left: 5px solid #0dcaf0 !important;
+                background: linear-gradient(to right, #f8fdff, #ffffff) !important;
+                position: relative;
             }
 
-            /* Ajuste para que el contenedor de DataTables respete el ancho */
-            .dataTables_scrollBody {
-                overflow-x: auto !important;
-                width: 100% !important;
+            .highlight-section:hover::before {
+                display: none !important; /* Quitar la línea morada de arriba */
+            }
+
+            .highlight-section .form-section-header i {
+                background: none !important;
+                -webkit-text-fill-color: #0dcaf0 !important;
+                color: #0dcaf0 !important;
+                transform: none !important;
+            }
+
+            .highlight-section .form-section-header {
+                border-bottom-color: #e0f7fa !important;
+                padding-bottom: 8px !important;
+            }
+
+            .bg-gradient-info {
+                background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important;
+            }
+
+            #modalVisitaTecnica .form-control:focus, 
+            #modalVisitaTecnica .form-select:focus {
+                border-color: #0dcaf0;
+                box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.25);
+            }
+
+            #modalVisitaTecnica .btn-info:hover {
+                background: linear-gradient(135deg, #0aa2c0 0%, #088da8 100%) !important;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(13, 202, 240, 0.4) !important;
+            }
+
+            #modalVisitaTecnica .form-section-title {
+                font-size: 1.1rem;
+                letter-spacing: 0.5px;
+            }
+
+            /* Dropzone Soporte Digital */
+            .soporte-dropzone {
+                border: 2px dashed #d1d8e0;
+                border-radius: 12px;
+                background: #f1f3f5;
+                padding: 15px; /* Compactado de 30px a 15px */
+                text-align: center;
+                transition: all 0.3s ease;
+                cursor: pointer;
+                margin-top: 10px;
+                position: relative;
+            }
+            .soporte-dropzone:hover {
+                background: #e9ecef;
+                border-color: #0dcaf0;
+            }
+            .soporte-dropzone i.main-icon {
+                font-size: 2rem; /* Más pequeño */
+                color: #8392ab;
+                margin-bottom: 5px;
+                display: block;
+            }
+            .soporte-dropzone-text {
+                color: #495057;
+                font-weight: 600;
+                display: block;
+            }
+            #soporteVisita {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+                cursor: pointer;
+            }
+            .file-selected {
+                border-color: #0dcaf0 !important;
+                background: #e7faff !important;
+            }
+
+            #modalVisitaTecnica .form-label {
+                transition: all 0.3s ease;
+            }
+
+            #modalVisitaTecnica .form-check-input:checked {
+                background-color: #0dcaf0;
+                border-color: #0dcaf0;
+            }
+
+            /* Footer de Visita Técnica Mejorado (TEMA CLARO) */
+            .visit-footer-container {
+                background: linear-gradient(to right, #f0fdff, #ffffff) !important;
+                border-radius: 12px;
+                padding: 10px 18px;
+                border: 1px solid #c8eef5;
+                border-left: 5px solid #0dcaf0;
+                color: #2c3e50;
+                margin-top: 15px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+            }
+
+            .custom-radio-group .btn-check:checked + .btn {
+                background-color: #0dcaf0 !important;
+                color: white !important;
+                box-shadow: 0 2px 5px rgba(13, 202, 240, 0.3) !important;
+                border: none !important;
+            }
+
+            .custom-radio-group .btn:not(.btn-check:checked + .btn) {
+                background: transparent !important;
+                color: #64748b !important;
+            }
+
+            /* --- Tarjetas de Contacto ULTRA PREMIUM --- */
+            .contact-update-card {
+                background: #ffffff !important;
+                border-radius: 20px !important;
+                padding: 18px 24px !important;
+                border: 1.5px solid #eef2f7 !important;
+                box-shadow: 0 10px 30px rgba(13, 202, 240, 0.08) !important;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .contact-update-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 6px;
+                height: 100%;
+                background: linear-gradient(to bottom, #003594, #0dcaf0);
+            }
+
+            .contact-update-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 35px rgba(13, 202, 240, 0.15) !important;
+                border-color: #0dcaf0 !important;
+            }
+
+            .icon-badge-premium {
+                width: 48px;
+                height: 48px;
+                background: linear-gradient(135deg, #f0faff 0%, #e0faff 100%);
+                border-radius: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #0dcaf0;
+                font-size: 1.3rem;
+                box-shadow: inset 0 2px 4px rgba(255,255,255,0.8);
+                margin-bottom: 5px;
+            }
+
+            .contact-card-title {
+                color: #1e293b;
+                font-weight: 800;
+                font-size: 1rem;
+                line-height: 1.2;
+                margin: 0;
+            }
+
+            .custom-radio-group-premium {
+                background: #f8fafc;
+                border-radius: 12px;
+                padding: 4px;
+                display: flex;
+                gap: 4px;
+                border: 1px solid #f1f5f9;
+            }
+
+            .custom-radio-group-premium .btn-check:checked + .btn {
+                background: linear-gradient(135deg, #0dcaf0 0%, #003594 100%) !important;
+                color: white !important;
+                box-shadow: 0 4px 10px rgba(13, 202, 240, 0.3) !important;
+                transform: scale(1.05);
+            }
+
+            .custom-radio-group-premium .btn {
+                border-radius: 10px !important;
+                font-weight: 800 !important;
+                font-size: 0.75rem !important;
+                padding: 8px 15px !important;
+                transition: all 0.3s ease;
+                border: none;
+                color: #94a3b8;
+                background: transparent;
+            }
+
+            .visit-status-header {
+                font-size: 0.85rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: #0dcaf0;
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .custom-status-check {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .custom-status-check .form-check-input {
+                width: 1.3em;
+                height: 1.3em;
+                cursor: pointer;
+                border: 2px solid #0dcaf0;
+                background-color: white;
+            }
+
+            .custom-status-check .form-check-input:checked {
+                background-color: #0dcaf0; 
+                border-color: #0dcaf0;
+            }
+
+            .custom-status-check .form-check-label {
+                font-weight: 700;
+                font-size: 1rem;
+                cursor: pointer;
+            }
+
+            .status-operativo .form-check-label {
+                color: #28a745; /* Verde fuerte */
+            }
+
+            .status-falla .form-check-label {
+                color: #dc3545; /* Rojo fuerte */
+            }
+
+            .btn-footer-save {
+                background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important;
+                border: none !important;
+                border-radius: 10px !important;
+                padding: 10px 22px !important; /* Más balanceado */
+                font-weight: 700 !important;
+                box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3) !important;
+                transition: all 0.3s ease !important;
+            }
+
+            .btn-footer-save:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(13, 202, 240, 0.5) !important;
+                filter: brightness(1.1);
+            }
+
+            /* Estilo para el Marquee del nombre */
+            .name-marquee-container {
+                background: #f8f9fa;
+                border: 2px solid #b0f1f5;
+                border-radius: 8px;
+                padding: 8px 12px;
+                overflow: hidden;
+                white-space: nowrap;
+                position: relative;
+                height: 40px;
+                display: flex;
+                align-items: center;
+            }
+
+            .name-marquee-text {
+                display: inline-block;
+                font-weight: 700;
+                color: #495057;
+                font-size: 14px;
+                white-space: nowrap;
+                transition: padding 0.3s ease;
+            }
+
+            /* Solo se activa cuando el JS detecta que no cabe */
+            .name-marquee-text.with-marquee {
+                padding-left: 100%;
+                animation: marquee-scroll 15s linear infinite;
+            }
+
+            @keyframes marquee-scroll {
+                0% { transform: translate(0, 0); }
+                100% { transform: translate(-100%, 0); }
+            }
+
+            .name-marquee-text.no-scroll {
+                animation: none !important;
+                padding-left: 0 !important;
+                transform: none !important;
+            }
+
+            /* Botón de cierre personalizado tipo imagen */
+            .btn-close-custom {
+                background-color: #b0f1f5 !important; /* Celeste muy claro */
+                border: none !important;
+                border-radius: 8px !important;
+                width: 34px !important;
+                height: 34px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                transition: all 0.2s ease !important;
+                cursor: pointer !important;
+                padding: 0 !important;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+            }
+
+            .btn-close-custom i {
+                color: #004b57 !important; /* Verde oscuro azulado */
+                font-size: 16px !important;
+                font-weight: 900 !important;
+            }
+
+            .btn-close-custom:hover {
+                background-color: #ffffff !important;
+                transform: rotate(90deg) !important;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.15) !important;
+            }
+
+            /* Botones Personalizados del Modal de Serial */
+            .btn-custom-action {
+                border-radius: 10px !important;
+                padding: 12px 25px !important;
+                font-weight: 700 !important;
+                font-size: 15px !important;
+                color: white !important;
+                border: none !important;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                box-shadow: 0 6px 15px rgba(0,0,0,0.1) !important;
+                text-transform: none !important;
+                min-width: 160px;
+            }
+
+            .btn-custom-action:hover {
+                transform: translateY(-3px) !important;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+                filter: brightness(1.1);
+            }
+
+            .btn-falla1 {
+                background: #0056b3 !important; /* Azul Rey Fuerte */
+                box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3) !important;
+            }
+
+            .btn-falla2 {
+                background: #3498db !important; /* Azul Maravilla */
+                box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3) !important;
+            }
+
+            .btn-visita {
+                background: #0dcaf0 !important; /* Celeste / Info */
+                box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3) !important;
+            }
+
+            .btn-cambio-razon {
+                background: #20c997 !important; /* Esmeralda / Teal */
+                box-shadow: 0 4px 12px rgba(32, 201, 151, 0.3) !important;
+            }
+
+            .btn-cambio-banco {
+                background: #6610f2 !important; /* Indigo / Púrpura */
+                box-shadow: 0 4px 12px rgba(102, 16, 242, 0.3) !important;
             }
         </style>
     </head>
