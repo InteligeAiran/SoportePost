@@ -72,9 +72,6 @@ function restoreCoordinacionState() {
               if (existingInfo) {
                 existingInfo.remove();
               }
-              
-              select.parentNode.appendChild(infoText);
-              
             } else {
               // CÓDIGO PARA CUANDO HAY MÚLTIPLES COORDINACIONES (FUTURO)
               // ============================================================
@@ -1196,12 +1193,30 @@ function openGestionAdmin(type) {
     // Instancia para abrir
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
+
+    // NUEVO: Evitar recarga del formulario al procesar
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        console.log("Submit Gestion Admin - Datos:", new FormData(form));
+        // Aquí iría el AJAX de guardado (SaveGestionAdmin)
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Solicitud Procesada',
+                text: 'La solicitud de gestión administrativa ha sido capturada. (Simulado)',
+                icon: 'success',
+                confirmButtonColor: '#1f4e8c'
+            });
+        } else {
+            alert('Solicitud enviada correctamente');
+        }
+        bsModal.hide();
+    };
 }
 
 // NUEVA: Cerrar modal con instancia de BS5
 function closeModalGestionAdmin() {
     const modalEl = document.getElementById('modalGestionAdministrativa');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    const modalInstance = new bootstrap.Modal(modalEl);
     if (modalInstance) {
         modalInstance.hide();
     } else {
@@ -1213,7 +1228,7 @@ function closeModalGestionAdmin() {
 // NUEVA: Cerrar modal de detalles del POS
 function closeDetailsModal() {
     const modalEl = document.getElementById('ModalSerial');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    const modalInstance = new bootstrap.Modal(modalEl);
     if (modalInstance) {
         modalInstance.hide();
     } else {
@@ -1225,7 +1240,7 @@ function closeDetailsModal() {
 // NUEVA: Cerrar modal de visita técnica
 function closeVisitaModal() {
     const modalEl = document.getElementById('modalVisitaTecnica');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    const modalInstance = new bootstrap.Modal(modalEl);
     if (modalInstance) {
         modalInstance.hide();
     } else {
@@ -1349,7 +1364,7 @@ function guardarVisitaTecnica() {
     }).then(() => {
       // Cerrar modal y limpiar
       const modalElement = document.getElementById("modalVisitaTecnica");
-      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      const modalInstance = new bootstrap.Modal(modalElement);
       if (modalInstance) modalInstance.hide();
       
       btnGuardar.disabled = false;
@@ -4878,7 +4893,7 @@ function savePayment() {
                             // Verificar si Bootstrap 5 está disponible
                             if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
                                 try {
-                                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    const modal = new bootstrap.Modal(modalElement);
                                     if (modal) {
                                         modal.hide();
                                     } else {
@@ -7606,7 +7621,7 @@ function SendRif() {
             const modalSerial = document.getElementById("ModalSerial");
             enlaceSerial.onclick = function () {
               console.log("DEBUG Click Serial:", item); // DEBUG
-              const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
+              const bsModal = new bootstrap.Modal(modalSerial);
               bsModal.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
@@ -8053,7 +8068,8 @@ function SendRif() {
           }
         }
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="11" class="text-center">Error al procesar la respuesta.</td></tr>';
+        console.error("Error al procesar la respuesta JSON de RIF:", error);
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error al procesar la respuesta.</td></tr>';
         // Show the welcome message if there's an error
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "visible";
@@ -8630,7 +8646,7 @@ function SendSerial() {
             e.preventDefault();
             const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
             const modalSerial = document.getElementById("ModalSerial");
-            const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
+            const bsModal = new bootstrap.Modal(modalSerial);
             bsModal.show();
             fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm);
           });
@@ -8645,6 +8661,7 @@ function SendSerial() {
           }
         }
       } catch (error) {
+        console.error("Error al procesar la respuesta JSON de Serial:", error);
         const errorMessage = document.createElement("p");
         errorMessage.textContent = "Error al procesar la respuesta.";
         mainTableCard.appendChild(errorMessage);
@@ -8791,7 +8808,7 @@ function SendRazon() {
             // Modal de detalles del serial (Usando sistema Premium)
             const modalSerial = document.getElementById("ModalSerial");
             enlaceSerial.onclick = function () {
-              const bsModal = bootstrap.Modal.getOrCreateInstance(modalSerial);
+              const bsModal = new bootstrap.Modal(modalSerial);
               bsModal.show();
               fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
             };
@@ -9237,6 +9254,7 @@ function SendRazon() {
     }
         }
       } catch (error) {
+        console.error("Error al procesar la respuesta JSON de Razón Social:", error);
         tbody.innerHTML = '<tr><td colspan="12" class="text-center">Error al procesar la respuesta.</td></tr>';
         // Show the welcome message on parsing error
         if (welcomeMessage) {
