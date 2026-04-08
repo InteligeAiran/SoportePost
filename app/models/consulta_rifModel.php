@@ -597,7 +597,9 @@ class consulta_rifModel extends Model
 
             $idTicketCreado = (int) $ticketData['savedatafalla'];
             pg_free_result($resultSave); 
-            
+
+
+            // 3. Obtener el estado del ticket recién creado
             // ELIMINADO: Ya no hace falta el UPDATE manual aquí, la función de BD lo hizo en el INSERT.
 
             // 3. Obtener el estado del ticket recién creado
@@ -659,6 +661,77 @@ class consulta_rifModel extends Model
             return array('error' => $e->getMessage());
         }
     }
+
+    /**
+     * Guarda una solicitud administrativa en la base de datos.
+     * 
+     * @param int $id_client El ID del cliente (id_cliente)
+     * @param int $id_user El ID del usuario creador
+     * @param string $observacion Observaciones de la solicitud
+     * @param int $id_type ID del tipo de solicitud (1=GRS, 2=GMB)
+     * @return array|bool Array con ID y request_number o false en caso de error
+     */
+    public function SaveAdministrativeRequest($id_client, $id_user, $observacion, $id_type)
+    {
+        try {
+            $db_conn = $this->db->getConnection();
+            $val_id_client = (int)$id_client;
+            $val_id_user = (int)$id_user;
+            $val_id_type = (int)$id_type;
+            $val_observacion = pg_escape_literal($db_conn, $observacion);
+
+            // 0. Validar si ya existe una solicitud pendiente o en gestión (Estatu 1 o 2)
+            $sqlCheck = "SELECT nro_solicitud FROM administrative_requests 
+                         WHERE id_cliente = $val_id_client 
+                         AND id_status_administrativo IN (1, 2) 
+                         LIMIT 1";
+            $resCheck = pg_query($db_conn, $sqlCheck);
+            if ($resCheck && pg_num_rows($resCheck) > 0) {
+                $existing = pg_fetch_assoc($resCheck);
+                return ['error' => 'duplicate', 'nro_solicitud' => $existing['nro_solicitud']];
+            }
+
+            // 1. Obtener el prefijo y nombre del tipo
+            $sqlTypeData = "SELECT prefix, name FROM administrative_request_types WHERE id = $val_id_type";
+            $resTypeData = pg_query($db_conn, $sqlTypeData);
+            $typeData = ($resTypeData && pg_num_rows($resTypeData) > 0) ? pg_fetch_assoc($resTypeData) : ['prefix' => 'REQ', 'name' => 'Administrative Request'];
+            $prefix = $typeData['prefix'];
+            $typeName = $typeData['name'];
+
+            // 2. Insertar para obtener el ID real
+            $sql = "INSERT INTO administrative_requests (id_cliente, id_user_creation, observacion, id_status_administrativo, id_tipo_solicitud) 
+                    VALUES ($val_id_client, $val_id_user, $val_observacion, 1, $val_id_type) 
+                    RETURNING id;";
+
+            $result = pg_query($db_conn, $sql);
+
+            if ($result) {
+                $row = pg_fetch_assoc($result);
+                $newId = (int)$row['id'];
+                pg_free_result($result);
+
+                // 3. Generar Number Formato: SIGLAS-DDMMYY####
+                $datePart = date('dmy'); 
+                $nroSolicitud = $prefix . "-" . $datePart . str_pad($newId, 4, '0', STR_PAD_LEFT);
+                
+                $sqlUpd = "UPDATE administrative_requests SET nro_solicitud = ".pg_escape_literal($db_conn, $nroSolicitud)." WHERE id = $newId";
+                pg_query($db_conn, $sqlUpd);
+
+                return [
+                    'id' => $newId, 
+                    'nro_solicitud' => $nroSolicitud,
+                    'type_name' => $typeName // Retornamos el nombre para document_type
+                ];
+            } else {
+                error_log("Error en SaveAdministrativeRequest: " . pg_last_error($db_conn));
+                return false;
+            }
+        } catch (Throwable $e) {
+            error_log("Excepción en SaveAdministrativeRequest: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     public function SaveDataFalla2($serial, $descripcion, $nivelFalla, $coordinador, $id_status_payment, $id_user, $rif, $Nr_ticket, $razonsocial, $id_client, $id_intelipunto, $envio = null, $exoneracion = null, $anticipo = null) // Añadí variables de archivo como parámetros opcionales que usas en el código
     {

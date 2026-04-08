@@ -139,6 +139,11 @@ class TechnicalConsultionRepository
         return $result_from_model;
     }
 
+    public function SaveAdministrativeRequest($id_client, $id_user, $observation, $id_type)
+    {
+        return $this->model->SaveAdministrativeRequest($id_client, $id_user, $observation, $id_type);
+    }
+
     public function getTicketStatusInfo($id_ticket)
     {
         // Esto ya estaba bien, llama al método del modelo que obtiene el estado.

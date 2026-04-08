@@ -149,6 +149,10 @@ class Consulta extends Controller
                     $this->handleGetExoneracionPorcentaje();
                     break;
 
+                case 'SaveAdministrativeRequest':
+                    $this->handleSaveAdministrativeRequest();
+                    break;
+
                 case 'ValidatePresupuestoApertura':
                     $this->handleValidatePresupuestoApertura();
                     break;
@@ -4238,5 +4242,128 @@ class Consulta extends Controller
             ], 404);
         }
     }
+    
+    public function handleSaveAdministrativeRequest()
+    {
+        error_log("handleSaveAdministrativeRequest CALLED");
+
+        // 1. Obtener datos del POST
+        $id_cliente = isset($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : null;
+        $id_user = isset($_POST['id_user']) && (int)$_POST['id_user'] > 0 ? (int)$_POST['id_user'] : (isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0);
+        $id_type = isset($_POST['id_tipo_solicitud']) ? (int)$_POST['id_tipo_solicitud'] : 1; // 1=GRS por defecto
+        $observacion = isset($_POST['observation']) ? trim($_POST['observation']) : '';
+
+        // 2. Validaciones básicas
+        if (!$id_cliente) {
+            $this->response(['success' => false, 'message' => 'ID de cliente no proporcionado.'], 400);
+            return;
+        }
+
+        if (empty($observacion)) {
+            $this->response(['success' => false, 'message' => 'La observación es obligatoria.'], 400);
+            return;
+        }
+
+        // 3. Validar archivo
+        if (!isset($_FILES['support_file']) || $_FILES['support_file']['error'] !== UPLOAD_ERR_OK) {
+            $this->response(['success' => false, 'message' => 'No se ha subido ningún soporte digital.'], 400);
+            return;
+        }
+
+        $file = $_FILES['support_file'];
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf', 'image/jpg'];
+        $maxSize = 10 * 1024 * 1024; // 10MB (Solicitado por el usuario)
+
+        if (!in_array($file['type'], $allowedMimeTypes)) {
+            $this->response(['success' => false, 'message' => 'Formato no permitido. Solo JPG, PNG o PDF.'], 400);
+            return;
+        }
+
+        if ($file['size'] > $maxSize) {
+            $this->response(['success' => false, 'message' => 'El archivo supera el límite de 10MB.'], 400);
+            return;
+        }
+
+        // 4. Instanciar repositorio
+        $repository = new TechnicalConsultionRepository();
+
+        // 5. Guardar solicitud en la tabla principal y generar nro_solicitud (GRS/GMB-XXXXX)
+        $requestData = $repository->SaveAdministrativeRequest($id_cliente, $id_user, $observacion, $id_type);
+
+        if (!$requestData) {
+            $this->response(['success' => false, 'message' => 'Error al guardar la solicitud en la base de datos.'], 500);
+            return;
+        }
+
+        if (isset($requestData['error']) && $requestData['error'] === 'duplicate') {
+            $this->response([
+                'success' => false, 
+                'message' => "El cliente ya posee la solicitud activa {$requestData['nro_solicitud']}. Por favor, espere a que sea procesada."
+            ], 200);
+            return;
+        }
+
+        $requestId = $requestData['id'];
+        $nroSolicitud = $requestData['nro_solicitud'];
+        $typeName = $requestData['type_name'];
+
+        // 6. Procesar archivo (Guardado físico y en archivos_adjuntos)
+        try {
+            $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : 'C:' . DIRECTORY_SEPARATOR . 'Documentos_SoportePost' . DIRECTORY_SEPARATOR;
+            
+            // Estructura: AdminRequests / ID_CLIENTE / TIPO
+            $uploadDir = $baseUploadDir . 'AdminRequests' . DIRECTORY_SEPARATOR . $id_cliente . DIRECTORY_SEPARATOR;
+
+            if (!is_dir($uploadDir)) {
+                if (!mkdir($uploadDir, 0755, true)) {
+                    $this->response(['success' => false, 'message' => 'Error al crear directorio administrativo.'], 500);
+                    return;
+                }
+            }
+
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fechaHora = date('Ymd_His');
+            
+            // Definir prefijo dinámico según el tipo de solicitud (1=GRS, 2=GMB)
+            $typePrefix = ($id_type == 2) ? 'cambio_Banco' : 'cambio_RazonSocial';
+            
+            // Naming dinámico: prefijo_IDCLIENTE_FECHA.ext
+            $filename = "{$typePrefix}_{$id_cliente}_{$fechaHora}.{$ext}";
+            $targetPath = $uploadDir . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $fileInfo = [
+                    'original_filename' => $file['name'],
+                    'stored_filename' => $filename,
+                    'file_path' => $targetPath,
+                    'mime_type' => $file['type'],
+                    'file_size_bytes' => $file['size'],
+                    'document_type' => $typeName, // Usamos el nombre del tipo (ej: Gestión Razón Social)
+                    'record_number' => $nroSolicitud // Usamos el nro_solicitud como récord
+                ];
+
+                // Registrar en archivos_adjuntos usando el nro_solicitud oficial
+                $resAdjunto = $repository->saveArchivoAdjunto(
+                    0, 
+                    $nroSolicitud, 
+                    $id_user, 
+                    $fileInfo
+                );
+
+                if (isset($resAdjunto['error'])) {
+                    $this->response(['success' => true, 'message' => "Solicitud registrada como {$nroSolicitud}, pero hubo un error al registrar el soporte."], 200);
+                } else {
+                    $this->response(['success' => true, 'message' => "Solicitud registrada con el código oficial: {$nroSolicitud}"], 200);
+                }
+            } else {
+                $this->response(['success' => true, 'message' => "Solicitud {$nroSolicitud} guardada, pero el archivo no pudo moverse."], 200);
+            }
+
+        } catch (\Exception $e) {
+            error_log("Error guardando adjunto administrativo: " . $e->getMessage());
+            $this->response(['success' => true, 'message' => 'Solicitud guardada con errores en el archivo.'], 200);
+        }
+    }
 }
 ?>
+

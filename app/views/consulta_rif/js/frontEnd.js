@@ -1,7 +1,10 @@
 let globalSerial = "";
 let globalRif = "";
 let globalRazon = "";
-let globalEstatusPos = ""; // O null, dependiendo de cómo quieras inicializarla
+let globalEstatusPos = "";
+let global_BancoDelCliente = "";
+let globalIdClient = "";
+let globalIdIntelipunto = "";
 // Variable global para controlar que el alerta de garantía se muestre solo una vez
 let garantiaAlertShown = false;
 
@@ -1143,22 +1146,90 @@ function toggleFechaManual(show) {
   }
 }
 
-// NUEVA: Modal Dinámico para Cambio de Razón Social / Banco
-function openGestionAdmin(type) {
-    const modal = document.getElementById("modalGestionAdministrativa");
+// NUEVA: Función para limpiar el área de carga de archivos (Reset total)
+function resetAdminFileUpload() {
+    const fileInput = document.getElementById("fileGestionAdmin");
+    const placeholder = document.getElementById("uploadPlaceholderAdmin");
+    const statusBox = document.getElementById("uploadStatusAdmin");
+    const zone = document.getElementById("dropZoneAdmin");
+
+    if (fileInput) fileInput.value = "";
+    if (placeholder) placeholder.style.display = "block";
+    if (statusBox) {
+        statusBox.style.display = "none";
+        statusBox.innerHTML = "";
+    }
+    if (zone) zone.style.padding = "40px 20px"; // Volver al padding original
+}
+
+// NUEVA: Modal Dinámico para Cambio de Razón Social / Banco (Efecto de cambio instantáneo)
+function updateModalUIByType(typeId) {
     const header = document.getElementById("headerGestionAdmin");
     const title = document.getElementById("titleGestionAdmin");
     const icon = document.getElementById("iconGestionAdmin");
     const label = document.getElementById("labelNuevoValor");
-    const inputIcon = document.getElementById("inputIconAdmin");
-    const inputVal = document.getElementById("valNuevoAdmin");
+    const inputIcon = document.querySelector(".upload-icon-box i");
+    const inputVal = document.getElementById("obsAdmin");
+    const labelInfo = document.getElementById("labelAdminInfo");
+    const txtInfo = document.getElementById("txtAdminInfo");
+    const uploadTitle = document.querySelector(".upload-title");
     const btnSubmit = document.getElementById("btnSubmitAdmin");
-    const form = document.getElementById("formGestionAdmin");
 
-    // Limpiar formulario y resetear posibles estilos
+    let razonActual = globalRazon || "Verificar en Sistema";
+    let bancoActual = global_BancoDelCliente || "Verificar en Sistema";
+
+    // Limpiar archivo al cambiar tipo para evitar envíos cruzados
+    resetAdminFileUpload();
+
+    if (typeId == "1") { // Cambio Razón Social
+        header.style.background = "linear-gradient(135deg, #20c997 0%, #004b57 100%)";
+        title.textContent = "Cambio de Razón Social";
+        icon.className = "bi bi-person-badge-fill text-white fs-3";
+        if (label) label.textContent = "Soporte de Cambio Razón Social";
+        if (labelInfo) labelInfo.textContent = "Razón Social Act.";
+        if (txtInfo) txtInfo.textContent = razonActual;
+        if (uploadTitle) uploadTitle.textContent = "Adjunte el Documento de Cambio";
+        if (inputIcon) inputIcon.className = "bi bi-pencil-square text-success fs-1 mb-3";
+        if (inputVal) inputVal.placeholder = "Ingrese el nombre del nuevo comercio...";
+        btnSubmit.style.background = "linear-gradient(135deg, #20c997 0%, #004b57 100%)";
+    } else if (typeId == "2") { // Migración de banco
+        header.style.background = "linear-gradient(135deg, #6610f2 0%, #3d0891 100%)";
+        title.textContent = "Cambio de Banco";
+        icon.className = "bi bi-bank2 text-white fs-3";
+        if (label) label.textContent = "Soporte de Nuevo Banco";
+        if (labelInfo) labelInfo.textContent = "Banco Act.";
+        if (txtInfo) txtInfo.textContent = bancoActual;
+        if (uploadTitle) uploadTitle.textContent = "Adjunte la Constancia Bancaria";
+        if (inputIcon) inputIcon.className = "bi bi-bank text-primary fs-1 mb-3";
+        if (inputVal) inputVal.placeholder = "Ingrese el nombre de la nueva entidad...";
+        btnSubmit.style.background = "linear-gradient(135deg, #6610f2 0%, #3d0891 100%)";
+    }
+}
+
+function openGestionAdmin(type = 'razon') {
+    const modal = document.getElementById("modalGestionAdministrativa");
+    let inputType = document.getElementById("id_tipo_solicitud_admin");
+    const form = document.getElementById("formGestionAdmin");
+    const header = document.getElementById("headerGestionAdmin");
+    const title = document.getElementById("titleGestionAdmin");
+    const icon = document.getElementById("iconGestionAdmin");
+    const label = document.getElementById("labelNuevoValor");
+    const inputIcon = document.querySelector(".upload-icon-box i");
+    const inputVal = document.getElementById("obsAdmin");
+    const btnSubmit = document.getElementById("btnSubmitAdmin");
+
+    if (!modal) return console.error("Modal no encontrado en el DOM");
+
+    // Limpiar formulario y resetear estilos
     form.reset();
     
-    // Extraer datos del modal de detalles que ya tenemos abiertos (usados en registrarVisita)
+    // Establecer el tipo inicial y actualizar UI
+    if (inputType) {
+        inputType.value = (type === 'banco') ? "2" : "1";
+        updateModalUIByType(inputType.value);
+    }
+    
+    // Extraer datos del modal de detalles que ya tenemos abiertos
     let serial = globalSerial || "N/A";
     let rif = globalRif || "N/A";
     
@@ -1170,65 +1241,80 @@ function openGestionAdmin(type) {
 
     document.getElementById("txtAdminSerial").textContent = serial;
     document.getElementById("txtAdminRif").textContent = rif;
-    document.getElementById("txtAdminBanco").textContent = "Verificar en Sistema";
-
-    if (type === 'razon') {
-        header.style.background = "linear-gradient(135deg, #20c997 0%, #004b57 100%)";
-        title.textContent = "Cambio de Razón Social";
-        icon.className = "bi bi-person-badge-fill text-white fs-3";
-        label.textContent = "Nueva Razón Social a Registrar";
-        inputIcon.className = "bi bi-pencil-square text-success fs-5";
-        inputVal.placeholder = "Ingrese el nombre del nuevo comercio...";
-        btnSubmit.style.background = "linear-gradient(135deg, #20c997 0%, #004b57 100%)";
-    } else if (type === 'banco') {
-        header.style.background = "linear-gradient(135deg, #6610f2 0%, #3d0891 100%)";
-        title.textContent = "Cambio de Banco";
-        icon.className = "bi bi-bank2 text-white fs-3";
-        label.textContent = "Nuevo Banco de Afiliación";
-        inputIcon.className = "bi bi-bank text-primary fs-5";
-        inputVal.placeholder = "Ingrese el nombre de la nueva entidad...";
-        btnSubmit.style.background = "linear-gradient(135deg, #6610f2 0%, #3d0891 100%)";
-    }
 
     // Instancia para abrir
     window.modalAdminInstance = new bootstrap.Modal(modal);
     window.modalAdminInstance.show();
+}
 
-    // NUEVO: Evitar recarga del formulario al procesar
-    form.onsubmit = function(e) {
-        e.preventDefault();
-        console.log("Submit Gestion Admin - Datos:", new FormData(form));
-        // Aquí iría el AJAX de guardado (SaveGestionAdmin)
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Solicitud Procesada',
-                text: 'La solicitud de gestión administrativa ha sido capturada. (Simulado)',
-                icon: 'success',
-                confirmButtonColor: '#1f4e8c'
-            });
-        } else {
-            alert('Solicitud enviada correctamente');
+/** Función para gestionar el cambio de archivo en el modal administrativo */
+function handleAdminFileChange(input) {
+    const file = input.files[0];
+    const placeholder = document.getElementById("uploadPlaceholderAdmin");
+    const statusBox = document.getElementById("uploadStatusAdmin");
+    const zone = document.getElementById("dropZoneAdmin");
+
+    if (!file) {
+        if (placeholder) placeholder.style.display = "block";
+        if (statusBox) statusBox.style.display = "none";
+        if (zone) zone.style.padding = "40px 20px";
+        return;
+    }
+
+    if (placeholder) placeholder.style.display = "none";
+    if (statusBox) statusBox.style.display = "block";
+    if (zone) zone.style.padding = "10px"; // Compactamos la zona para la cápsula
+
+    const maxBytes = 10 * 1024 * 1024; // 10MB
+    console.log("Archivo seleccionado:", file.name, "Tamaño:", (file.size / 1024 / 1024).toFixed(2), "MB");
+
+    if (file.size > maxBytes) {
+        if (statusBox) {
+            statusBox.innerHTML = `
+                <div class="upload-pill-error">
+                    <i class="bi bi-x-circle-fill text-danger fs-4"></i>
+                    <span class="fw-bold text-danger">Excede 10MB</span>
+                </div>`;
         }
-        bsModal.hide();
-    };
+        input.value = ""; // Reseteamos si excede el tamaño
+    } else {
+        if (statusBox) {
+            statusBox.innerHTML = `
+                <div class="upload-pill-success">
+                    <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                    <span class="fw-bold text-dark text-truncate" style="max-width: 100%; color: #004b57 !important;">${file.name}</span>
+                </div>`;
+        }
+    }
 }
 
 // NUEVA: Cerrar modal con instancia de BS5
 function closeModalGestionAdmin() {
     const modalEl = document.getElementById('modalGestionAdministrativa');
     
-    // 1. Intentar con la instancia global
+    // 1. Limpiar el campo de archivo y resetear la UI de carga
+    const fileInput = document.getElementById("fileGestionAdmin");
+    const placeholder = document.getElementById("uploadPlaceholderAdmin");
+    const statusBox = document.getElementById("uploadStatusAdmin");
+    const zone = document.getElementById("dropZoneAdmin");
+
+    if (fileInput) fileInput.value = "";
+    if (placeholder) placeholder.style.display = "block";
+    if (statusBox) statusBox.style.display = "none";
+    if (zone) zone.style.padding = "40px 20px"; // Volver al padding original
+
+    // 2. Intentar con la instancia global
     if (window.modalAdminInstance) {
         window.modalAdminInstance.hide();
     }
     
-    // 2. Fallback
+    // 3. Fallback
     try {
-        const modalInstance = new bootstrap.Modal(modalEl);
+        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         if (modalInstance) modalInstance.hide();
     } catch(e) {}
 
-    // 3. FUERZA BRUTA
+    // 4. FUERZA BRUTA PARA ELIMINAR BACKDROPS
     setTimeout(() => {
         const backdrops = document.querySelectorAll('.modal-backdrop');
         backdrops.forEach(b => b.remove());
@@ -7666,13 +7752,14 @@ function SendRif() {
             enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
             desc_posCell.textContent = item.desc_pos;
+            bancoCell.textContent = item.banco;
 
             // Modal de detalles del serial (Usando sistema Premium)
             const modalSerial = document.getElementById("ModalSerial");
             enlaceSerial.onclick = function () {
               window.modalSerialInstance = new bootstrap.Modal(modalSerial);
               window.modalSerialInstance.show();
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm, item.banco);
             };
             
             
@@ -7707,7 +7794,6 @@ function SendRif() {
             fechainstallCell.appendChild(document.createElement("br"));
             fechainstallCell.appendChild(garantiaLabel);
 
-            bancoCell.textContent = item.banco;
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
@@ -8697,7 +8783,7 @@ function SendSerial() {
             const modalSerial = document.getElementById("ModalSerial");
             window.modalSerialInstance = new bootstrap.Modal(modalSerial);
             window.modalSerialInstance.show();
-            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm);
+            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm, rowData.banco);
           });
         } else {
           // Si no hay datos, mostrar un mensaje y la imagen de bienvenida
@@ -8837,6 +8923,7 @@ function SendRazon() {
             razonsocialCell.textContent = item.razonsocial;
             rifCell.textContent = item.rif;
             name_modeloposCell.textContent = item.name_modelopos;
+            bancoCell.textContent = item.banco;
 
             // Estilo condicional por deuda
             if (parseFloat(item.deuda) > 0) {
@@ -8859,7 +8946,7 @@ function SendRazon() {
             enlaceSerial.onclick = function () {
               window.modalSerialInstance = new bootstrap.Modal(modalSerial);
               window.modalSerialInstance.show();
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm);
+              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm, item.banco);
             };
             
             
@@ -8894,7 +8981,7 @@ function SendRazon() {
             fechainstallCell.appendChild(document.createElement("br"));
             fechainstallCell.appendChild(garantiaLabel);
 
-            bancoCell.textContent = item.banco;
+           
             directionCell.textContent = item.direccion_instalacion;
             estadoCell.textContent = item.estado;
             municipioCell.textContent = item.municipio;
@@ -9344,7 +9431,7 @@ function SendRazon() {
 // Lógica para cerrar el modal de serial fuera de la función principal (Obsoleta - Se eliminaron restos)
 
 
-function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
+function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm, banco) {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchSerial`);
 
@@ -9353,6 +9440,7 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
   globalRazon = razonsocial;
   globalIdClient = id_client; 
   globalIdIntelipunto = cod_adm;
+  global_BancoDelCliente = banco;
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   const tbody = document.getElementById("serialCountTable").getElementsByTagName("tbody")[0];
   tbody.innerHTML = "";
@@ -9381,6 +9469,9 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
 
           if (!globalRif && rif) globalRif = rif;
           if (!globalRazon && razonsocial) globalRazon = razonsocial;
+          
+          // Capturar banco si viene en el primer objeto (Híbrido)
+          if (!global_BancoDelCliente && serialData.banco) global_BancoDelCliente = serialData.banco;
 
           for (const key in serialData) {
             if (serialData.hasOwnProperty(key) && serialData[key] !== null && serialData[key] !== undefined && serialData[key] !== "") {
@@ -9396,18 +9487,16 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
               const btnFalla1 = document.getElementById("createTicketFalla1Btn");
               const btnFalla2 = document.getElementById("createTicketFalla2Btn");
               const btnVisita = document.getElementById("registrarVisitaBtn");
-              const btnRazon = document.getElementById("cambioRazonBtn");
-              const btnBanco = document.getElementById("cambioBancoBtn");
+              const crearSolicitudBtn = document.getElementById("crearSolicitudBtn");
               const descEstatus = document.getElementById("txtDescripcion");
 
               if (key === "Estatus_Pos") {
                   globalEstatusPos = serialData[key];
-                  if (serialData[key] === "Equipo Desafiliado" || serialData[key] === "Equipo Inactivo") {
+                  if (serialData[key] !== "Instalado") {
                     if (btnFalla1) btnFalla1.style.display = "none";
                     if (btnFalla2) btnFalla2.style.display = "none";
                     if (btnVisita) btnVisita.style.display = "none";
-                    if (btnRazon) btnRazon.style.display = "none";
-                    if (btnBanco) btnBanco.style.display = "none";
+                    if (crearSolicitudBtn) crearSolicitudBtn.style.display = "none";
                     
                     if (descEstatus) {
                       descEstatus.innerHTML = `
@@ -9422,8 +9511,7 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm) {
                     if (btnFalla1) btnFalla1.style.display = "block";
                     if (btnFalla2) btnFalla2.style.display = "block";
                     if (btnVisita) btnVisita.style.display = "block";
-                    if (btnRazon) btnRazon.style.display = "block";
-                    if (btnBanco) btnBanco.style.display = "block";
+                    if (crearSolicitudBtn) crearSolicitudBtn.style.display = "block";
                     if (descEstatus) descEstatus.innerHTML = "";
                   }
               }
@@ -10602,4 +10690,192 @@ document.addEventListener("click", function(e) {
             }
         }
     }
+});
+// ========================================
+// LÓGICA DE GESTIÓN ADMINISTRATIVA (NUEVA)
+// ========================================
+
+function saveGestionAdmin(e) {
+    if (e) e.preventDefault();
+
+    const form = document.getElementById('formGestionAdmin');
+    const obs = document.getElementById('obsAdmin').value.trim();
+    const fileInput = document.getElementById('fileGestionAdmin');
+    
+    // Validaciones
+    if (!obs) {
+        Swal.fire({
+            title: 'Atención',
+            text: 'Por favor, ingrese una observación detallando el motivo del cambio.',
+            icon: 'warning',
+            confirmButtonColor: '#004b57'
+        });
+        return;
+    }
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+        Swal.fire({
+            title: 'Soporte Requerido',
+            text: 'Debe adjuntar el soporte digital (PDF o Imagen) para procesar esta solicitud.',
+            icon: 'warning',
+            confirmButtonColor: '#004b57'
+        });
+        return;
+    }
+
+    // Preparar datos para el envío
+    const formData = new FormData();
+    // Intenta obtener el ID de varias formas para asegurar que no llegue vacío
+    let idUserLogin = 0;
+    const inputUser = document.getElementById('id_user_login_admin');
+    if (inputUser && inputUser.value) {
+        idUserLogin = inputUser.value;
+    } else if (typeof v_id_user !== 'undefined' && v_id_user) {
+        idUserLogin = v_id_user;
+    } else if (typeof globalIdUser !== 'undefined' && globalIdUser) {
+        idUserLogin = globalIdUser;
+    }
+    
+    formData.append('id_cliente', typeof globalIdClient !== 'undefined' ? globalIdClient : '');
+    formData.append('id_user', idUserLogin);
+    formData.append('id_tipo_solicitud', document.getElementById('id_tipo_solicitud_admin').value);
+    formData.append('observation', obs);
+    formData.append('support_file', fileInput.files[0]);
+
+    // Mostrar loading
+    Swal.fire({
+        title: 'Procesando Solicitud',
+        text: 'Espere un momento por favor...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveAdministrativeRequest`;
+
+    fetch(apiUrl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                title: '<span class="fw-bold" style="color: #1a2c34; letter-spacing: -0.5px;">¡Solicitud Registrada!</span>',
+                html: `
+                    <div class="py-2">
+                        <div class="mb-4">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-light-success rounded-circle animate__animated animate__bounceIn" style="width: 80px; height: 80px; background: rgba(32, 201, 151, 0.1);">
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-2" style="color: #20c997;">${data.message.split(':').pop() || 'Operación Exitosa'}</h4>
+                        <p class="text-muted mb-4" style="font-size: 0.95rem;">Su requerimiento ha sido ingresado al sistema y será validado por el equipo administrativo en breve.</p>
+                        <div class="p-3 rounded-4" style="background: #f8fafb; border: 1px solid #edf2f7;">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <div class="spinner-grow spinner-grow-sm text-info me-2" role="status" style="width: 8px; height: 8px;"></div>
+                                <span class="text-uppercase fw-bold text-info" style="font-size: 0.7rem; letter-spacing: 1px;">Estatus: Pendiente de Revisión</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                icon: undefined, // Quitamos el icono por defecto para usar nuestro HTML
+                showConfirmButton: true,
+                confirmButtonText: '<i class="bi bi-hand-thumbs-up-fill me-2"></i>Entendido',
+                confirmButtonColor: '#20c997',
+                padding: '2.5rem',
+                customClass: {
+                    popup: 'premium-modal-shadow',
+                    confirmButton: 'btn-premium-confirm'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__fadeInUp animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutDown animate__faster'
+                }
+            }).then(() => {
+                // Limpiar y cerrar modal
+                closeModalGestionAdmin();
+                // Limpiar observaciones manual
+                document.getElementById('obsAdmin').value = '';
+            });
+        } else {
+            const isDuplicate = data.message && data.message.includes('solicitud activa');
+            if (isDuplicate) {
+                Swal.fire({
+                    title: '<span class="fw-bold" style="color: #c05621; letter-spacing: -0.5px;">Gestión en Curso</span>',
+                    html: `
+                        <div class="py-2">
+                            <div class="mb-4">
+                                <div class="d-inline-flex align-items-center justify-content-center rounded-circle animate__animated animate__shakeX" style="width: 80px; height: 80px; background: rgba(255, 193, 7, 0.1);">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
+                                </div>
+                            </div>
+                            <h5 class="fw-bold mb-3" style="color: #4a5568;">Solicitud Detectada</h5>
+                            <p class="text-muted mb-4" style="font-size: 0.95rem;">${data.message}</p>
+                            <div class="p-3 rounded-4" style="background: #fffaf0; border: 1px solid #feebc8;">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-info-circle-fill text-warning me-2"></i>
+                                    <span class="text-warning fw-bold small" style="letter-spacing: 0.3px;">Evite generar duplicados para agilizar el proceso.</span>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    icon: undefined,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#ffc107',
+                    padding: '2.5rem',
+                    customClass: {
+                        popup: 'premium-modal-shadow',
+                        confirmButton: 'btn-premium-confirm'
+                    },
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInUp animate__faster'
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message || 'No se pudo procesar la solicitud.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    customClass: {
+                        popup: 'premium-modal-shadow'
+                    }
+                });
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error in saveAdministrativeRequest:', error);
+        Swal.fire({
+            title: 'Error de Red',
+            text: 'Hubo un problema al conectar con el servidor.',
+            icon: 'error',
+            confirmButtonColor: '#d33'
+        });
+    });
+}
+
+// Escuchar el evento submit del formulario
+document.addEventListener('DOMContentLoaded', function() {
+    const formAdmin = document.getElementById('formGestionAdmin');
+    if (formAdmin) {
+        formAdmin.addEventListener('submit', saveGestionAdmin);
+    }
+
+    // Delegación de eventos para el botón de "Crear Solicitud" (Poner al final del archivo)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('#crearSolicitudBtn');
+        if (btn) {
+            if (typeof openGestionAdmin === 'function') {
+                openGestionAdmin('razon');
+            } else {
+                console.error("La función openGestionAdmin no existe.");
+            }
+        }
+    });
 });

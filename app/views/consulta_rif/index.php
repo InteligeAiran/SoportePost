@@ -17,6 +17,9 @@ function mi_navbar() {}
         <!-- Nucleo Icons -->
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/desktop/desktop.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/mobile/mobile.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/consulta_rif/laptop/laptop.css" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/General.css" />
 
         <!-- CSS Files -->
@@ -37,6 +40,202 @@ function mi_navbar() {}
             /** Asegúrate de que este CSS se cargue *después* de SweetAlert2
                 * o de que esté disponible globalmente.
             */
+
+            /** Efecto Marquesina para Textos Largos */
+            .marquee-wrapper {
+                width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                position: relative;
+            }
+            .marquee-content {
+                display: inline-block;
+                padding-left: 100%;
+                animation: marquee 15s linear infinite;
+            }
+            @keyframes marquee {
+                0% { transform: translate(0, 0); }
+                100% { transform: translate(-100%, 0); }
+            }
+
+            /** Estilos Ultra-Premium para Modales */
+            .info-card-premium {
+                background: rgba(255, 255, 255, 0.7) !important;
+                backdrop-filter: blur(10px);
+                border-radius: 20px !important;
+                border: 1px solid rgba(13, 202, 240, 0.2) !important;
+                box-shadow: 0 15px 35px rgba(0,0,0,0.05) !important;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            .info-card-premium:hover {
+                transform: translateY(-5px) scale(1.01);
+                box-shadow: 0 20px 40px rgba(13, 202, 240, 0.1) !important;
+            }
+            .premium-input-group {
+                border-radius: 18px !important;
+                border: 2.5px solid #0dcaf0 !important;
+                background: #ffffff !important;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.02), 0 5px 15px rgba(13, 202, 240, 0.05) !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            .premium-input-group:focus-within {
+                border-color: #00d4ff !important;
+                box-shadow: 0 0 0 6px rgba(13, 202, 240, 0.15), 0 10px 20px rgba(0,0,0,0.05) !important;
+                transform: translateY(-2px);
+            }
+            .premium-textarea {
+                border-radius: 18px !important;
+                border: 2px solid #e2e8f0 !important;
+                background: #fdfdfd !important;
+                padding: 18px !important;
+                transition: all 0.3s ease !important;
+                box-shadow: inset 0 2px 5px rgba(0,0,0,0.03) !important;
+            }
+            .premium-textarea:focus {
+                border-color: #0dcaf0 !important;
+                box-shadow: 0 0 0 6px rgba(13, 202, 240, 0.1), 0 12px 25px rgba(0,0,0,0.05) !important;
+                transform: translateY(-2px);
+                outline: none !important;
+                background: #fff !important;
+            }
+
+            /* Estilos para Swal Premium */
+            .premium-modal-shadow {
+                border-radius: 28px !important;
+                border: 1px solid rgba(255, 255, 255, 0.5) !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important;
+                backdrop-filter: blur(10px) !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+            }
+            .btn-premium-confirm {
+                padding: 12px 30px !important;
+                border-radius: 14px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                transition: all 0.3s ease !important;
+                box-shadow: 0 4px 12px rgba(32, 201, 151, 0.2) !important;
+            }
+            .btn-premium-confirm:hover {
+                transform: scale(1.05) !important;
+                box-shadow: 0 6px 20px rgba(32, 201, 151, 0.3) !important;
+            }
+            .btn-premium-submit {
+                background: linear-gradient(135deg, #0dcaf0 0%, #00acc1 50%, #0093af 100%) !important;
+                border: none !important;
+                border-radius: 20px !important;
+                color: white !important;
+                font-weight: 800 !important;
+                letter-spacing: 1px !important;
+                text-transform: uppercase;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                box-shadow: 0 10px 25px rgba(13, 202, 240, 0.35) !important;
+                position: relative;
+                overflow: hidden;
+            }
+            .btn-premium-submit::after {
+                content: '';
+                position: absolute;
+                top: -50%; left: -50%; width: 200%; height: 200%;
+                background: rgba(255,255,255,0.1);
+                transform: rotate(45deg);
+                transition: 0.6s;
+            }
+            .btn-premium-submit:hover {
+                transform: translateY(-4px) scale(1.02);
+                box-shadow: 0 15px 30px rgba(13, 202, 240, 0.5) !important;
+            }
+            .btn-premium-submit:hover::after {
+                left: 100%;
+            }
+            .premium-label {
+                font-size: 0.95rem !important;
+                font-weight: 800 !important;
+                color: #1e293b !important;
+                margin-bottom: 10px !important;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .premium-label::before {
+                content: '';
+                display: block;
+                width: 4px; height: 16px;
+                background: #0dcaf0;
+                border-radius: 2px;
+            }
+
+            /** Estilos para Zona de Carga Premium */
+            .upload-zone-premium {
+                background: #f8fafc !important;
+                border: 2px dashed #0dcaf0 !important;
+                border-radius: 20px !important;
+                padding: 40px 20px !important;
+                text-align: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+            .upload-zone-premium:hover {
+                background: #f1f5f9 !important;
+                transform: scale(1.01);
+                border-style: solid !important;
+            }
+            .upload-icon-box {
+                font-size: 3rem;
+                color: #94a3b8;
+                margin-bottom: 15px;
+                transition: color 0.3s ease;
+            }
+            .upload-zone-premium:hover .upload-icon-box {
+                color: #0dcaf0;
+            }
+            .upload-title {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #475569;
+                margin-bottom: 5px;
+            }
+            .upload-subtitle {
+                font-size: 0.8rem;
+                color: #94a3b8;
+            }
+
+            /** Cápsulas de Estado de Carga */
+            .upload-pill-success {
+                background: #f0fff4 !important;
+                border: 1.5px solid #c6f6d5 !important;
+                border-radius: 16px !important;
+                padding: 12px 20px !important;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 12px;
+                animation: slideIn 0.3s ease;
+            }
+            .upload-pill-error {
+                background: #fff5f5 !important;
+                border: 1.5px solid #fed7d7 !important;
+                border-radius: 16px !important;
+                padding: 12px 20px !important;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 12px;
+                animation: shake 0.4s ease;
+            }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+
+
+
 
             .super-toast-z-index {
                 /* El valor 99999 debe ser suficiente para superar cualquier modal o overlay */
@@ -1223,7 +1422,8 @@ function mi_navbar() {}
                         </div><br>
                         <div class="card" style="display: none;">
                             <div class="row">
-                                        <table id="rifCountTable" class="table table-bordered" style="width: 100%">
+                                <div class="col-12">
+                                    <table id="rifCountTable" class="table table-bordered" style="width: 100%">
                                         <thead>
                                             <tr>
                                                 <th style="width: 5%; height: 10px;">ID cliente</th>
@@ -1249,6 +1449,7 @@ function mi_navbar() {}
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
                             </div>
                             <div id="ModalSerial" class="modal">
                                 <div id="ModalSerial-content" class="modal-content" style="max-height: 80vh; overflow-y: auto;">
@@ -1278,11 +1479,8 @@ function mi_navbar() {}
                                         <button type="button" class="btn-custom-action btn-visita" id="registrarVisitaBtn">
                                             <i class="bi bi-calendar-check-fill me-2"></i>Registrar Visita
                                         </button>
-                                        <button type="button" class="btn-custom-action btn-cambio-razon" id="cambioRazonBtn">
-                                            <i class="bi bi-person-badge-fill me-2"></i>Cambio Razón Social
-                                        </button>
-                                        <button type="button" class="btn-custom-action btn-cambio-banco" id="cambioBancoBtn">
-                                            <i class="bi bi-bank2 me-2"></i>Cambio de Banco
+                                        <button type="button" class="btn-custom-action btn-crear-solicitud" id="crearSolicitudBtn" style="background: linear-gradient(135deg, #0dcaf0 0%, #00acc1 100%); border: none; color: white; padding: 10px 20px; border-radius: 12px; font-weight: 700;">
+                                             <i class="bi bi-plus-circle-fill me-2"></i>Crear Solicitud
                                         </button>
                                     </div>
                                     <div class="mt-3 w-100 d-flex justify-content-center" id="txtDescripcion"></div>
@@ -2327,15 +2525,16 @@ function mi_navbar() {}
         <!-- Datatable -->
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.min.js"></script>
         <script src="<?php echo APP; ?>app/plugins/datatables/datatables.js"></script>
-        <script src = "<?php echo APP;?>js/Datatablebuttons5.js"></script>
-        <script src = "<?php echo APP;?>js/Datatablebuttons.min.js"></script>
-        <script src = "<?php echo APP;?>js/Datatablebuttonsprint.min.js"></script>
+
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/dataTables.bootstrap.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/jquery.dataTables.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/dataTables.buttons.min.js"></script>
+        <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.print.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.flash.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/pdfmake.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/jszip.min.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/vfs_fonts.js"></script>
         <script type="text/javascript" src="<?php echo APP; ?>DataTable/buttons.html5.min.js"></script>
-
 
         <!-- Chart -->
         <script src="<?php echo APP; ?>app/plugins/chart.js/chart.js"></script>
@@ -2377,72 +2576,97 @@ function mi_navbar() {}
             ?>
         <!-- END PARTE DEL CODIGO DE SESSION EXPIRADAS-->
         <!-- ==========================================
-         MODAL: GESTIÓN ADMINISTRATIVA DINÁMICO (RAZÓN SOCIAL / BANCO)
-         ========================================== -->
-    <div class="modal fade" id="modalGestionAdministrativa" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 650px;">
-            <div class="modal-content border-0 shadow-2xl" style="border-radius: 28px; overflow: hidden; background: #f8fafc;">
-                <!-- Header con Gradiente Dinámico -->
-                <div class="modal-header border-0 p-4" id="headerGestionAdmin" style="background: linear-gradient(135deg, #20c997 0%, #004b57 100%); position: relative;">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box-premium me-3" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
-                            <i id="iconGestionAdmin" class="bi bi-person-badge-fill text-white fs-3"></i>
-                        </div>
-                        <div>
-                            <h4 class="modal-title fw-bold text-white mb-0" id="titleGestionAdmin" style="letter-spacing: -0.5px;">Gestión de Cambio</h4>
-                            <p class="text-white-50 small mb-0 fw-500">Complete los datos para procesar la solicitud</p>
-                        </div>
-                    </div>
-                    <button type="button" class="btn-close-custom ms-auto" onclick="closeModalGestionAdmin()" aria-label="Close">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-
-                <div class="modal-body p-4">
-                    <form id="formGestionAdmin">
-                        <!-- Tarjeta de Info del POS (Compacta) -->
-                        <div class="card border-0 mb-4 shadow-sm" style="background: #ffffff; border-radius: 18px; border-left: 5px solid #0dcaf0; box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;">
-                            <div class="card-body p-3">
-                                <div class="row text-center">
-                                    <div class="col-4 border-end">
-                                        <label class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Serial</label>
-                                        <span id="txtAdminSerial" class="fw-bold text-dark" style="font-size: 0.85rem;">...</span>
-                                    </div>
-                                    <div class="col-4 border-end">
-                                        <label class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">RIF</label>
-                                        <span id="txtAdminRif" class="fw-bold text-dark" style="font-size: 0.85rem;">...</span>
-                                    </div>
-                                    <div class="col-4">
-                                        <label class="d-block text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Banco Act.</label>
-                                        <span id="txtAdminBanco" class="fw-bold text-dark" style="font-size: 0.85rem;">...</span>
-                                    </div>
+        MODAL: GESTIÓN ADMINISTRATIVA DINÁMICO (RAZÓN SOCIAL / BANCO)
+        ========================================== -->
+        <div class="modal fade" id="modalGestionAdministrativa" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document" style="max-width: 650px;">
+                    <div class="modal-content border-0 shadow-2xl" style="border-radius: 28px; overflow: hidden; background: #f8fafc;">
+                        <!-- Header con Gradiente Dinámico -->
+                        <div class="modal-header border-0 p-4" id="headerGestionAdmin" style="background: linear-gradient(135deg, #20c997 0%, #004b57 100%); position: relative;">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box-premium me-3" style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+                                    <i id="iconGestionAdmin" class="bi bi-person-badge-fill text-white fs-3"></i>
+                                </div>
+                                <div>
+                                    <h4 class="modal-title fw-bold text-white mb-0" id="titleGestionAdmin" style="letter-spacing: -0.5px;">Gestión de Cambio</h4>
+                                    <p class="text-white-50 small mb-0 fw-500">Complete los datos para procesar la solicitud</p>
                                 </div>
                             </div>
+                            <button type="button" class="btn-close-custom ms-auto" onclick="closeModalGestionAdmin()" aria-label="Close">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                         </div>
 
-                        <!-- Sección de Nuevo Valor -->
-                        <div class="mb-4">
-                            <label id="labelNuevoValor" class="form-label fw-bold text-dark mb-2" style="font-size: 0.95rem; color: #334155 !important;">Nuevo Dato a Registrar</label>
-                            <div class="input-group shadow-sm" style="border-radius: 14px; overflow: hidden; border: 2px solid #f1f5f9; background: #fff;">
-                                <span class="input-group-text border-0 bg-light" style="width: 50px; justify-content: center;"><i id="inputIconAdmin" class="bi bi-pencil-square text-info fs-5"></i></span>
-                                <input type="text" id="valNuevoAdmin" class="form-control border-0 py-3 px-3" placeholder="Ingrese el nuevo valor..." style="font-size: 1rem; font-weight: 600; color: #1e293b; background: #fff !important;">
-                            </div>
-                        </div>
+                        <div class="modal-body p-4">
+                            <form id="formGestionAdmin">
+                                <div class="mb-4">
+                                    <label class="premium-label"><i class="bi bi-list-task me-2"></i>Tipo de Solicitud</label>
+                                    <select id="id_tipo_solicitud_admin" name="id_tipo_solicitud" class="form-select premium-input-group" onchange="updateModalUIByType(this.value)" style="height: 55px; border-width: 2.5px; font-weight: 700; color: #1e293b;">
+                                        <option value="1">Cambio Razón Social</option>
+                                        <option value="2">Migración de banco</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="id_user_login_admin" value="<?php echo $_SESSION['id_user']; ?>">
+                                <!-- Tarjeta de Info del POS (Premium) -->
+                                <div class="card border-0 mb-4 info-card-premium">
+                                    <div class="card-body p-3">
+                                        <div class="row text-center align-items-center">
+                                            <div class="col-4 border-end">
+                                                <label class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.6rem; letter-spacing: 0.8px; opacity: 0.7;">Serial</label>
+                                                <span id="txtAdminSerial" class="fw-bold text-dark d-block" style="font-size: 0.85rem; letter-spacing: -0.2px;">...</span>
+                                            </div>
+                                            <div class="col-4 border-end">
+                                                <label class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.6rem; letter-spacing: 0.8px; opacity: 0.7;">RIF</label>
+                                                <span id="txtAdminRif" class="fw-bold text-dark d-block" style="font-size: 0.85rem; letter-spacing: -0.2px;">...</span>
+                                            </div>
+                                            <div class="col-4">
+                                                <label id="labelAdminInfo" class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 0.6rem; letter-spacing: 0.8px; opacity: 0.7;">Razón Social Act.</label>
+                                                <div class="marquee-wrapper">
+                                                    <span id="txtAdminInfo" class="fw-bold marquee-content" style="font-size: 0.85rem; color: #0dcaf0; text-shadow: 0 0 10px rgba(13, 202, 240, 0.2);">...</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <!-- Observaciones -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-dark" style="font-size: 0.95rem;">Observaciones Adicionales</label>
-                            <textarea id="obsAdmin" class="form-control shadow-sm" rows="3" placeholder="Explique brevemente el motivo del cambio..." style="border-radius: 12px; border: 1.5px solid #e2e8f0;"></textarea>
-                        </div>
+                                <!-- Sección de Soporte Digital (Sustituye al Input anterior) -->
+                                <div class="mb-4">
+                                    <label id="labelNuevoValor" class="premium-label">Soporte de Cambio Razón Social</label>
+                                    
+                                    <div class="upload-zone-premium" id="dropZoneAdmin" onclick="document.getElementById('fileGestionAdmin').click()">
+                                        <input type="file" id="fileGestionAdmin" style="display: none;" accept="image/*,.pdf" onchange="handleAdminFileChange(this)">
+                                        <div id="uploadPlaceholderAdmin">
+                                            <div class="upload-icon-box">
+                                                <i class="bi bi-camera-fill"></i>
+                                            </div>
+                                            <div class="upload-title">Adjunte el Documento de Cambio</div>
+                                            <div class="upload-subtitle">Haga clic aquí para subir el archivo</div>
+                                        </div>
+                                        <div id="uploadStatusAdmin" style="display: none;">
+                                            <!-- Aquí se inyectará la cápsula de éxito o error -->
+                                        </div>
+                                    </div>
 
-                        <!-- Botón de Acción -->
-                        <button type="submit" id="btnSubmitAdmin" class="btn w-100 btn-footer-save text-white fw-bold py-3" style="font-size: 1.1rem; border-radius: 15px;">
-                            PROCESAR SOLICITUD
-                        </button>
-                    </form>
+                                    <div class="d-flex align-items-center justify-content-center mt-3 text-muted" style="font-size: 0.75rem; gap: 8px;">
+                                        <i class="bi bi-info-circle"></i>
+                                        <span>Archivos permitidos: JPG, JPEG, PNG, PDF (Máx. 10MB)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Observaciones -->
+                                <div class="mb-4">
+                                    <label class="premium-label">Observaciones Adicionales</label>
+                                    <textarea id="obsAdmin" class="form-control premium-textarea" rows="3" placeholder="Explique brevemente el motivo del cambio..." style="background: #fff;"></textarea>
+                                </div>
+
+                                <!-- Botón de Acción -->
+                                <button type="submit" id="btnSubmitAdmin" class="btn w-100 btn-premium-submit text-white fw-bold py-3">
+                                    PROCESAR SOLICITUD
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-            </div>
         </div>
-    </div>
 </body>
 </html>
