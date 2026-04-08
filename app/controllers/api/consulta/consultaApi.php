@@ -4251,6 +4251,7 @@ class Consulta extends Controller
         $id_cliente = isset($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : null;
         $id_user = isset($_POST['id_user']) && (int)$_POST['id_user'] > 0 ? (int)$_POST['id_user'] : (isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0);
         $id_type = isset($_POST['id_tipo_solicitud']) ? (int)$_POST['id_tipo_solicitud'] : 1; // 1=GRS por defecto
+        $id_intelipunto = isset($_POST['id_intelipunto']) ? (int)$_POST['id_intelipunto'] : null;
         $observacion = isset($_POST['observation']) ? trim($_POST['observation']) : '';
 
         // 2. Validaciones básicas
@@ -4288,7 +4289,7 @@ class Consulta extends Controller
         $repository = new TechnicalConsultionRepository();
 
         // 5. Guardar solicitud en la tabla principal y generar nro_solicitud (GRS/GMB-XXXXX)
-        $requestData = $repository->SaveAdministrativeRequest($id_cliente, $id_user, $observacion, $id_type);
+        $requestData = $repository->SaveAdministrativeRequest($id_cliente, $id_user, $observacion, $id_type, $id_intelipunto);
 
         if (!$requestData) {
             $this->response(['success' => false, 'message' => 'Error al guardar la solicitud en la base de datos.'], 500);

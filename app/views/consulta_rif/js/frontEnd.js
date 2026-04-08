@@ -9453,6 +9453,7 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm, banco) {
           const serialData = response.serial[0];
 
           if (!globalIdIntelipunto && serialData.cod_adm) globalIdIntelipunto = serialData.cod_adm;
+          if (!globalIdIntelipunto && serialData.id_cliente) globalIdIntelipunto = serialData.id_cliente;
           if (!globalIdIntelipunto && serialData.id) globalIdIntelipunto = serialData.id;
 
           const findInObj = (obj, search) => {
@@ -10739,6 +10740,7 @@ function saveGestionAdmin(e) {
     formData.append('id_cliente', typeof globalIdClient !== 'undefined' ? globalIdClient : '');
     formData.append('id_user', idUserLogin);
     formData.append('id_tipo_solicitud', document.getElementById('id_tipo_solicitud_admin').value);
+    formData.append('id_intelipunto', typeof globalIdIntelipunto !== 'undefined' ? globalIdIntelipunto : '');
     formData.append('observation', obs);
     formData.append('support_file', fileInput.files[0]);
 

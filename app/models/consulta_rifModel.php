@@ -669,10 +669,12 @@ class consulta_rifModel extends Model
      * @param int $id_user El ID del usuario creador
      * @param string $observacion Observaciones de la solicitud
      * @param int $id_type ID del tipo de solicitud (1=GRS, 2=GMB)
+     * @param int|null $id_intelipunto ID del cliente en la base de datos de Intelipunto
      * @return array|bool Array con ID y request_number o false en caso de error
      */
-    public function SaveAdministrativeRequest($id_client, $id_user, $observacion, $id_type)
+    public function SaveAdministrativeRequest($id_client, $id_user, $observacion, $id_type, $id_intelipunto = null)
     {
+        error_log("DEBUG: Entrando a SaveAdministrativeRequest. Cliente: $id_client, Tipo: $id_type, Intelipunto: $id_intelipunto");
         try {
             $db_conn = $this->db->getConnection();
             $val_id_client = (int)$id_client;
@@ -715,12 +717,48 @@ class consulta_rifModel extends Model
                 $nroSolicitud = $prefix . "-" . $datePart . str_pad($newId, 4, '0', STR_PAD_LEFT);
                 
                 $sqlUpd = "UPDATE administrative_requests SET nro_solicitud = ".pg_escape_literal($db_conn, $nroSolicitud)." WHERE id = $newId";
-                pg_query($db_conn, $sqlUpd);
+                $resUpd = pg_query($db_conn, $sqlUpd);
+
+                if ($resUpd) {
+                    error_log("DEBUG: Solicitud $nroSolicitud verificada en tabla administrativa. Procediendo a Intelipunto...");
+                    
+                    // 4. ACTUALIZAR ESTATUS EN INTELIPUNTO
+                    // Priorizamos el ID de Soporte Post (id_client) que es el que el usuario usa para vincular (ej. 7473)
+                    $idToUpdate = !empty($id_client) ? $id_client : $id_intelipunto;
+                    
+                    if ($idToUpdate) {
+                        try {
+                        // Obtener configuración del dblink para intelipunto
+                        $sqlDblink = "SELECT host, port, dbname, username, password FROM dblink_configs WHERE config_name = 'intelipunto_db'";
+                        $resDblink = pg_query($db_conn, $sqlDblink);
+                        if ($resDblink && pg_num_rows($resDblink) > 0) {
+                            $dbConf = pg_fetch_assoc($resDblink);
+                            $connStr = "host={$dbConf['host']} port={$dbConf['port']} dbname={$dbConf['dbname']} user={$dbConf['username']} password={$dbConf['password']}";
+                            
+                            $val_id_int = (int)$idToUpdate;
+                            // Ejecutar UPDATE en Intelipunto vía dblink_exec usando id_consecutivo (valor 1 como entero)
+                            $sqlUpdateIntel = "SELECT dblink_exec('$connStr', 'UPDATE clie_tblclientepotencial SET estatus_solicitud = 1 WHERE id_consecutivo = $val_id_int')";                            
+                            error_log("DEBUG: Intentando actualizar Intelipunto. ID: $val_id_int");
+                            $resUpdate = pg_query($db_conn, $sqlUpdateIntel);
+                            
+                            if (!$resUpdate) {
+                                error_log("ERROR DBLINK: " . pg_last_error($db_conn));
+                            } else {
+                                error_log("DEBUG: dblink_exec ejecutado aparentemente con éxito.");
+                            }
+                        } else {
+                            error_log("ERROR: No se encontró la configuración 'intelipunto_db' en dblink_configs.");
+                        }
+                    } catch (Throwable $e_int) {
+                        error_log("Excepción actualizando estatus en Intelipunto: " . $e_int->getMessage());
+                    }
+                }
+            }
 
                 return [
                     'id' => $newId, 
                     'nro_solicitud' => $nroSolicitud,
-                    'type_name' => $typeName // Retornamos el nombre para document_type
+                    'type_name' => $typeName 
                 ];
             } else {
                 error_log("Error en SaveAdministrativeRequest: " . pg_last_error($db_conn));
