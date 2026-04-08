@@ -10,7 +10,11 @@ define("MODELS",dirname(dirname(__FILE__)).'/app/models/');
 define("FUNCTIONS",dirname(dirname(__FILE__)).'/app/plugins/utility/funciones/');
 define("REPORT",dirname(dirname(__FILE__)).'/app/plugins/utility/funciones/reporte/');
 
-define('APP','/SoportePost/'); // Ajustar la constante APP
+//define('APP','/SoportePost/'); // Ajustar la constante APP
+// Calcular la base del proyecto dinámicamente
+$script_name = $_SERVER['SCRIPT_NAME'];
+$app_path = str_replace('index.php', '', $script_name);
+define('APP', $app_path); 
 
 //Banner para reportes
 define("LOGOTIPO",ROOT.'app/public/images/logo_tipo.png');

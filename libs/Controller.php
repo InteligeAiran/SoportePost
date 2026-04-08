@@ -42,7 +42,18 @@ class Controller {
   public static function getURL() {
     $arrayURL = explode("/", $_SERVER['SCRIPT_NAME']);
     $file = $arrayURL[1];
-    $url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
+    //$url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
+    
+    // Detección robusta de protocolo
+    $protocol = 'http://';
+    if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+        (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], 'soportepost.intelipunto.com') !== false)) {
+        $protocol = 'https://';
+    }
+    
+    // Original: $url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
+    $url = $protocol . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
     return $url;
   }
 }
