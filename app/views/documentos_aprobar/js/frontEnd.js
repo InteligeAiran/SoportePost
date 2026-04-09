@@ -985,7 +985,7 @@ function getTicketAprovalDocument() {
                                     // 2. Configurar el filtro por tipo de documento si aplica (ELIMINADO FILTRO ESTRICTO PARA EXONERACIONES)
                                     let allowedTypes = [];
                                     if (["btn-por-asignar", "btn-anticipos-aprobados", "btn-asignados"].includes(buttonId)) {
-                                        allowedTypes = ['Anticipo', 'Pago', 'Envio', 'Envio_Destino'];
+                                        allowedTypes = ['Anticipo', 'Pago', 'pago', 'comprobante_pago', 'Exoneracion', 'exoneracion'];
                                     }
                                     // else if (["btn-recibidos", "btn-aprobado_exoneracion", "btn-rechazado_exoneracion"].includes(buttonId)) {
                                     //    allowedTypes = ['Exoneracion']; // Eliminado para permitir visualizar si el estatus es correcto aunque el tipo varíe por área
@@ -1028,16 +1028,20 @@ function getTicketAprovalDocument() {
                                         // Modificar el filtro de búsqueda para incluir lógica de rechazados
                                         const originalSearch = $.fn.dataTable.ext.search.pop(); // Sacar el de tipos para combinarlo
                                         $.fn.dataTable.ext.search.push(function(settings, searchData, index, rowData) {
-                                            if (settings.nTable.id !== 'tabla-ticket') return true;
-                                            
-                                            const idPayment = parseInt(rowData.id_status_payment || searchData[1]);
-                                            const hasRejectedDocs = rowData.ticket_tiene_documentos_rechazados === 'Sí';
-                                            const isRejected = idPayment === 13 || hasRejectedDocs;
-                                            const docType = rowData.document_type;
-                                            const isAllowedType = ['Anticipo', 'Pago', 'Envio', 'Envio_Destino'].includes(docType);
+                                             if (settings.nTable.id !== 'tabla-ticket') return true;
+                                             
+                                             const idPayment = parseInt(rowData.id_status_payment || searchData[1]);
+                                             const hasRejectedDocs = rowData.ticket_tiene_documentos_rechazados === 'Sí';
+                                             
+                                             // Un ticket solo cuenta como RECHAZADO si (tiene estatus 13 o documentos rechazados) 
+                                             // Y NO ha sido aprobado todavía (idPayment !== 6)
+                                             const isRejected = (idPayment === 13 || hasRejectedDocs) && idPayment !== 6;
+                                             
+                                             const docType = rowData.document_type;
+                                             const isAllowedType = ['Anticipo', 'Pago', 'pago', 'comprobante_pago', 'Envio', 'Envio_Destino', 'Traslado', 'Exoneracion', 'exoneracion'].includes(docType);
 
-                                            return isRejected && isAllowedType;
-                                        });
+                                             return isRejected && isAllowedType;
+                                         });
                                     }
 
                                     // 4. Dibujar la tabla y marcar el botón activo
