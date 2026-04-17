@@ -1435,12 +1435,31 @@ class TechnicalConsultionRepository
      * @param string $nro_ticket
      * @return bool
      */
+
     public function CheckTicketWorkshopHistory($nro_ticket) {
         $ticketInfo = $this->GetTicketByNro($nro_ticket);
         if ($ticketInfo && isset($ticketInfo[0]['id_ticket'])) {
             return $this->model->CheckTicketWorkshopHistory($ticketInfo[0]['id_ticket']);
         }
         return false;
+    }
+
+    public function GetDataTicketSolicitud(){
+        return $this->model->GetDataTicketSolicitud();
+    }
+
+    /* ---- Métodos para Sustitución de Solicitudes Administrativas ---- */
+
+    public function SubstituteAdministrativeRequest($id_old, $new_observation, $id_user) {
+        return $this->model->SubstituteAdministrativeRequest($id_old, $new_observation, $id_user);
+    }
+
+    public function GetAdministrativeRequestByNro($nro_solicitud) {
+        return $this->model->GetAdministrativeRequestByNro($nro_solicitud);
+    }
+
+    public function MarkPreviousAttachmentSubstituted($nro_solicitud) {
+        return $this->model->MarkPreviousAttachmentSubstituted($nro_solicitud);
     }
 }
 ?>

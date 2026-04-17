@@ -1,4 +1,6 @@
 // Instancias de los modales de Bootstrap (las inicializaremos cuando el DOM esté listo)
+
+
 let modalInstance;
 let currentTicketId = null;
 let modalInstanceCoordinator;
@@ -407,7 +409,9 @@ async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  getTicketDataCoordinator(); // Llama a la función para cargar los datos
+  if (typeof getTicketDataCoordinator === 'function') {
+    getTicketDataCoordinator(); // Llama a la función para cargar los datos si existe
+  }
 
   // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
   const cerrar = document.getElementById("close-button");
@@ -415,21 +419,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const inputRegion = document.getElementById("InputRegion"); // Obtén el input de región
 
   // Agrega el event listener al botón cerrar
-  cerrar.addEventListener("click", function () {
-    if (modalInstance) {
-      modalInstance.hide();
-      currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-      inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
-    }
-    document.getElementById("idSelectionTec").value = "";
-  });
+  if (cerrar) {
+    cerrar.addEventListener("click", function () {
+      if (typeof modalInstance !== 'undefined' && modalInstance) {
+        modalInstance.hide();
+        currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+        if(inputRegion) inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
+      }
+      const selTec = document.getElementById("idSelectionTec");
+      if (selTec) selTec.value = "";
+    });
+  }
+  
   // Agrega el event listener al botón "Asignar"
-  assignButton.addEventListener("click", AssignTicket);
+  if (assignButton && typeof AssignTicket !== 'undefined') {
+    assignButton.addEventListener("click", AssignTicket);
+  }
 });
 
 function getTicketDataCoordinator() {
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataExoneracion`);
+  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDataTicketSolicitud`);
 
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
 
@@ -544,18 +554,18 @@ function getTicketDataCoordinator() {
 
             console.log(data.id_cliente_intelipunto);
 
-            if (data.envio === 'Si' || data.exoneracion === 'Si' || data.presupuesto === 'Si') {
+            if (data.envio === 'Si' || data.exoneracion === 'Si' || data.presupuesto === 'Si' || data.pago === 'Si') {
               actionButtonsHtml += `
                 <button id="botonMostarImage" class="btn btn-sm btn-view-image" data-bs-placement="top" title="Visualizar Documentos"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
+                  data-ticket-id="${data.id_ticket || data.id_solicitud}"
+                  data-nro-ticket="${data.nro_ticket || data.nro_solicitud}"
                   data-envio="${data.envio}"
                   data-exoneracion="${data.exoneracion}"
-                  data-anticipo="${data.anticipo}"
-                  data-pago-taller="${data.pago_taller}"
+                  data-anticipo="${data.anticipo || 'No'}"
+                  data-pago-taller="${data.pago_taller || 'No'}"
                   data-pago="${data.pago}"
-                  data-presupuesto="${data.presupuesto}"
-                  data-rechazado="${data.rechazado}">
+                  data-presupuesto="${data.presupuesto || 'No'}"
+                  data-rechazado="${data.rechazado || 'f'}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                     <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                     <path d="M.046 8.5C.138 7.042 1.517 5.0 8 5.0s7.862 2.042 7.954 3.5c-.092 1.458-1.472 3.5-7.954 3.5S.138 9.958.046 8.5M13 8a5 5 0 1 0-10 0 5 5 0 0 0 10 0"/>
@@ -1212,6 +1222,445 @@ function getMotivos(documentType) {
   xhr.send(datos);
 }
 
+/**
+ * Función Principal: Obtiene y renderiza el listado de solicitudes administrativas.
+ * Adaptada para el módulo de Reportes Administrativos (Solicitudes).
+ */
+function getTicketDataFinaljs() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDataTicketSolicitud`);
+  
+  const detailsPanel = document.getElementById("ticket-details-panel");
+  const tableContainer = document.querySelector(".table-responsive");
+  const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
+
+  // Destruye DataTables si ya está inicializado
+  if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+    $("#tabla-ticket").DataTable().destroy();
+    tbody.innerHTML = "";
+  }
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Asignación a la variable global (sin const) como requerido
+          TicketData = response.data || response.ticket || []; 
+          
+          if (TicketData && TicketData.length > 0) {
+            
+            // Inicializar texto default en el panel de detalles
+            if (detailsPanel) {
+                detailsPanel.innerHTML = "<p>Selecciona una solicitud de la tabla para ver sus detalles aquí.</p>";
+            }
+
+            const dataForDataTable = [];
+
+            TicketData.forEach((data) => {
+              // El número de solicitud ya viene formateado desde la bd (ej. GRS-0804260024)
+              const formattedCode = data.nro_solicitud || "N/A";
+
+              // Representación visual del estatus administrativo basada en el ID
+              const statusName = data.status_name || "Desconocido";
+              const idStatus = parseInt(data.id_status_administrativo, 10);
+              let statusHtml = '';
+
+              if (idStatus === 1 || idStatus === 2) {
+                  // Amarillo con texto oscuro para máxima legibilidad
+                  statusHtml = `<span class="badge" style="background-color: #ffc107; color: #000 !important; font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              } else if (idStatus === 3) {
+                  // Verde
+                  statusHtml = `<span class="badge" style="background-color: #28a745; color: white !important; font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              } else if (idStatus === 4) {
+                  // Rojo
+                  statusHtml = `<span class="badge" style="background-color: #dc3545; color: white !important; font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              } else {
+                  // Por defecto
+                  statusHtml = `<span class="badge bg-secondary text-white" style="font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              }
+
+              const isPendiente = parseInt(data.id_status_administrativo) === 1;
+
+              let actionButtonsHtml = `
+                <div style="display:inline-flex; gap:6px; align-items:center;">
+                  <!-- Botón Ver Documento -->
+                  <button class="view-admin-detail-btn" title="Ver Documento"
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 7px 10px;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      border: none;
+                      border-radius: 50px;
+                      cursor: pointer;
+                      box-shadow: 0 3px 10px rgba(102,126,234,0.45);
+                      transition: all 0.25s ease;
+                    "
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(102,126,234,0.65)';"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 3px 10px rgba(102,126,234,0.45)';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                      <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                    </svg>
+                  </button>
+                  <!-- Botón Editar: solo visible cuando estatus = 1 (Pendiente por Aprobar) -->
+                  ${isPendiente ? `
+                  <button class="edit-admin-req-btn" title="Editar Solicitud"
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 7px 10px;
+                      background: linear-gradient(135deg, #1a6dff 60%, #ffffff 100%);
+                      color: white;
+                      border: none;
+                      border-radius: 50px;
+                      cursor: pointer;
+                      box-shadow: 0 3px 10px rgba(26,109,255,0.45);
+                      transition: all 0.25s ease;
+                    "
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(26,109,255,0.65)';"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 3px 10px rgba(26,109,255,0.45)';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+                    </svg>
+                  </button>` : ''}
+                </div>
+              `;
+
+              dataForDataTable.push([
+                data.id || data.id_ticket, // Hidden ID para uso interno (índice 0)
+                data.id_cliente || "N/A",  // ID Cliente (índice 1)
+                formattedCode, // Nro Solicitud (índice 2)
+                data.razon_social || data.razonsocial_cliente || "N/A", // Razón Social (índice 3)
+                data.rif_cliente || "N/A", // RIF (índice 4)
+                data.tipo_nombre || data.tipo_solicitud || "N/A", // Tipo de Solicitud (índice 5)
+                data.observacion || "N/A", // Observación (índice 6)
+                statusHtml, // Estatus (índice 7)
+                data.user_creation || data.name_user_gestion || "N/A", // Usuario Creación (índice 8)
+                data.created_at ? data.created_at.substring(0, 16) : "N/A", // Fecha Creación (índice 9)
+                actionButtonsHtml // Acciones (índice 10)
+              ]);
+            });
+
+            // Inicialización de DataTables con la data formateada
+            const dataTableInstance = $("#tabla-ticket").DataTable({
+              data: dataForDataTable,
+              scrollX: true,
+              responsive: false,
+              pagingType: "simple_numbers",
+              lengthMenu: [[5, 10, 25, 50], ["5", "10", "25", "50"]],
+              autoWidth: false,
+              columns: [
+                {
+                  title: "N°",
+                  orderable: false,
+                  searchable: false,
+                  render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                  },
+                },
+                { title: "ID Cliente", width: "8%" },
+                { 
+                  title: "Nro Solicitud",
+                  width: "10%",
+                  render: function(data, type, row) {
+                    return `<span class="font-weight-bold" style="color: #003594;">${data}</span>`;
+                  }
+                },
+                { 
+                  title: "Razón Social",
+                  width: "20%",
+                  render: function (data, type, row) {
+                    if (type === "display" && typeof data === 'string') {
+                      return `<span class="truncated-cell" data-full-text="${data}">${data.length > 20 ? data.substring(0, 20) + "..." : data}</span>`;
+                    }
+                    return data;
+                  }
+                },
+                { title: "RIF", width: "8%" },
+                { title: "Tipo de Solicitud", width: "10%" },
+                { 
+                  title: "Observación", 
+                  width: "15%",
+                  render: function (data, type, row) {
+                    if (type === "display" && typeof data === 'string') {
+                      return `<span class="truncated-cell" data-full-text="${data}">${data.length > 20 ? data.substring(0, 20) + "..." : data}</span>`;
+                    }
+                    return data;
+                  }
+                },
+                { title: "Estatus", width: "8%" },
+                { title: "Usuario Creación", width: "10%" },
+                { title: "Fecha Creación", width: "8%" },
+                { title: "Acciones", width: "3%", orderable: false, searchable: false }
+              ],
+              language: {
+                url: "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json",
+              },
+              order: [[1, "desc"]], // Ordenar por Nro Solicitud descendente
+              initComplete: function (settings, json) {
+                try {
+                  if (typeof $.fn.resizableColumns === 'function') {
+                    $("#tabla-ticket").resizableColumns();
+                  }
+                } catch (e) {
+                  console.warn("Plugin resizableColumns no disponible:", e);
+                }
+              }
+            });
+
+            // Truncado de celdas
+            $("#tabla-ticket")
+            .off("click", ".truncated-cell, .expanded-cell")
+            .on("click", ".truncated-cell, .expanded-cell", function (e) {
+              e.stopPropagation();
+              const $cellSpan = $(this);
+              const fullText = $cellSpan.data("full-text");
+              const displayLength = 25;
+              if ($cellSpan.hasClass("truncated-cell")) {
+                $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
+              } else if ($cellSpan.hasClass("expanded-cell")) {
+                $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
+                $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
+              }
+            });
+
+            // Handler dedicado para el botón "Ver Detalles" - REGISTRADO PRIMERO para que stopImmediatePropagation funcione
+            $("#tabla-ticket")
+              .off("click", ".view-admin-detail-btn")
+              .on("click", ".view-admin-detail-btn", function (e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                const btn = $(this);
+                const tr = btn.closest("tr");
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+
+                // Resaltar fila
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+
+                const reqId = rowData[0];
+                const ticket = TicketData.find(t => (t.id || t.id_ticket) == reqId);
+                if (!ticket) return;
+
+                const nroSolicitud = ticket.nro_solicitud || ticket.nro_ticket || '';
+                const razonSocial  = ticket.razon_social || ticket.razonsocial_cliente || 'N/A';
+                const tipoSolicitud = ticket.tipo_nombre || ticket.tipo_solicitud || 'Solicitud';
+
+                // Estado de carga en el botón
+                const originalHtml = btn.html();
+                btn.html(`<span class="spinner-border spinner-border-sm" role="status"></span>`).prop('disabled', true);
+
+                // Llamar al API para obtener el documento adjunto de la solicitud
+                const formData = new FormData();
+                formData.append('record_number', nroSolicitud);
+
+                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentAttachmentByRecordNumber`, {
+                  method: 'POST',
+                  body: formData
+                })
+                .then(r => r.json())
+                .then(res => {
+                  btn.html(originalHtml).prop('disabled', false);
+
+                  const customTitle = `
+                    <i class="fas fa-file-alt me-2"></i>
+                    Soporte Digital &mdash; <span style="font-weight:400; font-size:0.9em;">${nroSolicitud}</span>
+                  `;
+                  const subtitle = `<span class="text-muted" style="font-size:0.85em;">${tipoSolicitud} &bull; ${razonSocial}</span>`;
+
+                  if (res && res.success && res.attachment) {
+                    const att = res.attachment;
+                    const filePath = att.file_path || '';
+                    const mime     = att.mime_type || '';
+                    const fileName = att.original_filename || 'Documento';
+
+                    const isImage = mime.startsWith('image/');
+                    const isPdf   = mime === 'application/pdf' || filePath.toLowerCase().endsWith('.pdf');
+
+                    if (typeof showViewModal === 'function') {
+                      showViewModal(
+                        reqId,
+                        nroSolicitud,
+                        isImage ? filePath : null,       // imageUrl
+                        isPdf   ? filePath : null,       // pdfUrl
+                        fileName,
+                        false,       // fromSelector = false (no regresar al selector)
+                        customTitle,
+                        subtitle
+                      );
+                    }
+                  } else {
+                    // Sin documento adjunto — mostrar modal con mensaje
+                    if (typeof showViewModal === 'function') {
+                      showViewModal(
+                        reqId,
+                        nroSolicitud,
+                        null,   // sin imagen
+                        null,   // sin pdf
+                        '',
+                        false,
+                        customTitle,
+                        subtitle
+                      );
+                    }
+                  }
+                })
+                .catch(err => {
+                  btn.html(originalHtml).prop('disabled', false);
+                  console.error('Error al obtener adjunto de solicitud:', err);
+                  if (typeof showViewModal === 'function') {
+                    showViewModal(reqId, nroSolicitud, null, null, '', false,
+                      `<i class="fas fa-exclamation-triangle me-2 text-warning"></i> Error al cargar documento`,
+                      null
+                    );
+                  }
+                });
+              });
+
+            // Handler del botón Editar (edit-admin-req-btn) - registrado antes de tbody tr
+            $("#tabla-ticket")
+              .off("click", ".edit-admin-req-btn")
+              .on("click", ".edit-admin-req-btn", function (e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                const tr = $(this).closest("tr");
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+
+                const reqId = rowData[0];
+                const ticket = TicketData.find(t => (t.id || t.id_ticket) == reqId);
+                if (!ticket) return;
+
+                // Actualizar datos globales del ticket seleccionado
+                if (typeof currentTicketData !== 'undefined') currentTicketData = ticket;
+                else window.currentTicketData = ticket;
+
+                // Disparar evento personalizado con los datos de la solicitud
+                // Escúchalo con: document.addEventListener('adminReqEdit', e => { ... e.detail ... })
+                document.dispatchEvent(new CustomEvent('adminReqEdit', { detail: ticket }));
+              });
+
+            // Selección de Fila y Visualización de Detalles (registrado DESPUÉS del handler del botón)
+            $("#tabla-ticket")
+              .off("click", "tbody tr")
+              .on("click", "tbody tr", function (e) {
+                const clickedElement = $(e.target);
+                // Si el clic fue en cualquier botón (incluyendo view-admin-detail-btn), no procesar
+                if (clickedElement.is('button') ||
+                    clickedElement.closest('button').length > 0 ||
+                    clickedElement.hasClass('truncated-cell') ||
+                    clickedElement.hasClass('expanded-cell')) {
+                    return;
+                }
+                
+                e.stopPropagation();
+                
+                const tr = $(this);
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+                
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+                
+                const reqId = rowData[0];
+                const selectedTicketDetails = TicketData.find(t => (t.id || t.id_ticket) == reqId);
+                
+                if (selectedTicketDetails && detailsPanel) {
+                  if (typeof currentTicketData !== 'undefined') currentTicketData = selectedTicketDetails;
+                  else window.currentTicketData = selectedTicketDetails;
+
+                  if (typeof formatAdminRequestDetailsPanel === "function") {
+                     detailsPanel.innerHTML = formatAdminRequestDetailsPanel(selectedTicketDetails);
+                  } else if (typeof formatTicketDetailsPanel === "function") {
+                     detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                  } else {
+                     detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                  }
+
+                  if (typeof loadTicketHistory === "function") {
+                     loadTicketHistory(reqId, selectedTicketDetails.nro_solicitud || selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '', selectedTicketDetails.id_cliente || '');
+                  }
+
+                  if (selectedTicketDetails.serial_pos && typeof downloadImageModal === "function") {
+                    downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                    const imgElement = document.getElementById("device-ticket-image");
+                    if (imgElement) {
+                      imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                      imgElement.alt = "Serial no disponible";
+                    }
+                  }
+                } else {
+                  if (detailsPanel) detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                }
+              });
+
+
+            if (tableContainer) {
+              tableContainer.style.display = "";
+            }
+
+          } else {
+            // Sin datos disponibles
+            if (tableContainer) {
+                tableContainer.innerHTML = `
+                  <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Sin Solicitudes Disponibles</h5>
+                    <p>No hay solicitudes administrativas vigentes en este momento.</p>
+                  </div>`;
+                tableContainer.style.display = "";
+            }
+          }
+        } else {
+          tbody.innerHTML = '<tr><td colspan="8">Error al cargar datos del servidor</td></tr>';
+          console.error("API Error:", response.message);
+        }
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="8">Error al procesar la respuesta</td></tr>';
+        console.error("JSON Error parsing:", error);
+      }
+    } else if (xhr.status === 404) {
+        if (tableContainer) {
+            tableContainer.innerHTML = `
+              <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Sin Datos Disponibles</h5>
+                <p>Endpoint no encontrado o no generó datos.</p>
+              </div>`;
+            tableContainer.style.display = "";
+        }
+    } else {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8">Error de conexión</td></tr>';
+      console.error("Connection Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  xhr.onerror = function () {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8">Fallo en red</td></tr>';
+    console.error("Network problem");
+  };
+
+  xhr.send();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById("tabla-ticket") && window.location.pathname.includes('solicitudes')) {
+        getTicketDataFinaljs();
+    }
+});
+
 // Obtén una referencia al modal y al tbody de la tabla
 
 
@@ -1266,6 +1715,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 });
+
+
 
 // Función auxiliar para determinar el tipo de documento
 function getDocumentType(url) {
@@ -6254,3 +6705,299 @@ function openEditExonerationModal(idExoneracion) {
 
     editModal.show();
 }
+
+/* ============================================================
+   MODAL DE EDICIÓN DE SOLICITUD ADMINISTRATIVA
+   Escucha el evento 'adminReqEdit' disparado por el botón ✏️
+   ============================================================ */
+document.addEventListener('adminReqEdit', function (e) {
+  const ticket = e.detail;
+  if (!ticket) return;
+
+  const nroSolicitud  = ticket.nro_solicitud  || ticket.nro_ticket   || '';
+  const razonSocial   = ticket.razon_social   || ticket.razonsocial_cliente || 'N/A';
+  const tipo          = ticket.tipo_nombre    || ticket.tipo_solicitud || 'N/A';
+  const observacion   = ticket.observacion    || '';
+  const reqId         = ticket.id            || ticket.id_ticket     || '';
+
+  // Poblar campos del modal
+  document.getElementById('editReqId').value           = reqId;
+  document.getElementById('editReqNro').value          = nroSolicitud;
+  document.getElementById('editReqTipo').value         = tipo;
+  document.getElementById('editReqRazon').value        = razonSocial;
+  document.getElementById('editReqObservacion').value  = observacion;
+  
+  // Limpiar archivo previo y resetear UI de soporte digital
+  resetEditReqFileUI();
+
+  // Subtítulo del modal
+  const subtitle = document.getElementById('editAdminReqSubtitle');
+  if (subtitle) subtitle.textContent = `${nroSolicitud}  ·  ${razonSocial}`;
+
+  // Limpiar alerta previa
+  const alertEl = document.getElementById('editReqAlert');
+  if (alertEl) { alertEl.className = 'alert mt-3 d-none'; alertEl.textContent = ''; }
+
+  // Limpiar validaciones visuales previas
+  const obs = document.getElementById('editReqObservacion');
+  if (obs) obs.classList.remove('is-invalid');
+
+  // Abrir el modal
+  const modalEl = document.getElementById('editAdminReqModal');
+  if (modalEl) {
+    // Guardamos la instancia en una variable global para poder cerrarla luego
+    window.editAdminReqModalInstance = new bootstrap.Modal(modalEl);
+    window.editAdminReqModalInstance.show();
+  }
+});
+
+/* ---- Handler del botón "Guardar Cambios" del modal de edición ---- */
+document.addEventListener('DOMContentLoaded', function () {
+  const saveBtn = document.getElementById('editReqSaveBtn');
+  if (!saveBtn) return;
+
+  saveBtn.addEventListener('click', function () {
+    const nroSolicitud = document.getElementById('editReqNro').value.trim();
+    const observacion  = document.getElementById('editReqObservacion').value.trim();
+    const fileInput    = document.getElementById('editReqFile');
+    const alertEl      = document.getElementById('editReqAlert');
+    const obsEl        = document.getElementById('editReqObservacion');
+
+    if (!observacion) {
+      obsEl.classList.add('is-invalid');
+      if (alertEl) {
+        alertEl.className = 'alert alert-premium-danger mt-3';
+        alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> <span>La observación es obligatoria.</span>`;
+        alertEl.classList.remove('d-none');
+      }
+      return;
+    }
+    
+    if (!fileInput || fileInput.files.length === 0) {
+      if (alertEl) {
+        alertEl.className = 'alert alert-premium-danger mt-3';
+        alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> <span>Debe subir un nuevo soporte digital para realizar la actualización.</span>`;
+        alertEl.classList.remove('d-none');
+      }
+      const statusCard = document.getElementById('editReqFileStatusCard');
+      if (statusCard) statusCard.style.setProperty('border-color', '#dc3545', 'important');
+      return;
+    }
+
+    obsEl.classList.remove('is-invalid');
+    if (alertEl) alertEl.classList.add('d-none');
+    const statusCard = document.getElementById('editReqFileStatusCard');
+    if (statusCard) statusCard.style.removeProperty('border-color');
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
+
+    const formData = new FormData();
+    formData.append('nro_solicitud', nroSolicitud);
+    formData.append('observacion',   observacion);
+    if (fileInput && fileInput.files.length > 0) {
+      formData.append('support_file', fileInput.files[0]);
+    }
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateAdministrativeRequest`, {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i class="bi bi-save2-fill"></i> Guardar Cambios`;
+
+      if (res && res.success) {
+        if (alertEl) {
+          alertEl.className = 'alert alert-premium-success mt-3';
+          alertEl.innerHTML = `<i class="bi bi-check-circle-fill"></i> <span>${res.message || 'Solicitud actualizada correctamente.'}</span>`;
+        }
+        setTimeout(() => {
+          if (window.editAdminReqModalInstance) {
+            window.editAdminReqModalInstance.hide();
+          } else {
+            document.getElementById('CloseEditReqModal')?.click();
+          }
+          if (typeof getTicketDataFinaljs === 'function') getTicketDataFinaljs();
+        }, 1500);
+      } else {
+        if (alertEl) {
+          alertEl.className = 'alert alert-premium-danger mt-3';
+          alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> <span>${res.message || 'Error al actualizar la solicitud.'}</span>`;
+        }
+      }
+    })
+    .catch(err => {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i class="bi bi-save2-fill"></i> Guardar Cambios`;
+      if (alertEl) {
+        alertEl.className = 'alert alert-premium-danger mt-3';
+        alertEl.innerHTML = `<i class="bi bi-wifi-off"></i> <span>Error de conexión.</span>`;
+      }
+    });
+  });
+
+  // Limpiar error de observación al escribir
+  const obsInput = document.getElementById('editReqObservacion');
+  if (obsInput) {
+    obsInput.addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      const alertEl = document.getElementById('editReqAlert');
+      if (alertEl && alertEl.textContent.includes('observación')) {
+        alertEl.classList.add('d-none');
+      }
+    });
+  }
+});
+
+/**
+ * Resetea la UI del campo de soporte digital en el modal de edición de solicitudes
+ */
+function resetEditReqFileUI() {
+    const input = document.getElementById('editReqFile');
+    const container = document.getElementById('editReqFileStatus');
+    const fileName = document.getElementById('editReqFileName');
+    const dropZone = document.getElementById('editReqFileDropZone');
+    const card = document.getElementById('editReqFileStatusCard');
+    const iconBg = document.getElementById('editReqFileIconBg');
+    const iconContainer = document.getElementById('editReqFileIcon');
+    const badge = document.getElementById('editReqFileBadge');
+    const statusText = document.getElementById('editReqStatusText');
+    const saveBtn = document.getElementById('editReqSaveBtn');
+
+    if (input) input.value = '';
+    if (container) {
+        container.classList.add('d-none');
+        container.style.setProperty('display', 'none', 'important');
+    }
+    if (fileName) fileName.textContent = '';
+    if (dropZone) dropZone.style.setProperty('display', 'block', 'important');
+    
+    // Reset styles to success (default)
+    if (card) {
+        card.style.background = "#ffffff";
+        card.style.borderColor = "#d1fae5";
+    }
+    if (iconBg) iconBg.style.background = "#ecfdf5";
+    if (iconContainer) {
+        iconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#059669" class="bi bi-file-earmark-check" viewBox="0 0 16 16"><path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>`;
+    }
+    if (badge) badge.style.background = "#10b981";
+    if (statusText) {
+        statusText.textContent = "Listo para actualizar";
+        statusText.className = "text-success fw-bold";
+    }
+    if (saveBtn) saveBtn.disabled = false;
+}
+
+/**
+ * Listeners para el nuevo cargador de archivos Premium
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById('editReqFile');
+    const clearBtn = document.getElementById('btn_clear_editReq_file');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            const statusContainer = document.getElementById('editReqFileStatus');
+            const fileNameDisplay = document.getElementById('editReqFileName');
+            const dropZone = document.getElementById('editReqFileDropZone');
+            
+            const card = document.getElementById('editReqFileStatusCard');
+            const iconBg = document.getElementById('editReqFileIconBg');
+            const iconContainer = document.getElementById('editReqFileIcon');
+            const badge = document.getElementById('editReqFileBadge');
+            const statusText = document.getElementById('editReqStatusText');
+            const saveBtn = document.getElementById('editReqSaveBtn');
+
+            if (file) {
+                if (fileNameDisplay) fileNameDisplay.textContent = file.name;
+                
+                if (statusContainer) {
+                    statusContainer.classList.remove('d-none');
+                    statusContainer.style.setProperty('display', 'block', 'important');
+                }
+                
+                if (dropZone) {
+                    dropZone.style.setProperty('display', 'none', 'important');
+                }
+
+                // VALIDACIÓN DE TAMAÑO (10MB)
+                const maxSize = 10 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    // ESTILO DE ERROR (Rojo)
+                    if (card) {
+                        card.style.background = "#fff5f5";
+                        card.style.borderColor = "#ff8a8a";
+                    }
+                    if (iconBg) {
+                        iconBg.style.background = "#ffe4e4";
+                        iconBg.style.borderRadius = "12px";
+                    }
+                    if (iconContainer) {
+                        iconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ef4444" class="bi bi-file-earmark-x" viewBox="0 0 16 16"><path d="M6.854 7.146a.5.5 0 1 0-.708.708L7.293 9l-1.147 1.146a.5.5 0 0 0 .708.708L8 9.707l1.146 1.147a.5.5 0 0 0 .708-.708L8.707 9l1.147-1.146a.5.5 0 0 0-.708-.708L8 8.293z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>`;
+                    }
+                    if (badge) {
+                        badge.style.background = "#ef4444";
+                        badge.style.color = "white";
+                    }
+                    if (statusText) {
+                        statusText.textContent = "Excede 10MB";
+                        statusText.className = "text-danger fw-bold ms-2";
+                        statusText.style.fontSize = "0.75rem";
+                    }
+                    if (saveBtn) {
+                        saveBtn.disabled = true;
+                        saveBtn.style.opacity = "0.6";
+                        saveBtn.style.cursor = "not-allowed";
+                        saveBtn.style.boxShadow = "none";
+                    }
+                } else {
+                    // RESET A ÉXITO (por si venía de un error previo)
+                    if (card) {
+                        card.style.background = "#ffffff";
+                        card.style.borderColor = "#d1fae5";
+                    }
+                    if (iconBg) iconBg.style.background = "#ecfdf5";
+                    if (iconContainer) {
+                        iconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#059669" class="bi bi-file-earmark-check" viewBox="0 0 16 16"><path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>`;
+                    }
+                    if (badge) {
+                        badge.style.background = "#10b981";
+                        badge.style.color = "white";
+                    }
+                    if (statusText) {
+                        statusText.textContent = "Listo para actualizar";
+                        statusText.className = "text-success fw-bold";
+                        statusText.style.fontSize = "0.7rem";
+                    }
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.style.opacity = "1";
+                        saveBtn.style.cursor = "pointer";
+                        saveBtn.style.boxShadow = "0 4px 14px rgba(26,109,255,0.4)";
+                    }
+                }
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            resetEditReqFileUI();
+        });
+    }
+});
+
+/* ---- Handler para cerrar el modal manualmente si falla data-bs-dismiss ---- */
+document.addEventListener('click', function (e) {
+  if (e.target.closest('#CloseEditReqModal')) {
+    if (window.editAdminReqModalInstance) {
+      window.editAdminReqModalInstance.hide();
+    }
+    // El atributo data-bs-dismiss="modal" en el HTML también ayudará.
+  }
+});

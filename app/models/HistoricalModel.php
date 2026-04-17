@@ -14,15 +14,103 @@ class HistoricalModel extends Model
         $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database); // Ensure getInstance() returns a PgSql\Connection
     }
 
-    public function GetTicketHistory($id_ticket)
+    public function GetTicketHistory($id_ticket, $id_cliente = null, $search_by_client = false)
     {
         try {
-            $sql = "SELECT * FROM public.get_ticket_history_details(".$id_ticket.");";
-            $result = $this->getResult($sql, $this->db);
-            return $result;
+            $db = $this->db->getConnection();
+            
+            // 1. Resolver id_cliente si no se proporciona (lo necesitamos para las solicitudes administrativas)
+            if (empty($id_cliente) && !empty($id_ticket)) {
+                $sql_client = "SELECT id_cliente FROM public.tickets WHERE id_ticket = " . (int)$id_ticket;
+                $res_client = pg_query($db, $sql_client);
+                if ($res_client && pg_num_rows($res_client) > 0) {
+                    $row_client = pg_fetch_assoc($res_client);
+                    $id_cliente = $row_client['id_cliente'];
+                }
+            }
+
+            if ($search_by_client && !empty($id_cliente)) {
+                // Buscamos si el cliente tiene un ticket activo ("abierto" o "en proceso" que típicamente son 1 y 2)
+                $sql_find_ticket = "SELECT id_ticket FROM public.tickets WHERE id_cliente = " . (int)$id_cliente . " AND id_status_ticket IN (1, 2) ORDER BY id_ticket DESC LIMIT 1;";
+                $ticketResult = pg_query($db, $sql_find_ticket);
+                
+                if ($ticketResult && pg_num_rows($ticketResult) > 0) {
+                    $row = pg_fetch_assoc($ticketResult);
+                    $id_ticket = $row['id_ticket'];
+                    pg_free_result($ticketResult);
+                } else {
+                    // Si no hay ticket activo, igual queremos mostrar las solicitudes si existen
+                    $id_ticket = null;
+                }
+            }
+
+            $history = [];
+
+            // 2. Obtener historial técnico del ticket (si existe)
+            if (!empty($id_ticket)) {
+                $sql = "SELECT *, FALSE as is_admin_request FROM public.get_ticket_history_details(" . (int)$id_ticket . ");";
+                $res = pg_query($db, $sql);
+                if ($res) {
+                    while ($row = pg_fetch_assoc($res)) {
+                        $history[] = $row;
+                    }
+                }
+            }
+
+            // 3. Obtener solicitudes administrativas del cliente mediante la función oficial
+            if (!empty($id_cliente)) {
+                $sql_admin = "SELECT 
+                        nro_solicitud,
+                        TO_CHAR(created_at, 'DD-MM-YYYY HH24:MI') as fecha_de_cambio,
+                        tipo_nombre as name_accion_ticket,
+                        user_creation as usuario_gestion,
+                        status_name as name_status_ticket,
+                        observacion,
+                        id_status_administrativo,
+                        TRUE as is_admin_request
+                    FROM public.get_administrative_requests_full_list()
+                    WHERE id_cliente = " . (int)$id_cliente . "
+                    ORDER BY created_at DESC";
+                
+                $res_admin = pg_query($db, $sql_admin);
+                if ($res_admin) {
+                    while ($row = pg_fetch_assoc($res_admin)) {
+                        $history[] = $row;
+                    }
+                }
+            }
+
+            // 4. Ordenar todo por fecha (fecha_de_cambio) DESC
+            // Como las fechas están formateadas, convertimos para comparar
+            usort($history, function($a, $b) {
+                $dateA = $this->parseDateToTimestamp($a['fecha_de_cambio']);
+                $dateB = $this->parseDateToTimestamp($b['fecha_de_cambio']);
+                return $dateB - $dateA;
+            });
+
+            return $history;
+
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en GetTicketHistory: " . $e->getMessage());
+            return false;
         }
+    }
+
+    private function parseDateToTimestamp($dateStr) {
+        if (empty($dateStr) || $dateStr === 'N/A') return 0;
+        // Formato esperado: DD-MM-YYYY HH:II
+        $parts = explode(' ', $dateStr);
+        if (count($parts) < 1) return 0;
+        
+        $dateParts = explode('-', $parts[0]);
+        if (count($dateParts) !== 3) return 0;
+        
+        $formatted = "{$dateParts[2]}-{$dateParts[1]}-{$dateParts[0]}";
+        if (isset($parts[1])) {
+            $formatted .= " {$parts[1]}";
+        }
+        
+        return strtotime($formatted);
     }
 
     public function MarkTicketReceived($id_ticket, $id_user) // id_user es el ID del coordinador que realiza la acción

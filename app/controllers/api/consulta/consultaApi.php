@@ -125,6 +125,15 @@ class Consulta extends Controller
                     $this->handleGetTicketData1();
                     break;
 
+                case 'GetDataTicketSolicitud':
+                    $this->handleGetDataTicketSolicitud();
+                    break;
+
+                case 'UpdateAdministrativeRequest':
+                    $this->handleUpdateAdministrativeRequest();
+                    break;
+
+
                 case 'GetTicketData':
                     $this->handleGetTicketData();
                     break;
@@ -4364,6 +4373,102 @@ class Consulta extends Controller
             error_log("Error guardando adjunto administrativo: " . $e->getMessage());
             $this->response(['success' => true, 'message' => 'Solicitud guardada con errores en el archivo.'], 200);
         }
+    }
+
+    function handleGetDataTicketSolicitud(){
+        $repository = new TechnicalConsultionRepository();
+        $result = $repository->GetDataTicketSolicitud();
+
+        if ($result) {
+            $this->response(['success' => true, 'data' => $result]);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos para este ticket']);
+        }
+    }
+
+    /**
+     * Actualiza una solicitud administrativa (observación y opcionalmente el soporte digital).
+     * Endpoint: POST /api/consulta/UpdateAdministrativeRequest
+     */
+    public function handleUpdateAdministrativeRequest() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
+        $nro_solicitud = isset($_POST['nro_solicitud']) ? trim($_POST['nro_solicitud']) : '';
+        $observacion   = isset($_POST['observacion'])   ? trim($_POST['observacion'])   : '';
+        $id_user       = isset($_SESSION['id_user'])    ? (int)$_SESSION['id_user']     : 0;
+
+        if (empty($nro_solicitud)) {
+            $this->response(['success' => false, 'message' => 'Número de solicitud no proporcionado.'], 400);
+            return;
+        }
+        if (empty($observacion)) {
+            $this->response(['success' => false, 'message' => 'La observación es obligatoria.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+
+        // 1. Obtener la solicitud actual para saber el ID original
+        error_log("Controller: Buscando solicitud nro: [" . $nro_solicitud . "]");
+        $reqInfo = $repository->GetAdministrativeRequestByNro($nro_solicitud);
+        if (!$reqInfo) {
+            $this->response(['success' => false, 'message' => 'Solicitud no encontrada.'], 404);
+            return;
+        }
+        $id_old = (int)$reqInfo['id'];
+
+        // 2. Realizar la SUSTITUCIÓN (Crear nueva record y marcar antigua como is_substituted = TRUE)
+        $newId = $repository->SubstituteAdministrativeRequest($id_old, $observacion, $id_user);
+        if (!$newId) {
+            $this->response(['success' => false, 'message' => 'No se pudo procesar la sustitución de la solicitud.'], 500);
+            return;
+        }
+
+        // 3. Si se subió un nuevo archivo, procesarlo
+        if (isset($_FILES['support_file']) && $_FILES['support_file']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['support_file'];
+            $allowedMime = ['image/jpeg','image/png','application/pdf','image/jpg'];
+            $maxSize = 10 * 1024 * 1024;
+
+            if (!in_array($file['type'], $allowedMime)) {
+                $this->response(['success' => true, 'message' => 'Solicitud sustituida, pero el tipo de archivo no está permitido.'], 200);
+                return;
+            }
+            if ($file['size'] > $maxSize) {
+                $this->response(['success' => true, 'message' => 'Solicitud sustituida, pero el archivo supera 10MB.'], 200);
+                return;
+            }
+
+            // Datos para el archivo
+            $id_cliente = $reqInfo['id_cliente'] ?? 0;
+            $typeName   = $reqInfo['tipo_nombre'] ?? 'Solicitud';
+
+            $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : 'C:' . DIRECTORY_SEPARATOR . 'Documentos_SoportePost' . DIRECTORY_SEPARATOR;
+            $uploadDir = $baseUploadDir . 'AdminRequests' . DIRECTORY_SEPARATOR . $id_cliente . DIRECTORY_SEPARATOR;
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fechaHora = date('Ymd_His');
+            $typePrefix = (stripos($typeName, 'banco') !== false) ? 'cambio_Banco' : 'cambio_RazonSocial';
+            $filename = "{$typePrefix}_{$id_cliente}_{$fechaHora}_subs.{$ext}";
+            $targetPath = $uploadDir . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $fileInfo = [
+                    'original_filename' => $file['name'],
+                    'stored_filename'   => $filename,
+                    'file_path'         => $targetPath,
+                    'mime_type'         => $file['type'],
+                    'file_size_bytes'   => $file['size'],
+                    'document_type'     => $typeName,
+                    'record_number'     => $nro_solicitud
+                ];
+                // Insertar el nuevo adjunto (saveArchivoAdjunto ya maneja la sustitución de los previos)
+                $repository->saveArchivoAdjunto(0, $nro_solicitud, $id_user, $fileInfo);
+            }
+        }
+
+        $this->response(['success' => true, 'message' => 'Solicitud actualizada (sustituida) correctamente.'], 200);
     }
 }
 ?>

@@ -995,17 +995,26 @@ class consulta_rifModel extends Model
             $new_img_id = pg_fetch_result($result_insert, 0, 0);
             error_log("saveArchivoAdjunto: New Image ID: " . $new_img_id);
 
-            // Vínculo Documento-a-Documento (Solicitud Usuario)
-            // Si hay un documento anterior rechazado, vincularlo al ID de la nueva imagen
+            // Vínculo Documento-a-Documento
+            // Caso 1: Pagos rechazados
             $sqlUpdateOldDoc = "UPDATE archivos_adjuntos 
-                               SET substituted_by_id_payment_record = $new_img_id 
+                               SET substituted_by_id_payment_record = $new_img_id,
+                                   is_substituted = TRUE
                                WHERE nro_ticket = $escaped_Nr_ticket 
                                AND document_type = $escaped_document_type 
                                AND rechazado = TRUE";
-            
-            error_log("saveArchivoAdjunto: Linkage Query: " . $sqlUpdateOldDoc);
-            $resLink = pg_query($db_conn, $sqlUpdateOldDoc);
-            error_log("saveArchivoAdjunto: Linkage Affected Rows: " . pg_affected_rows($resLink));
+            pg_query($db_conn, $sqlUpdateOldDoc);
+
+            // Caso 2: Solicitudes Administrativas (identificadas por record_number)
+            if ($record_number !== null && $record_number !== '') {
+                $sqlUpdateAdminOldDoc = "UPDATE archivos_adjuntos 
+                                        SET substituted_by_id_payment_record = $new_img_id,
+                                            is_substituted = TRUE
+                                        WHERE record_number = $escaped_record_number
+                                        AND id != $new_img_id
+                                        AND (is_substituted = FALSE OR is_substituted IS NULL)";
+                pg_query($db_conn, $sqlUpdateAdminOldDoc);
+            }
 
             // PATRÓN saveDocument2: Determinación de estatus e historial
             if (!$skip_sync) {
@@ -8488,6 +8497,140 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         } catch (Exception $e) {
             error_log("Error en CheckManualApprovalStatus: " . $e->getMessage());
             return false;
+        }
+    }
+
+    function GetDataTicketSolicitud(){
+        	try {
+                $db_conn = $this->db->getConnection();
+                $sql = "SELECT * FROM get_administrative_requests_full_list();";
+                
+                $result = $this->db->pgquery($sql);
+                $data = [];
+                if ($result && pg_num_rows($result) > 0) {
+                    while ($row = pg_fetch_assoc($result)) {
+                        $data[] = $row;
+                    }
+                }
+                return $data;
+            } catch (Exception $e) {
+                error_log("Error en GetDataTicketSolicitud: " . $e->getMessage());
+                return false;
+            }
+    }
+
+    /**
+     * Actualiza la observación de una solicitud administrativa.
+     */
+    public function UpdateAdministrativeRequestObservacion($nro_solicitud, $observacion, $id_user) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_nro = pg_escape_literal($db_conn, $nro_solicitud);
+            $escaped_obs = pg_escape_literal($db_conn, $observacion);
+
+            $sql = "UPDATE administrative_requests
+                    SET observacion = $escaped_obs,
+                        updated_at  = NOW(),
+                        updated_by  = " . (int)$id_user . "
+                    WHERE nro_solicitud = $escaped_nro
+                    AND (is_substituted = FALSE OR is_substituted IS NULL)
+                    RETURNING id";
+
+            $result = pg_query($db_conn, $sql);
+            if ($result && pg_num_rows($result) > 0) {
+                return true;
+            }
+            return false;
+        } catch (Exception $e) {
+            error_log("Error en UpdateAdministrativeRequestObservacion: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Crea una nueva solicitud administrativa sustituyendo a la anterior.
+     * Marca la anterior como sustituida. (Patrón similar a pagos)
+     */
+    public function SubstituteAdministrativeRequest($id_old, $new_observation, $id_user) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $id_old = (int)$id_old;
+
+            // 1. Obtener la solicitud vieja para clonar datos
+            $sqlOld = "SELECT * FROM administrative_requests WHERE id = $id_old";
+            $resOld = pg_query($db_conn, $sqlOld);
+            if (!$resOld || pg_num_rows($resOld) === 0) return false;
+            $oldData = pg_fetch_assoc($resOld);
+
+            // 2. Preparar nueva data
+            $id_cliente = (int)$oldData['id_cliente'];
+            $id_type = (int)$oldData['id_tipo_solicitud'];
+            $nro_solicitud = $oldData['nro_solicitud'];
+            $escaped_obs = pg_escape_literal($db_conn, $new_observation);
+
+            // 3. Insertar la NUEVA solicitud
+            $sqlInsert = "INSERT INTO administrative_requests (id_cliente, nro_solicitud, id_tipo_solicitud, observacion, id_status_administrativo, id_user_creation) 
+                          VALUES ($id_cliente, ".pg_escape_literal($db_conn, $nro_solicitud).", $id_type, $escaped_obs, 1, ".(int)$id_user.") 
+                          RETURNING id";
+            $resInsert = pg_query($db_conn, $sqlInsert);
+            if (!$resInsert) return false;
+            $newId = (int)pg_fetch_result($resInsert, 0, 0);
+
+            // 4. Marcar la VIEJA como sustituida y vincularla a la nueva
+            $sqlUpdate = "UPDATE administrative_requests 
+                          SET is_substituted = TRUE, 
+                              substituted_by_id_solicitud = $newId,
+                              updated_at = NOW(),
+                              updated_by = ".(int)$id_user."
+                          WHERE id = $id_old";
+            pg_query($db_conn, $sqlUpdate);
+
+            return $newId;
+        } catch (Exception $e) {
+            error_log("Error en SubstituteAdministrativeRequest: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Obtiene datos básicos de una solicitud administrativa por su nro_solicitud.
+     */
+    public function GetAdministrativeRequestByNro($nro_solicitud) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped = pg_escape_literal($db_conn, trim($nro_solicitud));
+            $sql = "SELECT ar.*, ts.name as tipo_nombre
+                    FROM administrative_requests ar
+                    LEFT JOIN administrative_request_types ts ON ar.id = ts.id
+                    WHERE TRIM(ar.nro_solicitud) = $escaped
+                    AND (ar.is_substituted = FALSE OR ar.is_substituted IS NULL)
+                    ORDER BY ar.id DESC
+                    LIMIT 1";
+            $result = pg_query($db_conn, $sql);
+            if ($result && pg_num_rows($result) > 0) {
+                return pg_fetch_assoc($result);
+            }
+            return null;
+        } catch (Exception $e) {
+            error_log("Error en GetAdministrativeRequestByNro: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Marca los adjuntos anteriores de una solicitud como sustituidos.
+     */
+    public function MarkPreviousAttachmentSubstituted($nro_solicitud) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped = pg_escape_literal($db_conn, $nro_solicitud);
+            $sql = "UPDATE archivos_adjuntos
+                    SET is_substituted = TRUE
+                    WHERE record_number = $escaped
+                    AND (is_substituted IS NULL OR is_substituted = FALSE)";
+            pg_query($db_conn, $sql);
+        } catch (Exception $e) {
+            error_log("Error en MarkPreviousAttachmentSubstituted: " . $e->getMessage());
         }
     }
 }

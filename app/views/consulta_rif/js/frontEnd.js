@@ -9491,14 +9491,22 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm, banco) {
               const crearSolicitudBtn = document.getElementById("crearSolicitudBtn");
               const descEstatus = document.getElementById("txtDescripcion");
 
-              if (key === "Estatus_Pos") {
                   globalEstatusPos = serialData[key];
-                  if (serialData[key] !== "Instalado") {
+                  
+                  // Usamos findInObj para asegurarnos de que atrape estatus_instalacion sin importar mayúsculas/minúsculas
+                  const valEstatusInstalacion = serialData.estatus_instalacion;
+                  
+                  // Reemplazo de la validación: ya no se busca el texto "Instalado"
+                  // sino que se valida la propiedad estatus_instalacion == 1 o '1'
+                  if (valEstatusInstalacion == 0 || valEstatusInstalacion === '0') {
                     if (btnFalla1) btnFalla1.style.display = "none";
                     if (btnFalla2) btnFalla2.style.display = "none";
                     if (btnVisita) btnVisita.style.display = "none";
                     if (crearSolicitudBtn) crearSolicitudBtn.style.display = "none";
-                    
+
+                     console.log("DEBUG: Estatus_Pos:", globalEstatusPos); // LOG CRITICO
+                  console.log("DEBUG: estatus_instalacion:", valEstatusInstalacion); // LOG CRITICO
+
                     if (descEstatus) {
                       descEstatus.innerHTML = `
                         <div class="alert alert-danger d-flex align-items-center mb-0" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%); border: none; border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); color: white; font-weight: 500; font-size: 14px; margin: 0; border-left: 4px solid #dc3545;">
@@ -9509,13 +9517,15 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm, banco) {
                         </div>`;
                     }
                   } else {
+                     console.log("DEBUG: Estatus_Pos:", globalEstatusPos); // LOG CRITICO
+                  console.log("DEBUG: estatus_instalacion:", valEstatusInstalacion); // LOG CRITICO
+
                     if (btnFalla1) btnFalla1.style.display = "block";
                     if (btnFalla2) btnFalla2.style.display = "block";
                     if (btnVisita) btnVisita.style.display = "block";
                     if (crearSolicitudBtn) crearSolicitudBtn.style.display = "block";
                     if (descEstatus) descEstatus.innerHTML = "";
                   }
-              }
               tr.appendChild(th);
               tr.appendChild(td);
               tbody.appendChild(tr);

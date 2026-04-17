@@ -1,40 +1,80 @@
 function formatTicketDetailsPanel(d) {
-  // d es el objeto `data` completo del ticket
-  // Ahora, 'd' también incluirá d.garantia_instalacion e d.garantia_reingreso
+  // d es el objeto `data` completo del ticket o de la solicitud administrativa
 
-  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+  const initialImageUrl = "assets/img/loading-placeholder.png";
   const initialImageAlt = "Cargando imagen del dispositivo...";
 
+  // Propiedades unificadas (Fallback para Solicitudes Administrativas)
+  const isAdminReq = !d.nro_ticket && d.nro_solicitud;
+  const numToDisplay = d.nro_ticket || d.nro_solicitud || "N/A";
+  const serialToDisplay = d.serial_pos || (isAdminReq ? "No aplica" : "No disponible");
+  const estatusPosToDisplay = d.estatus_inteliservices || (isAdminReq ? "No aplica" : "N/A");
+  const estatusTicketToDisplay = d.name_status_ticket || d.status_name || "Desconocido";
+  const observacionToDisplay = d.name_failure || d.observacion || "Sin registro";
+  let rawFecha = d.create_ticket || d.created_at || "Desconocido";
+  let fechaToDisplay = rawFecha;
+  if (rawFecha !== "Desconocido" && typeof rawFecha === 'string') {
+      let parts = rawFecha.split(' ');
+      if (parts.length >= 2) {
+          let timeParts = parts[1].split(':');
+          if (timeParts.length >= 2) {
+              fechaToDisplay = parts[0] + ' ' + timeParts[0] + ':' + timeParts[1];
+          }
+      }
+  }
+  const userToDisplay = d.full_name_tecnico || d.full_name_tecnico1 || d.user_creation || "Sin asignar";
+  const addressToDisplay = d.nombre_estado_cliente || d.estado_cliente || d.estado || d.direccion || d.direccion_cliente || d.razon_social || "Sin datos";
+
   // Determina el mensaje de garantía
+  let garantiaMessage = 'No aplica Garantía';
   const idStatusPayment = d.id_status_payment ? parseInt(d.id_status_payment) : null;
   
   if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't') {
     garantiaMessage = 'Aplica Garantía de Instalación';
   } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't') {
     garantiaMessage = 'Aplica Garantía por Reingreso';
-  } else {
-    garantiaMessage = 'No aplica Garantía';
+  }
+
+  if (isAdminReq) {
+      garantiaMessage = "No aplica (Solicitud Adm.)";
+  }
+
+  // Define status colors purely by ID as requested
+  const statusId = parseInt(d.id_status_administrativo || 0);
+  let estatusColorStyle = '#64748b'; // default slate color
+  
+  if (statusId === 1) {
+    estatusColorStyle = '#f59e0b'; // amber/orange
+  } else if (statusId === 2) {
+    estatusColorStyle = '#3b82f6'; // blue
+  } else if (statusId === 3) {
+    estatusColorStyle = '#10b981'; // green
+  } else if (statusId === 4) {
+    estatusColorStyle = '#ef4444'; // red
   }
 
   return `
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
+                ${!isAdminReq ? `
                 <div class="col-md-3 text-center">
                     <div id="device-image-container" class="p-2">
                       <img id="device-ticket-image" src="${initialImageUrl}" alt="${initialImageAlt}">
                     </div>
                 </div>
-                <div class="col-md-9">
-                    <h4 style = "color: black;">Ticket #${d.nro_ticket}</h4>
+                ` : ''}
+                <div class="${!isAdminReq ? 'col-md-9' : 'col-md-12'}">
+                    <h4 style = "color: black;">${isAdminReq ? 'Solicitud' : 'Ticket'} #${numToDisplay}</h4>
                     <hr class="mt-2 mb-3">
                     <div class="row">
+                        ${!isAdminReq ? `
                         <div class="col-sm-6 mb-2">
                           <strong><div>Serial POS:</div></strong>
-                          ${d.serial_pos}
+                          ${serialToDisplay}
                         </div>
                         <div class="col-sm-6 mb-2">
                           <strong><div>Estatus POS:</div></strong>
-                          ${d.estatus_inteliservices}
+                          ${estatusPosToDisplay}
                         </div><br>
                         <div class="col-sm-6 mb-2">
                           <br><strong><div>Fecha Instalación:</div></strong>
@@ -48,28 +88,107 @@ function formatTicketDetailsPanel(d) {
                           <br><strong><div>Garantía:</div></strong>
                           <span style="font-weight: bold; color: ${garantiaMessage.includes('Aplica') ? 'red' : 'green'};">${garantiaMessage}</span>
                         </div>
+                        ` : ''}
+                        
+                        ${isAdminReq ? `
+                        <!-- Rich Layout optimized for Solicitud -->
+                        <style>
+                          .neon-card {
+                            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+                          }
+                          .neon-card:hover {
+                            transform: translateY(-5px);
+                            box-shadow: 0px 8px 25px rgba(0, 212, 255, 0.7), 0px 6px 15px rgba(0, 212, 255, 0.4) !important;
+                            cursor: pointer;
+                          }
+                        </style>
+                        <div class="row g-3 px-2 w-100 pb-3">
+                          <div class="col-md-4">
+                            <div class="card h-100 neon-card" style="background: #ffffff; border-radius: 12px; border: none; box-shadow: 0px 0px 15px rgba(0, 212, 255, 0.4), 0px 4px 8px rgba(0, 212, 255, 0.2);">
+                              <div class="card-body p-3 text-center align-content-center">
+                                <h6 style="color: #111827; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Fecha Creaci&oacuten</h6>
+                                <p style="color: #64748b; font-size: 0.9rem; font-weight: 500; margin-bottom: 0;">${fechaToDisplay}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="card h-100 neon-card" style="background: #ffffff; border-radius: 12px; border: none; box-shadow: 0px 0px 15px rgba(0, 212, 255, 0.4), 0px 4px 8px rgba(0, 212, 255, 0.2);">
+                              <div class="card-body p-3 text-center align-content-center">
+                                <h6 style="color: #111827; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Usuario Creaci&oacuten</h6>
+                                <p style="color: #64748b; font-size: 0.9rem; font-weight: 500; margin-bottom: 0;">${userToDisplay}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-md-4">
+                            <div class="card h-100 neon-card" style="background: #ffffff; border-radius: 12px; border: none; box-shadow: 0px 0px 15px rgba(0, 212, 255, 0.4), 0px 4px 8px rgba(0, 212, 255, 0.2);">
+                              <div class="card-body p-3 text-center align-content-center">
+                                <h6 style="color: #111827; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Estatus</h6>
+                                <p style="color: ${estatusColorStyle}; font-size: 0.95rem; font-weight: 700; margin-bottom: 0;">${estatusTicketToDisplay}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-12">
+                            <div class="card mt-2 neon-card" style="background: #ffffff; border-radius: 12px; border: none; box-shadow: 0px 0px 15px rgba(0, 212, 255, 0.4), 0px 4px 8px rgba(0, 212, 255, 0.2);">
+                              <div class="card-body p-3 text-center">
+                                <h6 style="color: #111827; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Cliente Raz&oacuten Social</h6>
+                                <p style="color: #64748b; font-size: 0.95rem; font-weight: 500; margin-bottom: 0;">${addressToDisplay}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-12">
+                            <div class="card mt-2 mb-2 neon-card" style="background: #ffffff; border-radius: 12px; border: none; box-shadow: 0px 0px 15px rgba(0, 212, 255, 0.4), 0px 4px 8px rgba(0, 212, 255, 0.2);">
+                              <div class="card-body p-3 text-center">
+                                <h6 style="color: #111827; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Observaci&oacuten</h6>
+                                <p style="color: #64748b; font-size: 1rem; font-weight: 500; margin-bottom: 0; word-break: break-word;">${observacionToDisplay}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-12 text-center mt-3">
+                            ${d.envio === 'Si' || d.exoneracion === 'Si' || d.pago === 'Si' ? `
+                              <button id="botonMostarImage" class="btn btn-view-image shadow-sm" style="background: #ffffff; border-radius: 50px; border: 2px solid #00d4ff; padding: 10px 25px; color: #111827; font-weight: 700; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px;"
+                                data-ticket-id="${d.id_solicitud}"
+                                data-nro-ticket="${d.nro_solicitud}"
+                                data-envio="${d.envio}"
+                                data-exoneracion="${d.exoneracion}"
+                                data-pago="${d.pago}"
+                                data-presupuesto="${d.presupuesto || 'No'}"
+                                data-anticipo="${d.anticipo || 'No'}"
+                                data-pago-taller="${d.pago_taller || 'No'}"
+                                data-rechazado="${d.rechazado || 'f'}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#00d4ff" class="bi bi-images" viewBox="0 0 16 16">
+                                  <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                                  <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8zM14 5a1 1 0 0 0-1-1h-10a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V5z"/>
+                                </svg>
+                                Visualizar Documentos
+                              </button>
+                            ` : ''}
+                          </div>
+                        </div>
+                        ` : `
+                        <!-- Original layout for Ticket -->
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Creación ticket:</div></strong>
-                          ${d.create_ticket}
+                          <br><strong><div>Creación:</div></strong>
+                          ${fechaToDisplay}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Usuario Gestión:</div></strong>
-                          ${d.full_name_tecnico || d.full_name_tecnico1 || 'Sin asignar'}
+                          <br><strong><div>Usuario Creación:</div></strong>
+                          ${userToDisplay}
                         </div>
                         <div class="col-sm-6 mb-2">
-                          <br><strong><div>Dirección Instalación:</div></strong>
-                          ${d.nombre_estado_cliente || d.estado_cliente || d.estado || d.direccion || d.direccion_cliente || 'Sin datos'}
+                          <br><strong><div>Cliente / Instalación:</div></strong>
+                          ${addressToDisplay}
                         </div><br>
                          <div class="col-sm-6 mb-2">
-                            <br><strong><div>Estatus Ticket:</div></strong>
-                            ${d.name_status_ticket}
+                            <br><strong><div>Estatus:</div></strong>
+                            <span style="font-weight: bold; color: ${estatusColorStyle};">${estatusTicketToDisplay}</span>
                         </div><br>
                         <br><div class="col-sm-6 mb-2">
                               <br><strong><div>Falla Reportada:</div></strong>
-                             <span class="falla-reportada-texto">${d.name_failure}</span>
+                             <span class="falla-reportada-texto">${observacionToDisplay}</span>
                         </div>
-                        <div class="col-sm-6 mb-2">
-                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || ""}" data-serial-pos = "${d.serial_pos || ""}">
+                        `}
+                        <div class="col-sm-6 mb-2" style="display: ${isAdminReq ? 'none' : 'block'};">
+                          <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || d.id || ""}" data-serial-pos = "${d.serial_pos || ""}">
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>    
@@ -81,7 +200,7 @@ function formatTicketDetailsPanel(d) {
                 <div class="col-12">
                     <h5 style = "color: black;" >Gestión / Historial:</h5>
                     <div id="ticket-history-content">
-                        <p>Selecciona un ticket para cargar su historial.</p>
+                        <p>Selecciona un ${isAdminReq ? 'registro' : 'ticket'} para cargar su historial.</p>
                     </div>
                 </div>
             </div>
@@ -90,7 +209,8 @@ function formatTicketDetailsPanel(d) {
 }
 
 
-function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
+
+function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '', idCliente = '') {
     const historyPanel = $("#ticket-history-content");
     historyPanel.html('<p class="text-center text-muted">Cargando historial...</p>');
 
@@ -182,6 +302,8 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
         data: {
             action: "GetTicketHistory",
             id_ticket: ticketId,
+            id_cliente: idCliente,
+            search_by_client: (!serialPos && idCliente) ? true : false,
         },
         dataType: "json",
         success: function(response) {
@@ -481,28 +603,36 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const showCommentDevolution = cleanString(item.name_accion_ticket) === 'En espera de Confirmar Devolución' && cleanString(item.comment_devolution) && cleanString(item.envio_destino) !== 'Sí';
                     const showCommentReasignation = cleanString(item.name_accion_ticket) === 'Reasignado al Técnico' && cleanString(item.comment_reasignation);
 
+                    const isAdminRequest = item.is_admin_request === true || item.is_admin_request === 't';
+
                     // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
                     let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
                     let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
                     
+                    if (isAdminRequest) {
+                        headerStyle = "background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(37, 117, 252, 0.4);";
+                        textColor = "color: #ffffff; font-weight: 700; text-shadow: 0px 0px 5px rgba(0,0,0,0.2);";
+                    }
                     // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
                     // La gestión actual ya es amarilla por defecto
                     // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
-                    const currentStatusLabForColor = cleanString(item.name_status_lab);
-                    const isReparacionStatus = currentStatusLabForColor && 
-                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
-                         currentStatusLabForColor.toLowerCase().includes('reparado'));
-                    const isRecibidoEnTaller = currentStatusLabForColor && 
-                        currentStatusLabForColor.toLowerCase().includes('recibido en taller');
-                    
-                    if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
-                        headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
-                        textColor = "color: #ffffff;";
-                    }
-                    // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
-                    else if (statusDomChanged && !isLatest) {
-                        headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
-                        textColor = "color: #ffffff;";
+                    else {
+                        const currentStatusLabForColor = cleanString(item.name_status_lab);
+                        const isReparacionStatus = currentStatusLabForColor && 
+                            (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
+                             currentStatusLabForColor.toLowerCase().includes('reparado'));
+                        const isRecibidoEnTaller = currentStatusLabForColor && 
+                            currentStatusLabForColor.toLowerCase().includes('recibido en taller');
+                        
+                        if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
+                            headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
+                            textColor = "color: #ffffff;";
+                        }
+                        // Si hay cambio en Estatus Domiciliación, usar verde (solo en gestiones anteriores)
+                        else if (statusDomChanged && !isLatest) {
+                            headerStyle = "background-color: #28a745;"; // Verde para destacar cambios de domiciliación
+                            textColor = "color: #ffffff;";
+                        }
                     }
 
                     let statusHeaderText = cleanString(item.name_status_ticket) || "Desconocido";
@@ -511,9 +641,13 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     }
 
                     // Se define el texto del botón aquí con la condición ternaria
-                    const buttonText = isCreation
+                    let buttonText = isCreation
                         ? `${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`
                         : `${item.fecha_de_cambio || "N/A"} - ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
+
+                    if (isAdminRequest) {
+                        buttonText = `<i class="fas fa-file-invoice-dollar mr-2"></i> ${item.fecha_de_cambio || "N/A"} - <span style="text-transform: uppercase;">SOLICITUD ADM.:</span> ${cleanString(item.name_accion_ticket) || "N/A"} (${statusHeaderText})`;
+                    }
 
                     // Calcular el padding derecho para evitar que el badge trunque el texto
                     const hasTimeBadge = timeBadge && timeBadge.trim() !== '';
@@ -547,66 +681,82 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                                     <th class="text-start">Acción:</th>
                                                     <td class="${accionChanged ? "highlighted-change" : ""}">${cleanString(item.name_accion_ticket) || "N/A"}</td>
                                                 </tr>
-                                                <tr>
-                                                    <th class="text-start">Operador Ticket:</th>
-                                                    <td>${cleanString(item.operador_ticket) || "N/A"}</td>
-                                                </tr>
+                                                ${!isAdminRequest ? `
+                                                    <tr>
+                                                        <th class="text-start">Operador Ticket:</th>
+                                                        <td>${cleanString(item.operador_ticket) || "N/A"}</td>
+                                                    </tr>
+                                                ` : ''}
                                                 <tr>
                                                     <th class="text-start">Usuario Gestión:</th>
                                                     <td class="${usuarioGestionChanged ? "highlighted-change" : ""}">${cleanString(item.usuario_gestion) || "N/A"}</td>
                                                 </tr>
+                                                ${!isAdminRequest ? `
+                                                    <tr>
+                                                        <th class="text-start">Coordinador:</th>
+                                                        <td class="${coordChanged ? "highlighted-change" : ""}">${cleanString(item.full_name_coordinador) || "N/A"}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-start">Coordinación:</th>
+                                                        <td>${cleanString(item.nombre_coordinacion) || "N/A"}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-start">Técnico Asignado:</th>
+                                                        <td class="${tecnicoChanged ? "highlighted-change" : ""}">
+                                                            ${cleanString(item.full_name_tecnico_n2_history) || "Pendiente por Asignar"}
+                                                        </td>
+                                                    </tr>
+                                                ` : ''}
                                                 <tr>
-                                                    <th class="text-start">Coordinador:</th>
-                                                    <td class="${coordChanged ? "highlighted-change" : ""}">${cleanString(item.full_name_coordinador) || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Coordinación:</th>
-                                                    <td>${cleanString(item.nombre_coordinacion) || "N/A"}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Técnico Asignado:</th>
-                                                    <td class="${tecnicoChanged ? "highlighted-change" : ""}">
-                                                        ${cleanString(item.full_name_tecnico_n2_history) || "Pendiente por Asignar"}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Ticket:</th>
+                                                    <th class="text-start">Estatus ${isAdminRequest ? 'Solicitud' : 'Ticket'}:</th>
                                                     <td class="${estatusTicketChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_ticket) || "N/A"}</td>
                                                 </tr>
-                                                <tr>
-                                                    <th class="text-start">Estatus Taller:</th>
-                                                    <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
-                                                </tr>
-                                                ${isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab) ? `
-                                                    ${durationLabFromPreviousText ? `
-                                                        <tr>
-                                                            <th class="text-start">Tiempo Duración Gestión Anterior:</th>
-                                                            <td class="highlighted-change">${durationLabFromPreviousText}</td>
-                                                        </tr>
+                                                ${!isAdminRequest ? `
+                                                    <tr>
+                                                        <th class="text-start">Estatus Taller:</th>
+                                                        <td class="${statusLabChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_lab) || "N/A"}</td>
+                                                    </tr>
+                                                    ${isEnElRosalForLab && statusLabChanged && cleanString(item.name_status_lab) ? `
+                                                        ${durationLabFromPreviousText ? `
+                                                            <tr>
+                                                                <th class="text-start">Tiempo Duración Gestión Anterior:</th>
+                                                                <td class="highlighted-change">${durationLabFromPreviousText}</td>
+                                                            </tr>
+                                                        ` : ''}
+                                                        ${durationLabFromTallerText ? `
+                                                            <tr>
+                                                                <th class="text-start">Tiempo Duración en Taller:</th>
+                                                                <td class="highlighted-change">${durationLabFromTallerText}</td>
+                                                            </tr>
+                                                        ` : ''}
                                                     ` : ''}
-                                                    ${durationLabFromTallerText ? `
-                                                        <tr>
-                                                            <th class="text-start">Tiempo Duración en Taller:</th>
-                                                            <td class="highlighted-change">${durationLabFromTallerText}</td>
-                                                        </tr>
+                                                    <tr>
+                                                        <th class="text-start">Estatus Domiciliación:</th>
+                                                        <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
+                                                    </tr>
+                                                    ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
+                                                        ${durationFromCreationText ? `
+                                                            <tr>
+                                                                <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
+                                                                <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
+                                                            </tr>
+                                                        ` : ''}
                                                     ` : ''}
+                                                    <tr>
+                                                        <th class="text-start">Estatus Pago:</th>
+                                                        <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
+                                                    </tr>
                                                 ` : ''}
-                                                <tr>
-                                                    <th class="text-start">Estatus Domiciliación:</th>
-                                                    <td class="${statusDomChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_domiciliacion) || "N/A"}</td>
-                                                </tr>
-                                                ${statusDomChanged && cleanString(item.name_status_domiciliacion) ? `
-                                                    ${durationFromCreationText ? `
-                                                        <tr>
-                                                            <th class="text-start">Tiempo Duración Revisión Domiciliación:</th>
-                                                            <td class="highlighted-change"><strong>${durationFromCreationText}</strong></td>
-                                                        </tr>
-                                                    ` : ''}
+                                                ${isAdminRequest ? `
+                                                    <tr>
+                                                        <th class="text-start">Nro de Solicitud:</th>
+                                                        <td><span class="badge" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: #ffffff; padding: 5px 10px; border-radius: 6px;">${item.nro_solicitud || "N/A"}</span></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th class="text-start">Observación Adm.:</th>
+                                                        <td>${item.observacion || "Sin observación"}</td>
+                                                    </tr>
                                                 ` : ''}
-                                                <tr>
-                                                    <th class="text-start">Estatus Pago:</th>
-                                                    <td class="${statusPaymentChanged ? "highlighted-change" : ""}">${cleanString(item.name_status_payment) || "N/A"}</td>
-                                                </tr>
                                                 ${showComponents ? `
                                                     <tr>
                                                         <th class="text-start">Periféricos Asociados:</th>
