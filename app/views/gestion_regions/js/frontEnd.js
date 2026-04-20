@@ -913,6 +913,21 @@ function getTicketDataFinaljs() {
                     </svg>
                   </button>`;
                 }
+
+                // Add "Devolver a Taller" button to all cases in Action column
+                const returnToLabBtn = `
+                  <button type="button" title="Devolver a Taller"
+                          class="btn btn-warning btn-sm send-back-to-lab-btn ms-1"
+                          data-id-ticket="${idTicket}"
+                          data-serial-pos="${serialPos}"
+                          data-nro-ticket="${nroTicket}">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-repeat" viewBox="0 0 16 16">
+                            <path d="M11 5.466V4H5a4 4 0 0 0-3.584 5.777.5.5 0 1 1-.896.446A5 5 0 0 1 5 3h6V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m3.81.086a.5.5 0 0 1 .67.225A5 5 0 0 1 11 13H5v1.466a.25.25 0 0 1-.41.192l-2.36-1.966a.25.25 0 0 1 0-.384l2.36-1.966a.25.25 0 0 1 .41.192V12h6a4 4 0 0 0 3.585-5.777.5.5 0 0 1 .225-.67Z"/>
+                          </svg>
+                  </button>`;
+                
+                actionButton = `<div class="d-flex align-items-center">${actionButton}${returnToLabBtn}</div>`;
+                
                 return actionButton;
               },
             });
@@ -1735,6 +1750,170 @@ function getTicketDataFinaljs() {
 
 document.addEventListener("DOMContentLoaded", getTicketDataFinaljs);
 
+function SendBacktoTaller(ticketId, nroTicket){
+  const id_user = document.getElementById("userId").value;
+  const xhr = new XMLHttpRequest();
+  xhr.open(
+    "POST",
+    `${ENDPOINT_BASE}${APP_PATH}api/consulta/SendBackToTaller`
+  );
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          Swal.fire({
+                title: "¡Enviado Al Taller!",
+                html: `El Pos asociado al ticket Nro: <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido enviado de vuelto al taller.`,
+                icon: "success",
+                color: "black",
+                confirmButtonColor: "#003594",
+                focusConfirm: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                keydownListenerCapture: true,
+            }).then(() => {
+               window.location.reload();
+            });
+        } else {
+          Swal.fire(
+            "Error",
+            response.message || "Hubo un error al devolver el ticket al taller.",
+            "error"
+          );
+        }
+      } catch (error) {
+        Swal.fire(
+          "Error",
+          "Error al procesar la respuesta del servidor.",
+          "error"
+        );
+        console.error("Error parsing JSON for SendBacktoTaller:", error);
+      }
+    } else {
+      Swal.fire(
+        "Error",
+        `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+        "error"
+      );
+      console.error(
+        "Error en SendBackToTaller:",
+        xhr.status,
+        xhr.statusText
+      );
+    }
+  };
+  const params = `action=SendBackToTaller&id_ticket=${encodeURIComponent(ticketId)}&id_user=${encodeURIComponent(id_user)}`;
+  xhr.send(params);
+}
+
+function CloseTicket(ticketId) {
+    const id_user = document.getElementById("userId").value;
+    const xhr = new XMLHttpRequest();
+    xhr.open(
+        "POST",
+        `${ENDPOINT_BASE}${APP_PATH}api/consulta/CloseTicket`
+    );
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    // Primer modal: Notificación de falla en el camino
+                    Swal.fire({
+                        icon: "warning",
+                        title: "¡Ticket Cerrado por Falla en el Camino! ⚠️",
+                        text: "El POS ha presentado una falla durante el traslado. El ticket se cerrará y se deberá abrir uno nuevo para el reingreso a taller.",
+                        color: "black",
+                        showConfirmButton: false,
+                        timer: 2200,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                          Swal.showLoading();
+                        },
+                        willClose: () => {
+                            // Cuando el primer modal se cierra, mostramos el segundo modal con los detalles
+                            const ticketData = response.ticket_data[0];
+                            if (ticketData) {
+                                const beautifulHtmlContent = `
+                                    <div style="text-align: left; padding: 15px;">
+                                        <h3 style="color: #dc3545; margin-bottom: 15px; text-align: center;">❌ ¡Ticket Cerrado! ❌</h3>
+                                        <p style="font-size: 1.1em; margin-bottom: 10px;">
+                                            <strong>🎫 Nro. de Ticket:</strong> <span style="font-weight: bold; color: #d9534f;">${ticketData.nro_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                          <strong style="color: black;">📅 Fecha de Creación:</strong> <span>${ticketData.create_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>⚙️ Serial del Equipo:</strong> <span style="padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${ticketData.serial_pos}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🚨 Falla:</strong> <span style="color: #dc3545; font-weight: bold;">${ticketData.name_failure || "Sin comentarios"}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>📋 Acción Original:</strong> <span style="color: #007bff; font-weight: bold;">${ticketData.name_accion_ticket}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>🔬 Estado del Taller:</strong> <span style="color: #20c997; font-weight: bold;">${ticketData.name_status_lab || "N/A"}</span>
+                                        </p>
+                                        <p style="margin-bottom: 8px;">
+                                          <strong>📝 Estado del Ticket:</strong> <span style="color: #4d20c9ff; font-weight: bold;">${ticketData.name_status_ticket || "N/A"}</span>
+                                        </p>
+                                        <p style="font-size: 0.9em; color: green; margin-top: 20px; text-align: center;">
+                                            El ticket ha sido cerrado. Debe generar un nuevo ticket para reingresar al Taller con la falla correspondiente.
+                                        </p>
+                                    </div>`;
+
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Detalles del Reingreso a Lab",
+                                    html: beautifulHtmlContent,
+                                    color: "black",
+                                    confirmButtonText: "Cerrar",
+                                    confirmButtonColor: "#003594",
+                                    showConfirmButton: true,
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    width: '700px'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                window.location.reload();
+                            }
+                        },
+                    });
+                } else {
+                    Swal.fire(
+                        "Error",
+                        response.message || "Hubo un error al cerrar el ticket.",
+                        "error"
+                    );
+                }
+            } catch (error) {
+                Swal.fire(
+                    "Error",
+                    "Error al procesar la respuesta del servidor.",
+                    "error"
+                );
+                console.error("Error parsing JSON for CloseTicket:", error);
+            }
+        } else {
+            Swal.fire(
+                "Error",
+                `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
+                "error"
+            );
+        }
+    };
+    const params = `action=CloseTicket&id_ticket=${encodeURIComponent(ticketId)}&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(params);
+}
+
 // Agregar después de la inicialización de DataTables
  // 1. Instanciar todos los modales al inicio
     const documentActionsModal = new bootstrap.Modal(document.getElementById('documentActionsModal'));
@@ -2186,3 +2365,110 @@ function updateTicketStatusInRegion(ticketId, nroTicketToConfirm, serialPosToCon
   };
   xhr.send(dataToSendString);
 }
+
+
+$(document).on("click", ".send-back-to-lab-btn", function (e){
+  e.stopPropagation();
+
+  const ticketId = $(this).data("id-ticket");
+  const nroTicket = $(this).data("nro-ticket");
+  const serialPos = $(this).data("serial-pos") || "";
+
+  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
+
+  Swal.fire({
+      title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+          <div class="custom-modal-header-content">Confirmar devolución a Taller</div>
+      </div>`,
+      html: `
+          <div class="custom-modal-body-content">
+              <div class="mb-4">
+                  ${customWarningSvg}
+              </div>
+              <p class="h4 mb-3">¿Deseas enviar el Pos con el serial <span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPos}</span> asociado al ticket Nro:<span style="display: inline-block; padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> de vuelto al Taller?</p>
+              <p class="h5 text-muted">Esta acción asume que en el trayecto el POS se averió.</p>
+          </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: "Enviar Pos",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#003594",
+      showLoaderOnConfirm: true,
+      showCloseButton: false,
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      focusConfirm: false
+  }).then((result) => {
+      if (result.isConfirmed) {
+          Swal.showLoading();
+
+          // Obtener falla antes de proceder (Igual que en pendiente_entrega)
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetSimpleFailure`);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+          xhr.onreadystatechange = function () {
+              if (xhr.readyState === 4) {
+                  Swal.hideLoading();
+                  if (xhr.status >= 200 && xhr.status < 300) {
+                      try {
+                          const response = JSON.parse(xhr.responseText);
+                          const falla = response.failure[0] || {};
+                          const fallaTexto = falla.name_failure || 'No se encontró una falla asociada.';
+
+                          Swal.fire({
+                              title: '',
+                              html: `
+                                  <div style="margin:-6px -6px 14px -6px; width: 100%;">
+                                      <div style="background:linear-gradient(90deg,#000,#0056d6);border-radius:10px;padding:12px 16px;color:#fff;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)">
+                                          <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.15);font-size:18px;">🛠️</span>
+                                          <div style="font-size:18px;font-weight:700;letter-spacing:.2px;">Detalles de la Falla</div>
+                                      </div>
+                                  </div>
+                                  <div style="text-align:left">
+                                      <div style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;">
+                                          <span style="font-size:20px;line-height:1">⚠️</span>
+                                          <div>
+                                              <div style="font-weight:600;margin-bottom:2px;">Reingreso con misma falla</div>
+                                              <div style="font-size:13px;color:#5c5c5c;">Si es un reingreso, el POS debe tener la misma falla del ticket. De lo contrario, cierre el ticket, y proceda a crear uno nuevo.</div>
+                                          </div>
+                                      </div>
+
+                                      <div class="mb-2" style="display:flex;flex-direction:column;gap:6px;">
+                                          <label class="form-label" style="margin:0;font-weight:600;color:#333; width: 40%;">Falla del POS</label>
+                                          <div class="input-group" style="display:flex;align-items:center;gap:8px;">
+                                              <span style="background:#e9ecef;border:1px solid #ced4da;border-radius:6px;padding:6px 10px;color:#495057;">🔧</span>
+                                              <input type="text" class="form-control" style="border-radius:30px;" value="${fallaTexto}" disabled>
+                                          </div>
+                                          <small class="text-muted" style="color:#6c757d;">Información obtenida del último diagnóstico del ticket.</small>
+                                      </div>
+                                  </div>
+                              `,
+                              showCancelButton: true,
+                              confirmButtonText: 'Aceptar',
+                              cancelButtonText: 'Cerrar Ticket',
+                              confirmButtonColor: '#003594',
+                              cancelButtonColor: '#dc3545',
+                              color: 'black',
+                              width: 560
+                          }).then((resultFalla) => {
+                              if (resultFalla.isConfirmed) {
+                                SendBacktoTaller(ticketId, nroTicket);
+                              } else if (resultFalla.dismiss === Swal.DismissReason.cancel) {
+                                CloseTicket(ticketId);
+                              }
+                          });
+                      } catch (e) {
+                          Swal.fire('Error', 'No se pudo procesar la respuesta del servidor.', 'error');
+                      }
+                  } else {
+                      Swal.fire('Error de Conexión', 'Hubo un problema al intentar obtener la información de la falla.', 'error');
+                  }
+              }
+          };
+
+          const params = `action=GetSimpleFailure&ticketId=${encodeURIComponent(ticketId)}`;
+          xhr.send(params);
+      }
+  });
+});
