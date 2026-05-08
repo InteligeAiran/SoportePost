@@ -889,7 +889,9 @@ function getTicketDataFinaljs() {
                 } else {
                   const totalPaid = Number(row.total_paid) || 0;
                   const totalBudget = Number(row.total_budget) || 0;
-                  const debt = Math.max(0, totalBudget - totalPaid);
+                  const exonerationPercentage = Number(row.exoneracion_porcentaje) || 0;
+                  const exonerationAmount = (totalBudget * exonerationPercentage) / 100;
+                  const debt = Math.max(0, totalBudget - exonerationAmount - totalPaid);
                   const isBlocked = debt > 0.01;
 
                   const tooltipText = isBlocked 
@@ -904,6 +906,9 @@ function getTicketDataFinaljs() {
                     data-nro-ticket="${nroTicket}"
                     data-total-paid="${totalPaid}"
                     data-total-budget="${totalBudget}"
+                    data-exoneration-percentage="${exonerationPercentage}"
+                    data-exoneration-amount="${exonerationAmount}"
+                    data-exoneration-type="${row.tipo_exoneracion || ''}"
                     data-total-pending-review="${row.total_pending_review || 0}"
                     data-total-rejected="${row.total_rejected || 0}"
                     data-debt="${debt}"
@@ -926,7 +931,11 @@ function getTicketDataFinaljs() {
                           </svg>
                   </button>`;
                 
-                actionButton = `<div class="d-flex align-items-center">${actionButton}${returnToLabBtn}</div>`;
+                if (name_accion_ticket !== "En espera de confirmar recibido en Región") {
+                    actionButton = `<div class="d-flex align-items-center">${actionButton}${returnToLabBtn}</div>`;
+                } else {
+                    actionButton = `<div class="d-flex align-items-center">${actionButton}</div>`;
+                }
                 
                 return actionButton;
               },
@@ -1326,6 +1335,9 @@ function getTicketDataFinaljs() {
                     const totalPending = Number(btn.data("total-pending-review")) || 0;
                     const totalRejected = Number(btn.data("total-rejected")) || 0;
                     const totalBudget = Number(btn.data("total-budget")) || 0;
+                    const exonerationPercentage = Number(btn.data("exoneration-percentage")) || 0;
+                    const exonerationAmount = Number(btn.data("exoneration-amount")) || 0;
+                    const exonerationType = btn.data("exoneration-type") || '';
                     const debt = Number(btn.data("debt")) || 0;
                     const nroTicket = btn.data("nro-ticket");
 
@@ -1349,6 +1361,7 @@ function getTicketDataFinaljs() {
                               <tr><td class="text-start border-0"><strong>En Revisión:</strong></td><td class="text-end border-0 text-warning"><strong>$${totalPending.toFixed(2)}</strong></td></tr>
                               <tr><td class="text-start border-0"><strong>Rechazado:</strong></td><td class="text-end border-0 text-danger"><strong>$${totalRejected.toFixed(2)}</strong></td></tr>
                               <tr><td class="text-start border-0"><strong>Presupuesto Taller:</strong></td><td class="text-end border-0">$${totalBudget.toFixed(2)}</td></tr>
+                              ${exonerationAmount > 0 ? `<tr><td class="text-start border-0 text-info"><strong>Exoneración ${exonerationType ? `(${exonerationType})` : ''}:</strong></td><td class="text-end border-0 text-info"><strong>-${exonerationPercentage}% (-$${exonerationAmount.toFixed(2)})</strong></td></tr>` : ''}
                               <tr style="border-top: 2px solid #dee2e6;"><td class="text-start border-0"><strong class="text-danger">Aun Pendiente:</strong></td><td class="text-end border-0"><strong class="text-danger" style="font-size: 1.2em;">$${debt.toFixed(2)}</strong></td></tr>
                             </table>
                           </div>

@@ -102,6 +102,10 @@ class email extends Controller {
                     $this->handleSendAnticipoPresupuestoEmail();
                 break;
 
+                case 'send_approval_email':
+                    $this->handleSendApprovalEmail();
+                break;
+
                 case 'send_payment_notification':
                     // Manejo del envío de notificación de nuevo pago para Tesorería
                     $this->handleSendPaymentRegistrationEmail();
@@ -5217,6 +5221,235 @@ HTML;
         </body>
 </html>
 HTML;
+}
+
+    public function handleSendApprovalEmail() {
+        $id_ticket = $_POST['nro_ticket'] ?? '';
+        $document_type = $_POST['document_type'] ?? 'Documento';
+        $id_user_adm = $_POST['id_user'] ?? '';
+        $payment_reference = $_POST['payment_reference'] ?? '';
+        $payment_date = $_POST['payment_date'] ?? '';
+        $payment_amount = $_POST['payment_amount'] ?? '';
+        $nro_exoneracion = $_POST['nro_exoneracion'] ?? '';
+        
+        $result = $this->sendApprovalEmailNotification($id_ticket, $document_type, $id_user_adm, $payment_reference, $payment_date, $payment_amount, $nro_exoneracion);
+        
+        if (isset($result['success']) && $result['success']) {
+            $this->response($result, 200);
+        } else {
+            $this->response($result, $result['status'] ?? 400);
+        }
+    }
+
+    public function sendApprovalEmailNotification($id_ticket_input, $document_type, $id_user_adm, $payment_reference = '', $payment_date = '', $payment_amount = '', $nro_exoneracion = '') {
+        try {
+            $repository = new EmailRepository();
+            
+            if (empty($id_ticket_input)) {
+                return ['success' => false, 'message' => 'ID o Nro de ticket requerido.', 'status' => 400];
+            }
+
+            // Si el ID no es numérico, probablemente es el nro_ticket (ej: SOP-123)
+            // Lo resolvemos usando el repositorio
+            $id_ticket = $id_ticket_input;
+            if (!is_numeric($id_ticket_input)) {
+                $ticketBasic = $repository->getTicketIdByNumber($id_ticket_input);
+                if (!$ticketBasic || !isset($ticketBasic['id_ticket'])) {
+                    // Si falla, intentamos buscarlo de nuevo por si nro_ticket es el id_ticket
+                    // O retornamos error si no lo encuentra
+                    error_log("No se pudo encontrar id_ticket para: $id_ticket_input");
+                } else {
+                    $id_ticket = $ticketBasic['id_ticket'];
+                }
+            }
+
+            // 1. Obtener datos del ticket
+            $ticketData = $repository->getdataticket_by_nroticket($id_ticket);
+            if (!$ticketData) {
+                return ['success' => false, 'message' => 'No se encontraron datos del ticket.', 'status' => 404];
+            }
+
+            $nro_ticket = $ticketData['nro_ticket'] ?? 'N/A';
+            $serial = $ticketData['serial_pos'] ?? 'N/A';
+            $clientRif = $ticketData['rif'] ?? 'N/A';
+            $clientName = $ticketData['razonsocial'] ?? 'N/A';
+
+            // 2. Obtener datos del técnico original que gestionó el documento
+            $result_tecnico = $repository->GetEmailUserDataById($id_user_adm);
+ 
+            if ($result_tecnico && !empty($result_tecnico['user_email'])) {
+                $email_tecnico = $result_tecnico['user_email'];
+                $nombre_tecnico = $result_tecnico['full_name'] ?? 'Técnico';
+            } else {
+                $email_tecnico = $ticketData['user_email'] ?? null;
+                $nombre_tecnico = $ticketData['full_name_tecnico'] ?? 'Técnico';
+            }
+
+            if (!$email_tecnico) {
+                return ['success' => false, 'message' => 'El técnico no tiene un correo registrado.', 'status' => 404];
+            }
+
+            // 3. Obtener datos del usuario de administración que aprueba
+            $userAdmData = $repository->GetEmailUserDataById($id_user_adm);
+            $nombre_adm = $userAdmData['nombre_completo'] ?? ($userAdmData['full_name'] ?? 'Administración');
+
+            // 4. Si es un pago y no vienen datos verificados, intentamos obtenerlos del último registro de pago
+            $isPayment = in_array(strtolower(trim($document_type)), ['anticipo', 'pago', 'comprobante_pago', 'pago_taller']);
+            
+            if ($isPayment && empty($payment_reference)) {
+                $paymentData = $repository->GetPaymentData($nro_ticket);
+                if ($paymentData) {
+                    $payment_reference = $paymentData['payment_reference'] ?? ($paymentData['nro_referencia'] ?? '');
+                    $payment_date = $paymentData['payment_date'] ?? '';
+                    $payment_amount = $paymentData['reference_amount'] ?? ($paymentData['amount_bs'] ?? '');
+                }
+            }
+
+            // 5. Si es exoneración, intentar obtener porcentaje y tipo
+            $tipo_exoneracion = $_POST['tipo_exoneracion'] ?? '';
+            $porcentaje = $_POST['porcentaje'] ?? '';
+            
+            if (!$isPayment && (empty($tipo_exoneracion) || empty($porcentaje))) {
+                // Usar el repositorio como fallback
+                $exonerationData = $repository->GetExoneracionPorcentaje($nro_ticket);
+                if (!empty($exonerationData)) {
+                    $exoInfo = is_array($exonerationData) ? ($exonerationData[0] ?? $exonerationData) : $exonerationData;
+                    if (empty($tipo_exoneracion)) $tipo_exoneracion = $exoInfo['tipo_exoneracion'] ?? '';
+                    if (empty($porcentaje)) $porcentaje = $exoInfo['porcentaje'] ?? '';
+                }
+            }
+
+            // 6. Preparar correo
+            if ($isPayment) {
+                $subject = '✅ PAGO APROBADO - Ticket Nro. ' . $nro_ticket;
+            } else {
+                $subject = '✅ EXONERACIÓN APROBADA - Ticket Nro. ' . $nro_ticket;
+            }
+
+            $body = $this->getApprovalEmailBody($nombre_tecnico, $nro_ticket, $document_type, $serial, $clientRif, $clientName, $nombre_adm, $payment_reference, $payment_date, $payment_amount, $nro_exoneracion, $tipo_exoneracion, $porcentaje);
+
+            $embeddedImages = [];
+            if (defined('FIRMA_CORREO')) {
+                $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+            }
+
+            // 5. Enviar correo
+            $sent = $this->emailService->sendEmail($email_tecnico, $subject, $body, [], $embeddedImages);
+            
+            if ($sent) {
+                return ['success' => true, 'message' => 'Notificación de aprobación enviada al técnico.'];
+            } else {
+                error_log("Error al enviar email de aprobación: " . $this->emailService->getLastError());
+                return ['success' => false, 'message' => 'Error al enviar el correo al técnico.', 'status' => 500];
+            }
+
+        } catch (\Exception $e) {
+            error_log("EXCEPCION EN sendApprovalEmailNotification: " . $e->getMessage());
+            return ['success' => false, 'message' => 'Error interno: ' . $e->getMessage(), 'status' => 500];
+        }
+    }
+
+    private function getApprovalEmailBody($nombre_tecnico, $nro_ticket, $document_type, $serial, $clientRif, $clientName, $nombre_adm, $payment_reference = '', $payment_date = '', $payment_amount = '', $nro_exoneracion = '', $tipo_exoneracion = '', $porcentaje = '') {
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<img src="cid:imagen_adjunta" alt="Logo InteliSoft" style="max-width: 150px; margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto;">';
+        }
+
+        $isPayment = in_array(strtolower(trim($document_type)), ['anticipo', 'pago', 'comprobante_pago', 'pago_taller']);
+        
+        $headerTitle = $isPayment ? '✅ PAGO APROBADO' : '✅ EXONERACIÓN APROBADA';
+        $mainMessage = $isPayment 
+            ? 'Te informamos que el **PAGO** asociado a tu gestión ha sido **APROBADO** por el área administrativa.'
+            : 'Te informamos que la **EXONERACIÓN** asociada a tu gestión ha sido **APROBADA** por el área administrativa.';
+            
+        $paymentDetailsHtml = '';
+        if ($payment_reference || $payment_date || $payment_amount) {
+            $paymentDetailsHtml = '
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                    <p style="font-weight: bold; color: #28a745; margin-bottom: 10px;">💰 Detalles del Pago Verificado:</p>';
+            
+            if ($payment_reference) {
+                $paymentDetailsHtml .= '<div class="info-row"><span class="info-label">Nro. Referencia:</span> <span class="info-value">' . htmlspecialchars($payment_reference) . '</span></div>';
+            }
+            if ($payment_date) {
+                $paymentDetailsHtml .= '<div class="info-row"><span class="info-label">Fecha:</span> <span class="info-value">' . htmlspecialchars($payment_date) . '</span></div>';
+            }
+            if ($payment_amount) {
+                // Si es numérico, agregar símbolo de moneda o formato si se desea, o dejar tal cual
+                $paymentDetailsHtml .= '<div class="info-row"><span class="info-label">Monto:</span> <span class="info-value">' . htmlspecialchars($payment_amount) . '</span></div>';
+            }
+            
+            $paymentDetailsHtml .= '</div>';
+        }
+
+        $exonerationDetailsHtml = '';
+        if (!$isPayment) {
+            $exonerationDetailsHtml = '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;">
+                                        <p style="font-weight: bold; color: #28a745; margin-bottom: 10px;">📉 Detalles de la Exoneración:</p>';
+            
+            if ($nro_exoneracion) {
+                $exonerationDetailsHtml .= '<div class="info-row"><span class="info-label">Nro. Exoneración:</span> <span class="info-value">' . htmlspecialchars($nro_exoneracion) . '</span></div>';
+            }
+            if ($tipo_exoneracion) {
+                $exonerationDetailsHtml .= '<div class="info-row"><span class="info-label">Tipo:</span> <span class="info-value">' . htmlspecialchars($tipo_exoneracion) . '</span></div>';
+            }
+            if ($porcentaje !== '') {
+                $exonerationDetailsHtml .= '<div class="info-row"><span class="info-label">Porcentaje:</span> <span class="info-value">' . htmlspecialchars($porcentaje) . '%</span></div>';
+            }
+            
+            $exonerationDetailsHtml .= '</div>';
+        }
+
+        return '
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f7ff; margin: 0; padding: 20px; }
+                .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; border-top: 6px solid #28a745; }
+                .header { background: linear-gradient(135deg, #28a745, #218838); color: #ffffff; text-align: center; padding: 30px 20px; }
+                .header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+                .content { padding: 30px; color: #333; line-height: 1.6; }
+                .highlight-box { background-color: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #28a745; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                .info-row { margin-bottom: 10px; display: flex; }
+                .info-label { font-weight: bold; width: 150px; color: #666; }
+                .info-value { color: #111; font-weight: 500; }
+                .footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #777; font-size: 12px; border-top: 1px solid #eee; }
+                .badge { background-color: #28a745; color: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>' . $headerTitle . '</h1>
+                    <p style="margin-top:10px; opacity: 0.9;">Notificación de Validación Exitosa</p>
+                </div>
+                <div class="content">
+                    <p>Hola, <strong style="color: #28a745;">' . htmlspecialchars($nombre_tecnico) . '</strong></p>
+                    <p>' . $mainMessage . '</p>
+                    
+                    <div class="highlight-box">
+                        <div class="info-row"><span class="info-label">Nro. Ticket:</span> <span class="info-value">#' . htmlspecialchars($nro_ticket) . '</span></div>
+                        <div class="info-row"><span class="info-label">Tipo de Documento:</span> <span class="info-value"><span class="badge">' . htmlspecialchars($document_type) . '</span></span></div>
+                        <div class="info-row"><span class="info-label">Serial POS:</span> <span class="info-value">' . htmlspecialchars($serial) . '</span></div>
+                        <div class="info-row"><span class="info-label">Cliente:</span> <span class="info-value">' . htmlspecialchars($clientName) . ' (' . htmlspecialchars($clientRif) . ')</span></div>
+                        <div class="info-row"><span class="info-label">Aprobado por:</span> <span class="info-value">' . htmlspecialchars($nombre_adm) . '</span></div>
+                        ' . $exonerationDetailsHtml . '
+                        ' . $paymentDetailsHtml . '
+                    </div>
+                    
+                    <p style="text-align: center; margin-top: 25px; color: #666;">El ticket continuará con su flujo normal hacia la siguiente etapa de gestión.</p>
+                </div>
+                <div class="footer">
+                    ' . $logoHtml . '
+                    <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+                    <p>Este es un correo automático generado por el sistema de aprobaciones.</p>
+                    <p>&copy; ' . date("Y") . ' InteliSoft. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
     }
 }
 ?>

@@ -174,6 +174,19 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos = null) {
+        $result = $this->model->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+        if ($result && $result['numRows'] > 0) {
+            $exonerations = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $exonerations[] = pg_fetch_assoc($result['query'], $i);
+            }
+            return $exonerations;
+        } else {
+            return [];
+        }
+    }
+
     public function GetDocumentoRechazado($ticketnro){
         $result = $this->model->GetDocumentoRechazado($ticketnro);
         return $result ? $result['row'] : null;
@@ -207,6 +220,12 @@ class EmailRepository
     public function GetTicketDataById($ticketId){
         // Lógica para obtener datos del ticket por ID
         $result = $this->model->GetTicketDataById($ticketId);
+        return $result ? $result['row'] : null;
+    }
+
+    public function getdataticket_by_nroticket($ticketId){
+        // Lógica para obtener datos del ticket por ID
+        $result = $this->model->getdataticket_by_nroticket($ticketId);
         return $result ? $result['row'] : null;
     }
 
@@ -289,6 +308,11 @@ class EmailRepository
         $result = $this->model->GetDataTicket2ByNro($nro_ticket);
         return ($result && isset($result['row'])) ? $result['row'] : null;
     }
+
+    public function getTicketIdByNumber($nro_ticket) {
+        return $this->model->getTicketIdByNumber($nro_ticket);
+    }
+
 
     public function GetTicketStaffDetails($nro_ticket, $payment_reference) {
         $result = $this->model->GetTicketStaffDetails($nro_ticket, $payment_reference);

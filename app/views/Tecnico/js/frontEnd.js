@@ -841,7 +841,12 @@ function getTicketData() {
                 if (showButton) {
                   const isDocumentoPendienteManual = (id_document === 10 || id_document === 11 || id_document === 17);
                   let detallePendiente = "documentación incompleta";
-                  if (id_document === 10) detallePendiente = "carga de <strong>Anticipo</strong> o <strong>Exoneración</strong>";
+                  if (id_document === 10) {
+                      // Solo consideramos que tiene exoneración si es de tipo Anticipo (para este flujo)
+                      // Como no sabemos el tipo aquí con certeza sin API, mantenemos el mensaje pidiendo ambos
+                      // o mejor, forzamos la validación en el siguiente paso (fetch).
+                      detallePendiente = "carga de <strong>Anticipo</strong> o <strong>Exoneración de Anticipo</strong>";
+                  }
                   if (id_document === 11) detallePendiente = "<strong>PDF de envío ZOOM</strong>";
                   if (id_document === 17) detallePendiente = "revisión de <strong>Pago Pendiente</strong>";
 
@@ -879,7 +884,7 @@ function getTicketData() {
                     }
                   }).then((result) => {
                     if (isDocumentoPendienteManual && result.isConfirmed) {
-                      continuarFlujoEnviarTaller();
+                      verificarDomiciliacionYEnviar();
                     }
                   });
                   return;
@@ -1051,48 +1056,47 @@ function getTicketData() {
                   });
               };
 
-              // 5. Validación de Revisión de Domiciliación (id_domiciliacion = 1)
-              if (id_domiciliacion == 1) {
-                Swal.fire({
-                  icon: 'warning',
-                  iconColor: '#ff9800',
-                  title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Revisión de Domiciliación!</span>',
-                  html: `
-                    <div style="text-align: left; padding: 10px 0;">
-                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                        Aún no han verificado el <strong>estatus de domiciliación</strong> de este cliente.
-                      </p>
-                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                        <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
-                          <strong>⚠️ Acción requerida:</strong><br>
-                          Deben revisar primero el <strong>estatus de domiciliación</strong> del cliente antes de poder continuar con el envío a taller.
-                        </p>
-                      </div>
-                    </div>
-                  `,
-                  confirmButtonText: 'Entendido',
-                  confirmButtonColor: '#003594',
-                  color: 'black',
-                  width: '600px',
-                  padding: '2em',
-                  customClass: {
-                    popup: 'swal2-popup-custom',
-                    title: 'swal2-title-custom',
-                    htmlContainer: 'swal2-html-container-custom'
+              // Definimos una función para la validación final (Domiciliación y Envío)
+              // La movemos aquí para que sea la ÚLTIMA validación antes del envío físico.
+              const verificarDomiciliacionYEnviar = () => {
+                  if (id_domiciliacion == 1) {
+                      Swal.fire({
+                          icon: 'warning',
+                          iconColor: '#ff9800',
+                          title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">¡Revisión de Domiciliación!</span>',
+                          html: `
+                            <div style="text-align: left; padding: 10px 0;">
+                              <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                Aún no han verificado el <strong>estatus de domiciliación</strong> de este cliente.
+                              </p>
+                              <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                                <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                                  <strong>⚠️ Acción requerida:</strong><br>
+                                  Deben revisar primero el <strong>estatus de domiciliación</strong> del cliente antes de poder continuar con el envío a taller.
+                                </p>
+                              </div>
+                            </div>
+                          `,
+                          confirmButtonText: 'Entendido',
+                          confirmButtonColor: '#003594',
+                          color: 'black',
+                          width: '600px',
+                          padding: '2em'
+                      });
+                      return;
                   }
-                });
-                return;
-              }
+                  continuarFlujoEnviarTaller();
+              };
 
-              // 6. Validación de Exoneración/Pago Pendiente (MODIFICADA: Mostrar tipo de documento específico)
-              if (parseInt(id_document) === 5) {
-                  mostrarValidacionDocumentosPendientes("Exoneración");
-                  return;
-              }
+              // 5. Validación de Revisión de Domiciliación (MOVIDA abajo para dar prioridad al Anticipo)
+
+              // 6. Validación rápida de Pago de Anticipo Pendiente
               if (parseInt(id_document) === 7) {
                   mostrarValidacionDocumentosPendientes("Anticipo");
                   return;
               }
+
+              // 7. Validación Mandatoria de Exoneración...
 
 
               // 8. Validación Mandatoria de Exoneración (Sin importar si el estatus actual es Exoneración Aprobada o Pago Aprobado)
@@ -1104,103 +1108,100 @@ function getTicketData() {
                       let porcentaje = 0;
                       let tipoExoneracion = '';
                       if (data.success && data.data) {
-                          porcentaje = parseInt(data.data.porcentaje) || 0;
-                          tipoExoneracion = data.data.tipo_exoneracion || '';
-                          idStatusExoneracion = parseInt(data.data.id_status_payment) || 0;
+                          const tipoLower = (data.data.tipo_exoneracion || '').toLowerCase();
+                          // SOLO tomamos en cuenta la exoneración si es de tipo 'Anticipo'
+                          // El 'Pago taller' se ignora para la entrada a taller (Anticipo)
+                          if (tipoLower.includes('anticipo')) {
+                              porcentaje = parseInt(data.data.porcentaje) || 0;
+                              tipoExoneracion = data.data.tipo_exoneracion || '';
+                              idStatusExoneracion = parseInt(data.data.id_status_payment) || 0;
+                          }
                       }
 
-                      // 1. PRIORIDAD: Si la exoneración está PENDIENTE (5), mostrar el modal original de documentos pendientes
+                      // 1. Si hay una exoneración de Anticipo PENDIENTE (5), bloqueamos
                       if (idStatusExoneracion === 5) {
-                          mostrarValidacionDocumentosPendientes("Exoneración");
+                          mostrarValidacionDocumentosPendientes("Exoneración de Anticipo");
                           return;
                       }
 
-                      // 2. Si la exoneración ya está APROBADA (4)
-                      if (idStatusExoneracion === 4) {
-                          // Si es una exoneración TOTAL (100%), enviamos directo al taller (Confirmar Envío)
-                          if (porcentaje === 100) {
-                              continuarFlujoEnviarTaller();
-                              return;
+                      // 2. Si hay una exoneración de Anticipo APROBADA (4) y es TOTAL (100%)
+                      if (idStatusExoneracion === 4 && porcentaje === 100) {
+                          verificarDomiciliacionYEnviar();
+                          return;
+                      }
+
+                      // 3. Validamos pagos para cubrir el Anticipo (Base $30)
+                      // Esto aplica si: no hay exoneración de anticipo, o es parcial, o está en otro estatus.
+                      const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                      const params = new URLSearchParams();
+                      params.append('action', 'GetTotalPaidByTicket');
+                      params.append('nro_ticket', currentnroTicket);
+
+                      fetch(checkPaymentUrl, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                          body: params
+                      })
+                      .then(p => p.json())
+                      .then(payData => {
+                          let totalPaid = parseFloat(payData.total_paid) || 0;
+                          let totalPending = parseFloat(payData.total_pending) || 0;
+                          let montoBase = 30; // Monto fijo para el Anticipo
+                          let montoExonerado = (montoBase * porcentaje) / 100;
+                          let montoNetoRequerido = montoBase - montoExonerado;
+
+                          // Verificamos si la totalidad de lo pagado YA CUBRE el Anticipo
+                          if (totalPaid >= (montoNetoRequerido - 0.01)) {
+                              verificarDomiciliacionYEnviar();
+                          } else if (totalPending > 0 && (totalPaid + totalPending) >= (montoNetoRequerido - 0.01)) {
+                              // Si lo pagado + lo pendiente CUBRE el anticipo, mostramos aviso de revisión
+                              mostrarValidacionDocumentosPendientes("Anticipo");
+                          } else {
+                              // NO CUBRE.
+                              let montoRestante = montoNetoRequerido - totalPaid;
+                              
+                              Swal.fire({
+                                  icon: 'warning',
+                                  title: '<span style="color: #003594;">Pago de Anticipo Requerido o Exoneracion de Anticipo para poder enviar a taller</span>',
+                                  html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                          Para enviar a Taller se requiere cubrir el <strong>Anticipo ($${montoBase})</strong>. 
+                                          ${tipoExoneracion ? `Se detectó una exoneración de Anticipo del ${porcentaje}%.` : 'No se detectó exoneración de Anticipo.'}
+                                      </p>
+                                      <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                          <span>Base Anticipo:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                      </div>
+                                      ${porcentaje > 0 ? `
+                                      <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                          <span>Exoneración (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                      </div>` : ''}
+                                      <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #003594;">
+                                          <span>Pagado (Aprobado):</span><strong>$${totalPaid.toFixed(2)}</strong>
+                                      </div>
+                                       <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #f39c12;">
+                                           <span>Pendiente por Revisar:</span><strong>$${totalPending.toFixed(2)}</strong>
+                                       </div>
+
+                                      <hr style="border-color: #adb5bd;">
+                                      <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                          <span>Falta por Pagar:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                      </div>
+                                  </div>`,
+                                  confirmButtonText: 'Entendido',
+                                  confirmButtonColor: '#003594',
+                                  color: 'black',
+                                  width: '500px'
+                              });
                           }
-                          // Si es parcial, NO HACEMOS RETURN para que siga abajo y muestre el modal de la factura.
-                      }
-
-
-
-                      // 3. Solo si no es 4 ni 5 (otros casos), y es parcial, validamos pagos
-                      const isAnticipoExo = (tipoExoneracion || '').toLowerCase().includes('anticipo');
-                      if (porcentaje > 0 && porcentaje < 100 && isAnticipoExo) {
-
-
-                          const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
-                          const params = new URLSearchParams();
-                          params.append('action', 'GetTotalPaidByTicket');
-                          params.append('nro_ticket', currentnroTicket);
-
-                          fetch(checkPaymentUrl, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                              body: params
-                          })
-                          .then(p => p.json())
-                          .then(payData => {
-                              let totalPaid = parseFloat(payData.total_paid) || 0;
-                              let totalPending = parseFloat(payData.total_pending) || 0;
-                              let montoBase = 30; // Ajustar si es dinámico
-                              let montoExonerado = (montoBase * porcentaje) / 100;
-                              let montoNetoRequerido = montoBase - montoExonerado;
-
-                              // Verificamos si la totalidad de lo pagado YA CUBRE el diagnóstico base
-                              if (totalPaid >= (montoNetoRequerido - 0.01)) {
-                                  // Ya cubrió la exoneración, puede enviarse a taller sin problema
-                                  continuarFlujoEnviarTaller();
-                              } else {
-                                  // NO CUBRE. Faltan pagos por aprobar antes de poder enviar a taller
-                                  let tipoExoText = tipoExoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
-                                  let montoRestante = montoNetoRequerido - totalPaid;
-                                  
-                                  Swal.fire({
-                                      icon: 'warning',
-                                      title: '<span style="color: #003594;">Pago Restante Requerido</span>',
-                                      html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
-                                          <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
-                                              Este equipo posee una Exoneración Parcial. No se puede enviar a Taller hasta que los pagos asociados sumen la totalidad requerida y <strong>sean aprobados</strong> por Administración.
-                                          </p>
-                                          <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
-                                              <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
-                                          </div>
-                                          <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
-                                              <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
-                                          </div>
-                                          <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #003594;">
-                                              <span>Ya Pagado (Aprobado):</span><strong>$${totalPaid.toFixed(2)}</strong>
-                                           </div>
-                                           <div style="display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1em; color: #f39c12;">
-                                               <span>Pendiente por Revisar:</span><strong>$${totalPending.toFixed(2)}</strong>
-                                           </div>
-
-                                          <hr style="border-color: #adb5bd;">
-                                          <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
-                                              <span>Falta por Pagar:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
-                                          </div>
-                                      </div>`,
-                                      confirmButtonText: 'Entendido',
-                                      confirmButtonColor: '#003594',
-                                      color: 'black',
-                                      width: '500px'
-                                  });
-                              }
-                          })
-                          .catch(err => {
-                              console.error("Error validando pagos para exoneración:", err);
-                              continuarFlujoEnviarTaller();
-                          });
-                          
-                          return; // Evita que se ejecute el continuarFlujoEnviarTaller principal mientras el fetch asíncrono termina
-                      }
+                      })
+                      .catch(err => {
+                          console.error("Error validando pagos para anticipo:", err);
+                          verificarDomiciliacionYEnviar();
+                      });
                       
+                      return; // Evita el flujo principal mientras el fetch asíncrono termina                     
                       // Si no tiene exoneración o la exoneración no es parcial, simplemente envía el equipo.
-                      continuarFlujoEnviarTaller();
+                      verificarDomiciliacionYEnviar();
                   })
                   .catch(error => {
                       console.error("Error validando exoneración:", error);

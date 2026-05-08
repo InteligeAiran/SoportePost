@@ -122,9 +122,11 @@ document.addEventListener('DOMContentLoaded', function() {
             serialPos, 
             documentoRechazado, 
             exo.id_status_payment,
-            exo.payment_reference || null, // ✅ RESTAURADO: Referencia real
-            exo.nro_exoneracion || exo.record_number || null, // ✅ RESTAURADO: Nro registro
-            exo.id_exoneracion   // specificRecordId
+            exo.payment_reference || null,
+            exo.nro_exoneracion || exo.record_number || null,
+            exo.id_exoneracion,
+            exo.tipo_exoneracion || '',
+            exo.porcentaje || ''
         );
     });
 });
@@ -294,18 +296,54 @@ function handleTicketApprovalFromImage() {
             const approveBtn = document.getElementById('approveTicketFromImage');
             const specificId = approveBtn ? approveBtn.getAttribute('data-record-id') : null;
             const recordNumber = approveBtn ? approveBtn.getAttribute('data-record-number') : null;
+            const tipoExo = approveBtn ? approveBtn.getAttribute('data-tipo-exoneracion') : '';
+            const porcentajeExo = approveBtn ? approveBtn.getAttribute('data-porcentaje') : '';
 
             // Si llegamos aquí, los campos están completos o no son visibles, realizar la aprobación
             const idToUse = specificId || currentIdPaymentRecord;
             const id_exoneracion = (documentType === 'Exoneracion' || documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago' || documentType === 'comprobante_pago') ? idToUse : null;
             
-            approveTicket(nro_ticket, documentType, id_ticket, refVerified, dateVerified, amountVerifiedValue, id_exoneracion, false, recordNumber);
+            approveTicket(nro_ticket, documentType, id_ticket, refVerified, dateVerified, amountVerifiedValue, id_exoneracion, false, recordNumber, tipoExo, porcentajeExo);
         }
     });
 }
 
 // Función para enviar la solicitud de aprobación
-function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', datePassed = '', amountPassed = '', id_exoneracion = null, isFinalApproval = false, nro_exoneracion = null) {
+function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', datePassed = '', amountPassed = '', id_exoneracion = null, isFinalApproval = false, nro_exoneracion = null, tipo_exoneracion = '', porcentaje = '') {
+    console.log('--- ENTRANDO A approveTicket ---', {nro_ticket, documentType, id_ticket, id_exoneracion});
+    
+    // Capturar datos verificados/corregidos antes de cualquier proceso
+    let verifiedReference = refPassed;
+    let verifiedDate = datePassed;
+    let verifiedAmount = amountPassed;
+    
+    // Si es un tipo de pago, intentar capturar correcciones de los campos del modal si existen
+    if (documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago' || documentType === 'comprobante_pago') {
+        const referenceCorrectNo = document.getElementById('referenceCorrectNo');
+        if (referenceCorrectNo && referenceCorrectNo.checked) {
+            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
+            if (referenceCorrectOnly && referenceCorrectOnly.value.trim() !== '') {
+                verifiedReference = referenceCorrectOnly.value.trim();
+            }
+        }
+        
+        const dateCorrectNo = document.getElementById('dateCorrectNo');
+        if (dateCorrectNo && dateCorrectNo.checked) {
+            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
+            if (dateCorrectOnly && dateCorrectOnly.value.trim() !== '') {
+                verifiedDate = dateCorrectOnly.value.trim();
+            }
+        }
+        
+        const amountCorrectNo = document.getElementById('amountCorrectNo');
+        if (amountCorrectNo && amountCorrectNo.checked) {
+            const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
+            if (amountCorrectOnly && amountCorrectOnly.value.trim() !== '') {
+                verifiedAmount = amountCorrectOnly.value.trim();
+            }
+        }
+    }
+
     const id_user = document.getElementById('userId').value;
     const xhr = new XMLHttpRequest();
     
@@ -340,6 +378,53 @@ function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', date
                 const response = JSON.parse(xhr.responseText);
                 
                 if (response.success) {
+                    console.log('Aprobación exitosa en backend, iniciando proceso de notificación...');
+                    
+                    // --- NOTIFICACIÓN POR CORREO AL TÉCNICO (AHORA SE DISPARA DE INMEDIATO) ---
+                    try {
+                        const xhrEmail = new XMLHttpRequest();
+                        xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_approval_email`);
+                        xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        
+                        // Enviamos el nro_ticket y el tipo de documento. Si es un pago, incluimos datos verificados.
+                        let emailData = `nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}`;
+                        
+                        // Si tenemos datos verificados de pago, los enviamos para que salgan en el correo
+                        if (refPassed || verifiedReference) {
+                            emailData += `&payment_reference=${encodeURIComponent(refPassed || verifiedReference)}`;
+                        }
+                        if (datePassed || verifiedDate) {
+                            emailData += `&payment_date=${encodeURIComponent(datePassed || verifiedDate)}`;
+                        }
+                        if (amountPassed || verifiedAmount) {
+                            emailData += `&payment_amount=${encodeURIComponent(amountPassed || verifiedAmount)}`;
+                        }
+                        
+                        // Agregar datos de exoneración si existen
+                        if (nro_exoneracion) {
+                            emailData += `&nro_exoneracion=${encodeURIComponent(nro_exoneracion)}`;
+                        }
+                        if (tipo_exoneracion) {
+                            emailData += `&tipo_exoneracion=${encodeURIComponent(tipo_exoneracion)}`;
+                        }
+                        if (porcentaje) {
+                            emailData += `&porcentaje=${encodeURIComponent(porcentaje)}`;
+                        }
+                        
+                        xhrEmail.send(emailData);
+                        
+                        xhrEmail.onload = function() {
+                            console.log('Respuesta del servidor para el correo:', xhrEmail.responseText);
+                        };
+                        
+                        xhrEmail.onerror = function() {
+                            console.error('Error de red al intentar enviar el correo');
+                        };
+                    } catch (e) {
+                        console.error('Error en bloque de notificación de correo:', e);
+                    }
+
+                    // Mostrar alerta de éxito al usuario
                     Swal.fire({
                         icon: 'success',
                         title: '¡Aprobado!',
@@ -354,7 +439,6 @@ function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', date
                             }
                         }
                     }).then(() => {
-                        // Recarga obligatoria de la página para sincronizar estatus
                         window.location.reload(); 
                     });
                 } else {
@@ -426,107 +510,6 @@ function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', date
             }
         });
     };
-
-    // Si es documento de Anticipo, validar y obtener los datos verificados
-    let verifiedReference = refPassed;
-    let verifiedDate = datePassed;
-    let verifiedAmount = amountPassed;
-    
-    if (documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago' || documentType === 'comprobante_pago') {
-        console.log('Documento es de tipo Pago/Anticipo, validando campos verificados...');
-        
-        // Verificar si hay datos en los campos de corrección individuales
-        const referenceCorrectNo = document.getElementById('referenceCorrectNo');
-        const dateCorrectNo = document.getElementById('dateCorrectNo');
-        const referenceCorrectionField = document.getElementById('referenceCorrectionField');
-        const dateCorrectionField = document.getElementById('dateCorrectionField');
-        
-        // Verificar si los campos están visibles
-        const isReferenceFieldVisible = referenceCorrectionField && 
-                                       window.getComputedStyle(referenceCorrectionField).display !== 'none';
-        const isDateFieldVisible = dateCorrectionField && 
-                                  window.getComputedStyle(dateCorrectionField).display !== 'none';
-        
-        console.log('Campo de referencia visible:', isReferenceFieldVisible);
-        console.log('Campo de fecha visible:', isDateFieldVisible);
-        
-        // Validar campos visibles
-        const missingFields = [];
-        
-        if (isReferenceFieldVisible) {
-            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
-            if (!referenceCorrectOnly || referenceCorrectOnly.value.trim() === '') {
-                missingFields.push('Nro de Referencia Correcto');
-            }
-        }
-        
-        if (isDateFieldVisible) {
-            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
-            if (!dateCorrectOnly || dateCorrectOnly.value.trim() === '') {
-                missingFields.push('Fecha de Pago Correcta');
-            }
-        }
-
-        const amountCorrectNo = document.getElementById('amountCorrectNo');
-        const amountCorrectionField = document.getElementById('amountCorrectionField');
-        const isAmountFieldVisible = amountCorrectionField && window.getComputedStyle(amountCorrectionField).display !== 'none';
-        
-        if (isAmountFieldVisible) {
-            const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
-            if (!amountCorrectOnly || amountCorrectOnly.value.trim() === '') {
-                missingFields.push('Monto de Pago Correcto');
-            }
-        }
-        
-        // Si hay campos visibles vacíos, mostrar alerta y detener
-        if (missingFields.length > 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Campos Requeridos',
-                html: `Por favor, complete los siguientes campos antes de aprobar:<br><strong>${missingFields.join('<br>')}</strong>`,
-                confirmButtonText: 'Ok',
-                confirmButtonColor: '#003594',
-                color: 'black',
-                didOpen: () => {
-                    const container = document.querySelector('.swal2-container');
-                    if (container) {
-                        container.style.zIndex = '2060';
-                    }
-                }
-            });
-            return; // Detener la ejecución
-        }
-        
-        // Si llegamos aquí, los campos están completos o no son visibles
-        // Si el radio de referencia está en "No", usar el valor corregido
-        if (referenceCorrectNo && referenceCorrectNo.checked) {
-            const referenceCorrectOnly = document.getElementById('paymentReferenceCorrectOnly');
-            if (referenceCorrectOnly && referenceCorrectOnly.value.trim() !== '') {
-                verifiedReference = referenceCorrectOnly.value.trim();
-                console.log('Nro de referencia verificado capturado:', verifiedReference);
-            }
-        }
-        
-        // Si el radio de fecha está en "No", usar el valor corregido
-        if (dateCorrectNo && dateCorrectNo.checked) {
-            const dateCorrectOnly = document.getElementById('paymentDateCorrectOnly');
-            if (dateCorrectOnly && dateCorrectOnly.value.trim() !== '') {
-                verifiedDate = dateCorrectOnly.value.trim();
-                console.log('Fecha de pago verificada capturada:', verifiedDate);
-            }
-        }
-        
-        // Si el radio de monto está en "No", usar el valor corregido
-        if (amountCorrectNo && amountCorrectNo.checked) {
-            const amountCorrectOnly = document.getElementById('paymentAmountCorrectOnly');
-            if (amountCorrectOnly && amountCorrectOnly.value.trim() !== '') {
-                verifiedAmount = amountCorrectOnly.value.trim();
-                console.log('Monto de pago verificado capturado:', verifiedAmount);
-            }
-        }
-        
-        console.log('Datos verificados finales - Referencia:', verifiedReference, 'Fecha:', verifiedDate, 'Monto:', verifiedAmount);
-    }
     
     // Enviar los datos
     let data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
@@ -2923,7 +2906,7 @@ $(document).ready(function () {
   }
 });
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0, paymentReference = null, recordNumber = null, specificRecordId = null) {
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0, paymentReference = null, recordNumber = null, specificRecordId = null, tipoExoneracion = '', porcentaje = '') {
     if (specificRecordId) {
         currentIdPaymentRecord = specificRecordId;
     }
@@ -2955,6 +2938,18 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             approveTicketFromImageBtn.setAttribute('data-record-number', recordNumber);
         } else {
             approveTicketFromImageBtn.removeAttribute('data-record-number');
+        }
+
+        if (tipoExoneracion) {
+            approveTicketFromImageBtn.setAttribute('data-tipo-exoneracion', tipoExoneracion);
+        } else {
+            approveTicketFromImageBtn.removeAttribute('data-tipo-exoneracion');
+        }
+
+        if (porcentaje) {
+            approveTicketFromImageBtn.setAttribute('data-porcentaje', porcentaje);
+        } else {
+            approveTicketFromImageBtn.removeAttribute('data-porcentaje');
         }
     }
     

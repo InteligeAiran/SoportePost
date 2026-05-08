@@ -9,6 +9,7 @@ use Exception;
 session_start(); // Inicia la sesión
 class TechnicalConsultionRepository
 {
+    /** @var consulta_rifModel */
     private $model;
     private $app_base_path;
 
@@ -1381,6 +1382,10 @@ class TechnicalConsultionRepository
      */
     public function GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket = null, $document_type = null) {
         return $this->model->GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket, $document_type);
+    }
+
+    public function GetPaymentAttachmentStrictByRecordNumber($record_number) {
+        return $this->model->GetPaymentAttachmentStrictByRecordNumber($record_number);
     }
 
     /**

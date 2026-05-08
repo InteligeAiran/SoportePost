@@ -167,6 +167,25 @@ class emailModel extends Model{
         }
     }
 
+    public function getTicketIdByNumber($nro_ticket)
+    {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
+            $sql = "SELECT id_ticket FROM tickets WHERE nro_ticket = ".$escaped_nro.";";
+            $result = Model::getResult($sql, $this->db);
+
+            if (!empty($result['row'])) {
+                return $result['row']['id_ticket'];
+            }
+
+            return null;
+        } catch (Throwable $e) {
+            error_log("Error en getTicketIdByNumber: " . $e->getMessage());
+            return null;
+        }
+    }
+
     public function GetDataTicketConsultation(){
         try{
             $sql = "SELECT * FROM GetDataTicketConsultation()";
@@ -227,6 +246,22 @@ class emailModel extends Model{
             return $result;
         } catch (Throwable $e) {
             // Handle exception
+        }
+    }
+
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos = null) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $sql = "SELECT porcentaje, tipo_exoneracion, id_status_payment FROM exoneraciones 
+                    WHERE TRIM(nro_ticket) = " . pg_escape_literal($db_conn, trim($nro_ticket)) . " 
+                    AND (is_substituted IS NULL OR is_substituted = FALSE)
+                    ORDER BY id_exoneracion ASC";
+
+            return Model::getResult($sql, $this->db);
+
+        } catch (Throwable $e) {
+            error_log("Error in GetExoneracionPorcentaje: " . $e->getMessage());
+            return false;
         }
     }
 
@@ -296,6 +331,18 @@ class emailModel extends Model{
         try{
             $escaped_ticket_id = pg_escape_literal($this->db->getConnection(), $ticketId);
             $sql = "SELECT * FROM getdataticket_by_id(".$escaped_ticket_id.");";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en GetTicketDataById: " . $e->getMessage());
+            return ['query' => null, 'row' => null, 'numRows' => 0];
+        }
+    }
+
+     public function getdataticket_by_nroticket($ticketId){
+        try{
+            $escaped_ticket_id = pg_escape_literal($this->db->getConnection(), $ticketId);
+            $sql = "SELECT * FROM getdataticket_by_nroticket(".$escaped_ticket_id.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {

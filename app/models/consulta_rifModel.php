@@ -1104,8 +1104,17 @@ class consulta_rifModel extends Model
         
         if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
             $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
+            
+            // Si el ticket ya tiene un status válido y se sube un documento que NO debe resetear el flujo
+            // (como Traslado, Envio, Envio_Destino, presupuesto o comprobantes de pago)
             if (in_array((int)$current_status, [1, 3, 4, 5, 6, 7, 17]) && 
-                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio' || $document_type_being_uploaded === 'Envio_Destino')) {
+                ($document_type_being_uploaded === 'Traslado' || 
+                 $document_type_being_uploaded === 'Envio' || 
+                 $document_type_being_uploaded === 'Envio_Destino' ||
+                 $document_type_being_uploaded === 'presupuesto' ||
+                 $document_type_being_uploaded === 'comprobante_pago' ||
+                 $document_type_being_uploaded === 'pago' ||
+                 $document_type_being_uploaded === 'Pago')) {
                 return $current_status;
             }
         }
@@ -8310,6 +8319,66 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
     }
 
     /**
+     * Get payment attachment strictly by record number (No Fallbacks)
+     * Retrieves the file info for a payment receipt from archivos_adjuntos
+     * This is separated from the main function so modifying one doesn't affect the other.
+     * 
+     * @param string $record_number Payment record number
+     * @return array|null Attachment info or null if not found
+     */
+    public function GetPaymentAttachmentStrictByRecordNumber($record_number) {
+        try {
+            $conn = $this->db->getConnection();
+            $escaped_record_number = pg_escape_literal($conn, $record_number);
+            
+            // Search directly by record_number in archivos_adjuntos
+            $sql = "SELECT id, nro_ticket, original_filename, stored_filename, 
+                           file_path, mime_type, file_size_bytes, uploaded_at, 
+                           uploaded_by_user_id, document_type, record_number
+                    FROM archivos_adjuntos
+                    WHERE record_number = $escaped_record_number
+                    ORDER BY uploaded_at DESC
+                    LIMIT 1";
+            
+            $result = pg_query($conn, $sql);
+            
+            if ($result && pg_num_rows($result) > 0) {
+                return pg_fetch_assoc($result);
+            }
+
+            // Fallback: If no record_number match, try old proximity logic ONLY
+            $sql_payment = "SELECT nro_ticket, payment_date 
+                           FROM payment_records 
+                           WHERE record_number = $escaped_record_number";
+            
+            $result_payment = pg_query($conn, $sql_payment);
+            
+            if ($result_payment && pg_num_rows($result_payment) > 0) {
+                $payment = pg_fetch_assoc($result_payment);
+                $escaped_nro_ticket = pg_escape_literal($conn, $payment['nro_ticket']);
+                $payment_date = $payment['payment_date'];
+                
+                $sql_fallback = "SELECT * FROM archivos_adjuntos
+                        WHERE nro_ticket = $escaped_nro_ticket
+                        AND (document_type = 'Anticipo' OR document_type = 'Pago' OR document_type = 'comprobante_pago')
+                        ORDER BY ABS(EXTRACT(EPOCH FROM (uploaded_at - '$payment_date'::timestamp)))
+                        LIMIT 1";
+                
+                $result_fb = pg_query($conn, $sql_fallback);
+                if ($result_fb && pg_num_rows($result_fb) > 0) {
+                    return pg_fetch_assoc($result_fb);
+                }
+            }
+            
+            return null;
+            
+        } catch (Throwable $e) {
+            error_log("Error en GetPaymentAttachmentStrictByRecordNumber: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Creates a new payment record to substitute a rejected one
      * Marks the old record as substituted and returns the new ID
      */
@@ -8446,11 +8515,36 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
             $nro_ticket = trim($rowTicket['nro_ticket']); 
             $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
 
-            // 2. VERIFICAR PENDIENTES (BLOQUEANTES)
+            // 2. VERIFICAR APROBACIONES (HABILITANTES - PRIORIDAD)
             
-            // ¿Hay exoneraciones pendientes? (status 5)
+            // ¿Hay al menos una exoneración aprobada (4)?
+            // Usamos ILIKE y TRIM para mayor robustez en la comparación del número de ticket
+            $sqlExo = "SELECT COUNT(*) as total FROM public.exoneraciones 
+                       WHERE (TRIM(nro_ticket) ILIKE TRIM(" . $escaped_nro . ") OR nro_ticket = " . (int)$id_ticket . "::text)
+                       AND id_status_payment = 4 
+                       AND (is_substituted IS NULL OR is_substituted = FALSE)";
+            $resExo = $this->db->pgquery($sqlExo);
+            if ($resExo && pg_num_rows($resExo) > 0) {
+                $row = pg_fetch_assoc($resExo);
+                if ((int)$row['total'] > 0) return true; // Si hay una aprobada, permitimos el flujo
+            }
+
+            // ¿Hay al menos un pago aprobado (6)?
+            $sqlPago = "SELECT COUNT(*) as total FROM public.payment_records 
+                         WHERE (TRIM(nro_ticket) ILIKE TRIM(" . $escaped_nro . ") OR nro_ticket = " . (int)$id_ticket . "::text)
+                         AND payment_status = 6";
+            $resPago = $this->db->pgquery($sqlPago);
+            if ($resPago && pg_num_rows($resPago) > 0) {
+                $row = pg_fetch_assoc($resPago);
+                if ((int)$row['total'] > 0) return true; // Si hay un pago aprobado, permitimos
+            }
+
+            // 3. VERIFICAR PENDIENTES (SOLO SI NO HAY APROBACIONES)
+            
+            // ¿Hay exoneraciones de ANTICIPO pendientes? (status 5)
             $sqlPendingExo = "SELECT COUNT(*) as pending FROM public.exoneraciones 
-                             WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND id_status_payment = 5 
+                             WHERE TRIM(nro_ticket) ILIKE TRIM(" . $escaped_nro . ") AND id_status_payment = 5 
+                             AND LOWER(tipo_exoneracion) LIKE '%anticipo%'
                              AND (is_substituted IS NULL OR is_substituted = FALSE)";
             $resPendingExo = $this->db->pgquery($sqlPendingExo);
             if ($resPendingExo) {
@@ -8458,9 +8552,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 if ((int)$row['pending'] > 0) return false;
             }
 
-            // ¿Hay pagos pendientes? (status 7 o 17)
+            // ¿Hay pagos de ANTICIPO pendientes? (status 7)
             $sqlPendingPago = "SELECT COUNT(*) as pending FROM public.payment_records 
-                              WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND payment_status IN (7, 17)
+                              WHERE TRIM(nro_ticket) ILIKE TRIM(" . $escaped_nro . ") AND payment_status = 7
                               AND (is_substituted IS NULL OR is_substituted = FALSE)";
             $resPendingPago = $this->db->pgquery($sqlPendingPago);
             if ($resPendingPago) {
@@ -8468,31 +8562,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 if ((int)$row['pending'] > 0) return false;
             }
 
-            // 3. VERIFICAR APROBACIONES (HABILITANTES)
-            
-            // ¿Hay al menos una exoneración aprobada (4)?
-            $sqlExo = "SELECT COUNT(*) as total FROM public.exoneraciones 
-                       WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND id_status_payment = 4 
-                       AND (is_substituted IS NULL OR is_substituted = FALSE)";
-            $resExo = $this->db->pgquery($sqlExo);
-            $hasApprovedExo = false;
-            if ($resExo && pg_num_rows($resExo) > 0) {
-                $row = pg_fetch_assoc($resExo);
-                $hasApprovedExo = ((int)$row['total'] > 0);
-            }
-
-            // ¿Hay al menos un pago aprobado (6)?
-            $sqlPago = "SELECT COUNT(*) as total FROM public.payment_records 
-                         WHERE TRIM(nro_ticket) = " . $escaped_nro . " AND payment_status = 6";
-            $resPago = $this->db->pgquery($sqlPago);
-            $hasApprovedPago = false;
-            if ($resPago && pg_num_rows($resPago) > 0) {
-                $row = pg_fetch_assoc($resPago);
-                $hasApprovedPago = ((int)$row['total'] > 0);
-            }
-
-            // Si tiene aprobación de cualquiera de los dos (y no hay pendientes), se permite.
-            return ($hasApprovedExo || $hasApprovedPago);
+            return false; // Si no hay aprobaciones y no se detectaron bloqueos específicos, por defecto no permitimos si el estatus global no es válido.
 
         } catch (Exception $e) {
             error_log("Error en CheckManualApprovalStatus: " . $e->getMessage());

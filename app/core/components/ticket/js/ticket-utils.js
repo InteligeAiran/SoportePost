@@ -187,7 +187,7 @@ function formatTicketDetailsPanel(d) {
                              <span class="falla-reportada-texto">${observacionToDisplay}</span>
                         </div>
                         `}
-                        <div class="col-sm-6 mb-2" style="display: ${isAdminReq ? 'none' : 'block'};">
+                        <div class="col-sm-6 mb-2" style="display: ${(isAdminReq || d.name_accion_ticket === 'En espera de confirmar recibido en Región') ? 'none' : 'block'};">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || d.id || ""}" data-serial-pos = "${d.serial_pos || ""}">
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>

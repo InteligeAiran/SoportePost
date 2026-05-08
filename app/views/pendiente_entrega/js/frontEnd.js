@@ -5762,8 +5762,9 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
             }
         });
         
-        // Aplicamos la regla del MÁXIMO (Regla de absorción de anticipo) para el descuento real
-        totalMontoExoneradoReal = Math.max(ahorroWorkshopTotal, ahorroAnticipoTotal);
+        // CORRECCIÓN: El Anticipo exonerado NO descuenta el monto final del taller.
+        // Solo las exoneraciones de tipo "Presupuesto/Taller" descuentan el monto real a pagar.
+        totalMontoExoneradoReal = ahorroWorkshopTotal;
         
         // Mostrar contenedor de exoneración
         if (exoContainer) {

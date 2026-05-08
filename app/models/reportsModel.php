@@ -492,9 +492,16 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
         
         if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
             $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
-            // Añadidos 5 y 7 para mantener el estatus pendiente si se carga la nota de entrega
+            // Si el ticket ya tiene un status de pago válido (aprobado o pendiente)
+            // y se está subiendo un documento que NO debe alterar ese estado (traslado, envíos, presupuesto o pagos)
             if (in_array((int)$current_status, [1, 3, 4, 5, 6, 7, 17]) && 
-                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio' || $document_type_being_uploaded === 'Envio_Destino')) {
+                ($document_type_being_uploaded === 'Traslado' || 
+                 $document_type_being_uploaded === 'Envio' || 
+                 $document_type_being_uploaded === 'Envio_Destino' ||
+                 $document_type_being_uploaded === 'presupuesto' ||
+                 $document_type_being_uploaded === 'comprobante_pago' ||
+                 $document_type_being_uploaded === 'pago' ||
+                 $document_type_being_uploaded === 'Pago')) {
                 return $current_status;
             }
         }
@@ -945,9 +952,15 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
         $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
         
         // Si el ticket ya tiene documentos aprobados o pendientes (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado, 5 = Exo Pend, 7 = Anticipo Pend)
-        // y se está subiendo un documento de traslado o envio, mantener el status
+        // y se está subiendo un documento que NO debe resetear el flujo (traslado, envíos, presupuesto o pagos)
         if (in_array((int)$current_status, [1, 3, 4, 5, 6, 7, 17]) && 
-            ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio' || $document_type_being_uploaded === 'Envio_Destino')) {
+            ($document_type_being_uploaded === 'Traslado' || 
+             $document_type_being_uploaded === 'Envio' || 
+             $document_type_being_uploaded === 'Envio_Destino' ||
+             $document_type_being_uploaded === 'presupuesto' ||
+             $document_type_being_uploaded === 'comprobante_pago' ||
+             $document_type_being_uploaded === 'pago' ||
+             $document_type_being_uploaded === 'Pago')) {
             return $current_status; // Mantener el status aprobado o pendiente
         }
     }

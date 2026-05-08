@@ -1641,7 +1641,7 @@ class Consulta extends Controller
 
             if (!in_array($id_status_payment, $allowedStatus)) {
                 // SEGUNDA OPORTUNIDAD: ¿Hay aprobación individual específica?
-                if ($repository->CheckManualApprovalStatus($id_ticket, $id_status_payment)) {
+                if (!$repository->CheckManualApprovalStatus($id_ticket, $id_status_payment)) {
                     $statusMsg = "El ticket no cuenta con aprobaciones administrativas (exoneración o pago) para avanzar a taller.";
                     if ($id_status_payment == 5) $statusMsg = "La exoneracion global del ticket esta pendiente, y no se encontro ninguna exoneracion individual aprobada en su tabla correspondiente.";
                     if ($id_status_payment == 7 || $id_status_payment == 17) $statusMsg = "El pago global del ticket esta pendiente, y no se encontro ningun registro de pago aprobado individualmente.";
@@ -2641,10 +2641,11 @@ class Consulta extends Controller
         if ($attachment) {
             $this->response([
                 'success' => true, 
+                'data' => $attachment,
                 'attachment' => $attachment
             ], 200);
         } else {
-            $this->response(['success' => false, 'message' => 'No se encontró archivo adjunto para este pago.'], 404);
+            $this->response(['success' => false, 'message' => 'No se encontró archivo adjunto para este pago.'], 200);
         }
     }
 
@@ -3052,10 +3053,10 @@ class Consulta extends Controller
             }
         }
 
-        // El Anticipo es parte del pago del taller. El ahorro total es el máximo entre ambos.
-        // Si el ahorro por presupuesto ya es mayor al del anticipo, este último queda "absorbido".
-        $total_ahorro = max($ahorro_taller, $ahorro_anticipo);
-        $net_budget = $total_budget - $total_ahorro;
+        // El Anticipo exonerado NO descuenta el monto final del taller.
+        // Solo las exoneraciones de tipo "Presupuesto/Taller" descuentan el monto neto del presupuesto.
+        // El Anticipo es solo un requisito de entrada.
+        $net_budget = $total_budget - $ahorro_taller;
 
         $this->response([
             'success' => true, 
@@ -3769,12 +3770,12 @@ class Consulta extends Controller
             return;
         }
 
-        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number);
+        $attachment = $repository->GetPaymentAttachmentStrictByRecordNumber($record_number);
         
         if ($attachment) {
-            $this->response(['success' => true, 'attachment' => $attachment], 200);
+            $this->response(['success' => true, 'data' => $attachment, 'attachment' => $attachment], 200);
         } else {
-            $this->response(['success' => false, 'message' => 'Documento no encontrado para este pago'], 404);
+            $this->response(['success' => false, 'message' => 'Documento no encontrado para este pago'], 200);
         }
     }
 
