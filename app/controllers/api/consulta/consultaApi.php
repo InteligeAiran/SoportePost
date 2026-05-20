@@ -348,10 +348,6 @@ class Consulta extends Controller
                     $this->handleapprovedocument();
                     break;
 
-                case 'get-payment-attachment':
-                    $this->handleGetPaymentAttachment();
-                    break;
-
                 case 'globalSearchTicket':
                     $this->handleglobalSearchTicket();
                     break;
@@ -497,6 +493,10 @@ class Consulta extends Controller
 
                 case 'GetPaymentAttachmentByRecordNumber':
                     $this->handleGetPaymentAttachmentByRecordNumber();
+                    break;
+
+                case 'get-payment-attachment':
+                    $this->handleGetPaymentAttachment();
                     break;
 
                 case 'GetPaymentById':
@@ -2636,16 +2636,15 @@ class Consulta extends Controller
         $document_type = isset($_POST['document_type']) ? trim($_POST['document_type']) : null;
 
         $repository = new TechnicalConsultionRepository();
-        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket, $document_type);
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber3($record_number, $nro_ticket, $document_type);
 
         if ($attachment) {
             $this->response([
                 'success' => true, 
-                'data' => $attachment,
                 'attachment' => $attachment
             ], 200);
         } else {
-            $this->response(['success' => false, 'message' => 'No se encontró archivo adjunto para este pago.'], 200);
+            $this->response(['success' => false, 'message' => 'No se encontró archivo adjunto para este pago.'], 404);
         }
     }
 
@@ -3770,12 +3769,12 @@ class Consulta extends Controller
             return;
         }
 
-        $attachment = $repository->GetPaymentAttachmentStrictByRecordNumber($record_number);
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber1($record_number);
         
         if ($attachment) {
-            $this->response(['success' => true, 'data' => $attachment, 'attachment' => $attachment], 200);
+            $this->response(['success' => true, 'attachment' => $attachment], 200);
         } else {
-            $this->response(['success' => false, 'message' => 'Documento no encontrado para este pago'], 200);
+            $this->response(['success' => false, 'message' => 'Documento no encontrado para este pago'], 404);
         }
     }
 

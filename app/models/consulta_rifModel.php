@@ -6608,7 +6608,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
         try{
 
-            $sql = "SELECT * FROM sp_verdatabanco()";
+            $sql = "SELECT * FROM spverdatabancos()";
 
             $result = Model::getResult($sql, $this->db);
 

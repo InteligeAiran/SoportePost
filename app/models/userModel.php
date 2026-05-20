@@ -345,6 +345,18 @@ class userModel extends Model{
             // Handle exception
         }
     }   
+
+    public function UpdateSession($id_user, $session_id){
+        try{
+            $sql = "UPDATE sessions_users SET end_date = NOW(), active = 0 WHERE id_user = ".$id_user." AND id_session = '". $session_id."';";
+            $result = $this->db->pgquery($sql);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en UpdateSession: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function checkUserStatus($id_user){
         try{
             $sql = "SELECT id_user, id_status FROM check_user_status(".$id_user.");";

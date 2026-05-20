@@ -55,7 +55,7 @@ define('UPLOAD_BASE_DIR', 'C:\Documentos_SoportePost\\');
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_AUTH', true);
 define('SMTP_USERNAME', 'soporte.sistemas@inteligensa.com');
-define('SMTP_PASSWORD', 'igqq foym bqhf kqrs');
+define('SMTP_PASSWORD', 'stxz vwzs wmhn lntw');
 define('SMTP_SECURE', 'PHPMailer::ENCRYPTION_STARTTLS');
 define('SMTP_PORT', 587);
 // ¡¡¡ ACTIVA LA DEPURACIÓN AL MÁXIMO !!!

@@ -978,11 +978,14 @@ class TechnicalConsultionRepository
     }
     public function GetBancoTicket(){
         $result = $this->model->GetBancoTicket();
-    
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $tipousers[] = $agente;
-            //var_dump($agente);
+        $tipousers = [];
+        
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $tipousers[] = $agente;
+            }
+            pg_free_result($result['query']);
         }
         return $tipousers;
     }

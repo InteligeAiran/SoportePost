@@ -61,6 +61,7 @@ class HistoricalModel extends Model
             if (!empty($id_cliente)) {
                 $sql_admin = "SELECT 
                         nro_solicitud,
+                        created_at,
                         TO_CHAR(created_at, 'DD-MM-YYYY HH24:MI') as fecha_de_cambio,
                         tipo_nombre as name_accion_ticket,
                         user_creation as usuario_gestion,
@@ -80,12 +81,11 @@ class HistoricalModel extends Model
                 }
             }
 
-            // 4. Ordenar todo por fecha (fecha_de_cambio) DESC
-            // Como las fechas están formateadas, convertimos para comparar
+            // 4. Ordenar todo por fecha DESC usando timestamps crudos para evitar errores de formato (e.g. HH12)
             usort($history, function($a, $b) {
-                $dateA = $this->parseDateToTimestamp($a['fecha_de_cambio']);
-                $dateB = $this->parseDateToTimestamp($b['fecha_de_cambio']);
-                return $dateB - $dateA;
+                $timeA = isset($a['created_at']) ? strtotime($a['created_at']) : strtotime($a['changedstatus_at']);
+                $timeB = isset($b['created_at']) ? strtotime($b['created_at']) : strtotime($b['changedstatus_at']);
+                return $timeB - $timeA;
             });
 
             return $history;
