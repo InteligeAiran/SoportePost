@@ -33,19 +33,18 @@ define("bd_clave", 'Int3l1punt0.VEN');*/
 
 /*ENDPOINT*/
 //$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-
 $protocol = 'http://';
 if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
     (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
     (strpos($_SERVER['HTTP_HOST'], 'soportepost.intelipunto.com') !== false)) {
     $protocol = 'https://';
 }
-
 $host = $_SERVER['HTTP_HOST'];
 
 define ('HOST', $host);
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
 //define('APP_BASE_PATH', '/SoportePost/');
+// Asegurarnos de que el APP_PATH sea correcto según la URL
 define('APP_BASE_PATH', APP);
 define('tituloPagina', value: 'Soporte Post Venta');
 

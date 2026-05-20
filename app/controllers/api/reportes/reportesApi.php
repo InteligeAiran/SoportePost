@@ -26,12 +26,14 @@ use Controller;
 use DatabaseCon;
 use Exception;
 
-class reportes extends Controller {
+class reportes extends Controller
+{
     private $db;
     private $emailService; // Service for handling email operations
     // ... otras propiedades que necesites
 
-    function __construct() {
+    function __construct()
+    {
         parent::__construct();
         header('Content-Type: application/json');
         header('Access-Control-Allow-Origin: *');
@@ -42,219 +44,228 @@ class reportes extends Controller {
         $this->emailService = new EmailService(); // Initialize the email service
     }
 
-     public function processApi($urlSegments) {
+    public function processApi($urlSegments)
+    {
         $method = $_SERVER['REQUEST_METHOD'];
         if (isset($urlSegments[1])) {
             $action = $urlSegments[1];
             switch ($action) {
                 case 'SearchRegionData':
                     $this->handleSearchRegionData();
-                break;
+                    break;
 
                 case 'SearchRifData':
                     $this->handleSearchRifData();
-                break;
+                    break;
 
                 case 'SearchSerialData':
                     $this->handleSearchSerialData();
-                break;
+                    break;
 
                 case 'SearchRangeDate':
                     $this->handleSearchRangeData();
-                break;
+                    break;
 
                 case 'getDomiciliacionTickets':
                     $this->handlegetDomiciliacionTickets();
-                break;
+                    break;
 
                 case 'getTicketAbiertoCount':
                     $this->handlegetgetTicketAbiertoCount();
-                break;
+                    break;
 
                 case 'getTicketsResueltosCount':
                     $this->handlegetTicketsResueltosCount();
-                break;
+                    break;
 
                 case 'getTicketsTotalCount':
                     $this->handlegetTicketsTotalCount();
-                break;
+                    break;
 
                 case 'getTicketPercentage':
                     $this->handleGetTicketPercentage();
-                break;
+                    break;
 
                 case 'getTicketsResueltosPercentage':
                     $this->handleGetTicketsResueltosPercentage();
-                break;
+                    break;
 
                 case 'getTotalTicketsInProcess':
                     $this->handlegetTotalTicketsInProcess();
-                break;
+                    break;
 
                 case 'GetTicketDataFinal':
                     $this->handleGetTicketDataFinal();
-                break;
-                
+                    break;
+
                 case 'uploadDocument':
                     $this->uploadDocument();
-                break;
+                    break;
 
 
 
                 case 'uploadDocumentnNew':
                     $this->uploadDocumentnNew();
-                break;
+                    break;
 
                 case 'uploadDocumentTec':
                     $this->uploadDocumentTec();
-                break;
+                    break;
 
                 case 'uploadPaymentDocument':
                     $this->uploadPaymentDocument();
-                break;
+                    break;
 
                 case 'getDocument':
                     $this->getDocument();
-                break;
+                    break;
 
                 case 'GetMonthlyTicketDetails':
                     $this->GetMonthlyTicketDetails();
-                break;
+                    break;
 
                 case 'GetIndividualTicketDetails':
                     $this->GetIndividualTicketDetails();
-                break;
+                    break;
 
                 case 'GetMonthlyCreatedTicketsForChart':
                     $this->GetMonthlyCreatedTicketsForChart();
-                break;
+                    break;
 
                 case 'GetMonthlyTicketPercentageChange':
                     $this->GetMonthlyTicketPercentageChange();
-                break;
+                    break;
 
                 case 'GetMonthlyCreatedTicketsForChartForState':
                     $this->GetMonthlyCreatedTicketsForChartForState();
-                break;
+                    break;
 
                 case 'GetRegionsTicketDetails':
                     $this->GetRegionsTicketDetails();
-                break;
+                    break;
 
                 case 'GetIndividualTicketDetailsByRegion':
                     $this->GetIndividualTicketDetailsByRegion();
-                break;
+                    break;
 
                 case 'getTicketsSendTallerTotalCount':
                     $this->handleGgetTicketsSendTallerTotalCount();
-                break;
+                    break;
 
                 case 'getTotalTicketsPercentageSendToTaller':
                     $this->handlegetTotalTicketsPercentageSendToTaller();
-                break;
+                    break;
 
                 case 'GetTicketOpenDetails':
                     $this->handleGetTicketOpenDetails();
-                break;
+                    break;
 
                 case 'GetResolveTicketsForCard':
                     $this->handleGetResolveTicketsForCard();
-                break;
+                    break;
 
                 case 'GetTallerTicketsForCard':
                     $this->handleGetTallerTicketsForCard();
-                break;
+                    break;
 
                 case 'GetTicketsPendienteReparacion':
                     $this->handleGetTicketsPendienteReparacion();
-                break;
+                    break;
 
                 case 'getTicketsProcessReparacionCount':
                     $this->handlegetTicketsProcessReparacionCount();
-                break;
+                    break;
 
                 case 'getTicketsReparadosCount':
                     $this->handleGetTicketsReparadosCount();
-                break;
+                    break;
 
                 case 'GetTicketsYaEstanReparados':
                     $this->handleGetTicketsReparado();
-                break;
+                    break;
 
                 case 'GetTicketsPendientesPorRepuestos':
                     $this->handleGetTicketsPendientesPorRepuestos();
-                break;
+                    break;
 
                 case 'getTicketPendienteRepuestoCount':
                     $this->handlegetTicketPendienteRepuestoCount();
-                break;
+                    break;
 
                 case 'getTicketIrreparablesCount':
                     $this->handleGetTicketIrreparablesCount();
-                break;
+                    break;
 
                 case 'GetTicketsIrreparables':
                     $this->handleGetTicketsIrreparables();
-                break;
+                    break;
 
                 case 'getTotalTicketsPercentageinprocess':
                     $this->handlegetTotalTicketsPercentageinprocess();
-                break;
-                
+                    break;
+
                 case 'GetTicketsInProcess':
                     $this->handleGetTicketsInProcess();
-                break;
+                    break;
 
-                case 'GetTicketTimeline' :
+                case 'GetTicketTimeline':
                     $this->handleGetTicketTimeline();
-                break;
+                    break;
 
                 case 'tickets-pending-document-approval':
                     $this->ticketsPendingDocumentApproval();
-                break;
+                    break;
 
                 case 'GetTicketDataRegion':
                     $this->GetTicketDataRegion();
-                break;
+                    break;
 
                 case 'SaveComponents':
                     $this->SaveComponents();
-                break;
+                    break;
 
                 case 'SearchEstatusData':
                     $this->SearchEstatusData();
-                break;
+                    break;
 
                 case 'getTicketsgestioncomercialPorcent':
                     $this->getTicketsgestioncomercialPorcent();
-                break;
+                    break;
 
                 case 'getTicketGestionComercialCount':
                     $this->getTicketGestionComercialCount();
-                break;
+                    break;
 
                 case 'getTicketEntregadoCliente':
                     $this->handlegetTicketEntregadoCliente();
-                break;
+                    break;
 
                 case 'GetTicketCounts':
                     $this->handleGetTicketCounts();
-                break;
+                    break;
 
                 case 'GetDetalleTicketComercial':
                     $this->handleGetDetalleTicketComercial();
-                break;
+                    break;
 
                 case 'GetTicketEntregadoClienteDetails':
                     $this->handleEntregadoClienteDetails();
 
+                case 'SearchMultiCriteria':
+                    $this->handleSearchMultiCriteria();
+                    break;
+
+                case 'GetFilterLists':
+                    $this->handleGetFilterLists();
+                    break;
+
                 case 'SearchBancoData':
                     $this->handleSearchBancoData();
-                break;
+                    break;
 
                 default:
                     $this->response(['error' => 'Acción no encontrada en access'], 404);
-                break;
+                    break;
             }
         } else {
             $this->response(['error' => 'Acción no especificada en access'], 400);
@@ -264,21 +275,104 @@ class reportes extends Controller {
     // Mueve aquí todas tus funciones handleSearchRif, handleSearchSerialData, etc.
     // Asegúrate de que utilicen las propiedades de la clase ($this->db, etc.)
     // Ejemplo:
-    
-    private function response($data, $status = 200) {
+
+    private function handleGetFilterLists()
+    {
+        try {
+            $userRepo = new UserRepository();
+            $techRepo = new technicalConsultionRepository();
+
+            $regions = $userRepo->GetRegionUsers();
+            $bancos = $techRepo->GetBancos();
+            
+            // For ticket statuses, we'll query them directly if no repo method exists
+            $sqlStatus = "SELECT id_status_ticket as id, name_status_ticket as name FROM status_tickets ORDER BY id_status_ticket";
+            $resultStatus = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database)->pgquery($sqlStatus);
+            $statuses = [];
+            if ($resultStatus) {
+                while ($row = pg_fetch_assoc($resultStatus)) {
+                    $statuses[] = $row;
+                }
+            }
+
+            $this->response([
+                'success' => true,
+                'regions' => $regions,
+                'bancos' => $bancos,
+                'statuses' => $statuses
+            ], 200);
+        } catch (Exception $e) {
+            $this->response(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    private function handleSearchMultiCriteria()
+    {
+        $type = $_POST['type'] ?? 'nro_ticket';
+        $query = $_POST['query'] ?? '';
+        $id_user = $_POST['id_user'] ?? null;
+        $idtipouser = $_POST['idtipouser'] ?? null;
+        
+        $reportRepo = new ReportRepository();
+        $techRepo = new technicalConsultionRepository();
+        
+        $tickets = [];
+
+        try {
+            switch ($type) {
+                case 'nro_ticket':
+                    $result = $techRepo->GetTicketByNro($query);
+                    $tickets = ($result && !empty($result)) ? $result : [];
+                    break;
+                case 'serial':
+                    $tickets = $reportRepo->SearchSerial($query, $id_user, $idtipouser);
+                    break;
+                case 'rif':
+                    $tickets = $reportRepo->SearchRif($query, $id_user, $idtipouser);
+                    break;
+                case 'status':
+                    $tickets = $reportRepo->GetDataEstatusTicket($query, $id_user, $idtipouser);
+                    break;
+                case 'date_range':
+                    $start = $_POST['start_date'] ?? '';
+                    $end = $_POST['end_date'] ?? '';
+                    $tickets = $reportRepo->SearchRangeData($start, $end, $id_user, $idtipouser);
+                    break;
+                case 'banco':
+                    $tickets = $reportRepo->SearchBanco($query, $id_user, $idtipouser);
+                    break;
+            }
+
+            // Standardize output to always be a list of tickets
+            if ($tickets && !is_array($tickets)) {
+                $tickets = [$tickets];
+            }
+
+            $this->response([
+                'success' => true,
+                'tickets' => $tickets
+            ], 200);
+        } catch (Exception $e) {
+            $this->response(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    private function response($data, $status = 200)
+    {
         header('Content-Type: application/json');
         http_response_code($status);
         echo json_encode($data);
         exit();
     }
 
-    private function handleSearchRegionData() {
-        $id_region = isset($_POST['id_region'])? $_POST['id_region'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
-        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+    private function handleSearchRegionData()
+    {
+        $id_region = isset($_POST['id_region']) ? $_POST['id_region'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser']) ? $_POST['idtipouser'] : null;
 
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->GetAllDataTicket($id_region,$id_user,$idtipouser);
+        $result = $repository->GetAllDataTicket($id_region, $id_user, $idtipouser);
         //var_dump($result);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -291,15 +385,16 @@ class reportes extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Usuario']);
     }
 
-    public function handleSearchRifData(){
-        $rif = isset($_POST['rif'])? $_POST['rif'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
-        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+    public function handleSearchRifData()
+    {
+        $rif = isset($_POST['rif']) ? $_POST['rif'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser']) ? $_POST['idtipouser'] : null;
 
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->SearchRif($rif,$id_user,$idtipouser);
+        $result = $repository->SearchRif($rif, $id_user, $idtipouser);
 
-         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
         } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay rif disponibles'], 404); // Código 404 Not Found
@@ -309,17 +404,18 @@ class reportes extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Coloque un rif']);
     }
 
-    public function handleSearchSerialData(){
-        $serial = isset($_POST['serial'])? $_POST['serial'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
-        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+    public function handleSearchSerialData()
+    {
+        $serial = isset($_POST['serial']) ? $_POST['serial'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser']) ? $_POST['idtipouser'] : null;
 
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->SearchSerial($serial,$id_user,$idtipouser);
+        $result = $repository->SearchSerial($serial, $id_user, $idtipouser);
 
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
@@ -327,53 +423,56 @@ class reportes extends Controller {
         $this->response(['success' => false, 'message' => 'Debe Coloque un serial']);
     }
 
-    public function handleSearchRangeData(){
+    public function handleSearchRangeData()
+    {
         $repository = new ReportRepository();
-        $ini_date = isset($_POST['initial'])? $_POST['initial'] : null;
-        $end_date = isset($_POST['second'])? $_POST['second'] : null; 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
-        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+        $ini_date = isset($_POST['initial']) ? $_POST['initial'] : null;
+        $end_date = isset($_POST['second']) ? $_POST['second'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser']) ? $_POST['idtipouser'] : null;
 
         $result = $repository->SearchRangeData($ini_date, $end_date, $id_user, $idtipouser);
-        if($ini_date !== null && $end_date !== null) {
+        if ($ini_date !== null && $end_date !== null) {
             if ($result) {
                 $this->response(['success' => true, 'ticket' => $result], 200);
-            }else{
-                $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Abiertos por Mes.'], 500);
+            } else {
+                $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Tickets Abiertos por Mes.'], 500);
             }
-        }else{
-            $this->response(['success' => false,'message' => 'Debe ingresar una fecha.'], 400);
+        } else {
+            $this->response(['success' => false, 'message' => 'Debe ingresar una fecha.'], 400);
         }
     }
 
-    public function handlegetDomiciliacionTickets(){
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+    public function handlegetDomiciliacionTickets()
+    {
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
         $repository = new ReportRepository(); // Inicializa el repositorio
         $result = $repository->getDomiciliacionTickets($id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'tickets' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handlegetgetTicketAbiertoCount(){
+    public function handlegetgetTicketAbiertoCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -383,23 +482,24 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Abiertos.'], 500);
+        $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Tickets Abiertos.'], 500);
     }
 
-    public function handlegetTicketsResueltosCount(){
+    public function handlegetTicketsResueltosCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->getTicketsResueltosCount($id_rol, $id_user);
@@ -408,23 +508,24 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets Resueltos.'], 500);
+        $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Tickets Resueltos.'], 500);
     }
 
-    public function handlegetTicketsTotalCount(){
+    public function handlegetTicketsTotalCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+        $id_user = isset($_POST['user_id']) ? $_POST['user_id'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -434,24 +535,25 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
+        $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 
     // Luego, crea la función handleGetTicketPercentage
-    public function handleGetTicketPercentage(){
+    public function handleGetTicketPercentage()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+        $id_user = isset($_POST['user_id']) ? $_POST['user_id'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -461,23 +563,24 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
+        $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 
-    public function handleGetTicketsResueltosPercentage(){
+    public function handleGetTicketsResueltosPercentage()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -488,22 +591,24 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
+        $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Total de Tickets.'], 500);
     }
 
-    public function handleGetTicketDataFinal(){
+    public function handleGetTicketDataFinal()
+    {
         $repository = new ReportRepository();
         $result = $repository->getTicketDataFinal();
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function uploadDocument(){
+    public function uploadDocument()
+    {
         // 1. Instancia el repositorio para interactuar con la base de datos
         $repository = new ReportRepository();
 
@@ -512,7 +617,7 @@ class reportes extends Controller {
         $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
         $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
-        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : null;
         $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
 
         //var_dump($id_ticket, $file, $document_type, $id_user, $nro_ticket);
@@ -521,17 +626,21 @@ class reportes extends Controller {
         // 3. Validación inicial de la solicitud
         if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user) {
             $errorMessage = 'Error en la subida: ';
-            if (!$id_ticket) $errorMessage .= 'ID de ticket no proporcionado. ';
-            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
-            if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
-            if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
+            if (!$id_ticket)
+                $errorMessage .= 'ID de ticket no proporcionado. ';
+            if (!$id_user)
+                $errorMessage .= 'ID de usuario no proporcionado. ';
+            if (!$file)
+                $errorMessage .= 'Archivo no proporcionado. ';
+            if (!$document_type)
+                $errorMessage .= 'Tipo de documento no proporcionado. ';
             if ($file && $file['error'] !== UPLOAD_ERR_OK) {
                 $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
             }
             $this->response(['success' => false, 'message' => $errorMessage], 400);
             return;
         }
-        
+
         // 4. Procesa la información del archivo
         $originalDocumentName = basename($file['name']);
         $documentSize = $file['size'];
@@ -572,7 +681,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // Ahora creamos el subdirectorio para el tipo de documento
         $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
         if (!is_dir($documentTypeDir)) {
@@ -581,7 +690,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // 7. Genera un nombre de archivo único y descriptivo
         $info = pathinfo($originalDocumentName);
         $nombreSinExtension = $info['filename'];
@@ -593,10 +702,10 @@ class reportes extends Controller {
 
         // La ruta completa donde se guardará el archivo en el sistema de archivos
         $uploadPath = $documentTypeDir . $uniqueFileName;
-        
+
         // RUTA RELATIVA para la base de datos y la web
         $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
-        
+
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
@@ -641,8 +750,9 @@ class reportes extends Controller {
         }
     }
 
-    public function uploadDocumentnNew(){
-         // 1. Instancia el repositorio para interactuar con la base de datos
+    public function uploadDocumentnNew()
+    {
+        // 1. Instancia el repositorio para interactuar con la base de datos
         $repository = new ReportRepository();
 
         // 2. Obtiene los datos del POST y FILES
@@ -650,23 +760,27 @@ class reportes extends Controller {
         $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
         $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
-        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : null;
 
 
         // 3. Validación inicial de la solicitud
         if (!$id_ticket || !$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user) {
             $errorMessage = 'Error en la subida: ';
-            if (!$id_ticket) $errorMessage .= 'ID de ticket no proporcionado. ';
-            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
-            if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
-            if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
+            if (!$id_ticket)
+                $errorMessage .= 'ID de ticket no proporcionado. ';
+            if (!$id_user)
+                $errorMessage .= 'ID de usuario no proporcionado. ';
+            if (!$file)
+                $errorMessage .= 'Archivo no proporcionado. ';
+            if (!$document_type)
+                $errorMessage .= 'Tipo de documento no proporcionado. ';
             if ($file && $file['error'] !== UPLOAD_ERR_OK) {
                 $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
             }
             $this->response(['success' => false, 'message' => $errorMessage], 400);
             return;
         }
-        
+
         // 4. Procesa la información del archivo
         $originalDocumentName = basename($file['name']);
         $documentSize = $file['size'];
@@ -707,7 +821,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // Ahora creamos el subdirectorio para el tipo de documento
         $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
         if (!is_dir($documentTypeDir)) {
@@ -716,7 +830,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // 7. Genera un nombre de archivo único y descriptivo
         $info = pathinfo($originalDocumentName);
         $nombreSinExtension = $info['filename'];
@@ -728,10 +842,10 @@ class reportes extends Controller {
 
         // La ruta completa donde se guardará el archivo en el sistema de archivos
         $uploadPath = $documentTypeDir . $uniqueFileName;
-        
+
         // RUTA RELATIVA para la base de datos y la web
         $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
-        
+
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
@@ -776,7 +890,8 @@ class reportes extends Controller {
         }
     }
 
-    public function uploadDocumentTec(){
+    public function uploadDocumentTec()
+    {
         // 1. Instancia el repositorio para interactuar con la base de datos
         $repository = new ReportRepository();
 
@@ -785,7 +900,7 @@ class reportes extends Controller {
         $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
         $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
-        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : null;
 
         //var_dump($id_ticket, $file, $document_type, $id_user, $nro_ticket);
 
@@ -793,17 +908,21 @@ class reportes extends Controller {
         // 3. Validación inicial de la solicitud
         if (!$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user) {
             $errorMessage = 'Error en la subida: ';
-            if (!$id_ticket) $errorMessage .= 'ID de ticket no proporcionado. ';
-            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
-            if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
-            if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
+            if (!$id_ticket)
+                $errorMessage .= 'ID de ticket no proporcionado. ';
+            if (!$id_user)
+                $errorMessage .= 'ID de usuario no proporcionado. ';
+            if (!$file)
+                $errorMessage .= 'Archivo no proporcionado. ';
+            if (!$document_type)
+                $errorMessage .= 'Tipo de documento no proporcionado. ';
             if ($file && $file['error'] !== UPLOAD_ERR_OK) {
                 $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
             }
             $this->response(['success' => false, 'message' => $errorMessage], 400);
             return;
         }
-        
+
         // 4. Procesa la información del archivo
         $originalDocumentName = basename($file['name']);
         $documentSize = $file['size'];
@@ -844,7 +963,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // Ahora creamos el subdirectorio para el tipo de documento
         $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
         if (!is_dir($documentTypeDir)) {
@@ -853,7 +972,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // 7. Genera un nombre de archivo único y descriptivo
         $info = pathinfo($originalDocumentName);
         $nombreSinExtension = $info['filename'];
@@ -865,10 +984,10 @@ class reportes extends Controller {
 
         // La ruta completa donde se guardará el archivo en el sistema de archivos
         $uploadPath = $documentTypeDir . $uniqueFileName;
-        
+
         // RUTA RELATIVA para la base de datos y la web
         $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
-        
+
         // 8. Mueve el archivo temporal al destino final
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
@@ -890,10 +1009,10 @@ class reportes extends Controller {
                     // ya lo hace correctamente en saveDocument2() usando determineStatusPayment()
                     // Solo actualizar a 5 o 7 cuando TODOS los documentos necesarios estén presentes
                     // (esto se maneja en el modelo, no aquí)
-                    
+
                     // Enviar correos si es Anticipo o Exoneración
                     $this->sendEmailForDocumentUpload($id_ticket, $document_type, $serial, $nro_ticket);
-                    
+
                     $responseData = [
                         'success' => true,
                         'message' => 'Documento subido y registrado exitosamente.',
@@ -924,7 +1043,8 @@ class reportes extends Controller {
     /**
      * Upload payment document - Handles payment document uploads with record_number
      */
-    public function uploadPaymentDocument(){
+    public function uploadPaymentDocument()
+    {
         $repository = new ReportRepository();
 
         // Get POST and FILES data
@@ -932,23 +1052,27 @@ class reportes extends Controller {
         $file = isset($_FILES['document_file']) ? $_FILES['document_file'] : null;
         $document_type = isset($_POST['document_type']) ? $_POST['document_type'] : null;
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
-        $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : null;
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : null;
         $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
 
         // Validation (id_ticket will be resolved in repository/model if not provided)
         if (!$file || $file['error'] !== UPLOAD_ERR_OK || !$document_type || !$id_user || !$nro_ticket) {
             $errorMessage = 'Error en la subida: ';
-            if (!$id_user) $errorMessage .= 'ID de usuario no proporcionado. ';
-            if (!$file) $errorMessage .= 'Archivo no proporcionado. ';
-            if (!$document_type) $errorMessage .= 'Tipo de documento no proporcionado. ';
-            if (!$nro_ticket) $errorMessage .= 'Número de ticket no proporcionado. ';
+            if (!$id_user)
+                $errorMessage .= 'ID de usuario no proporcionado. ';
+            if (!$file)
+                $errorMessage .= 'Archivo no proporcionado. ';
+            if (!$document_type)
+                $errorMessage .= 'Tipo de documento no proporcionado. ';
+            if (!$nro_ticket)
+                $errorMessage .= 'Número de ticket no proporcionado. ';
             if ($file && $file['error'] !== UPLOAD_ERR_OK) {
                 $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
             }
             $this->response(['success' => false, 'message' => $errorMessage], 400);
             return;
         }
-        
+
         // Process file information
         $originalDocumentName = basename($file['name']);
         $documentSize = $file['size'];
@@ -969,7 +1093,7 @@ class reportes extends Controller {
         $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
         $ticketUploadDir = $serialUploadDir . $nro_ticket . DIRECTORY_SEPARATOR;
         $documentTypeDir = $ticketUploadDir . $document_type . DIRECTORY_SEPARATOR;
-        
+
         // Create directories if they don't exist
         if (!is_dir($documentTypeDir)) {
             if (!mkdir($documentTypeDir, 0755, true)) {
@@ -977,7 +1101,7 @@ class reportes extends Controller {
                 return;
             }
         }
-        
+
         // Generate unique filename
         $info = pathinfo($originalDocumentName);
         $nombreSinExtension = $info['filename'];
@@ -988,10 +1112,10 @@ class reportes extends Controller {
 
         // Full path for file system
         $uploadPath = $documentTypeDir . $uniqueFileName;
-        
+
         // Relative path for database
         $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/' . $document_type . '/' . $uniqueFileName;
-        
+
         // Move uploaded file
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
             try {
@@ -1012,7 +1136,7 @@ class reportes extends Controller {
                 if ($success) {
                     // Send emails if needed
                     $this->sendEmailForDocumentUpload($id_ticket, $document_type, $serial, $nro_ticket);
-                    
+
                     $this->response([
                         'success' => true,
                         'message' => 'Documento de pago subido exitosamente.',
@@ -1034,9 +1158,10 @@ class reportes extends Controller {
         }
     }
 
-    function getDocument(){
+    function getDocument()
+    {
         $repository = new ReportRepository();
-        $id_ticket = isset($_POST['ticket_id'])? $_POST['ticket_id'] : null;
+        $id_ticket = isset($_POST['ticket_id']) ? $_POST['ticket_id'] : null;
         $document_type = "Envio_Destino";
         if ($id_ticket) {
             $documentData = $repository->getDocument($id_ticket, $document_type);
@@ -1050,20 +1175,21 @@ class reportes extends Controller {
         }
     }
 
-    function GetMonthlyTicketDetails(){
+    function GetMonthlyTicketDetails()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -1077,22 +1203,23 @@ class reportes extends Controller {
         }
     }
 
-    function GetIndividualTicketDetails(){
+    function GetIndividualTicketDetails()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $month = isset($_POST['month'])? $_POST['month'] : null;
-        $status = isset($_POST['status'])? $_POST['status'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $month = isset($_POST['month']) ? $_POST['month'] : null;
+        $status = isset($_POST['status']) ? $_POST['status'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -1110,20 +1237,21 @@ class reportes extends Controller {
         }
     }
 
-    public function GetMonthlyCreatedTicketsForChart(){
+    public function GetMonthlyCreatedTicketsForChart()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -1137,59 +1265,62 @@ class reportes extends Controller {
         }
     }
 
-    public function GetMonthlyCreatedTicketsForChartForState(){
+    public function GetMonthlyCreatedTicketsForChartForState()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetMonthlyCreatedTicketsForChartForState($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function GetRegionsTicketDetails(){
+    public function GetRegionsTicketDetails()
+    {
         $repository = new ReportRepository();
         $result = $repository->GetRegionsTicketDetails();
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function GetMonthlyTicketPercentageChange(){
+    public function GetMonthlyTicketPercentageChange()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -1203,29 +1334,30 @@ class reportes extends Controller {
         }
     }
 
-    public function GetIndividualTicketDetailsByRegion(){
+    public function GetIndividualTicketDetailsByRegion()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_region = isset($_POST['region'])? $_POST['region'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_region = isset($_POST['region']) ? $_POST['region'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
         if ($id_region) {
             $result = $repository->GetIndividualTicketDetailsByRegion($id_rol, $id_user, $id_region);
-            if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+            if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
                 $this->response(['success' => true, 'details' => $result], 200);
-            } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+            } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
                 $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
             } else {
                 $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
@@ -1235,491 +1367,511 @@ class reportes extends Controller {
         }
     }
 
-    public function handleGgetTicketsSendTallerTotalCount(){
+    public function handleGgetTicketsSendTallerTotalCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketsSendTallerTotalCount($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handlegetTotalTicketsPercentageSendToTaller(){
+    public function handlegetTotalTicketsPercentageSendToTaller()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTotalTicketsPercentageSendToTaller($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'porcent' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketOpenDetails(){
+    public function handleGetTicketOpenDetails()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
         $result = $repository->GetTicketOpenDetails($id_rol, $id_user);
 
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetResolveTicketsForCard(){
+    public function handleGetResolveTicketsForCard()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
         $result = $repository->GetResolveTicketsForCard($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTallerTicketsForCard() {
+    public function handleGetTallerTicketsForCard()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTallerTicketsForCard($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketsPendienteReparacion(){
+    public function handleGetTicketsPendienteReparacion()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketsPendienteReparacion($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handlegetTicketsProcessReparacionCount(){
+    public function handlegetTicketsProcessReparacionCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketsProcessReparacionCount($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketsReparadosCount(){
+    public function handleGetTicketsReparadosCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketsReparadosCount($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketsReparado(){
+    public function handleGetTicketsReparado()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->handleGetTicketsReparado($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketsPendientesPorRepuestos(){
+    public function handleGetTicketsPendientesPorRepuestos()
+    {
         $repositoryUser = new UserRepository();
         $repository = new ReportRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketsPendientesPorRepuestos($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handlegetTicketPendienteRepuestoCount(){
+    public function handlegetTicketPendienteRepuestoCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketPendienteRepuestoCount($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketIrreparablesCount(){
+    public function handleGetTicketIrreparablesCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketIrreparablesCount($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketsIrreparables(){
+    public function handleGetTicketsIrreparables()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTicketsIrreparables($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handlegetTotalTicketsInProcess(){
+    public function handlegetTotalTicketsInProcess()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+        $id_user = isset($_POST['user_id']) ? $_POST['user_id'] : null;
         $repositoryUser = new UserRepository();
 
-        if($id_user === null){
-            $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
+        if ($id_user === null) {
+            $this->response(['success' => false, 'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
         $result = $repository->GetTotalTicketsInProcess($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handlegetTotalTicketsPercentageinprocess(){
+    public function handlegetTotalTicketsPercentageinprocess()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['user_id'])? $_POST['user_id'] : null;
+        $id_user = isset($_POST['user_id']) ? $_POST['user_id'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetTotalTicketsPercentageInProcess($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'porcent' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketsInProcess(){
+    public function handleGetTicketsInProcess()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
         $result = $repository->GetTicketsInProcess($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketTimeline(){
-        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+    public function handleGetTicketTimeline()
+    {
+        $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $repository = new ReportRepository();
         $result = $repository->GetTicketTimeline($id_ticket);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function ticketsPendingDocumentApproval(){
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+    public function ticketsPendingDocumentApproval()
+    {
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
+            $this->response(['success' => false, 'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
         }
 
         $repository = new ReportRepository();
         $result = $repository->GetTicketsPendingDocumentApproval($id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'tickets' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function GetTicketDataRegion(){
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+    public function GetTicketDataRegion()
+    {
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
+            $this->response(['success' => false, 'message' => 'Falta el id_user'], 400); // Código 400 Bad Request
         }
 
         $repository = new ReportRepository();
         $result = $repository->GetTicketDataRegion($id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
-        
+
     }
 
-    public function SaveComponents(){
+    public function SaveComponents()
+    {
         $id_ticket = isset($_POST['ticketId']) ? trim($_POST['ticketId']) : null;
         $components_json = isset($_POST['selectedComponents']) ? trim($_POST['selectedComponents']) : null;
         $serial_pos = isset($_POST['serialPos']) ? trim($_POST['serialPos']) : null;
@@ -1734,7 +1886,7 @@ class reportes extends Controller {
         }
 
         // Validar que ticketId sea un número válido
-        $id_ticket_num = (int)$id_ticket;
+        $id_ticket_num = (int) $id_ticket;
         if ($id_ticket_num <= 0) {
             error_log("SaveComponents: ticketId inválido - " . $id_ticket);
             $this->response(['success' => false, 'message' => 'El ID del ticket no es válido.'], 400);
@@ -1743,7 +1895,7 @@ class reportes extends Controller {
 
         // Procesar JSON de componentes (puede ser objeto con selected/deselected o array simple)
         $componentes_array = [];
-        
+
         if (!empty($components_json) && $components_json !== 'null' && $components_json !== 'undefined') {
             $decoded = json_decode($components_json, true);
             if (json_last_error() === JSON_ERROR_NONE) {
@@ -1756,7 +1908,7 @@ class reportes extends Controller {
 
         $repository = new ReportRepository();
         $result = $repository->SaveComponents($id_ticket_num, $componentes_array, $serial_pos, $id_user, $modulo);
-        
+
         if ($result !== false && is_array($result) && isset($result['success'])) {
             $nro_ticket = isset($result['nro_ticket']) ? $result['nro_ticket'] : null;
             if ($result['success']) {
@@ -1770,18 +1922,19 @@ class reportes extends Controller {
         }
     }
 
-    public function SearchEstatusData(){
-        $estatus = isset($_POST['estatus'])? $_POST['estatus'] : null;
+    public function SearchEstatusData()
+    {
+        $estatus = isset($_POST['estatus']) ? $_POST['estatus'] : null;
         $id_user = isset($_POST['id_user']) ? trim($_POST['id_user']) : null;
-        $idtipouser = isset($_POST['idtipouser']) ? trim ($_POST['idtipouser']) : null;
-        
+        $idtipouser = isset($_POST['idtipouser']) ? trim($_POST['idtipouser']) : null;
+
         if (!$estatus) {
             $this->response(['success' => false, 'message' => 'Debe seleccionar un estatus'], 400);
             return;
         }
-        
+
         $repository = new ReportRepository();
-        $result = $repository->GetDataEstatusTicket($estatus,$id_user,$idtipouser);
+        $result = $repository->GetDataEstatusTicket($estatus, $id_user, $idtipouser);
 
         if ($result !== false && !empty($result)) {
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -1792,48 +1945,50 @@ class reportes extends Controller {
         }
     }
 
-    public function getTicketsgestioncomercialPorcent(){
+    public function getTicketsgestioncomercialPorcent()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
-        
+
         $result = $repository->GetTicketsGestionComercialPorcent($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) {
+        if ($result !== false && !empty($result)) {
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) {
-            $this->response(['success' => false,'message' => 'No hay datos de tickets disponibles'], 404);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404);
         } else {
-            $this->response(['success' => false,'message' => 'Error al obtener los datos de tickets'], 500);
-        }    
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500);
+        }
 
     }
 
-    public function getTicketGestionComercialCount(){
+    public function getTicketGestionComercialCount()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
 
@@ -1843,82 +1998,85 @@ class reportes extends Controller {
         } else {
             $this->response(['success' => false, 'userCount' => 0], 200);
         }
-        $this->response(['success' => false,'message' => 'Error al obtener la cantidad de Tickets en Gestion Comercial.'], 500);
+        $this->response(['success' => false, 'message' => 'Error al obtener la cantidad de Tickets en Gestion Comercial.'], 500);
     }
 
-    public function handlegetTicketEntregadoCliente(){
+    public function handlegetTicketEntregadoCliente()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->handlegetTicketEntregadoCliente($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'count' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetDetalleTicketComercial(){
+    public function handleGetDetalleTicketComercial()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->GetDetalleTicketComercial($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleGetTicketCounts(){
+    public function handleGetTicketCounts()
+    {
         try {
             $repository = new ReportRepository();
             $repositoryUser = new UserRepository();
 
-            $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+            $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
             if (!$id_user) {
-                $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+                $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
                 return;
             }
 
             $id_rol = $repositoryUser->getUserRol($id_user);
 
-            if(!$id_rol){
-                $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+            if (!$id_rol) {
+                $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
                 return;
             }
-            
+
             $result = $repository->GetTicketCounts($id_rol, $id_user);
-            
+
             if (is_array($result)) {
                 $this->response(['success' => true, 'counts' => $result], 200);
             } else {
@@ -1930,44 +2088,46 @@ class reportes extends Controller {
         }
     }
 
-    public function handleEntregadoClienteDetails(){
+    public function handleEntregadoClienteDetails()
+    {
         $repository = new ReportRepository();
         $repositoryUser = new UserRepository();
 
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
 
         if (!$id_user) {
-            $this->response(['success' => false,'message' => 'El id_user es nulo.'], 400);
+            $this->response(['success' => false, 'message' => 'El id_user es nulo.'], 400);
             return;
         }
 
         $id_rol = $repositoryUser->getUserRol($id_user);
 
-        if(!$id_rol){
-            $this->response(['success' => false,'message' => 'El id_rol es nulo.'], 400);
+        if (!$id_rol) {
+            $this->response(['success' => false, 'message' => 'El id_rol es nulo.'], 400);
             return;
         }
         $result = $repository->EntregadoClienteDetails($id_rol, $id_user);
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'details' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500); // Código 500 Internal Server Error
         }
     }
 
-    public function handleSearchBancoData(){
-        $banco = isset($_POST['banco'])? $_POST['banco'] : null;
-        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : null;
-        $idtipouser = isset($_POST['idtipouser'])? $_POST['idtipouser'] : null;
+    public function handleSearchBancoData()
+    {
+        $banco = isset($_POST['banco']) ? $_POST['banco'] : null;
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : null;
+        $idtipouser = isset($_POST['idtipouser']) ? $_POST['idtipouser'] : null;
 
         $repository = new ReportRepository(); // Inicializa el repositorio
-        $result = $repository->SearchBanco($banco,$id_user,$idtipouser);
-        
-        if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
+        $result = $repository->SearchBanco($banco, $id_user, $idtipouser);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
-        } elseif ($result!== false && empty($result)) { // No se encontraron coordinadores
+        } elseif ($result !== false && empty($result)) { // No se encontraron coordinadores
             $this->response(['success' => false, 'message' => 'No hay serial disponibles'], 404); // Código 404 Not Found
         } else {
             $this->response(['success' => false, 'message' => 'Error al obtener los serial'], 500); // Código 500 Internal Server Error
@@ -1986,7 +2146,7 @@ class reportes extends Controller {
     private function updateTicketStatusPayment($id_ticket, $document_type) {
         try {
             $db_conn = $this->db->getConnection();
-            
+
             // Determinar el nuevo id_status_payment según el tipo de documento
             $new_status_payment = null;
             if ($document_type === 'Exoneracion') {
@@ -1994,12 +2154,12 @@ class reportes extends Controller {
             } elseif ($document_type === 'Anticipo') {
                 $new_status_payment = 7; // Anticipo
             }
-            
+
             // Solo actualizar si se determinó un nuevo estatus
             if ($new_status_payment !== null) {
                 $sql = "UPDATE tickets SET id_status_payment = " . (int)$new_status_payment . " WHERE id_ticket = " . (int)$id_ticket;
                 $result = pg_query($db_conn, $sql);
-                
+
                 if ($result === false) {
                     error_log("Error al actualizar id_status_payment para ticket {$id_ticket}: " . pg_last_error($db_conn));
                 } else {
@@ -2015,7 +2175,8 @@ class reportes extends Controller {
     /**
      * Envía correos cuando se suben documentos de Anticipo o Exoneración desde el módulo Tecnico
      */
-    private function sendEmailForDocumentUpload($id_ticket, $document_type, $serial, $nro_ticket) {
+    private function sendEmailForDocumentUpload($id_ticket, $document_type, $serial, $nro_ticket)
+    {
         // Solo procesar si es Anticipo o Exoneración
         if ($document_type !== 'Anticipo' && $document_type !== 'Exoneracion') {
             return;
@@ -2025,19 +2186,19 @@ class reportes extends Controller {
             // Obtener el id_status_payment del ticket
             $repository = new technicalConsultionRepository();
             $ticket_status_payment = $repository->getStatusPayment($id_ticket);
-            $id_status_payment_actual = isset($ticket_status_payment['id_status_payment']) ? (int)$ticket_status_payment['id_status_payment'] : null;
-            
+            $id_status_payment_actual = isset($ticket_status_payment['id_status_payment']) ? (int) $ticket_status_payment['id_status_payment'] : null;
+
             $emailRepository = new EmailRepository();
-            
+
             // Obtener datos completos del ticket para el correo
             $ticket_data = $emailRepository->GetTicketDataById($id_ticket);
-            
+
             // Preparar imágenes embebidas
             $embeddedImages = [];
             if (defined('FIRMA_CORREO')) {
                 $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
             }
-            
+
             // Obtener datos adicionales del ticket
             $nombre_tecnico_email = $ticket_data['full_name_tecnico'] ?? 'N/A';
             $ticketaccion_email = $ticket_data['name_accion_ticket'] ?? 'N/A';
@@ -2046,12 +2207,12 @@ class reportes extends Controller {
             $falla_text = $ticket_data['name_failure'] ?? 'N/A';
             $status_text = $ticket_data['name_status_ticket'] ?? 'N/A';
             $status_payment_text = $ticket_data['name_status_payment'] ?? 'N/A';
-            
+
             // Obtener RIF y Razón Social desde GetClientInfo
             $result_client = $emailRepository->GetClientInfo($serial);
             $clientRif_email = $result_client['coddocumento'] ?? $ticket_data['rif'] ?? 'N/A';
             $clientName_email = $result_client['razonsocial'] ?? $ticket_data['razonsocial'] ?? 'N/A';
-            
+
             // Si es Anticipo (id_status_payment = 7) y se guardó el documento
             // NOTA: Este correo se activa cuando se carga el documento de anticipo desde el MÓDULO DE TÉCNICO (a posteriori).
             if ($document_type === 'Anticipo' && $id_status_payment_actual == 7) {
@@ -2059,7 +2220,7 @@ class reportes extends Controller {
                 if ($result_email_finanzas && !empty($result_email_finanzas['email_area'])) {
                     $email_finanzas = $result_email_finanzas['email_area'];
                     $name_finanzas = $result_email_finanzas['name_area'] ?? 'Finanzas';
-                    
+
                     $subject_finanzas = '📋 NOTIFICACIÓN FINANCIERA - Revisar Anticipo del Ticket';
                     require_once __DIR__ . '/../email/emailApi.php';
                     $emailApi = new \App\Controllers\Api\email\email();
@@ -2078,12 +2239,12 @@ class reportes extends Controller {
                         $status_payment_text,
                         $ticketdomiciliacion_email
                     );
-                    
+
                     $this->emailService->sendEmail($email_finanzas, $subject_finanzas, $body_finanzas, [], $embeddedImages);
                     error_log("Correo de anticipo enviado a finanzas desde Tecnico: " . $email_finanzas);
                 }
             }
-            
+
             // Si es Exoneración (id_status_payment = 5) y se guardó el documento
             // NOTA: Este correo se activa cuando se carga el documento de exoneración desde el MÓDULO DE TÉCNICO (a posteriori).
             if ($document_type === 'Exoneracion' && $id_status_payment_actual == 5) {
@@ -2094,7 +2255,7 @@ class reportes extends Controller {
                     'neishy.tupano@inteligensa.com'
                 ];
                 $name_admin = 'Administración';
-                
+
                 $subject_admin = '📋 NOTIFICACIÓN ADMINISTRATIVA - Revisar Exoneración del Ticket';
                 require_once __DIR__ . '/../email/emailApi.php';
                 $emailApi = new \App\Controllers\Api\email\email();
@@ -2113,15 +2274,15 @@ class reportes extends Controller {
                     $status_payment_text,
                     $ticketdomiciliacion_email
                 );
-                
+
                 // Enviar correo a cada dirección de administración
                 $emails_enviados_admin = 0;
                 $total_emails_admin = count($emails_admin);
-                
+
                 foreach ($emails_admin as $email_admin) {
                     error_log("INTENTANDO ENVIAR CORREO DE EXONERACION A ADMINISTRACION DESDE TECNICO: " . $email_admin);
                     $email_sent = $this->emailService->sendEmail($email_admin, $subject_admin, $body_admin, [], $embeddedImages);
-                    
+
                     if ($email_sent) {
                         $emails_enviados_admin++;
                         error_log("CORREO DE EXONERACION ENVIADO A: " . $email_admin);
@@ -2130,7 +2291,7 @@ class reportes extends Controller {
                         error_log("ERROR AL ENVIAR CORREO DE EXONERACION A " . $email_admin . ": " . $error_admin);
                     }
                 }
-                
+
                 if ($emails_enviados_admin == $total_emails_admin) {
                     error_log("TODOS LOS CORREOS DE EXONERACION ENVIADOS DESDE TECNICO: " . $emails_enviados_admin . "/" . $total_emails_admin);
                 } elseif ($emails_enviados_admin > 0) {

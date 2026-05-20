@@ -323,7 +323,13 @@ class users extends Controller {
             'redirect' => $redirectURL,
             'session_lifetime' => $_SESSION['session_lifetime'],
             'session_id' => $_SESSION["session_id"],
-            'id_user' => $_SESSION['id_user']
+            'id_user' => $_SESSION['id_user'],
+            'nombres' => $_SESSION["nombres"],
+            'apellidos' => $_SESSION["apellidos"],
+            'username' => $_SESSION["usuario"],
+            'id_rol' => $_SESSION['id_rol'],
+            'name_rol' => $_SESSION['name_rol'],
+            'permissions' => $repository->getUserPermissions((int) $_SESSION['id_user'])
         ], 200);
     } else {
         $this->response(['error' => 'Error al guardar la información de la sesión'], 500);
@@ -725,13 +731,14 @@ class users extends Controller {
 
     // En tu API Controller, por ejemplo, UsersController.php
     private function handleLogout() {
-        if (isset($_SESSION['session_id']) && isset($_SESSION['id_user'])) {
+        $session_id = isset($_SESSION['session_id']) ? $_SESSION['session_id'] : (isset($_POST['session_id']) ? $_POST['session_id'] : null);
+        $user_id = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : null);
+
+        if ($session_id && $user_id) {
             $repository = new UserRepository();
-            $session_id = $_SESSION['session_id'];
-            $user_id = $_SESSION['id_user'];
             
             // Llama a la función que invalida la sesión en la base de datos
-            $success = $repository->UpdateSessionExpiredBySessionId($session_id, $user_id);
+            $success = $repository->UpdateSession($user_id, $session_id);
             
             if ($success) {
                 // Destruye la sesión de PHP

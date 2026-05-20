@@ -43,7 +43,7 @@ class Controller {
     $arrayURL = explode("/", $_SERVER['SCRIPT_NAME']);
     $file = $arrayURL[1];
     //$url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
-
+    
     // Detección robusta de protocolo
     $protocol = 'http://';
     if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
@@ -52,6 +52,7 @@ class Controller {
         $protocol = 'https://';
     }
     
+    // Original: $url = $_SERVER['REQUEST_SCHEME'] . "://" . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
     $url = $protocol . $_SERVER['HTTP_HOST'] . "/" . $file . "/";
     return $url;
   }

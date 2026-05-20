@@ -9,6 +9,7 @@ use Exception;
 session_start(); // Inicia la sesión
 class TechnicalConsultionRepository
 {
+    /** @var consulta_rifModel */
     private $model;
     private $app_base_path;
 
@@ -137,6 +138,11 @@ class TechnicalConsultionRepository
         // Este método ahora devolverá el array con 'idTicketCreado' y 'status_info'.
         $result_from_model = $this->model->SaveDataFalla($serial, $falla, $nivelFalla,  $id_user, $rif, $Nr_ticket, $descripcion_falla, $razonsocial, $id_client, $id_intelipunto);
         return $result_from_model;
+    }
+
+    public function SaveAdministrativeRequest($id_client, $id_user, $observation, $id_type, $id_intelipunto = null)
+    {
+        return $this->model->SaveAdministrativeRequest($id_client, $id_user, $observation, $id_type, $id_intelipunto);
     }
 
     public function getTicketStatusInfo($id_ticket)
@@ -317,6 +323,21 @@ class TechnicalConsultionRepository
         }
     }
 
+    public function GetTicketDataExoneracion($id_user){
+        $result = $this->model->GetTicketDataExoneracion($id_user);
+        if ($result) {
+            $ticket = [];
+
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $ticket[] = $agente;
+            }
+            return $ticket;
+        } else {
+            return null;
+        }
+    }
+
     public function GetTicketData1($id_user){
         $result = $this->model->GetTicketData1($id_user);
         if ($result) {
@@ -331,6 +352,19 @@ class TechnicalConsultionRepository
             return $ticket;
         } else {
             return null;
+        }
+    }
+
+    public function GetExoneracionPorcentaje($nro_ticket, $serial_pos = null) {
+        $result = $this->model->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+        if ($result && $result['numRows'] > 0) {
+            $exonerations = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $exonerations[] = pg_fetch_assoc($result['query'], $i);
+            }
+            return $exonerations;
+        } else {
+            return [];
         }
     }
 
@@ -816,6 +850,10 @@ class TechnicalConsultionRepository
         return $this->model->getDocumentByType($ticketId, $documentType);
     }
 
+    public function getDocumentExoneracionByType($ticketId, $documentType) {
+        return $this->model->getDocumentExoneracionByType($ticketId, $documentType);
+    }
+
     public function getNonRejectedDocumentByType($ticketId, $documentType) {
         return $this->model->getNonRejectedDocumentByType($ticketId, $documentType);
     }
@@ -940,11 +978,14 @@ class TechnicalConsultionRepository
     }
     public function GetBancoTicket(){
         $result = $this->model->GetBancoTicket();
-    
-        for ($i = 0; $i < $result['numRows']; $i++) {
-            $agente = pg_fetch_assoc($result['query'], $i);
-            $tipousers[] = $agente;
-            //var_dump($agente);
+        $tipousers = [];
+        
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $agente = pg_fetch_assoc($result['query'], $i);
+                $tipousers[] = $agente;
+            }
+            pg_free_result($result['query']);
         }
         return $tipousers;
     }
@@ -1342,9 +1383,91 @@ class TechnicalConsultionRepository
      * @param string $record_number Payment record number
      * @return array|null Attachment info or null if not found
      */
-    public function GetPaymentAttachment($record_number) {
-        return $this->model->GetPaymentAttachmentByRecordNumber($record_number);
+    public function GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket = null, $document_type = null) {
+        return $this->model->GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket, $document_type);
     }
 
+    public function GetPaymentAttachmentStrictByRecordNumber($record_number) {
+        return $this->model->GetPaymentAttachmentStrictByRecordNumber($record_number);
+    }
+
+    /**
+     * Guarda los datos de exoneración en la tabla temporal.
+     */
+    public function GetExonerationCount($serial_pos) {
+        return $this->model->GetExonerationCount($serial_pos);
+    }
+
+    public function SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        return $this->model->SaveExoneracion($serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user);
+    }
+
+    public function SaveExoneracionDirect($nro_ticket, $serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user) {
+        return $this->model->SaveExoneracionDirect($nro_ticket, $serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user);
+    }
+
+    public function GetExonerationHistory($nro_ticket) {
+        $result = $this->model->GetExonerationHistory($nro_ticket);
+        if ($result && $result['numRows'] > 0) {
+            $history = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $history[] = pg_fetch_assoc($result['query'], $i);
+            }
+            return $history;
+        }
+        return [];
+    }
+
+    /**
+     * Transfiere la exoneración de la tabla temporal a la tabla principal.
+     */
+    public function TransferExoneracionFromTempToMain($serial_pos, $nro_ticket) {
+        return $this->model->TransferExoneracionFromTempToMain($serial_pos, $nro_ticket);
+    }
+
+    public function GetExonerationDataByTicket($nro_ticket) {
+        return $this->model->GetExonerationDataByTicket($nro_ticket);
+    }
+
+    public function AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion = null, $is_final_approval = false) {
+        return $this->model->AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion, $is_final_approval);
+    }
+
+    public function CheckManualApprovalStatus($id_ticket, $id_status_payment)
+    {
+        return $this->model->CheckManualApprovalStatus($id_ticket, $id_status_payment);
+    }
+
+    /**
+     * Verifica si el ticket ya pasó por taller (id_status 15)
+     * @param string $nro_ticket
+     * @return bool
+     */
+
+    public function CheckTicketWorkshopHistory($nro_ticket) {
+        $ticketInfo = $this->GetTicketByNro($nro_ticket);
+        if ($ticketInfo && isset($ticketInfo[0]['id_ticket'])) {
+            return $this->model->CheckTicketWorkshopHistory($ticketInfo[0]['id_ticket']);
+        }
+        return false;
+    }
+
+    public function GetDataTicketSolicitud(){
+        return $this->model->GetDataTicketSolicitud();
+    }
+
+    /* ---- Métodos para Sustitución de Solicitudes Administrativas ---- */
+
+    public function SubstituteAdministrativeRequest($id_old, $new_observation, $id_user) {
+        return $this->model->SubstituteAdministrativeRequest($id_old, $new_observation, $id_user);
+    }
+
+    public function GetAdministrativeRequestByNro($nro_solicitud) {
+        return $this->model->GetAdministrativeRequestByNro($nro_solicitud);
+    }
+
+    public function MarkPreviousAttachmentSubstituted($nro_solicitud) {
+        return $this->model->MarkPreviousAttachmentSubstituted($nro_solicitud);
+    }
 }
 ?>

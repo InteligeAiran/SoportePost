@@ -10,16 +10,12 @@ class HistoricalRepository
         $this->model = new HistoricalModel(); // Instancia tu modelo de usuario
     }
 
-    public function GetTicketHistory($id_ticket){
-        // Lógica para obtener todos los usuarios
-        $result = $this->model->GetTicketHistory($id_ticket); // Asumiendo que tienes este método en tu modelo
-        if ($result && $result['numRows'] > 0) {
-            $rows = [];
-            for ($i = 0; $i < $result['numRows']; $i++) {
-                $rows[] = pg_fetch_assoc($result['query'], $i);
-            }
-            pg_free_result(result: $result['query']);
-            return $rows;
+    public function GetTicketHistory($id_ticket, $id_cliente = null, $search_by_client = false){
+        // Lógica para obtener el historial del ticket o cliente
+        $result = $this->model->GetTicketHistory($id_ticket, $id_cliente, $search_by_client); 
+        
+        if (is_array($result)) {
+            return $result;
         } else {
             return [];
         }

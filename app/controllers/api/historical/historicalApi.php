@@ -68,17 +68,19 @@ class historical extends Controller {
     }
 
     public function handleGetTicketHistoryByID() {
-        $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : null;
+        $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : null;
+        $id_cliente = isset($_POST['id_cliente']) ? $_POST['id_cliente'] : null;
+        $search_by_client = (isset($_POST['search_by_client']) && $_POST['search_by_client'] === 'true');
         
         $repository = new HistoricalRepository();
-        $result = $repository->GetTicketHistory($id_ticket);
+        $result = $repository->GetTicketHistory($id_ticket, $id_cliente, $search_by_client);
         //... implementa el código para obtener el historial del ticket
         if ($result!== false &&!empty($result)) {
             $this->response(['success' => true, 'history' => $result], 200);
         } elseif ($result!== false && empty($result)) {
-            $this->response(['success' => false, 'message' => 'No hay historial de tickets para este ticket'], 404);
+            $this->response(['success' => false, 'message' => 'No hay historial de tickets para este ticket/cliente'], 404);
         } else {
-            $this->response(['success' => false, 'message' => 'Error al obtener el historial del ticket'], 500);
+            $this->response(['success' => false, 'message' => 'Error al obtener el historial o no hay ticket activo'], 500);
         }
     }
 

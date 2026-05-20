@@ -492,8 +492,16 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
         
         if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
             $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
-            if (in_array((int)$current_status, [1, 3, 4, 6, 17]) && 
-                ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
+            // Si el ticket ya tiene un status de pago válido (aprobado o pendiente)
+            // y se está subiendo un documento que NO debe alterar ese estado (traslado, envíos, presupuesto o pagos)
+            if (in_array((int)$current_status, [1, 3, 4, 5, 6, 7, 17]) && 
+                ($document_type_being_uploaded === 'Traslado' || 
+                 $document_type_being_uploaded === 'Envio' || 
+                 $document_type_being_uploaded === 'Envio_Destino' ||
+                 $document_type_being_uploaded === 'presupuesto' ||
+                 $document_type_being_uploaded === 'comprobante_pago' ||
+                 $document_type_being_uploaded === 'pago' ||
+                 $document_type_being_uploaded === 'Pago')) {
                 return $current_status;
             }
         }
@@ -595,6 +603,16 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
         if ($document_type_being_uploaded === 'Exoneracion' && in_array('Anticipo', $existing_documents)) {
             return 5; // Exoneracion Pendiente por Revision
         }
+
+        // Si subes Envio_Destino y ya tienes Exoneracion pendiente o aprobada
+        if ($document_type_being_uploaded === 'Envio_Destino' && in_array('Exoneracion', $existing_documents)) {
+            return 5; // Exoneracion Pendiente por Revision
+        }
+        
+        // Si subes Envio_Destino y ya tienes Anticipo pendiente o aprobado
+        if ($document_type_being_uploaded === 'Envio_Destino' && in_array('Anticipo', $existing_documents)) {
+            return 7; // Pago Anticipo Pendiente por Revision
+        }
         
         // Si subes Anticipo y ya tienes Envio válido (no rechazado)
         if ($document_type_being_uploaded === 'Anticipo' && in_array('Envio', $existing_documents)) {
@@ -606,9 +624,14 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
             return 7; // Pago Anticipo Pendiente por Revision
         }
         
-        // Si subes Envio_Destino, siempre va a status 11 (Pendiente por cargar documento PDF Envio ZOOM)
+        // Si subes Envio_Destino
         if ($document_type_being_uploaded === 'Envio_Destino') {
-            return 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
+             // Si ya existe Exoneracion o Anticipo, se mantiene el status de revisión (manejado arriba)
+             // Si no, y ya hay Envio y Pago/Exo, se considera completado
+             if (in_array('Envio', $existing_documents) && (in_array('Pago', $existing_documents) || in_array('Exoneracion', $existing_documents))) {
+                 return 1; // Solventado
+             }
+             return 1; // Por defecto al subir el último documento
         }
         
         // Si no hay otros documentos válidos, el documento subido queda pendiente de revisión
@@ -928,11 +951,17 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
     if ($current_status_result && isset($current_status_result['query']) && $current_status_result['numRows'] > 0) {
         $current_status = pg_fetch_result($current_status_result['query'], 0, 'id_status_payment');
         
-        // Si el ticket ya tiene documentos aprobados (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado)
-        // y se está subiendo un documento de traslado o envio, mantener el status aprobado
-        if (in_array((int)$current_status, [1, 3, 4, 6, 17]) && 
-            ($document_type_being_uploaded === 'Traslado' || $document_type_being_uploaded === 'Envio')) {
-            return $current_status; // Mantener el status aprobado
+        // Si el ticket ya tiene documentos aprobados o pendientes (status 4 = Exoneracion Aprobada, 6 = Anticipo Aprobado, 5 = Exo Pend, 7 = Anticipo Pend)
+        // y se está subiendo un documento que NO debe resetear el flujo (traslado, envíos, presupuesto o pagos)
+        if (in_array((int)$current_status, [1, 3, 4, 5, 6, 7, 17]) && 
+            ($document_type_being_uploaded === 'Traslado' || 
+             $document_type_being_uploaded === 'Envio' || 
+             $document_type_being_uploaded === 'Envio_Destino' ||
+             $document_type_being_uploaded === 'presupuesto' ||
+             $document_type_being_uploaded === 'comprobante_pago' ||
+             $document_type_being_uploaded === 'pago' ||
+             $document_type_being_uploaded === 'Pago')) {
+            return $current_status; // Mantener el status aprobado o pendiente
         }
     }
     
@@ -1016,6 +1045,10 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
                 error_log("Solo Anticipo (primer documento) = Status 11 (Pendiente Por Cargar Documento)");
                 return 11; // Pendiente Por Cargar Documento(PDF Envio ZOOM)
             }
+        } elseif ($document_type_being_uploaded === 'Envio_Destino') {
+            if (in_array('Exoneracion', $existing_documents)) return 5;
+            if (in_array('Anticipo', $existing_documents)) return 7;
+            return 1; // Solventado
         }   
 
         error_log("Tipo de documento no reconocido, retornando Status 11 por defecto");

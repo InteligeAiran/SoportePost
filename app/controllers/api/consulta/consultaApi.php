@@ -6,16 +6,16 @@ require_once __DIR__ . '/../../../../libs/database_cn.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
-require_once __DIR__ . '/../../../repositories/technicalConsultionRepository.php';
+require_once __DIR__ . '/../../../repositories/TechnicalConsultionRepository.php';
 require_once __DIR__ . '/../../../repositories/EmailRepository.php';
 require_once __DIR__ . '/../../../Services/EmailServices.php';
 require_once __DIR__ . '/../../../../config/paths.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
-use App\Repositories\technicalConsultionRepository;
+use App\Repositories\TechnicalConsultionRepository;
 use App\Repositories\EmailRepository;
 use App\Services\EmailService;
 use Controller;
@@ -125,12 +125,25 @@ class Consulta extends Controller
                     $this->handleGetTicketData1();
                     break;
 
+                case 'GetDataTicketSolicitud':
+                    $this->handleGetDataTicketSolicitud();
+                    break;
+
+                case 'UpdateAdministrativeRequest':
+                    $this->handleUpdateAdministrativeRequest();
+                    break;
+
+
                 case 'GetTicketData':
                     $this->handleGetTicketData();
                     break;
 
                 case 'GetTicketDataPagos':
                     $this->handleGetTicketDataPagos();
+                    break;
+
+                case 'GetTicketDataExoneracion':
+                    $this->handleGetTicketDataExoneracion();
                     break;
                 
                 case 'GetTicketDataGestionComercial':
@@ -139,6 +152,18 @@ class Consulta extends Controller
 
                 case 'GetCoordinador':
                     $this->handleGetCoordinator();
+                    break;
+
+                case 'GetExoneracionPorcentaje':
+                    $this->handleGetExoneracionPorcentaje();
+                    break;
+
+                case 'SaveAdministrativeRequest':
+                    $this->handleSaveAdministrativeRequest();
+                    break;
+
+                case 'ValidatePresupuestoApertura':
+                    $this->handleValidatePresupuestoApertura();
                     break;
 
                 case 'GetTecnico2':
@@ -285,6 +310,10 @@ class Consulta extends Controller
                     $this->handleGetDocumentByType();
                     break;
 
+                case 'GetDocumentExoneracionByType':
+                    $this->handleGetDocumentExoneracionByType();
+                    break;
+
                 case 'GetNonRejectedDocumentByType':
                     $this->handleGetNonRejectedDocumentByType();
                     break;
@@ -317,10 +346,6 @@ class Consulta extends Controller
 
                 case 'approve-document':
                     $this->handleapprovedocument();
-                    break;
-
-                case 'get-payment-attachment':
-                    $this->handleGetPaymentAttachment();
                     break;
 
                 case 'globalSearchTicket':
@@ -391,6 +416,21 @@ class Consulta extends Controller
                     $this->handleSavePayment();
                     break;
 
+                case 'SaveExoneracion':
+                    $this->handleSaveExoneracion();
+                    break;
+
+                case 'GetExonerationHistory':
+                    $this->handleGetExonerationHistory();
+                    break;
+                case 'SaveExoneracionDirect':
+                    $this->handleSaveExoneracionDirect();
+                    break;
+
+                case 'UpdateExoneration':
+                    $this->handleUpdateExoneration();
+                    break;
+
                 case 'GetEstatusPago':
                     $this->handleGetEstatusPago();
                     break;
@@ -401,6 +441,14 @@ class Consulta extends Controller
 
                 case 'GetPaymentsByTicket':
                     $this->handleGetPaymentsByTicket();
+                    break;
+
+                case 'GetExonerationDataByTicket':
+                    $this->handleGetExonerationDataByTicket();
+                    break;
+                    
+                case 'AprobarExoneracionTicket':
+                    $this->handleAprobarExoneracionTicket();
                     break;
 
                 case 'GetTotalPaidByTicket':
@@ -447,6 +495,10 @@ class Consulta extends Controller
                     $this->handleGetPaymentAttachmentByRecordNumber();
                     break;
 
+                case 'get-payment-attachment':
+                    $this->handleGetPaymentAttachment();
+                    break;
+
                 case 'GetPaymentById':
                     $this->handleGetPaymentById();
                     break;
@@ -479,8 +531,8 @@ class Consulta extends Controller
             $rif = $_POST['rif'] ?? null;
             if ($rif) {
                 // Lógica para buscar por RIF
-                $technicalConsultionRepository = new technicalConsultionRepository();
-                $data = $technicalConsultionRepository->SearchRif($rif);
+                $TechnicalConsultionRepository = new TechnicalConsultionRepository();
+                $data = $TechnicalConsultionRepository->SearchRif($rif);
                 if ($data) {
                     $this->response(['success' => true, 'rif' => $data], 200);
                 } else {
@@ -497,7 +549,7 @@ class Consulta extends Controller
     public function handleSearchSerialData()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
         $result = $repository->SearchSerialData($serial);
         //var_dump($serial);
         if ($result != "") {
@@ -510,7 +562,7 @@ class Consulta extends Controller
     public function handleSearchRazonData()
     {
         $razonsocial = isset($_POST['RazonSocial']) ? $_POST['RazonSocial'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
         $result = $repository->SearchRazonData($razonsocial);
         if ($result != "") {
             $this->response(['success' => true, 'RazonData' => $result], status: 200);
@@ -522,7 +574,7 @@ class Consulta extends Controller
     public function handleSearchSerial()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
 
         $result = $repository->SearchSerial($serial);
         //var_dump($result);
@@ -537,7 +589,7 @@ class Consulta extends Controller
     public function handleGetPhoto()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
         //var_dump($serial);
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
@@ -659,7 +711,7 @@ class Consulta extends Controller
     public function handleGetPhotoDashboard()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
         //var_dump($serial);
         $result = $repository->SearchtypePos($serial);
         if ($result !== false) {
@@ -780,7 +832,7 @@ class Consulta extends Controller
     public function handleVlidateRif()
     {
         $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
 
         if ($rif != '') {
             $result = $repository->VerifingClient($rif);
@@ -798,7 +850,7 @@ class Consulta extends Controller
     public function handleValidateRif1()
     {
         $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
 
         if ($rif != '') {
             $result = $repository->VerifingClient($rif);
@@ -827,7 +879,7 @@ class Consulta extends Controller
     $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
     $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
 
-    $repository = new technicalConsultionRepository();
+    $repository = new TechnicalConsultionRepository();
 
     // --- LÓGICA DE VALIDACIÓN DE TIEMPO ---
     $lastTicketInfo = $repository->getLastUserTicketInfo($id_user); 
@@ -936,8 +988,9 @@ class Consulta extends Controller
     $id_status_payment = isset($_POST['id_status_payment']) ? $_POST['id_status_payment'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
     $coordinador_nombre = isset($_POST['coordinadorNombre']) ? $_POST['coordinadorNombre'] : '';
-    // NUEVO: Obtener record_number para Anticipo
-    $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : null;
+    // NUEVO: Obtener record_number para Anticipo y Exoneracion por separado
+    $record_number_anticipo = isset($_POST['record_number_anticipo']) ? $_POST['record_number_anticipo'] : (isset($_POST['record_number']) ? $_POST['record_number'] : null);
+    $record_number_exoneracion = isset($_POST['record_number_exoneracion']) ? $_POST['record_number_exoneracion'] : null;
     $id_client = isset($_POST['id_client']) ? $_POST['id_client'] : ''; // NUEVO
     $id_intelipunto = isset($_POST['id_intelipunto']) ? $_POST['id_intelipunto'] : ''; // NUEVO
     $razonsocial = isset($_POST['razonsocial']) ? $_POST['razonsocial'] : ''; // NUEVO
@@ -947,7 +1000,7 @@ class Consulta extends Controller
     $archivoExoneracionInfo = null;
     $archivoAnticipoInfo = null;
 
-    $repository = new technicalConsultionRepository();
+    $repository = new TechnicalConsultionRepository();
 
     // --- LÓGICA DE VALIDACIÓN DE TIEMPO (DEBE IR AQUÍ y SOLO AQUÍ) ---
     $lastTicketInfo = $repository->getLastUserTicketInfo($id_user);
@@ -1064,7 +1117,7 @@ class Consulta extends Controller
 
         // 7. Función auxiliar para procesar archivos subidos (sin cambios)
         $processFile = function($fileKey, $documentType, $ticketId, $nrTicket, $userId, $repo, $baseTicketDir, $dateForFilename, &$targetVar, $recordNumber = null) {
-            $repo = new technicalConsultionRepository();
+            $repo = new TechnicalConsultionRepository();
 
             if (isset($_FILES[$fileKey]) && $_FILES[$fileKey]['error'] === UPLOAD_ERR_OK) {
                 $archivo = $_FILES[$fileKey];
@@ -1098,8 +1151,8 @@ class Consulta extends Controller
                         'document_type' => $documentType
                     ];
                     
-                    // Solo agregar record_number si es Anticipo
-                    if ($documentType === 'Anticipo' && $recordNumber) {
+                    // Agregar record_number para Anticipo o Exoneracion
+                    if (($documentType === 'Anticipo' || $documentType === 'Exoneracion') && $recordNumber) {
                         $targetVar['record_number'] = $recordNumber;
                     }
                     
@@ -1123,9 +1176,8 @@ class Consulta extends Controller
         // 8. Procesar cada tipo de archivo adjunto
         // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", NO procesar anticipo ni exoneración
         $envioOk = $processFile('archivoEnvio', 'Envio', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoEnvioInfo);
-        $exoneracionOk = $isFallaSinPago ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo);
-        // Pasamos record_number solo a Anticipo
-        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketCreado, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo, $record_number);
+        $exoneracionOk = $isFallaSinPago ? true : $processFile('archivoExoneracion', 'Exoneracion', $idTicketReal, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoExoneracionInfo, $record_number_exoneracion);
+        $anticipoOk = $isFallaSinPago ? true : $processFile('archivoAnticipo', 'Anticipo', $idTicketReal, $Nr_ticket, $id_user, $repository, $ticketUploadDir, $fecha_para_nombre_archivo, $archivoAnticipoInfo, $record_number_anticipo);
 
         if (!$envioOk || (!$isFallaSinPago && (!$exoneracionOk || !$anticipoOk))) {
             error_log("Advertencia: Al menos un archivo adjunto no se pudo guardar correctamente para el ticket " . $idTicketCreado);
@@ -1296,7 +1348,7 @@ class Consulta extends Controller
     public function handlePosSerials()
     {
         $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
 
         if ($rif != '') {
             $result = $repository->GetPosSerialsByRif($rif); // Llama a la función del repositoryo
@@ -1313,7 +1365,7 @@ class Consulta extends Controller
     public function handlePosSerials1()
     {
         $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
 
         if ($rif != '') {
             $result = $repository->GetPosSerialsByRif($rif); // Llama a la función del repositoryo
@@ -1331,7 +1383,7 @@ class Consulta extends Controller
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
         error_log("GetUltimateTicket DEBUG: Serial recibido = '" . $serial . "'");
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
 
         if ($serial != '') {
             $result = $repository->UltimateDateTicket($serial);
@@ -1351,7 +1403,7 @@ class Consulta extends Controller
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
 
         if ($serial != '') {
             $result = $repository->InstallDatePOS($serial);
@@ -1364,7 +1416,7 @@ class Consulta extends Controller
 
     public function handlegetCoordinacion()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->getCoordinacion();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1379,7 +1431,7 @@ class Consulta extends Controller
 
       public function handleGetCoordinator()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetCoordinator();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1394,7 +1446,7 @@ class Consulta extends Controller
 
     public function handleGetFailure2()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetFailure2();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1409,7 +1461,7 @@ class Consulta extends Controller
 
     public function handleGetFailure1()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetFailure1();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1425,7 +1477,7 @@ class Consulta extends Controller
     public function handleGetTicketData1()
     {
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData1($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1441,7 +1493,7 @@ class Consulta extends Controller
     public function handleGetTicketData()
     {
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1454,11 +1506,66 @@ class Consulta extends Controller
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
     }
 
+    public function handleGetExoneracionPorcentaje()
+    {
+        $nro_ticket = isset($_POST['nro_ticket']) ? $_POST['nro_ticket'] : (isset($_GET['nro_ticket']) ? $_GET['nro_ticket'] : null);
+        $serial_pos = isset($_POST['serial_pos']) ? $_POST['serial_pos'] : (isset($_GET['serial_pos']) ? $_GET['serial_pos'] : null);
+
+        // Permitir que serial_pos sea opcional (puede venir vacío)
+        if (!$nro_ticket) {
+            $this->response(['success' => false, 'message' => 'Falta el número de ticket'], 400);
+            return;
+        }
+        
+        $repository = new TechnicalConsultionRepository();
+        $results = $repository->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+
+        if ($results && is_array($results) && count($results) > 0) {
+            $hasAnticipo100 = false;
+            $anticipo = null;
+            $workshop = null;
+            
+            foreach ($results as $row) {
+                $tipo = strtolower(trim($row['tipo_exoneracion']));
+                if ($tipo === 'anticipo') {
+                    $anticipo = $row;
+                    if ((float)$row['porcentaje'] >= 100) {
+                        $hasAnticipo100 = true;
+                    }
+                } else {
+                    $workshop = $row;
+                }
+            }
+            
+            // Primary exoneration for overall display/logic (prefer most recent Workshop one)
+            $primary = $workshop ?? $anticipo; 
+            
+            if ($primary === null && !empty($results)) {
+                $primary = $results[count($results) - 1]; // Fallback to last row
+            }
+
+            // Construir respuesta estandarizada para compatibilidad y nuevos desarrollos
+            $responseData = [
+                'porcentaje' => (float)$primary['porcentaje'],
+                'tipo_exoneracion' => $primary['tipo_exoneracion'],
+                'id_status_payment' => (int)$primary['id_status_payment'],
+                'has_anticipo_100' => $hasAnticipo100,
+                'anticipo_data' => $anticipo,
+                'workshop_data' => $workshop,
+                'all_exonerations' => $results
+            ];
+
+            $this->response(['success' => true, 'data' => $responseData], 200);
+        } else {
+            $this->response(['success' => true, 'data' => null], 200);
+        }
+    }
+
 
     public function handleGetTicketDataPagos(){
           {
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataPagos($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1472,9 +1579,23 @@ class Consulta extends Controller
     }
     }
 
+    public function handleGetTicketDataExoneracion(){
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
+        $result = $repository->GetTicketDataExoneracion($id_user);
+
+        if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
+            $this->response(['success' => true, 'ticket' => $result], 200);
+        } elseif ($result !== false && empty($result)) { // No se encontraron datos
+            $this->response(['success' => false, 'message' => 'No hay datos de tickets disponibles'], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de tickets'], 500);
+        }
+    }
+
     public function handleGetTecnico2()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->getTecnico2();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1492,7 +1613,7 @@ class Consulta extends Controller
         $id_tecnico = isset($_POST['id_tecnico']) ? $_POST['id_tecnico'] : '';
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->AssignTicket($id_ticket, $id_tecnico);
 
         if ($id_tecnico != '' && $id_ticket != '') {
@@ -1509,10 +1630,30 @@ class Consulta extends Controller
     public function handleSendToTaller()
     {
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
-        $result = $repository->SendToTaller($id_ticket);
+        $repository = new TechnicalConsultionRepository(); 
         if ($id_ticket != '') {
+            $emailRepository = new EmailRepository(); // ✅ INSTANCIAR REPOSITORIO CORRECTO
+
+            // SEGURIDAD: Verificar estatus de pago/exoneración antes de proceder
+            $ticketData = $emailRepository->GetTicketDataById($id_ticket); // ✅ USAR MÉTODO EXISTENTE EN EMAILREPOSITORY
+            $id_status_payment = isset($ticketData[0]['id_status_payment']) ? (int)$ticketData[0]['id_status_payment'] : 0;
+            $allowedStatus = [1, 3, 4, 6];
+
+            if (!in_array($id_status_payment, $allowedStatus)) {
+                // SEGUNDA OPORTUNIDAD: ¿Hay aprobación individual específica?
+                if (!$repository->CheckManualApprovalStatus($id_ticket, $id_status_payment)) {
+                    $statusMsg = "El ticket no cuenta con aprobaciones administrativas (exoneración o pago) para avanzar a taller.";
+                    if ($id_status_payment == 5) $statusMsg = "La exoneracion global del ticket esta pendiente, y no se encontro ninguna exoneracion individual aprobada en su tabla correspondiente.";
+                    if ($id_status_payment == 7 || $id_status_payment == 17) $statusMsg = "El pago global del ticket esta pendiente, y no se encontro ningun registro de pago aprobado individualmente.";
+                    
+                    $this->response(['success' => false, 'message' => $statusMsg], 403);
+                    return;
+                }
+            }
+
+            $result = $repository->SendToTaller($id_ticket);
             if ($result) {
+
                 $this->response(['success' => true, 'message' => 'Ticket enviado al taller con éxito.'], 200);
             } else {
                 $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
@@ -1525,7 +1666,7 @@ class Consulta extends Controller
     public function handleGetTicketDataLab()
     {
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataLab($id_user);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1539,7 +1680,7 @@ class Consulta extends Controller
 
     public function handleGetStatusLab()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetSatusTaller();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1558,7 +1699,7 @@ class Consulta extends Controller
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
         $id_new_status = isset($_POST['id_new_status']) ? $_POST['id_new_status'] : '';
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->UpdateTicketStatus($id_new_status, $id_ticket, $id_user);
         if ($id_new_status != '') {
             if ($result) {
@@ -1577,7 +1718,7 @@ class Consulta extends Controller
         $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
         $id_ticket = isset($_POST['id_ticket']) ? $_POST['id_ticket'] : '';
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         if ($id_ticket != '') {
             $result = $repository->UpdateKeyReceiveDate($id_ticket, $id_user);
             if ($result) {
@@ -1592,7 +1733,7 @@ class Consulta extends Controller
 
     public function handleGetStatusDomiciliacion()
     {
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetStatusDomiciliacion();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1612,7 +1753,7 @@ class Consulta extends Controller
         $id_new_status = isset($_POST['new_status_id']) ? $_POST['new_status_id'] : '';
         $observation = isset($_POST['observations']) ? $_POST['observations'] : '';
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->UpdateDomiciliacionStatus($id_new_status, $id_ticket, $id_user, $observation);
         if ($id_new_status != '') {
             if ($result) {
@@ -1626,7 +1767,7 @@ class Consulta extends Controller
     }
 
     public function handleGetModules(){
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetModules();
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1643,7 +1784,7 @@ class Consulta extends Controller
         $moduleId = isset($_POST['moduleId']) ? $_POST['moduleId'] : '';
         $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
        // var_dump($moduleId);
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
 
         if ($moduleId != '') {
             $result = $repository->GetSubmodulesForModule($moduleId,$id_usuario); // Llama a la función del repositorio
@@ -1658,7 +1799,7 @@ class Consulta extends Controller
     }
 
     public function handleGetTicketCounts(){
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketCounts();
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'counts' => $result], 200);
@@ -1680,7 +1821,7 @@ class Consulta extends Controller
         }
 
         // Instancia de tu repositorio para obtener los detalles del adjunto
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $attachments = $repository->getTicketAttachmentsDetails($ticketId); // Esto debería devolver un array de adjuntos
 
         // Si no se encontraron adjuntos o hubo un error en la base de datos
@@ -1737,7 +1878,7 @@ class Consulta extends Controller
         $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
         //var_dump($id_usuario);
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetModulesUsers($id_usuario);
 
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -1759,7 +1900,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->UpdateTicketAction($ticketId, $id_user, $comment);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido devuelto al cliente exitosamente.'], 200);
@@ -1776,7 +1917,7 @@ class Consulta extends Controller
             $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
             return;
         }
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->UpdateStatusToReceiveInTaller($ticketId, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido movido a la cola de tickets para recepción en taller exitosamente.'], 200);
@@ -1794,7 +1935,7 @@ class Consulta extends Controller
             $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
             return;
         }
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->UpdateRepuestoDate($ticketId, $repuesto_date, $id_user, $id_status_lab);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido actualizado exitosamente.'], 200);
@@ -1804,7 +1945,7 @@ class Consulta extends Controller
     }
 
     public function handleGetOverdueRepuestoTickets(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetOverdueRepuestoTickets();
         if ($result!== false &&!empty($result)) {
             $this->response(['success' => true, 'tickets' => $result], 200);
@@ -1823,7 +1964,7 @@ class Consulta extends Controller
             $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
             return;
         }
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->UpdateRepuestoDate2($ticketId, $repuesto_date, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido actualizado exitosamente.'], 200);
@@ -1839,7 +1980,7 @@ class Consulta extends Controller
             $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
             return;
         }
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->SendToComercial($ticketId, $id_user);
 
         if ($result) {
@@ -1859,7 +2000,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->SendToGestionRosal($ticketId, $id_user, $keyCharged);
         if ($result) {
             $this->response(['success' => true,'message' => 'El ticket ha sido enviado a gestión Rosal exitosamente.'], 200);
@@ -1877,7 +2018,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->MarkKeyAsReceived($ticketId, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'La clave ha sido marcada como recibida exitosamente.'], 200);
@@ -1900,7 +2041,7 @@ class Consulta extends Controller
         }
 
         // Instancia de tu repositorio para obtener los detalles del adjunto
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $attachments = $repository->getTicketAttachmentsDetails($ticketId); // Esto debería devolver un array de adjuntos
 
         // Si no se encontraron adjuntos o hubo un error en la base de datos
@@ -1944,7 +2085,7 @@ class Consulta extends Controller
 
    public function handleVerifingBranches(){
         $rif = isset($_POST['rif']) ? $_POST['rif'] : '';
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
 
         if (empty($rif)) {
             $this->response(['success' => false, 'message' => 'RIF no proporcionado.', 'id_region' => null], 400);
@@ -1985,7 +2126,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->EntregarTicket($ticketId, $id_user,  $comment);
 
         if ($result) {
@@ -2011,7 +2152,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->EntregarTicketDevolucion($ticketId, $id_user);
 
         if ($result) {
@@ -2037,7 +2178,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->UpdateStatusToReceiveInRosal($ticketId, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'El estado del ticket ha sido actualizado a Recibido en Rosal.'], 200);
@@ -2054,7 +2195,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetRegionsByTechnician($id_user);
         if ($result) {
             $this->response(['success' => true,'regions' => $result], 200);
@@ -2072,7 +2213,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->UpdateStatusToReceiveInRegion($ticketId, $id_user);
         if ($result) {
             $this->response(['success' => true,'message' => 'El estado del ticket ha sido actualizado a Recibido en Región.'], 200);
@@ -2106,7 +2247,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
 
         $result = $repository->GetComponents($id_ticket);
         if ($result !== false && $result !== null) {
@@ -2153,7 +2294,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         // Pasa el array decodificado al repositorio
         $result = $repository->SendToRegion($ticketId, $id_user, $componentes_array, $serial, $modulo);
         if ($result) {
@@ -2172,7 +2313,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->SendToRegionWithoutComponent($ticketId, $id_user);
         if ($result) {
             $this->response(['success' => true, 'message' => 'El ticket ha sido enviado a la región sin componentes.'], 200);
@@ -2192,7 +2333,7 @@ class Consulta extends Controller
             return;
         }
         
-        $consultaModel = new technicalConsultionRepository();
+        $consultaModel = new TechnicalConsultionRepository();
         // NOTA: Asegúrate de que el nombre de la función en el repositorio y el modelo sea el mismo que el de la función SQL
         // En este caso, tu función SQL se llama 'get_tickets_by_serial', pero tu código PHP llama 'CheckTicketEnProceso'.
         // Debes actualizar el nombre de la función en el modelo y repositorio para que coincida.
@@ -2219,7 +2360,7 @@ class Consulta extends Controller
    
     public function handleHasComponents(){
         $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         
         // Llamamos al repositorio, que devuelve el array de componentes
         $components = $repository->HasComponents($ticketId);
@@ -2256,8 +2397,36 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $attachment = $repository->getDocumentByType($ticketId, $documentType);
+
+        if ($attachment === false || empty($attachment)) {
+            $this->response(['success' => false, 'message' => 'No se encontró el documento solicitado.'], 404);
+            return;
+        }
+
+        $this->response([
+            'success' => true,
+            'document' => [
+                'file_path' => $attachment['file_path'],
+                'mime_type' => $attachment['mime_type'],
+                'original_filename' => $attachment['original_filename'],
+                'document_type' => $attachment['document_type']
+            ]
+        ], 200);
+    }
+
+    public function handleGetDocumentExoneracionByType() {
+        $ticketId = isset($_POST['ticketId']) ? $_POST['ticketId'] : '';
+        $documentType = isset($_POST['documentType']) ? $_POST['documentType'] : '';
+
+        if (!$ticketId || !$documentType) {
+            $this->response(['success' => false, 'message' => 'ID de ticket y tipo de documento requeridos.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+        $attachment = $repository->getDocumentExoneracionByType($ticketId, $documentType);
 
         if ($attachment === false || empty($attachment)) {
             $this->response(['success' => false, 'message' => 'No se encontró el documento solicitado.'], 404);
@@ -2338,7 +2507,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetMotivos($documentType);
 
         if ($result) {
@@ -2358,7 +2527,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->getMotivoRechazoDocumento($ticketId, $nroTicket, $documentType);
 
         if ($result !== false && $result !== null) {
@@ -2378,7 +2547,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetMotivos($documentType);
 
         if ($result) {
@@ -2390,7 +2559,7 @@ class Consulta extends Controller
 
     // Lista de bancos y cuentas para Acuerdos de Pago
     public function handleGetAccountsBanks(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetAccountsBanks();
 
         if ($result !== null) {
@@ -2414,7 +2583,7 @@ class Consulta extends Controller
         }
         
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->RechazarDocumentos($id_ticket, $id_motivo, $nro_ticket, $id_user, $document_type, $id_payment_record);
 
         if ($result) {
@@ -2443,7 +2612,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         // Pasar los datos verificados directamente a AprobarDocumento
         $result = $repository->AprobarDocumento($id_ticket, $nro_ticket, $id_user, $document_type, $nro_payment_reference_verified, $payment_date_verified, $id_payment_record, $amount_verified);
 
@@ -2463,9 +2632,11 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Falta el record_number.'], 400);
             return;
         }
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        $document_type = isset($_POST['document_type']) ? trim($_POST['document_type']) : null;
 
-        $repository = new technicalConsultionRepository();
-        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number);
+        $repository = new TechnicalConsultionRepository();
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber3($record_number, $nro_ticket, $document_type);
 
         if ($attachment) {
             $this->response([
@@ -2478,7 +2649,7 @@ class Consulta extends Controller
     }
 
     public function handleGetEstatusTicket(){
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetEstatusTicket();
        // var_dump($result);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -2497,7 +2668,7 @@ class Consulta extends Controller
             $id_user = $_POST['id_user'] ?? null;
 
             if ($nroTicket && $id_user) {
-                $repository =  new technicalConsultionRepository(); // Inicializa el repositorio
+                $repository =  new TechnicalConsultionRepository(); // Inicializa el repositorio
                 $result = $repository->FinalizarRevisionTicket($nroTicket, $id_user);
                 $this->response($result, 200);
             } else {
@@ -2512,7 +2683,7 @@ class Consulta extends Controller
     public function handleGetRegionTicket(){
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetRegionTicket($id_user);
        // var_dump($result);
         if ($result !== false && !empty($result)) { // Verifica si hay resultados y no está vacío
@@ -2534,7 +2705,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->SendBackToTaller($id_ticket, $id_user);
 
        if ($result) {
@@ -2552,7 +2723,7 @@ class Consulta extends Controller
             return;
         }
     
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetSimpleFailure($id_ticket);
 
         if ($result) {
@@ -2571,7 +2742,7 @@ class Consulta extends Controller
             return;
         }
     
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->ClosedTicket($id_ticket, $id_user);
 
          if ($result) {
@@ -2592,7 +2763,7 @@ class Consulta extends Controller
             return;
         }
     
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataGestionComercial($id_user);
 
         if ($result) {
@@ -2603,7 +2774,7 @@ class Consulta extends Controller
     }
 
     public function handleGetBancoTicket(){
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetBancoTicket();
         if ($result!== false &&!empty($result)) { // Verifica si hay resultados y no está vacío
             $this->response(['success' => true, 'ticket' => $result], 200);
@@ -2616,7 +2787,7 @@ class Consulta extends Controller
     }
 
     public function handleGetTicketsComponentes(){
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataComponent();
 
         if ($result) {
@@ -2636,7 +2807,7 @@ class Consulta extends Controller
             return;
         } 
         
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetComponentsBySerial($ticket_id, $serial);
 
         if ($result) {
@@ -2647,7 +2818,7 @@ class Consulta extends Controller
     }
 
     public function handleGetAllPOSInfo(){
-        $repository = new technicalConsultionRepository(); // Inicializa el repositorio
+        $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetAllComponentsPOS();
 
         if ($result) {
@@ -2658,7 +2829,7 @@ class Consulta extends Controller
     }
 
     public function handleGetPaymentMethods(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetPaymentMethods();
 
         if ($result !== false && !empty($result)) {
@@ -2671,7 +2842,7 @@ class Consulta extends Controller
     }
 
     public function handleGetExchangeRate(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetExchangeRate();
 
         if ($result !== null && isset($result['tasa_dolar'])) {
@@ -2682,7 +2853,7 @@ class Consulta extends Controller
     }
 
     public function handleGetExchangeRateToday(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetExchangeRateToday();
 
         // Debug: Log para ver qué se está retornando
@@ -2713,7 +2884,7 @@ class Consulta extends Controller
         // Log para debug
         error_log("handleGetExchangeRateByDate - Fecha recibida: " . $fecha);
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetExchangeRateByDate($fecha);
 
         // Log para debug
@@ -2734,7 +2905,7 @@ class Consulta extends Controller
     }
 
     public function handleGetBancos(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetBancos();
 
         if ($result !== false && !empty($result)) {
@@ -2747,7 +2918,7 @@ class Consulta extends Controller
     }
 
     public function handleGetEstatusPago(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetEstatusPago();
 
         if ($result !== false && !empty($result)) {
@@ -2761,7 +2932,7 @@ class Consulta extends Controller
 
     public function handleGetEstatusPagoAutomatizado(){
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetEstatusPagoAutomatizado($nro_ticket);
 
         if ($result !== false && !empty($result)) {
@@ -2781,7 +2952,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetPaymentsByTicket($nro_ticket);
 
         if ($result !== false && !empty($result)) {
@@ -2793,6 +2964,49 @@ class Consulta extends Controller
         }
     }
 
+    public function handleGetExonerationDataByTicket(){
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Número de ticket requerido.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+        $result = $repository->GetExonerationDataByTicket($nro_ticket);
+
+        if ($result !== false && !empty($result)) {
+             // result['row'] if Model::getResult was used, but Repository usually handles it
+             // Let's assume Repository returns the array directly as it does for others
+            $this->response(['success' => true, 'exoneration' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay exoneración registrada para este ticket.'], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los datos de exoneración.'], 500);
+        }
+    }
+
+    public function handleAprobarExoneracionTicket(){
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $nroTicket = $_POST['nro_ticket'] ?? null;
+            $id_user = $_POST['id_user'] ?? null;
+
+            if ($nroTicket && $id_user) {
+                $id_exoneracion = $_POST['id_exoneracion'] ?? $_POST['id_payment_record'] ?? null;
+                $id_exoneracion_manual = $_POST['id_exoneracion_manual'] ?? null;
+                $is_final_approval = isset($_POST['is_final_approval']) && ($_POST['is_final_approval'] === 'true' || $_POST['is_final_approval'] === '1');
+                
+                $repository =  new TechnicalConsultionRepository();
+                $result = $repository->AprobarExoneracionTicket($nroTicket, $id_user, $id_exoneracion, $is_final_approval, $id_exoneracion_manual);
+                $this->response($result, 200);
+            } else {
+                $this->response(['success' => false, 'message' => 'Parámetros incompletos'], 400);
+            }
+        } else {
+            $this->response(['error' => 'Método no permitido'], 405);
+        }
+    }
+
     public function handleGetTotalPaidByTicket(){
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
         
@@ -2801,15 +3015,60 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetTotalPaidByTicket($nro_ticket);
+        
+        // Obtener historial completo de exoneraciones (para el desglose)
+        $exoResults = $repository->GetExoneracionPorcentaje($nro_ticket);
+        $total_porcentaje = 0;
+        $all_exonerations = [];
+        $tipo_exoneracion = null;
+
+        if ($exoResults && is_array($exoResults)) {
+            $all_exonerations = $exoResults;
+            foreach ($exoResults as $exo) {
+                if (isset($exo['porcentaje'])) {
+                    $total_porcentaje += (float)$exo['porcentaje'];
+                }
+            }
+            if (count($exoResults) > 0) {
+                $tipo_exoneracion = count($exoResults) > 1 ? 'Múltiple' : ($exoResults[0]['tipo_exoneracion'] ?? 'Anticipo');
+            }
+        }
+
+        $total_budget = floatval($result['total_budget']);
+        $ahorro_taller = 0;
+        $ahorro_anticipo = 0;
+
+        foreach ($all_exonerations as $exo) {
+            $tipo = strtolower(trim($exo['tipo_exoneracion'] ?? ''));
+            $porcentaje = (float)($exo['porcentaje'] ?? 0);
+            
+            if ($tipo === 'pago taller' || $tipo === 'taller' || $tipo === 'presupuesto') {
+                $ahorro_taller += ($total_budget * $porcentaje / 100);
+            } else if ($tipo === 'anticipo') {
+                // El anticipo tiene una base fija nominal de $30 USD
+                $ahorro_anticipo += (30.00 * $porcentaje / 100);
+            }
+        }
+
+        // El Anticipo exonerado NO descuenta el monto final del taller.
+        // Solo las exoneraciones de tipo "Presupuesto/Taller" descuentan el monto neto del presupuesto.
+        // El Anticipo es solo un requisito de entrada.
+        $net_budget = $total_budget - $ahorro_taller;
 
         $this->response([
             'success' => true, 
             'total_paid' => $result['total_paid'],
-            'total_budget' => $result['total_budget'],
-            'presupuesto_diferencia' => isset($result['presupuesto_diferencia']) ? $result['presupuesto_diferencia'] : 0
+            'total_pending' => isset($result['total_pending']) ? $result['total_pending'] : 0,
+            'total_budget' => $net_budget, // ENVIAMOS EL MONTO NETO DESPUÉS DE EXONERACIÓN TALLER
+            'gross_budget' => $total_budget, // OPCIONAL: Mantenemos el bruto por si acaso
+            'presupuesto_diferencia' => isset($result['presupuesto_diferencia']) ? $result['presupuesto_diferencia'] : 0,
+            'exoneracion_porcentaje' => $total_porcentaje,
+            'tipo_exoneracion' => $tipo_exoneracion,
+            'all_exonerations' => $all_exonerations
         ], 200);
+
     }
 
     public function handleInsertPaymentRecord(){
@@ -2847,7 +3106,7 @@ class Consulta extends Controller
             'origen_telefono' => isset($_POST['origen_telefono']) ? $_POST['origen_telefono'] : null,
         ];
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->InsertPaymentRecord($data);
 
         if ($result) {
@@ -2877,7 +3136,7 @@ class Consulta extends Controller
 
     public function handleGetStatuspayment(){
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetPaymentStatusByTicket($nro_ticket);
 
         if ($result !== null && !empty($result)) {
@@ -2898,7 +3157,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetPaymentData($nro_ticket, $id_payment_record, $payment_reference, $record_number);
 
         if ($result !== null && !empty($result)) {
@@ -2941,7 +3200,7 @@ class Consulta extends Controller
             return;
         }
         
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $exists = $repository->CheckPaymentExistsToday($serial_pos);
         
         $this->response(['success' => true, 'exists' => $exists], 200);
@@ -2955,7 +3214,7 @@ class Consulta extends Controller
             return;
         }
 
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $result = $repository->GetPresupuestoData($nro_ticket);
 
         if ($result !== null && !empty($result)) {
@@ -2971,7 +3230,7 @@ class Consulta extends Controller
      * @return void
      */
     public function handleSavePayment(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         
         // ============================================
         // 1. OBTENER DATOS DEL POST - Información General
@@ -3112,12 +3371,117 @@ class Consulta extends Controller
     }
 
     /**
+     * Obtiene el total de exoneraciones para un serial (para correlativo).
+     * Endpoint: GET /api/consulta/GetExonerationCount?serial_pos=XYZ
+     */
+    public function handleGetExonerationCount() {
+        $repository = new TechnicalConsultionRepository();
+        $serial_pos = isset($_GET['serial_pos']) ? trim($_GET['serial_pos']) : '';
+
+        if (empty($serial_pos)) {
+            $this->response(['success' => false, 'message' => 'Serial POS requerido', 'count' => 0], 400);
+            return;
+        }
+
+        $count = $repository->GetExonerationCount($serial_pos);
+        $this->response(['success' => true, 'count' => $count], 200);
+    }
+
+    /**
+     * Guarda los datos de exoneración en la tabla temporal.
+     * Endpoint: POST /api/consulta/SaveExoneracion
+     */
+    public function handleSaveExoneracion() {
+        $repository = new TechnicalConsultionRepository();
+
+        // ============================================
+        // 1. OBTENER DATOS DEL POST
+        // ============================================
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $tipo_exoneracion = isset($_POST['tipo_exoneracion']) ? trim($_POST['tipo_exoneracion']) : '';
+        $porcentaje = isset($_POST['porcentaje']) ? (int)$_POST['porcentaje'] : 0;
+        $nro_exoneracion = isset($_POST['nro_exoneracion']) ? trim($_POST['nro_exoneracion']) : '';
+        
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : null);
+
+        // ============================================
+        // 2. VALIDACIONES - Campos Obligatorios
+        // ============================================
+        if (empty($serial_pos)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'El serial del POS es obligatorio.'
+            ], 400);
+            return;
+        }
+
+        if (empty($nro_exoneracion)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'El numero de exoneracion es obligatorio.'
+            ], 400);
+            return;
+        }
+
+        // ============================================
+        // 3. GUARDAR EN BASE DE DATOS
+        // ============================================
+        $result = $repository->SaveExoneracion(
+            $serial_pos,
+            $tipo_exoneracion,
+            $porcentaje,
+            $nro_exoneracion,
+            $id_user
+        );
+
+        // ============================================
+        // 4. RESPUESTA AL CLIENTE
+        // ============================================
+        if ($result) {
+            $this->response([
+                'success' => true, 
+                'message' => 'Exoneracion guardada correctamente en la tabla temporal (temp_exoneracion_uploads).', 
+                'nro_exoneracion' => $nro_exoneracion,
+                'serial_pos' => $serial_pos,
+                'table' => 'temp_exoneracion_uploads'
+            ], 200);
+        } else {
+            $this->response([
+                'success' => false, 
+                'message' => 'Error al guardar la exoneracion en la tabla temporal.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Endpoint: POST /api/consulta/GetExonerationHistory
+     */
+    public function handleGetExonerationHistory() {
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'El número de ticket es obligatorio.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+        $history = $repository->GetExonerationHistory($nro_ticket);
+        $has_workshop_history = $repository->CheckTicketWorkshopHistory($nro_ticket);
+
+        $this->response([
+            'success' => true,
+            'history' => $history,
+            'has_workshop_history' => $has_workshop_history
+        ]);
+    }
+
+    /**
      * Maneja la solicitud para guardar un presupuesto
      * 
      * @return void
      */
     public function handleSaveBudget(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         
         // Obtener datos del POST
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
@@ -3179,7 +3543,7 @@ class Consulta extends Controller
      * Maneja la carga del PDF del presupuesto
      */
     public function handleUploadPresupuestoPDF(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         
         // Obtener datos del POST y FILES
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
@@ -3337,7 +3701,7 @@ class Consulta extends Controller
      * Obtiene el id_budget de un presupuesto por nro_ticket
      */
     public function handleGetBudgetIdByNroTicket(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
         
@@ -3356,7 +3720,7 @@ class Consulta extends Controller
 
 
     public function handleglobalSearchTicket(){
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
 
         if (empty($nro_ticket)) {
@@ -3379,7 +3743,7 @@ class Consulta extends Controller
 
 
     public function handleGetPaymentByRecordNumber() {
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
         
         if (empty($record_number)) {
@@ -3397,7 +3761,7 @@ class Consulta extends Controller
     }
 
     public function handleGetPaymentAttachmentByRecordNumber() {
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
         
         if (empty($record_number)) {
@@ -3405,7 +3769,7 @@ class Consulta extends Controller
             return;
         }
 
-        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number);
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber1($record_number);
         
         if ($attachment) {
             $this->response(['success' => true, 'attachment' => $attachment], 200);
@@ -3415,7 +3779,7 @@ class Consulta extends Controller
     }
 
     public function handleGetPaymentById() {
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $id_payment = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
         
         if (empty($id_payment)) {
@@ -3433,7 +3797,7 @@ class Consulta extends Controller
     }
 
     public function handleUpdatePayment() {
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $id_payment = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
         
         if (empty($id_payment)) {
@@ -3487,7 +3851,7 @@ class Consulta extends Controller
     }
 
     public function handleSubstitutePayment() {
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
         $id_payment_old = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
         
         if (empty($id_payment_old)) {
@@ -3568,7 +3932,7 @@ class Consulta extends Controller
         }
 
         // 1. Instanciar repositorio
-        $repository = new technicalConsultionRepository();
+        $repository = new TechnicalConsultionRepository();
 
         // 2. Obtener datos del ticket y serial para construir la ruta
         // Primero intentamos buscar el pago por record_number para asegurar que tenemos el nro_ticket correcto
@@ -3670,5 +4034,442 @@ class Consulta extends Controller
             $this->response(['success' => false, 'message' => 'Error al mover el archivo al servidor.'], 500);
         }
     }
+
+    /**
+     * Guarda los datos de exoneración directamente en la tabla principal.
+     * Endpoint: POST /api/consulta/SaveExoneracionDirect
+     */
+    public function handleSaveExoneracionDirect() {
+        $repository = new TechnicalConsultionRepository();
+
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $tipo_exoneracion = isset($_POST['tipo_exoneracion']) ? trim($_POST['tipo_exoneracion']) : '';
+        $porcentaje = isset($_POST['porcentaje']) ? (int)$_POST['porcentaje'] : 0;
+        $nro_exoneracion = isset($_POST['nro_exoneracion']) ? trim($_POST['nro_exoneracion']) : '';
+        
+                $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : null);
+
+        if (empty($nro_ticket) || empty($serial_pos) || empty($tipo_exoneracion) || empty($nro_exoneracion)) {
+            $this->response([
+                'success' => false, 
+                'message' => 'Todos los campos son obligatorios para el guardado directo.'
+            ], 400);
+            return;
+        }
+
+        // VALIDACIÓN: No permitir Anticipo si el ticket ya pasó por taller
+        if ($tipo_exoneracion === 'Anticipo') {
+            if ($repository->CheckTicketWorkshopHistory($nro_ticket)) {
+                $this->response([
+                    'success' => false, 
+                    'message' => 'No se permite exoneración de Anticipo porque el ticket ya pasó por taller.'
+                ], 403);
+                return;
+            }
+        }
+
+        // 1. REGISTRAR EN TABLA exoneraciones
+        $result = $repository->SaveExoneracionDirect($nro_ticket, $serial_pos, $tipo_exoneracion, $porcentaje, $nro_exoneracion, $id_user);
+
+        if ($result) {
+            // ============================================
+            // 2. PROCESAR ARCHIVO (Soporte Digital)
+            // ============================================
+            if (isset($_FILES['documentoSoporte']) && $_FILES['documentoSoporte']['error'] === UPLOAD_ERR_OK) {
+                $file = $_FILES['documentoSoporte'];
+                
+                $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : 'C:' . DIRECTORY_SEPARATOR . 'Documentos_SoportePost' . DIRECTORY_SEPARATOR;
+                
+                $ticketResults = $repository->GetTicketByNro($nro_ticket);
+                $ticketInfo = (is_array($ticketResults) && isset($ticketResults[0])) ? $ticketResults[0] : null;
+
+                if (!$ticketInfo) {
+                    $this->response([
+                        'success' => false, 
+                        'message' => 'Exoneración guardada, pero no pudo subir el archivo (Ticket no encontrado: ' . $nro_ticket . ').'
+                    ], 500);
+                    return;
+                }
+
+                $serial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $ticketInfo['serial_pos']);
+                $ticketFolder = preg_replace("/[^a-zA-Z0-9]/", "", $nro_ticket);
+                $uploadDir = $baseUploadDir . $serial . DIRECTORY_SEPARATOR . $ticketFolder . DIRECTORY_SEPARATOR . 'Exoneracion' . DIRECTORY_SEPARATOR;
+
+                if (!is_dir($uploadDir)) {
+                    if (!mkdir($uploadDir, 0755, true)) {
+                        $this->response([
+                            'success' => false, 
+                            'message' => 'Error al crear directorio: ' . $uploadDir
+                        ], 500);
+                        return;
+                    }
+                }
+
+                $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                $fechaHora = date('Ymd_His');
+                $safeTipo = str_replace(' ', '_', $tipo_exoneracion);
+                $filename = "Exo_{$safeTipo}_{$ticketFolder}_{$fechaHora}.{$ext}";
+                $targetPath = $uploadDir . $filename;
+
+                if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                    $filePathForDb = $baseUploadDir . $serial . DIRECTORY_SEPARATOR . $ticketFolder . DIRECTORY_SEPARATOR . 'Exoneracion' . DIRECTORY_SEPARATOR . $filename;
+
+                    $fileInfo = [
+                        'original_filename' => $file['name'],
+                        'stored_filename' => $filename,
+                        'file_path' => $filePathForDb,
+                        'mime_type' => $file['type'],
+                        'file_size_bytes' => $file['size'],
+                        'document_type' => 'Exoneracion', 
+                        'record_number' => $nro_exoneracion
+                    ];
+
+
+                    $repository->saveArchivoAdjunto(0, $nro_ticket, $id_user, $fileInfo);
+                } else {
+                    $this->response([
+                        'success' => false, 
+                        'message' => 'Error al mover el archivo al servidor.'
+                    ], 500);
+                    return;
+                }
+            }
+
+            $this->response([
+                'success' => true, 
+                'message' => 'Exoneración registrada correctamente con su soporte.'
+            ], 200);
+        } else {
+            $this->response([
+                'success' => false, 
+                'message' => 'Error al registrar la exoneración directamente.'
+            ], 500);
+        }
+    }
+
+    /**
+     * Endpoint: POST /api/consulta/UpdateExoneration
+     * Actualiza el porcentaje y opcionalmente el comprobante de una exoneración
+     */
+    public function handleUpdateExoneration() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->response(['success' => false, 'message' => 'Método no permitido'], 405);
+            return;
+        }
+
+        try {
+            $id_exoneracion = isset($_POST['id_exoneracion']) ? (int)$_POST['id_exoneracion'] : null;
+            $porcentaje = isset($_POST['porcentaje']) ? (int)$_POST['porcentaje'] : null;
+            
+            if (!$id_exoneracion || $porcentaje === null) {
+                $this->response(['success' => false, 'message' => 'Faltan parámetros requeridos (ID o Porcentaje)'], 400);
+                return;
+            }
+
+            $repository = new consulta_rifModel();
+            
+            // Pasamos el array de $_FILES si existe
+            $fileData = isset($_FILES['documentoSoporte']) ? $_FILES['documentoSoporte'] : null;
+
+            $result = $repository->UpdateExoneracion($id_exoneracion, $porcentaje, $fileData);
+
+            if ($result) {
+                $this->response(['success' => true, 'message' => 'Exoneración actualizada correctamente'], 200);
+            } else {
+                $this->response(['success' => false, 'message' => 'No se pudo actualizar la exoneración'], 400);
+            }
+        } catch (\Exception $e) {
+            $this->response(['success' => false, 'message' => 'Error interno: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function handleValidatePresupuestoApertura() {
+        $nro_ticket = trim($_POST['nro_ticket'] ?? '');
+        $serial_pos = trim($_POST['serial_pos'] ?? '');
+        
+        error_log("Validating Presupuesto Apertura: nro_ticket=$nro_ticket, serial_pos=$serial_pos");
+        
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Falta el número de ticket'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+        
+        // 1. Buscame si ese nro_ticket tiene una exoneración activa
+        $exoResults = $repository->GetExoneracionPorcentaje($nro_ticket, $serial_pos);
+        $hasAnticipo100 = false;
+        
+        if ($exoResults) {
+            error_log("Exonerations found: " . count($exoResults));
+            foreach ($exoResults as $exo) {
+                $tipo = strtolower(trim($exo['tipo_exoneracion']));
+                $porcentaje = (float)$exo['porcentaje'];
+                error_log("Checking Exo: tipo=$tipo, porcentaje=$porcentaje");
+                if (stripos($tipo, 'anticipo') !== false && $porcentaje >= 100) {
+                    $hasAnticipo100 = true;
+                }
+            }
+        } else {
+            error_log("No exonerations found for ticket $nro_ticket");
+        }
+
+        // 2. Si tiene Anticipo al 100%: dejame pasar sin pedir datos de pago
+        if ($hasAnticipo100) {
+            error_log("Allowing opening: 100% Anticipo found.");
+            $this->response([
+                'success' => true, 
+                'can_open' => true, 
+                'is_exonerated_100' => true,
+                'data' => null,
+                'exonerations' => $exoResults
+            ], 200);
+            return;
+        }
+
+        // 3. Caso contrario (Exoneración < 100% o Ninguna): Buscamos los pagos asociados
+        $paymentData = $repository->GetPaymentData($nro_ticket);
+        
+        if ($paymentData !== null && !empty($paymentData)) {
+            error_log("Allowing opening: Payment data found.");
+            // Si tiene datos de pago: dejame pasar y entrega los datos para el modal
+            $this->response([
+                'success' => true, 
+                'can_open' => true, 
+                'is_exonerated_100' => false,
+                'data' => $paymentData,
+                'exonerations' => $exoResults
+            ], 200);
+        } else {
+            error_log("Blocking opening: No 100% Anticipo and NO payment data found.");
+            // Si no tiene pago: debe salir el modal de "Sin Datos de Anticipo"
+            $this->response([
+                'success' => false, 
+                'code' => 'MISSING_ANTICIPO', 
+                'message' => 'No se encontraron datos de anticipo registrados para este ticket'
+            ], 404);
+        }
+    }
+    
+    public function handleSaveAdministrativeRequest()
+    {
+        error_log("handleSaveAdministrativeRequest CALLED");
+
+        // 1. Obtener datos del POST
+        $id_cliente = isset($_POST['id_cliente']) ? (int)$_POST['id_cliente'] : null;
+        $id_user = isset($_POST['id_user']) && (int)$_POST['id_user'] > 0 ? (int)$_POST['id_user'] : (isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0);
+        $id_type = isset($_POST['id_tipo_solicitud']) ? (int)$_POST['id_tipo_solicitud'] : 1; // 1=GRS por defecto
+        $id_intelipunto = isset($_POST['id_intelipunto']) ? (int)$_POST['id_intelipunto'] : null;
+        $observacion = isset($_POST['observation']) ? trim($_POST['observation']) : '';
+
+        // 2. Validaciones básicas
+        if (!$id_cliente) {
+            $this->response(['success' => false, 'message' => 'ID de cliente no proporcionado.'], 400);
+            return;
+        }
+
+        if (empty($observacion)) {
+            $this->response(['success' => false, 'message' => 'La observación es obligatoria.'], 400);
+            return;
+        }
+
+        // 3. Validar archivo
+        if (!isset($_FILES['support_file']) || $_FILES['support_file']['error'] !== UPLOAD_ERR_OK) {
+            $this->response(['success' => false, 'message' => 'No se ha subido ningún soporte digital.'], 400);
+            return;
+        }
+
+        $file = $_FILES['support_file'];
+        $allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf', 'image/jpg'];
+        $maxSize = 10 * 1024 * 1024; // 10MB (Solicitado por el usuario)
+
+        if (!in_array($file['type'], $allowedMimeTypes)) {
+            $this->response(['success' => false, 'message' => 'Formato no permitido. Solo JPG, PNG o PDF.'], 400);
+            return;
+        }
+
+        if ($file['size'] > $maxSize) {
+            $this->response(['success' => false, 'message' => 'El archivo supera el límite de 10MB.'], 400);
+            return;
+        }
+
+        // 4. Instanciar repositorio
+        $repository = new TechnicalConsultionRepository();
+
+        // 5. Guardar solicitud en la tabla principal y generar nro_solicitud (GRS/GMB-XXXXX)
+        $requestData = $repository->SaveAdministrativeRequest($id_cliente, $id_user, $observacion, $id_type, $id_intelipunto);
+
+        if (!$requestData) {
+            $this->response(['success' => false, 'message' => 'Error al guardar la solicitud en la base de datos.'], 500);
+            return;
+        }
+
+        if (isset($requestData['error']) && $requestData['error'] === 'duplicate') {
+            $this->response([
+                'success' => false, 
+                'message' => "El cliente ya posee la solicitud activa {$requestData['nro_solicitud']}. Por favor, espere a que sea procesada."
+            ], 200);
+            return;
+        }
+
+        $requestId = $requestData['id'];
+        $nroSolicitud = $requestData['nro_solicitud'];
+        $typeName = $requestData['type_name'];
+
+        // 6. Procesar archivo (Guardado físico y en archivos_adjuntos)
+        try {
+            $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : 'C:' . DIRECTORY_SEPARATOR . 'Documentos_SoportePost' . DIRECTORY_SEPARATOR;
+            
+            // Estructura: AdminRequests / ID_CLIENTE / TIPO
+            $uploadDir = $baseUploadDir . 'AdminRequests' . DIRECTORY_SEPARATOR . $id_cliente . DIRECTORY_SEPARATOR;
+
+            if (!is_dir($uploadDir)) {
+                if (!mkdir($uploadDir, 0755, true)) {
+                    $this->response(['success' => false, 'message' => 'Error al crear directorio administrativo.'], 500);
+                    return;
+                }
+            }
+
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fechaHora = date('Ymd_His');
+            
+            // Definir prefijo dinámico según el tipo de solicitud (1=GRS, 2=GMB)
+            $typePrefix = ($id_type == 2) ? 'cambio_Banco' : 'cambio_RazonSocial';
+            
+            // Naming dinámico: prefijo_IDCLIENTE_FECHA.ext
+            $filename = "{$typePrefix}_{$id_cliente}_{$fechaHora}.{$ext}";
+            $targetPath = $uploadDir . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $fileInfo = [
+                    'original_filename' => $file['name'],
+                    'stored_filename' => $filename,
+                    'file_path' => $targetPath,
+                    'mime_type' => $file['type'],
+                    'file_size_bytes' => $file['size'],
+                    'document_type' => $typeName, // Usamos el nombre del tipo (ej: Gestión Razón Social)
+                    'record_number' => $nroSolicitud // Usamos el nro_solicitud como récord
+                ];
+
+                // Registrar en archivos_adjuntos usando el nro_solicitud oficial
+                $resAdjunto = $repository->saveArchivoAdjunto(
+                    0, 
+                    $nroSolicitud, 
+                    $id_user, 
+                    $fileInfo
+                );
+
+                if (isset($resAdjunto['error'])) {
+                    $this->response(['success' => true, 'message' => "Solicitud registrada como {$nroSolicitud}, pero hubo un error al registrar el soporte."], 200);
+                } else {
+                    $this->response(['success' => true, 'message' => "Solicitud registrada con el código oficial: {$nroSolicitud}"], 200);
+                }
+            } else {
+                $this->response(['success' => true, 'message' => "Solicitud {$nroSolicitud} guardada, pero el archivo no pudo moverse."], 200);
+            }
+
+        } catch (\Exception $e) {
+            error_log("Error guardando adjunto administrativo: " . $e->getMessage());
+            $this->response(['success' => true, 'message' => 'Solicitud guardada con errores en el archivo.'], 200);
+        }
+    }
+
+    function handleGetDataTicketSolicitud(){
+        $repository = new TechnicalConsultionRepository();
+        $result = $repository->GetDataTicketSolicitud();
+
+        if ($result) {
+            $this->response(['success' => true, 'data' => $result]);
+        } else {
+            $this->response(['success' => false, 'message' => 'No se encontraron datos para este ticket']);
+        }
+    }
+
+    /**
+     * Actualiza una solicitud administrativa (observación y opcionalmente el soporte digital).
+     * Endpoint: POST /api/consulta/UpdateAdministrativeRequest
+     */
+    public function handleUpdateAdministrativeRequest() {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+
+        $nro_solicitud = isset($_POST['nro_solicitud']) ? trim($_POST['nro_solicitud']) : '';
+        $observacion   = isset($_POST['observacion'])   ? trim($_POST['observacion'])   : '';
+        $id_user       = isset($_SESSION['id_user'])    ? (int)$_SESSION['id_user']     : 0;
+
+        if (empty($nro_solicitud)) {
+            $this->response(['success' => false, 'message' => 'Número de solicitud no proporcionado.'], 400);
+            return;
+        }
+        if (empty($observacion)) {
+            $this->response(['success' => false, 'message' => 'La observación es obligatoria.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+
+        // 1. Obtener la solicitud actual para saber el ID original
+        error_log("Controller: Buscando solicitud nro: [" . $nro_solicitud . "]");
+        $reqInfo = $repository->GetAdministrativeRequestByNro($nro_solicitud);
+        if (!$reqInfo) {
+            $this->response(['success' => false, 'message' => 'Solicitud no encontrada.'], 404);
+            return;
+        }
+        $id_old = (int)$reqInfo['id'];
+
+        // 2. Realizar la SUSTITUCIÓN (Crear nueva record y marcar antigua como is_substituted = TRUE)
+        $newId = $repository->SubstituteAdministrativeRequest($id_old, $observacion, $id_user);
+        if (!$newId) {
+            $this->response(['success' => false, 'message' => 'No se pudo procesar la sustitución de la solicitud.'], 500);
+            return;
+        }
+
+        // 3. Si se subió un nuevo archivo, procesarlo
+        if (isset($_FILES['support_file']) && $_FILES['support_file']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['support_file'];
+            $allowedMime = ['image/jpeg','image/png','application/pdf','image/jpg'];
+            $maxSize = 10 * 1024 * 1024;
+
+            if (!in_array($file['type'], $allowedMime)) {
+                $this->response(['success' => true, 'message' => 'Solicitud sustituida, pero el tipo de archivo no está permitido.'], 200);
+                return;
+            }
+            if ($file['size'] > $maxSize) {
+                $this->response(['success' => true, 'message' => 'Solicitud sustituida, pero el archivo supera 10MB.'], 200);
+                return;
+            }
+
+            // Datos para el archivo
+            $id_cliente = $reqInfo['id_cliente'] ?? 0;
+            $typeName   = $reqInfo['tipo_nombre'] ?? 'Solicitud';
+
+            $baseUploadDir = defined('UPLOAD_BASE_DIR') ? UPLOAD_BASE_DIR : 'C:' . DIRECTORY_SEPARATOR . 'Documentos_SoportePost' . DIRECTORY_SEPARATOR;
+            $uploadDir = $baseUploadDir . 'AdminRequests' . DIRECTORY_SEPARATOR . $id_cliente . DIRECTORY_SEPARATOR;
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+            $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $fechaHora = date('Ymd_His');
+            $typePrefix = (stripos($typeName, 'banco') !== false) ? 'cambio_Banco' : 'cambio_RazonSocial';
+            $filename = "{$typePrefix}_{$id_cliente}_{$fechaHora}_subs.{$ext}";
+            $targetPath = $uploadDir . $filename;
+
+            if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                $fileInfo = [
+                    'original_filename' => $file['name'],
+                    'stored_filename'   => $filename,
+                    'file_path'         => $targetPath,
+                    'mime_type'         => $file['type'],
+                    'file_size_bytes'   => $file['size'],
+                    'document_type'     => $typeName,
+                    'record_number'     => $nro_solicitud
+                ];
+                // Insertar el nuevo adjunto (saveArchivoAdjunto ya maneja la sustitución de los previos)
+                $repository->saveArchivoAdjunto(0, $nro_solicitud, $id_user, $fileInfo);
+            }
+        }
+
+        $this->response(['success' => true, 'message' => 'Solicitud actualizada (sustituida) correctamente.'], 200);
+    }
 }
 ?>
+

@@ -13,6 +13,99 @@ let currentPaymentDocType = null; // 'image' o 'pdf'
 let currentPaymentDocName = null;
 // --- FIN NUEVO --- // Instancia global del modal de visualización 
 
+// ✅ Funciones auxiliares para el modal de presupuesto
+function cleanTallerInput(event) {
+    const input = event.target;
+    const originalValue = input.value;
+    const cursorPosition = input.selectionStart || 0;
+    
+    // Verificar si el valor solo contiene caracteres válidos (números y máximo un punto)
+    const isValidFormat = /^[0-9]*\.?[0-9]*$/.test(originalValue);
+    const pointCount = (originalValue.match(/\./g) || []).length;
+    
+    if (isValidFormat && pointCount <= 1) {
+        calcularDiferenciaPresupuesto();
+        return;
+    }
+    
+    let cleaned = originalValue.replace(/[^0-9.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+        cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    if (originalValue !== cleaned) {
+        let validCharsBeforeCursor = 0;
+        let hasPointBeforeCursor = false;
+        
+        for (let i = 0; i < cursorPosition && i < originalValue.length; i++) {
+            const char = originalValue[i];
+            if (/[0-9]/.test(char)) {
+                validCharsBeforeCursor++;
+            } else if (char === '.' && !hasPointBeforeCursor) {
+                validCharsBeforeCursor++;
+                hasPointBeforeCursor = true;
+            }
+        }
+        
+        let newCursorPosition = Math.min(validCharsBeforeCursor, cleaned.length);
+        input.value = cleaned;
+        requestAnimationFrame(function() {
+            input.setSelectionRange(newCursorPosition, newCursorPosition);
+        });
+    }
+    
+    calcularDiferenciaPresupuesto();
+}
+
+function formatTallerDecimal() {
+    const input = document.getElementById('presupuestoMontoTaller');
+    if (!input || input.disabled) return;
+    
+    const value = input.value;
+    if (value && value.trim() !== "") {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+            input.value = numValue.toFixed(2);
+            calcularDiferenciaPresupuesto(true);
+        }
+    }
+}
+
+function setupMontoTallerListeners() {
+    const montoTallerInput = document.getElementById('presupuestoMontoTaller');
+    if (montoTallerInput) {
+        // Remover anteriores para evitar duplicados if needed
+        montoTallerInput.removeEventListener('input', cleanTallerInput);
+        montoTallerInput.removeEventListener('blur', formatTallerDecimal);
+        
+        // Agregar nuevos
+        montoTallerInput.addEventListener('input', cleanTallerInput);
+        montoTallerInput.addEventListener('blur', formatTallerDecimal);
+        
+        // Prevenir pegar texto no numérico
+        montoTallerInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const numericValue = paste.replace(/[^0-9.]/g, '');
+            const parts = numericValue.split('.');
+            const cleanValue = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : numericValue;
+            if (cleanValue) {
+                this.value = cleanValue;
+                calcularDiferenciaPresupuesto();
+            }
+        });
+        
+        // Manejador para el botón de previsualización
+        const newHandler = function() {
+            calcularDiferenciaPresupuesto();
+        };
+        montoTallerInput.removeEventListener('input', window.presupuestoCalculoHandler);
+        window.presupuestoCalculoHandler = newHandler;
+        montoTallerInput.addEventListener('input', window.presupuestoCalculoHandler);
+    }
+}
+
 const urlParamsPendienteEntrega = new URLSearchParams(window.location.search);
 const targetTicketIdPendienteEntrega = urlParamsPendienteEntrega.get('id_ticket');
 const targetNroTicketPendienteEntrega = urlParamsPendienteEntrega.get('nro_ticket');
@@ -813,8 +906,102 @@ function closeUploadModalAndClean() {
             if (nroTicket) {
                 // Guardar el serial en una variable global para usarlo después
                 window.currentSerialPosForAnticipo = serialPos;
-                // Abrir el modal de presupuesto
-                openPresupuestoModal(nroTicket, idFailure);
+                
+                // Mostrar indicador de carga
+                Swal.fire({
+                    title: 'Verificando estatus...',
+                    text: 'Comprobando datos de exoneración...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Validar si tiene una exoneración pendiente antes de abrir el modal
+                const checkExoUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExoneracionPorcentaje?nro_ticket=${encodeURIComponent(nroTicket)}&serial_pos=${encodeURIComponent(serialPos)}`;
+                
+                fetch(checkExoUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        let isPending = false;
+                        if (data.success && data.data) {
+                            let exosToCheck = [];
+                            
+                            // Extraer array de exoneraciones dependiendo de la estructura de respuesta
+                            if (Array.isArray(data.data)) {
+                                exosToCheck = data.data;
+                            } else if (data.data && Array.isArray(data.data.all_exonerations)) {
+                                exosToCheck = data.data.all_exonerations;
+                            } else if (data.data) {
+                                exosToCheck = [data.data];
+                            }
+
+                            // Comprobar si existe *alguna* exoneración que cumpla ambas reglas
+                            isPending = exosToCheck.some(exo => {
+                                const idStatus = parseInt(exo.id_status_payment);
+                                const tipo = (exo.tipo_exoneracion || '').toLowerCase().trim();
+                                return idStatus === 5 && tipo === 'pago taller';
+                            });
+                        }
+                        
+                        if (isPending) {
+                            Swal.fire({
+                                showCloseButton: true,
+                                title: false,
+                                icon: false,
+                                html: `
+                                    <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; text-align: center; padding: 10px 5px;">
+                                        <!-- Animated Shield Icon -->
+                                        <div style="width: 72px; height: 72px; background: rgba(255, 152, 0, 0.08); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 8px rgba(255, 152, 0, 0.04);">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="#f57c00" viewBox="0 0 16 16">
+                                                <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.467.545 7.15 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
+                                                <path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415z"/>
+                                            </svg>
+                                        </div>
+                                        
+                                        <!-- Title -->
+                                        <h2 style="color: #002e70; font-size: 1.55rem; font-weight: 800; margin: 0 0 15px; letter-spacing: -0.5px;">¡Acción Restringida!</h2>
+                                        
+                                        <!-- Description -->
+                                        <p style="color: #555; font-size: 1.05rem; line-height: 1.5; margin-bottom: 25px;">
+                                            El flujo de este ticket está <strong style="color: #222;">bloqueado</strong> porque cuenta con una exoneración pendiente de revisión administrativa.
+                                        </p>
+                                        
+                                        <!-- Alert Box -->
+                                        <div style="background: linear-gradient(145deg, #fffcf5, #fff5d1); border: 1px solid #ffe69c; padding: 18px 20px; border-radius: 12px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.05); text-align: left;">
+                                            <div style="font-size: 1.4rem; line-height: 1; flex-shrink: 0;">⏳</div>
+                                            <div>
+                                                <h4 style="color: #b5850b; font-size: 0.95rem; font-weight: 700; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.5px;">Paso Requerido</h4>
+                                                <p style="color: #8c6607; font-size: 0.9rem; margin: 0; line-height: 1.5;">
+                                                    El sistema requiere que administración procese la solicitud para poder continuar con la generación del presupuesto.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Entendido',
+                                buttonsStyling: false,
+                                customClass: {
+                                    confirmButton: 'btn btn-primary px-4 py-2 mt-3 mb-2 rounded-pill shadow-sm fw-bold',
+                                    popup: 'rounded-4 shadow-lg border-0'
+                                },
+                                background: '#ffffff',
+                                width: '450px',
+                                padding: '1.5rem',
+                                color: '#333'
+                            });
+                        } else {
+                            Swal.close();
+                            // Abrir el modal de presupuesto - PASAMOS serialPos
+                            openPresupuestoModal(nroTicket, idFailure, serialPos);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error validando exoneración:', error);
+                        Swal.close(); // Cerramos el de carga
+                        // Si falla la petición por error de red, intentamos abrir de todos modos para no bloquear
+                        openPresupuestoModal(nroTicket, idFailure, serialPos);
+                    });
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -1242,7 +1429,9 @@ function getTicketDataFinaljs() {
                       // 2. O si HAY datos en budgets Y el id_status_ticket NO es 2 ("En proceso")
                       // NO mostrar botón si: hay presupuesto Y está en proceso
                       // NO mostrar botón si: id_failure = 9 ("Actualización de Software") o id_failure = 12 ("Sin Llaves/Dukpt Vacío")
-                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago && !isGarantia;
+                      // NO mostrar botón si: confirmrosal es nulo o falso
+                      const hasConfirmRosal = row.confirmrosal === true || row.confirmrosal === 't' || row.confirmrosal === 'true';
+                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago && !isGarantia && hasConfirmRosal;
                       
                       // Agregar botón de presupuesto solo si cumple las condiciones
                       let presupuestoButton = '';
@@ -1258,11 +1447,11 @@ function getTicketDataFinaljs() {
                               data-id-failure="${idFailure || ''}"
                               title="Presupuesto"
                               style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block;">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-file-earmark-text" viewBox="0 0 16 16" style="display: inline-block; pointer-events: none;">
                                 <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5"/>
                                 <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5"/>
                               </svg>
-                              <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Presupuesto</span>
+                              <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap; pointer-events: none;">Presupuesto</span>
                           </button>`;
                       }
                       
@@ -1274,8 +1463,9 @@ function getTicketDataFinaljs() {
                       // Agregar botón para cargar PDF del presupuesto (solo si no existe)
                       // NO mostrar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
                       // TAMPOCO mostrar si es "Gestión Comercial (Irreparable)"
+                      // TAMPOCO mostrar si confirmrosal es falso o nulo
                       let uploadPresupuestoPDFButton = '';
-                      if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable && !isGarantia) {
+                      if (!hasPresupuestoPDF && !isFallaSinPago && !isIrreparable && !isGarantia && hasConfirmRosal) {
                           // Botón para cargar PDF
                           uploadPresupuestoPDFButton = `<button type="button" class="btn btn-info btn-sm upload-presupuesto-pdf-btn" title="Cargar PDF Presupuesto"
                               data-id-ticket="${idTicket}"
@@ -2804,7 +2994,7 @@ function enviarCorreoTicketCerrado(ticketData) {
     // Agregar a la cola de correos
     emailQueuePendiente.push({
         endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`,
-        params: `id_user=${encodeURIComponent(id_user)}`,
+        params: `id_user=${encodeURIComponent(id_user)}&nro_ticket=${encodeURIComponent(ticketNumber)}`,
         type: 'Ticket Cerrado',
         ticketNumber: ticketNumber,
         ticketData: ticketData
@@ -4309,6 +4499,18 @@ $(document).on('click', '#generateNotaEntregaBtn', function () {
                 $('#ne_banco').val(d.ibp || 'Sin banco');
                 $('#ne_proveedor').val(d.proveedor || 'Sin proveedor');
 
+                // Bloquear botón de Imprimir y limpiar iframe al abrir
+                $('#printHtmlTemplateBtn').prop('disabled', true);
+                const iframePreview = document.getElementById('htmlTemplatePreview');
+                if (iframePreview) {
+                    const doc = iframePreview.contentDocument || iframePreview.contentWindow.document;
+                    if (doc) {
+                        doc.open();
+                        doc.write('');
+                        doc.close();
+                    }
+                }
+
                 // 1. Obtiene la instancia del modal o la crea si no existe
                 const htmlModal = new bootstrap.Modal(document.getElementById('htmlTemplateModal'));
                 htmlModal.show();
@@ -4357,7 +4559,11 @@ $(document).on('click', '#previewHtmlTemplateBtn', function () {
   doc.open();
   doc.write(html);
   doc.close();
+
+  // Habilitar el botón de Imprimir/Guardar PDF ahora que hay una previsualización
+  $('#printHtmlTemplateBtn').prop('disabled', false);
 });
+
 
 function buildDeliveryNoteHtml(d) {
   const safe = (s) => (s || '').toString();
@@ -5149,679 +5355,374 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
     }
 });
 
+// Función para renderizar el desglose de exoneraciones en el modal de pago
+function renderExonerationBreakdownForPayment(nroTicket, serialPos = '') {
+    const listContainer = document.getElementById('exonerationBreakdownList');
+    const totalAhorroEl = document.getElementById('exonerationTotalAhorro');
+    const mainContainer = document.getElementById('exonerationBreakdownContainer');
+
+    if (!listContainer || !totalAhorroEl || !mainContainer) return;
+
+    // Resetear vistas
+    listContainer.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-primary" role="status"></div></div>';
+    mainContainer.style.display = 'none';
+
+    // 1. Obtener datos del presupuesto (para tener la base del taller)
+    const xhrBudget = new XMLHttpRequest();
+    xhrBudget.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
+    xhrBudget.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    
+    xhrBudget.onload = function() {
+        if (xhrBudget.status === 200) {
+            try {
+                const bResponse = JSON.parse(xhrBudget.responseText);
+                let budgetTotal = 0;
+                if (bResponse.success && bResponse.data) {
+                    budgetTotal = parseFloat(bResponse.data.monto_taller || 0);
+                }
+
+                // 2. Obtener lista de exoneraciones
+                const xhrExo = new XMLHttpRequest();
+                xhrExo.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExoneracionPorcentaje`);
+                xhrExo.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                
+                xhrExo.onload = function() {
+                    if (xhrExo.status === 200) {
+                        try {
+                            const eResponse = JSON.parse(xhrExo.responseText);
+                            // La respuesta está estandarizada en data.all_exonerations
+                            const exonerations = (eResponse.success && eResponse.data) ? (eResponse.data.all_exonerations || []) : [];
+                            
+                            if (eResponse.success && exonerations.length > 0) {
+                                let html = '';
+                                let totalAhorro = 0;
+                                
+                                exonerations.forEach(exo => {
+                                    const porc = parseFloat(exo.porcentaje) || 0;
+                                    const tipo = (exo.tipo_exoneracion || '').toLowerCase();
+                                    let base = 0;
+                                    let label = exo.tipo_exoneracion || 'Exoneración';
+                                    
+                                    // Determinar la base según el tipo
+                                    if (tipo.includes('anticipo')) {
+                                        base = 420; // Base fija del anticipo (30% de 1400)
+                                    } else {
+                                        base = budgetTotal; // Base del taller según el presupuesto
+                                    }
+                                    
+                                    const ahorro = (base * porc / 100);
+                                    totalAhorro += ahorro;
+                                    
+                                    html += `
+                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: rgba(102, 126, 234, 0.05); border-left: 3px solid #667eea;">
+                                            <div class="d-flex flex-column">
+                                                <span class="fw-bold" style="font-size: 0.85rem; color: #444;">${label}</span>
+                                                <span class="text-muted" style="font-size: 0.75rem;">Porcentaje: ${porc}%</span>
+                                            </div>
+                                            <span class="fw-bold text-danger" style="font-size: 0.95rem;">-$${ahorro.toFixed(2)}</span>
+                                        </div>
+                                    `;
+                                });
+                                
+                                listContainer.innerHTML = html;
+                                totalAhorroEl.textContent = `$${totalAhorro.toFixed(2)}`;
+                                mainContainer.style.display = 'block';
+                            } else {
+                                mainContainer.style.display = 'none';
+                            }
+                        } catch (e) { 
+                            console.error("Error al procesar exoneraciones:", e);
+                            mainContainer.style.display = 'none'; 
+                        }
+                    }
+                };
+                xhrExo.send(`nro_ticket=${encodeURIComponent(nroTicket)}&serial_pos=${encodeURIComponent(serialPos)}`);
+
+            } catch (e) {
+                console.error("Error al obtener datos del presupuesto:", e);
+                mainContainer.style.display = 'none';
+            }
+        }
+    };
+    xhrBudget.send(`nro_ticket=${encodeURIComponent(nroTicket)}`);
+}
+
 // ========================================
 // FUNCIONES PARA PENDIENTE_ENTREGA
 // ========================================
 
 // Función para abrir el modal de presupuesto
-function openPresupuestoModal(nroTicket, idFailure = null) {
-    const nroTicketSpan = document.getElementById('presupuestoNroTicket');
+/**
+ * Función para obtener el porcentaje de exoneración de un ticket
+ * @param {string} nroTicket 
+ * @param {function} callback
+ */
+function fetchExoneracionPercentage(nroTicket, callback = null) {
+    const serialPos = window.currentSerialPosForAnticipo || "";
     
-    if (nroTicketSpan) {
-        nroTicketSpan.textContent = nroTicket;
-    }
-    
-    // Verificar si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-    const isActualizacionSoftware = idFailure === 9;
-    const isSinLlavesDukpt = idFailure === 12;
-    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
-    
-    // Ocultar la sección "Datos del Anticipo" si es Actualización de Software o Sin Llaves/Dukpt Vacío
-    const datosAnticipoCard = document.querySelector('.presupuesto-card-pago');
-    const datosAnticipoContainers = [
-        'presupuestoMonedaContainer',
-        'presupuestoMontoUSDContainer',
-        'presupuestoMontoBSContainer',
-        'presupuestoMetodoPagoContainer'
-    ];
-    
-    if (isFallaSinPago) {
-        // Ocultar card y campos de "Datos del Anticipo"
-        if (datosAnticipoCard) {
-            datosAnticipoCard.style.display = 'none';
-        }
-        datosAnticipoContainers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.style.display = 'none';
-            }
-        });
-    } else {
-        // Mostrar card y campos de "Datos del Anticipo"
-        if (datosAnticipoCard) {
-            datosAnticipoCard.style.display = '';
-        }
-        datosAnticipoContainers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.style.display = '';
-            }
-        });
-    }
-    
-    // Limpiar campos y ocultar contenedores
-    document.getElementById('presupuestoMontoUSD').value = '';
-    document.getElementById('presupuestoMoneda').value = '';
-    document.getElementById('presupuestoMetodoPago').value = '';
-    document.getElementById('presupuestoMontoBS').value = '';
-    document.getElementById('presupuestoBancoOrigen').value = '';
-    document.getElementById('presupuestoBancoDestino').value = '';
-    document.getElementById('presupuestoReferencia').value = '';
-    document.getElementById('presupuestoDepositante').value = '';
-    document.getElementById('presupuestoFechaPago').value = '';
-    document.getElementById('presupuestoMontoTaller').value = '';
-    document.getElementById('presupuestoMontoPagadoUSD').value = '';
-    document.getElementById('presupuestoDiferenciaUSD').value = '';
-    document.getElementById('presupuestoDiferenciaBS').value = '';
-    
-    // Ocultar todos los contenedores condicionales
-    const containersToHide = [
-        'presupuestoBancoOrigenContainer',
-        'presupuestoBancoDestinoContainer',
-        'presupuestoReferenciaContainer',
-        'presupuestoDepositanteContainer',
-        'presupuestoFechaPagoContainer',
-        'presupuestoPagoMovilContainer',
-        'presupuestoDestinoRifContainer',
-        'presupuestoDestinoTelefonoContainer',
-        'presupuestoDestinoBancoContainer',
-        'presupuestoOrigenRifContainer',
-        'presupuestoOrigenTelefonoContainer',
-        'presupuestoOrigenBancoContainer'
-    ];
-    
-    containersToHide.forEach(containerId => {
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.style.display = 'none';
-        }
-    });
-    
-    // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", no cargar datos de pago
-    if (isFallaSinPago) {
-        // Establecer fecha de hoy (no editable) - Versión Local para evitar desfases UTC
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const fechaFormateada = `${year}-${month}-${day}`;
-        document.getElementById('presupuestoFecha').value = fechaFormateada;
-        
-        // Limpiar descripción
-        document.getElementById('presupuestoDescripcion').value = '';
-        
-        // Cargar datos del cliente
-        loadClienteDataForPresupuesto(nroTicket);
-        
-        // Abrir el modal
-        if (bsPresupuestoModal) {
-            bsPresupuestoModal.show();
-        }
-        return; // Salir de la función sin cargar datos de pago
-    }
-    
-    // Obtener datos de payment_records (solo si NO es Actualización de Software)
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentData`);
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExoneracionPorcentaje`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
             try {
-                const response = JSON.parse(xhr.responseText);
+                const data = JSON.parse(xhr.responseText);
+                console.log(`[PRESUPUESTO DEBUG] Respuesta de GetExoneracionPorcentaje para ${nroTicket}:`, data);
                 
-                if (response.success && response.data) {
-                    const paymentData = response.data;
+                if (data.success && data.data) {
+                    const porcentaje = parseFloat(data.data.porcentaje) || 0;
+                    const tipo = data.data.tipo_exoneracion || "";
                     
-                    // Función helper para verificar si un valor está vacío o es null
-                    const isEmpty = (value) => {
-                        return value === null || value === undefined || value === '' || value === 'null' || String(value).trim() === '';
-                    };
-                    
-                    // Función helper para mostrar/ocultar campos
-                    const toggleField = (containerId, inputId, value) => {
-                        const container = document.getElementById(containerId);
-                        const input = document.getElementById(inputId);
-                        if (container && input) {
-                            if (!isEmpty(value)) {
-                                input.value = value;
-                                container.style.display = '';
-                            } else {
-                                container.style.display = 'none';
-                            }
-                        }
-                    };
-                    
-                    // Determinar el método de pago para control de visibilidad
-                    const metodoPagoLower = (paymentData.payment_method || '').toLowerCase().trim();
-                    const isPagoMovil = metodoPagoLower.includes('móvil') || metodoPagoLower.includes('movil');
-                    const isTransferencia = metodoPagoLower.includes('transferencia');
+                    window.presupuestoPorcentajeExoneracion = porcentaje;
+                    window.presupuestoTipoExoneracion = tipo;
+                    window.presupuestoHasAnticipo100 = data.data.has_anticipo_100 || false;
 
-                    // Llenar campos del modal
-                    // IMPORTANTE: Usar total_reference_amount para obtener la SUMA de todos los pagos del ticket
-                    const montoUSD = paymentData.total_reference_amount ? parseFloat(paymentData.total_reference_amount) : 
-                                    (paymentData.reference_amount ? parseFloat(paymentData.reference_amount) : 0);
-                    const montoBS = paymentData.total_amount_bs ? parseFloat(paymentData.total_amount_bs) : 
-                                   (paymentData.amount_bs ? parseFloat(paymentData.amount_bs) : 0);
+                    console.log(`[PRESUPUESTO DEBUG] Exoneración asignada: Porcentaje=${porcentaje}, Tipo=${tipo}, HasAnticipo100=${window.presupuestoHasAnticipo100}`);
                     
-                    document.getElementById('presupuestoMontoUSD').value = montoUSD.toFixed(2);
-                    document.getElementById('presupuestoMoneda').value = paymentData.currency === 'bs' ? 'Bolívares (Bs)' : (paymentData.currency === 'usd' ? 'Dólares (USD)' : paymentData.currency || 'N/A');
-                    document.getElementById('presupuestoMetodoPago').value = paymentData.payment_method || 'N/A';
-                    document.getElementById('presupuestoMontoBS').value = montoBS.toFixed(2);
+                    const porcentajeExoSpan = document.getElementById('presupuestoPorcentajeExo');
+                    const exoContainer = document.getElementById('presupuestoExoneracionContainer');
                     
-                    // Campos condicionales - Transferencia (Bancos) - Solo mostrar si el método es Transferencia
-                    if (isTransferencia) {
-                        toggleField('presupuestoBancoOrigenContainer', 'presupuestoBancoOrigen', paymentData.origen_bank);
-                        toggleField('presupuestoBancoDestinoContainer', 'presupuestoBancoDestino', paymentData.destination_bank);
-                    } else {
-                        const boContainer = document.getElementById('presupuestoBancoOrigenContainer');
-                        const bdContainer = document.getElementById('presupuestoBancoDestinoContainer');
-                        if (boContainer) boContainer.style.display = 'none';
-                        if (bdContainer) bdContainer.style.display = 'none';
-                    }
-                    
-                    // Campos condicionales - Referencia, Depositante, Fecha
-                    toggleField('presupuestoReferenciaContainer', 'presupuestoReferencia', paymentData.payment_reference);
-                    toggleField('presupuestoDepositanteContainer', 'presupuestoDepositante', paymentData.depositor);
-                    
-                    if (paymentData.payment_date) {
-                        const fecha = new Date(paymentData.payment_date);
-                        const fechaFormateada = fecha.toLocaleDateString('es-VE') + ' ' + fecha.toLocaleTimeString('es-VE');
-                        toggleField('presupuestoFechaPagoContainer', 'presupuestoFechaPago', fechaFormateada);
-                    } else {
-                        toggleField('presupuestoFechaPagoContainer', 'presupuestoFechaPago', null);
-                    }
-                    
-                    // Campos condicionales - Pago Móvil
-                    const pagoMovilContainer = document.getElementById('presupuestoPagoMovilContainer');
-                    const hasPagoMovilData = paymentData.destino_rif_tipo || paymentData.destino_rif_numero || 
-                                            paymentData.destino_telefono || paymentData.destino_banco ||
-                                            paymentData.origen_rif_tipo || paymentData.origen_rif_numero || 
-                                            paymentData.origen_telefono || paymentData.origen_banco;
-                    
-                    if (pagoMovilContainer) {
-                        // ACTUALIZACIÓN: Solo mostrar si el método es estrictamente Pago Móvil
-                        if (isPagoMovil) {
-                            pagoMovilContainer.style.display = '';
-                            
-                            // Destino - RIF
-                            const destinoRifContainer = document.getElementById('presupuestoDestinoRifContainer');
-                            const destinoRifTipo = document.getElementById('presupuestoDestinoRifTipo');
-                            const destinoRifNumero = document.getElementById('presupuestoDestinoRifNumero');
-                            if (destinoRifContainer && destinoRifTipo && destinoRifNumero) {
-                                if (paymentData.destino_rif_tipo && paymentData.destino_rif_numero) {
-                                    destinoRifTipo.value = paymentData.destino_rif_tipo;
-                                    destinoRifNumero.value = paymentData.destino_rif_numero;
-                                    destinoRifContainer.style.display = '';
-                                } else {
-                                    destinoRifContainer.style.display = 'none';
-                                }
-                            }
-                            
-                            // Destino - Teléfono
-                            const destinoTelefonoContainer = document.getElementById('presupuestoDestinoTelefonoContainer');
-                            const destinoTelefono = document.getElementById('presupuestoDestinoTelefono');
-                            if (destinoTelefonoContainer && destinoTelefono) {
-                                if (paymentData.destino_telefono) {
-                                    destinoTelefono.value = paymentData.destino_telefono;
-                                    destinoTelefonoContainer.style.display = '';
-                                } else {
-                                    destinoTelefonoContainer.style.display = 'none';
-                                }
-                            }
-                            
-                            // Destino - Banco
-                            const destinoBancoContainer = document.getElementById('presupuestoDestinoBancoContainer');
-                            const destinoBanco = document.getElementById('presupuestoDestinoBanco');
-                            if (destinoBancoContainer && destinoBanco) {
-                                if (paymentData.destino_banco) {
-                                    destinoBanco.value = paymentData.destino_banco;
-                                    destinoBancoContainer.style.display = '';
-                                } else {
-                                    destinoBancoContainer.style.display = 'none';
-                                }
-                            }
-                            
-                            // Origen - RIF
-                            const origenRifContainer = document.getElementById('presupuestoOrigenRifContainer');
-                            const origenRifTipo = document.getElementById('presupuestoOrigenRifTipo');
-                            const origenRifNumero = document.getElementById('presupuestoOrigenRifNumero');
-                            if (origenRifContainer && origenRifTipo && origenRifNumero) {
-                                if (paymentData.origen_rif_tipo && paymentData.origen_rif_numero) {
-                                    origenRifTipo.value = paymentData.origen_rif_tipo;
-                                    origenRifNumero.value = paymentData.origen_rif_numero;
-                                    origenRifContainer.style.display = '';
-                                } else {
-                                    origenRifContainer.style.display = 'none';
-                                }
-                            }
-                            
-                            // Origen - Teléfono
-                            const origenTelefonoContainer = document.getElementById('presupuestoOrigenTelefonoContainer');
-                            const origenTelefono = document.getElementById('presupuestoOrigenTelefono');
-                            if (origenTelefonoContainer && origenTelefono) {
-                                if (paymentData.origen_telefono) {
-                                    origenTelefono.value = paymentData.origen_telefono;
-                                    origenTelefonoContainer.style.display = '';
-                                } else {
-                                    origenTelefonoContainer.style.display = 'none';
-                                }
-                            }
-                            
-                            // Origen - Banco
-                            const origenBancoContainer = document.getElementById('presupuestoOrigenBancoContainer');
-                            const origenBanco = document.getElementById('presupuestoOrigenBanco');
-                            if (origenBancoContainer && origenBanco) {
-                                if (paymentData.origen_banco) {
-                                    origenBanco.value = paymentData.origen_banco;
-                                    origenBancoContainer.style.display = '';
-                                } else {
-                                    origenBancoContainer.style.display = 'none';
-                                }
-                            }
-                        } else {
-                            pagoMovilContainer.style.display = 'none';
+                    if (porcentaje > 0) {
+                        if (porcentajeExoSpan) {
+                            porcentajeExoSpan.textContent = `${porcentaje}`;
                         }
-                    }
-                    
-                    // Establecer fecha de hoy (no editable) - Versión Local para evitar desfases UTC
-                    const today = new Date();
-                    const year = today.getFullYear();
-                    const month = String(today.getMonth() + 1).padStart(2, '0');
-                    const day = String(today.getDate()).padStart(2, '0');
-                    const fechaFormateada = `${year}-${month}-${day}`;
-                    const fechaInput = document.getElementById('presupuestoFecha');
-                    if (fechaInput) {
-                        fechaInput.value = fechaFormateada;
-                    }
-
-                    // Guardar datos para cálculos
-                    document.getElementById('presupuestoMontoPagadoUSD').value = montoUSD.toFixed(2);
-                    window.presupuestoMontoPagadoUSD = montoUSD;
-                    
-                    // ✅ NUEVO: Cargar tasa del BCV usando XMLHttpRequest y la fecha del campo
-                    const xhrTasa = new XMLHttpRequest();
-                    xhrTasa.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExchangeRateByDate`);
-                    xhrTasa.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    
-                    xhrTasa.onload = function() {
-                        if (xhrTasa.status >= 200 && xhrTasa.status < 300) {
-                            try {
-                                const data = JSON.parse(xhrTasa.responseText);
-                                if (data.success && data.exchange_rate) {
-                                    window.presupuestoTasaCambio = parseFloat(data.exchange_rate.tasa_dolar);
-                                    console.log('Tasa BCV cargada:', window.presupuestoTasaCambio);
-                                    
-                                    // ✅ Mostrar la tasa en el nuevo campo de la UI
-                                    const tasaInput = document.getElementById('presupuestoTasaBCV');
-                                    if (tasaInput) {
-                                        tasaInput.value = window.presupuestoTasaCambio.toFixed(2);
-                                    }
-                                    
-                                    // ✅ NUEVO: Actualizar la etiqueta con la fecha real de la tasa
-                                    const labelDate = document.getElementById('labelTasaBCVDate');
-                                    console.log('Elemento labelTasaBCVDate:', labelDate);
-                                    console.log('Fecha recibida:', data.exchange_rate.fecha_tasa);
-                                    
-                                    if (labelDate && data.exchange_rate.fecha_tasa) {
-                                        // Asumimos formato YYYY-MM-DD o timestamp
-                                        const fechaObj = new Date(data.exchange_rate.fecha_tasa);
-                                        // Ajustar zona horaria si es necesario o usar UTC para evitar desfases de día
-                                        // Usando toLocaleDateString con configuración local de VE
-                                        const fechaStr = fechaObj.toLocaleDateString('es-VE', {
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric',
-                                            timeZone: 'UTC' // Asumiendo que la fecha viene pura sin hora
-                                        });
-                                        labelDate.textContent = `(${fechaStr})`;
-                                        labelDate.className = 'text-success fw-bold';
-                                    }
-                                } else {
-                                    // Fallback
-                                    useFallbackRate(montoUSD, montoBS);
-                                }
-                            } catch (error) {
-                                console.error('Error parseando tasa:', error);
-                                useFallbackRate(montoUSD, montoBS);
-                            }
-                        } else {
-                            console.error('Error HTTP al cargar tasa:', xhrTasa.status);
-                            useFallbackRate(montoUSD, montoBS);
+                        if (exoContainer) {
+                            exoContainer.style.display = '';
+                            exoContainer.classList.add('d-block');
+                            exoContainer.style.setProperty('display', 'block', 'important');
                         }
+                        // Recalcular diferencia si ya hay un monto taller
                         calcularDiferenciaPresupuesto();
-                    };
-                    
-                    xhrTasa.onerror = function() {
-                        console.error('Error de red al cargar tasa');
-                        useFallbackRate(montoUSD, montoBS);
-                        calcularDiferenciaPresupuesto();
-                    };
-                    
-                    function useFallbackRate(usd, bs) {
-                         window.presupuestoTasaCambio = usd > 0 ? (bs / usd) : 0;
-                         const tasaInput = document.getElementById('presupuestoTasaBCV');
-                         if (tasaInput) {
-                             tasaInput.value = window.presupuestoTasaCambio.toFixed(2) + ' (Promedio)';
-                         }
-                         
-                         // Actualizar etiqueta en fallback
-                         const labelDate = document.getElementById('labelTasaBCVDate');
-                         if (labelDate) {
-                             labelDate.textContent = '(Promedio)';
-                             labelDate.className = 'text-warning fw-bold';
-                         }
-                    }
-                    
-                    // Enviar con action GetExchangeRateByDate y la fecha
-                    xhrTasa.send(`action=GetExchangeRateByDate&fecha=${encodeURIComponent(fechaFormateada)}`);
-                    
-                    // Limpiar descripción
-                    document.getElementById('presupuestoDescripcion').value = '';
-                    
-                    // Cargar datos del cliente
-                    loadClienteDataForPresupuesto(nroTicket);
-                    
-                    // Agregar event listener para calcular diferencia (remover primero para evitar duplicados)
-                    const montoTallerInput = document.getElementById('presupuestoMontoTaller');
-                    if (montoTallerInput) {
-                        // ✅ Función para limpiar el input preservando la posición del cursor
-                        function cleanTallerInput(event) {
-                            const input = event.target;
-                            const originalValue = input.value;
-                            // ✅ Guardar la posición del cursor antes de modificar el valor
-                            const cursorPosition = input.selectionStart || 0;
-                            
-                            // Verificar si el valor solo contiene caracteres válidos (números y máximo un punto)
-                            const isValidFormat = /^[0-9]*\.?[0-9]*$/.test(originalValue);
-                            const pointCount = (originalValue.match(/\./g) || []).length;
-                            
-                            // Si el formato es válido y tiene máximo un punto, no hacer nada (evitar interferir con escritura normal)
-                            if (isValidFormat && pointCount <= 1) {
-                                calcularDiferenciaPresupuesto();
-                                return;
-                            }
-                            
-                            // Eliminar todo lo que no sea número o punto
-                            let cleaned = originalValue.replace(/[^0-9.]/g, '');
-                            // Asegurar solo un punto decimal
-                            const parts = cleaned.split('.');
-                            if (parts.length > 2) {
-                                cleaned = parts[0] + '.' + parts.slice(1).join('');
-                            }
-                            
-                            if (originalValue !== cleaned) {
-                                // ✅ Calcular la nueva posición del cursor
-                                // Contar caracteres válidos antes de la posición del cursor en el valor original
-                                let validCharsBeforeCursor = 0;
-                                let hasPointBeforeCursor = false;
-                                
-                                for (let i = 0; i < cursorPosition && i < originalValue.length; i++) {
-                                    const char = originalValue[i];
-                                    if (/[0-9]/.test(char)) {
-                                        validCharsBeforeCursor++;
-                                    } else if (char === '.' && !hasPointBeforeCursor) {
-                                        validCharsBeforeCursor++;
-                                        hasPointBeforeCursor = true;
-                                    }
-                                }
-                                
-                                // La nueva posición del cursor será igual a los caracteres válidos contados
-                                let newCursorPosition = validCharsBeforeCursor;
-                                
-                                // Asegurar que la posición esté dentro de los límites del valor limpiado
-                                newCursorPosition = Math.min(newCursorPosition, cleaned.length);
-                                
-                                input.value = cleaned;
-                                
-                                // ✅ Restaurar la posición del cursor después de actualizar el valor
-                                requestAnimationFrame(function() {
-                                    input.setSelectionRange(newCursorPosition, newCursorPosition);
-                                });
-                            }
-                            
-                            calcularDiferenciaPresupuesto();
+                    } else {
+                        window.presupuestoTipoExoneracion = "";
+                        if (exoContainer) {
+                            exoContainer.style.display = 'none';
+                            exoContainer.classList.remove('d-block');
                         }
-                        
-                        // ✅ Función para formatear a 2 decimales cuando pierde el foco
-                        function formatTallerDecimal() {
-                            const input = document.getElementById('presupuestoMontoTaller');
-                            if (!input || input.disabled) {
-                                return;
-                            }
-                            
-                            const value = input.value;
-                            if (value && value.trim() !== "") {
-                                const numValue = parseFloat(value);
-                                if (!isNaN(numValue)) {
-                                    input.value = numValue.toFixed(2);
-                                    // ✅ Pasar true para mostrar la alerta si es negativo
-                                    calcularDiferenciaPresupuesto(true);
-                                }
-                            }
-                        }
-                        
-                        // Validar que solo se ingresen números y un punto decimal (preservando cursor)
-                        montoTallerInput.addEventListener('input', cleanTallerInput);
-                        
-                        // ✅ Formatear a 2 decimales cuando pierde el foco
-                        montoTallerInput.addEventListener('blur', formatTallerDecimal);
-                        
-                        // Prevenir pegar texto no numérico
-                        montoTallerInput.addEventListener('paste', function(e) {
-                            e.preventDefault();
-                            const paste = (e.clipboardData || window.clipboardData).getData('text');
-                            const numericValue = paste.replace(/[^0-9.]/g, '');
-                            const parts = numericValue.split('.');
-                            const cleanValue = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : numericValue;
-                            if (cleanValue) {
-                                this.value = cleanValue;
-                                calcularDiferenciaPresupuesto();
-                            }
-                        });
-                        
-                        // Crear una nueva función wrapper para evitar problemas con removeEventListener
-                        const newHandler = function() {
-                            calcularDiferenciaPresupuesto();
-                        };
-                        montoTallerInput.removeEventListener('input', window.presupuestoCalculoHandler);
-                        window.presupuestoCalculoHandler = newHandler;
                     }
-                    
-                    // Limpiar al cerrar el modal
-                    const presupuestoModalElement = document.getElementById('presupuestoModal');
-                    if (presupuestoModalElement) {
-                        presupuestoModalElement.addEventListener('hidden.bs.modal', function() {
-                            // Limpiar valores
-                            const montoTaller = document.getElementById('presupuestoMontoTaller');
-                            const diferenciaUSD = document.getElementById('presupuestoDiferenciaUSD');
-                            const diferenciaBS = document.getElementById('presupuestoDiferenciaBS');
-                            if (montoTaller) montoTaller.value = '';
-                            if (diferenciaUSD) {
-                                diferenciaUSD.value = '';
-                                diferenciaUSD.classList.remove('bg-danger', 'bg-success', 'text-white');
-                            }
-                            if (diferenciaBS) {
-                                diferenciaBS.value = '';
-                                diferenciaBS.classList.remove('bg-danger', 'bg-success', 'text-white');
-                            }
-                        }, { once: true });
-                    }
-                    
-                    // Aplicar scroll automático a inputs con texto largo
-                    setTimeout(() => {
-                        setupAutoScrollInputs();
-                    }, 300);
-                    
-                    // Mostrar modal
-                    if (bsPresupuestoModal) {
-                        bsPresupuestoModal.show();
-                    }
-                } else {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Sin datos de pago',
-                        text: response.message || 'No se encontró información de pago para este ticket.',
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#dc3545'
-                    });
                 }
+                if (callback) callback();
             } catch (error) {
-                console.error('Error al parsear la respuesta JSON:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de Respuesta',
-                    text: 'Error al procesar la respuesta del servidor',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#dc3545'
-                });
+                console.error('Error parsing exoneration response:', error);
+                if (callback) callback();
             }
-        } else if (xhr.status === 404) {
-            // Cuando no hay datos de anticipo, mostrar un modal bonito con botón para agregar anticipo
-            Swal.fire({
-                icon: false,
-                title: 'Sin Datos de Anticipo',
-                html: `
-                    <div style="text-align: center; padding: 10px 0;">
-                        <div id="anticipo-icon-animated" style="width: 100px; height: 100px; margin: 0 auto 28px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2); position: relative; cursor: pointer;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#1976d2" viewBox="0 0 16 16" style="display: block; transition: transform 0.3s ease;">
-                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"/>
-                                <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
-                            </svg>
-                        </div>
-                        <div id="anticipo-message-box" style="background: #f8f9fa; border-left: 4px solid #0d6efd; padding: 16px; border-radius: 4px; margin-bottom: 24px; text-align: left; transition: all 0.3s ease; cursor: pointer; overflow: hidden;">
-                            <p style="font-size: 0.9375rem; color: #495057; margin: 0; line-height: 1.6; overflow: hidden; text-overflow: ellipsis;">
-                                <strong style="color: #212529;">No se encontraron datos de anticipo</strong> para este ticket.
-                            </p>
-                        </div>
-                        <p style="font-size: 0.9375rem; color: #6c757d; margin-bottom: 0; line-height: 1.6;">
-                            ¿Desea agregar los datos de anticipo ahora?
-                        </p>
-                    </div>
-                    <style>
-                        @keyframes iconPulse {
-                            0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2); }
-                            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4); }
-                        }
-                        @keyframes iconFloat {
-                            0%, 100% { transform: translateY(0px); }
-                            50% { transform: translateY(-8px); }
-                        }
-                        #anticipo-icon-animated {
-                            animation: iconPulse 2s ease-in-out infinite;
-                        }
-                        #anticipo-icon-animated svg {
-                            animation: iconFloat 3s ease-in-out infinite;
-                        }
-                        #anticipo-icon-animated:hover {
-                            animation: none;
-                            transform: scale(1.1);
-                            box-shadow: 0 8px 24px rgba(33, 150, 243, 0.5);
-                        }
-                        #anticipo-icon-animated:hover svg {
-                            animation: none;
-                            transform: rotate(5deg) scale(1.1);
-                        }
-                        #anticipo-message-box:hover {
-                            background: #e9ecef !important;
-                            border-left-color: #0a58ca !important;
-                            transform: translateX(5px);
-                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                        }
-                        #anticipo-message-box, #anticipo-message-box * {
-                            overflow: hidden !important;
-                        }
-                    </style>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Agregar Anticipo',
-                cancelButtonText: 'Cancelar',
-                confirmButtonColor: '#0d6efd',
-                cancelButtonColor: '#6c757d',
-                reverseButtons: true,
-                customClass: {
-                    popup: 'swal2-popup-custom-anticipo',
-                    confirmButton: 'swal2-confirm-custom-anticipo',
-                    cancelButton: 'swal2-cancel-custom-anticipo',
-                    title: 'swal2-title-custom-anticipo',
-                    htmlContainer: 'swal2-html-container-custom-anticipo',
-                    actions: 'swal2-actions-custom-anticipo'
-                },
-                width: '460px',
-                padding: '2.5rem 2rem 2rem',
-                backdrop: true,
-                allowOutsideClick: true,
-                allowEscapeKey: true
-            }).then((result) => {
-                // Función para cerrar el SweetAlert de forma robusta
-                const closeSweetAlert = () => {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.close();
-                        
-                        setTimeout(() => {
-                            const swalContainer = document.querySelector('.swal2-container');
-                            const swalBackdrop = document.querySelector('.swal2-backdrop-show');
-                            
-                            if (swalContainer) {
-                                swalContainer.style.display = 'none';
-                                swalContainer.classList.remove('swal2-backdrop-show');
-                            }
-                            
-                            if (swalBackdrop) {
-                                swalBackdrop.remove();
-                            }
-                            
-                            document.body.classList.remove('swal2-height-auto', 'swal2-shown');
-                            document.body.style.overflow = '';
-                            document.body.style.paddingRight = '';
-                        }, 100);
-                    }
-                };
-                
-                if (result.isConfirmed) {
-                    // Cerrar el SweetAlert primero
-                    closeSweetAlert();
-                    
-                    // Abrir el modal de agregar datos de pago después de cerrar
-                    setTimeout(() => {
-                        const serialPos = window.currentSerialPosForAnticipo || '';
-                        openAgregarAnticipoModal(nroTicket, serialPos);
-                    }, 200);
-                } else if (result.isDismissed) {
-                    // Si se cancela, solo cerrar el modal
-                    closeSweetAlert();
-                }
-            });
         } else {
-            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de Conexión',
-                text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
-                confirmButtonText: 'Ok',
-                color: 'black',
-                confirmButtonColor: '#dc3545'
-            });
+            console.error('Error fetching exoneration:', xhr.statusText);
+            if (callback) callback();
         }
     };
     
     xhr.onerror = function() {
-        console.error('Error de red al intentar obtener los datos de pago');
-        Swal.fire({
-            icon: 'error',
-            title: 'Error de Red',
-            text: 'Error de conexión con el servidor',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#dc3545'
-        });
+        console.error('Network error fetching exoneration');
+        if (callback) callback();
     };
     
-    // Enviar los datos
-    const data = `action=GetPaymentData&nro_ticket=${encodeURIComponent(nroTicket)}`;
-    xhr.send(data);
+    const params = `action=GetExoneracionPorcentaje&nro_ticket=${encodeURIComponent(nroTicket)}&serial_pos=${encodeURIComponent(serialPos)}`;
+    xhr.send(params);
+}
+
+// ✅ CAMBIOS APLICADOS: VALIDACIÓN ANIDADA DEL LADO DEL SERVIDOR - Recibe serialPos
+function openPresupuestoModal(nroTicket, idFailure = null, serialPos = '') {
+    if (typeof nroTicket === 'undefined' || nroTicket === null) {
+        console.error('Número de ticket no proporcionado');
+        return;
+    }
+
+    const nroTicketSpan = document.getElementById('presupuestoNroTicket');
+    if (nroTicketSpan) nroTicketSpan.textContent = nroTicket;
+
+    // ✅ LLAMADA A LA VALIDACIÓN ANIDADA DEL SERVIDOR
+    const xhrVal = new XMLHttpRequest();
+    xhrVal.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/ValidatePresupuestoApertura`);
+    xhrVal.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhrVal.onload = function() {
+        console.log('Validación presupuesto. Status:', xhrVal.status);
+        if (xhrVal.status === 200) {
+            try {
+                const response = JSON.parse(xhrVal.responseText);
+                console.log('Respuesta validación:', response);
+                if (response.success) {
+                    // ✅ ALMACENAR LISTA DE EXONERACIONES GLOBALMENTE
+                    window.presupuestoListaExoneraciones = response.exonerations || [];
+                    
+                    if (response.is_exonerated_100) {
+                        console.log('Ticket 100% exonerado - Abriendo directamente');
+                        abrirModalConExoneracionTotal(nroTicket, response.exonerations);
+                    } else {
+                        console.log('Ticket con datos de pago - Cargando datos');
+                        abrirModalConDatosPago(nroTicket, response.data, response.exonerations);
+                    }
+                }
+            } catch (e) { 
+                console.error('Error parseando validación:', e);
+                console.log('Raw response:', xhrVal.responseText);
+            }
+        } else if (xhrVal.status === 404) {
+            console.warn('Sin datos de anticipo. Mostrando modal de alerta.');
+            mostrarAlertaSinAnticipo(nroTicket);
+        } else {
+            console.error('Error en validación:', xhrVal.status);
+            console.log('Raw response:', xhrVal.responseText);
+        }
+    };
+    xhrVal.send(`nro_ticket=${encodeURIComponent(nroTicket)}&serial_pos=${encodeURIComponent(serialPos)}`);
+}
+
+function abrirModalConExoneracionTotal(nroTicket, exonerations = []) {
+    resetPresupuestoModalFields();
+    
+    // Dejar una de respaldo en las variables singulares por si acaso se usan en otros sitios
+    if (exonerations.length > 0) {
+        const principal = exonerations.find(e => parseFloat(e.porcentaje) >= 100) || exonerations[0];
+        window.presupuestoPorcentajeExoneracion = parseFloat(principal.porcentaje);
+        window.presupuestoTipoExoneracion = principal.tipo_exoneracion;
+    }
+    
+    // ✅ Ocultar sección de datos del anticipo porque está 100% exonerado (o tiene una exoneración de este tipo)
+    const hasAnticipo100 = exonerations.some(e => (e.tipo_exoneracion || '').toLowerCase().includes('anticipo') && parseFloat(e.porcentaje) >= 100);
+    console.log("[DEBUG] abrirModalConExoneracionTotal - hasAnticipo100:", hasAnticipo100, "Exonerations:", exonerations);
+    
+    const colsAnticipo = document.querySelectorAll('.presupuesto-col-anticipo');
+    colsAnticipo.forEach(col => {
+        if (hasAnticipo100) col.classList.add('forced-hidden');
+        else col.classList.remove('forced-hidden');
+    });
+    
+    // También ocultamos el campo de abono en el cálculo si es 100% exo (opcional pero recomendado por el usuario)
+    const abonoCol = document.getElementById('presupuestoMontoPagadoUSD')?.closest('.col-md-6');
+    if (abonoCol) {
+        if (hasAnticipo100) abonoCol.classList.add('forced-hidden');
+        else abonoCol.classList.remove('forced-hidden');
+    }
+    
+    
+    
+    loadClienteDataForPresupuesto(nroTicket);
+    setupMontoTallerListeners();
+    window.presupuestoMontoPagadoUSD = 0;
+    
+    // Set today's date
+    const today = new Date().toISOString().split('T')[0];
+    const fechaInput = document.getElementById('presupuestoFecha');
+    if (fechaInput) fechaInput.value = today;
+
+    calcularDiferenciaPresupuesto(false);
+    cargarTasaPresupuesto();
+    if (bsPresupuestoModal) bsPresupuestoModal.show();
+}
+
+function abrirModalConDatosPago(nroTicket, paymentData, exonerations = []) {
+    resetPresupuestoModalFields();
+    
+    if (exonerations && exonerations.length > 0) {
+        // Encontrar la exoneración más relevante para las variables globales singulares
+        const principal = exonerations.sort((a,b) => parseFloat(b.porcentaje) - parseFloat(a.porcentaje))[0];
+        window.presupuestoPorcentajeExoneracion = parseFloat(principal.porcentaje);
+        window.presupuestoTipoExoneracion = principal.tipo_exoneracion;
+    } else {
+        window.presupuestoPorcentajeExoneracion = 0;
+        window.presupuestoTipoExoneracion = "";
+    }
+    
+    llenarCamposPagoPresupuesto(paymentData);
+    
+    // ✅ Ocultar sección de pagos si hay anticipo 100% (o mostrar si no hay)
+    const hasAnticipo100 = (exonerations || []).some(e => (e.tipo_exoneracion || '').toLowerCase().includes('anticipo') && parseFloat(e.porcentaje) >= 100);
+    console.log("[DEBUG] abrirModalConDatosPago - hasAnticipo100:", hasAnticipo100);
+    
+    const colsAnticipo = document.querySelectorAll('.presupuesto-col-anticipo');
+    colsAnticipo.forEach(col => {
+        if (hasAnticipo100) col.classList.add('forced-hidden');
+        else col.classList.remove('forced-hidden');
+    });
+
+    // También ocultamos el campo de abono en el cálculo si es 100% exo
+    const abonoCol = document.getElementById('presupuestoMontoPagadoUSD')?.closest('.col-md-6');
+    if (abonoCol) {
+        if (hasAnticipo100) abonoCol.classList.add('forced-hidden');
+        else abonoCol.classList.remove('forced-hidden');
+    }
+    
+    
+    
+    loadClienteDataForPresupuesto(nroTicket);
+    setupMontoTallerListeners();
+    
+    // Set today's date
+    const today = new Date().toISOString().split('T')[0];
+    const fechaInput = document.getElementById('presupuestoFecha');
+    if (fechaInput) fechaInput.value = today;
+
+    calcularDiferenciaPresupuesto(false);
+    cargarTasaPresupuesto();
+    if (bsPresupuestoModal) bsPresupuestoModal.show();
+}
+
+function mostrarAlertaSinAnticipo(nroTicket) {
+    Swal.fire({
+        title: 'Sin Datos de Anticipo',
+        html: `
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="width: 100px; height: 100px; margin: 0 auto 20px; background: #e3f2fd; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#1976d2" viewBox="0 0 16 16">
+                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"/>
+                    </svg>
+                </div>
+                <p>No se encontraron datos de anticipo para este ticket.</p>
+                <p style="font-size: 0.9rem; color: #666;">¿Desea agregar los datos de anticipo ahora?</p>
+            </div>`,
+        showCancelButton: true,
+        confirmButtonText: 'Agregar Anticipo',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#007bff'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `${ENDPOINT_BASE}${APP_PATH}exoneracion_pago?nro_ticket=${nroTicket}`;
+        }
+    });
+}
+
+function resetPresupuestoModalFields() {
+    const colsAnticipo = document.querySelectorAll('.presupuesto-col-anticipo');
+    colsAnticipo.forEach(col => col.classList.remove('forced-hidden'));
+    
+    
+    const fieldsToClear = [
+        'presupuestoMontoUSD', 'presupuestoMoneda', 'presupuestoMetodoPago', 
+        'presupuestoMontoBS', 'presupuestoBancoOrigen', 'presupuestoBancoDestino',
+        'presupuestoReferencia', 'presupuestoDepositante', 'presupuestoFechaPago',
+        'presupuestoMontoTaller', 'presupuestoDiferenciaUSD', 'presupuestoDiferenciaBS'
+    ];
+    
+    fieldsToClear.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+}
+
+function llenarCamposPagoPresupuesto(paymentData) {
+    if (!paymentData) return;
+    
+    const montoUSD = parseFloat(paymentData.total_reference_amount || paymentData.reference_amount || 0);
+    const montoBS = parseFloat(paymentData.total_amount_bs || paymentData.amount_bs || 0);
+    
+    const usdInput = document.getElementById('presupuestoMontoUSD');
+    const payUSDInput = document.getElementById('presupuestoMontoPagadoUSD');
+    const bsInput = document.getElementById('presupuestoMontoBS');
+    const methodInput = document.getElementById('presupuestoMetodoPago');
+    const currencyInput = document.getElementById('presupuestoMoneda');
+    
+    if (usdInput) usdInput.value = montoUSD.toFixed(2);
+    if (payUSDInput) payUSDInput.value = montoUSD.toFixed(2);
+    if (bsInput) bsInput.value = montoBS.toFixed(2);
+    if (methodInput) methodInput.value = paymentData.payment_method || 'N/A';
+    if (currencyInput) {
+        currencyInput.value = paymentData.currency === 'bs' ? 'Bolívares (Bs)' : (paymentData.currency === 'usd' ? 'Dólares (USD)' : paymentData.currency || 'N/A');
+    }
+    
+    window.presupuestoMontoPagadoUSD = montoUSD;
 }
 
 // Función para calcular la diferencia del presupuesto
@@ -5837,7 +5738,70 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
         montoPagadoBSInput.value = montoPagadoBS.toFixed(2);
     }
     
-    const diferenciaUSD = montoTaller - montoPagadoUSD;
+    // ✅ LÓGICA MULTI-EXONERACIÓN
+    let totalMontoExoneradoReal = 0; // Descuento real sobre el total
+    let listaTextosExo = [];
+    const exoContainer = document.getElementById('presupuestoExoneracionContainer');
+    
+    let ahorroWorkshopTotal = 0;
+    let ahorroAnticipoTotal = 0;
+
+    if (window.presupuestoListaExoneraciones && window.presupuestoListaExoneraciones.length > 0) {
+        window.presupuestoListaExoneraciones.forEach(exo => {
+            const tipo = (exo.tipo_exoneracion || '').trim().toLowerCase();
+            const porc = parseFloat(exo.porcentaje) || 0;
+            
+            if (tipo.includes('pago taller') || tipo.includes('taller') || tipo.includes('presupuesto')) {
+                const montoDcto = (montoTaller * porc / 100);
+                ahorroWorkshopTotal += montoDcto;
+                listaTextosExo.push(`${exo.tipo_exoneracion} ${porc}% (-$${montoDcto.toFixed(2)})`);
+            } else if (tipo.includes('anticipo')) {
+                const montoDcto = (30 * porc / 100);
+                ahorroAnticipoTotal += montoDcto;
+                listaTextosExo.push(`Anticipo ${porc}% ($${montoDcto.toFixed(2)})`);
+            }
+        });
+        
+        // CORRECCIÓN: El Anticipo exonerado NO descuenta el monto final del taller.
+        // Solo las exoneraciones de tipo "Presupuesto/Taller" descuentan el monto real a pagar.
+        totalMontoExoneradoReal = ahorroWorkshopTotal;
+        
+        // Mostrar contenedor de exoneración
+        if (exoContainer) {
+            exoContainer.style.setProperty('display', 'block', 'important');
+            const labelExo = document.getElementById('presupuestoLabelExoneracion');
+            if (labelExo) labelExo.textContent = 'Exoneraciones Activas:';
+            const percContent = document.getElementById('presupuestoPorcentajeContent');
+            if (percContent) percContent.style.display = 'none';
+            
+            
+            // Usar el input principal para mostrar el resumen
+            const montoExoInput = document.getElementById('presupuestoMontoExonerado');
+            if (montoExoInput) {
+                montoExoInput.value = listaTextosExo.join(' | ');
+            }
+        }
+    } else {
+        if (exoContainer) exoContainer.style.display = 'none';
+        totalMontoExoneradoReal = 0;
+    }
+    
+    let diferenciaUSD = montoTaller - totalMontoExoneradoReal - montoPagadoUSD;
+    
+    // ACTUALIZACIÓN: Lógica de Exceso Contable (Sobrando Dinero)
+    // El exceso real ocurre cuando lo YA PAGADO + el DESCUENTO DE EXONERACIÓN superan el monto bruto del presupuesto.
+    let isExcesoReal = (montoTaller > 0 && (montoPagadoUSD + totalMontoExoneradoReal) > (montoTaller + 0.05));
+    
+    if (isExcesoReal) {
+        // La diferencia negativa refleja el excedente real que el sistema no permite procesar
+        diferenciaUSD = montoTaller - totalMontoExoneradoReal - montoPagadoUSD; 
+    } else {
+        // Si no hay exceso contable, la diferencia mínima es 0 (no se debe nada)
+        if (diferenciaUSD < 0) {
+            diferenciaUSD = 0;
+        }
+    }
+
     const diferenciaBS = diferenciaUSD * tasaCambio;
     
     document.getElementById('presupuestoDiferenciaUSD').value = diferenciaUSD.toFixed(2);
@@ -5852,7 +5816,8 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
         diferenciaUSDInput.classList.remove('bg-danger', 'bg-success', 'text-white');
         diferenciaBSInput.classList.remove('bg-danger', 'bg-success', 'text-white');
         
-        if (diferenciaUSD >= 0) {
+        // Si no hay exceso real que bloquee, permitimos continuar
+        if (!isExcesoReal) {
             diferenciaUSDInput.classList.add('bg-success', 'text-white');
             diferenciaBSInput.classList.add('bg-success', 'text-white');
             
@@ -5878,38 +5843,33 @@ function calcularDiferenciaPresupuesto(showAlert = false) {
             // ✅ Mostrar alerta si es negativo y se solicitó mostrar alerta
             if (showAlert) {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Ajuste Requerido',
+                    icon: 'error',
+                    title: '<span style="color: #dc3545;">Monto Excedido (Sobrante)</span>',
                     html: `
                         <div class="text-center">
-                            <p class="mb-3 text-muted">El pago del cliente supera el monto del presupuesto.</p>
+                            <p class="mb-3 text-muted">La combinación de <b>Pagos + Exoneraciones</b> supera el presupuesto bruto. 
+                            <br>Existe un excedente de <b class="text-danger">$${Math.abs(diferenciaUSD).toFixed(2)}</b>.</p>
                             
                             <div class="d-flex justify-content-center mb-3">
                                 <div class="p-3 bg-light rounded border border-danger">
-                                    <span class="d-block text-secondary small text-uppercase fw-bold">Monto Pagado en Exceso</span>
+                                    <span class="d-block text-secondary small text-uppercase fw-bold">Diferencia Excedente</span>
                                     <span class="d-block text-danger fw-bold fs-4">${Math.abs(diferenciaUSD).toFixed(2)} USD</span>
                                 </div>
                             </div>
                             
                             <p class="small text-muted mb-0">
-                                Por favor, ajuste el <b>Monto Total de Taller</b> hasta que la diferencia sea $0.00.
+                                Por favor, ajuste el <b>Monto Total de Taller</b> o las <b>Exoneraciones</b> hasta que cubran como máximo el presupuesto.
                             </p>
                         </div>
                     `,
-                    confirmButtonColor: '#ffc107',
-                    confirmButtonText: '<span style="color: #000; font-weight: bold;">Entendido</span>',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: '#dc3545',
+                    confirmButtonText: 'Entendido',
                     showClass: {
                         popup: 'animate__animated animate__fadeInDown'
                     },
                     hideClass: {
                         popup: 'animate__animated animate__fadeOutUp'
-                    },
-                    backdrop: `
-                        rgba(0,0,123,0.1)
-                        left top
-                        no-repeat
-                    `
+                    }
                 });
             }
         }
@@ -5967,7 +5927,8 @@ document.addEventListener('click', function(event) {
                             diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
                             montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value) || 0,
                             montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value) || 0,
-                            cliente: clienteData
+                            cliente: clienteData,
+                            exoneraciones: window.presupuestoListaExoneraciones || []
                         };
                         
                         // Cerrar modal de carga
@@ -6204,11 +6165,18 @@ function getPresupuestoData() {
     const descripcion = document.getElementById('presupuestoDescripcion').value.trim();
     const fechaPresupuesto = document.getElementById('presupuestoFecha').value;
     
+    const montoExonerado = parseFloat(document.getElementById('presupuestoMontoExonerado').value) || 0;
+    const porcentajeExoneracion = window.presupuestoPorcentajeExoneracion || 0;
+    
     return {
         nroTicket: nroTicket,
         montoTaller: montoTaller,
         descripcion: descripcion,
-        fechaPresupuesto: fechaPresupuesto
+        fechaPresupuesto: fechaPresupuesto,
+        montoExonerado: montoExonerado,
+        porcentajeExoneracion: porcentajeExoneracion,
+        tipoExoneracion: window.presupuestoTipoExoneracion || "",
+        exoneraciones: window.presupuestoListaExoneraciones || []
     };
 }
 
@@ -6257,7 +6225,7 @@ function validatePresupuestoFields() {
 
 // Función para previsualizar el PDF del presupuesto
 function previewPresupuestoPDF() {
-    // Validar campos
+    // 1. Validar campos
     if (!validatePresupuestoFields()) {
         return;
     }
@@ -6265,10 +6233,24 @@ function previewPresupuestoPDF() {
     const data = getPresupuestoData();
     const nroTicket = data.nroTicket;
     
+    // 2. ABRIR VENTANA EN BLANCO INMEDIATAMENTE (Para saltar el bloqueador de popups)
+    // Se abre en blanco y se guarda la referencia para llenarla luego
+    const previewWindow = window.open('', '_blank');
+    if (!previewWindow) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Bloqueador de ventanas',
+            text: 'Su navegador bloqueó la apertura del presupuesto. Por favor, permita las ventanas emergentes en este sitio.',
+            confirmButtonColor: '#003594',
+            color: 'black'
+        });
+        return;
+    }
+
     // Mostrar modal de carga mientras se procesa
     Swal.fire({
         title: 'Procesando presupuesto...',
-        html: 'Por favor, espere mientras se guardan los datos.',
+        html: 'Por favor, espere mientras se guardan los datos y se genera el documento.',
         allowOutsideClick: false,
         allowEscapeKey: false,
         showConfirmButton: false,
@@ -6277,7 +6259,7 @@ function previewPresupuestoPDF() {
         }
     });
     
-    // Obtener datos del cliente
+    // 3. Obtener datos del cliente
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPresupuestoData`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -6297,15 +6279,20 @@ function previewPresupuestoPDF() {
                         validez: '5 días hábiles',
                         descripcion: data.descripcion,
                         montoTaller: data.montoTaller,
+                        montoExonerado: data.montoExonerado,
+                        porcentajeExoneracion: data.porcentajeExoneracion,
+                        tipoExoneracion: data.tipoExoneracion,
+                        exoneraciones: data.exoneraciones || [],
                         montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
-                        diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
-                        diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
-                        montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value) || 0,
-                        montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value) || 0,
-                        cliente: clienteData
+                        diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value.replace(/[^0-9.]/g, '')) || 0,
+                        diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value.replace(/[^0-9.]/g, '')) || 0,
+                        montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value.replace(/[^0-9.]/g, '')) || 0,
+                        montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value.replace(/[^0-9.]/g, '')) || 0,
+                        cliente: clienteData || {}
                     };
+
                     
-                    // 1. GUARDAR PRESUPUESTO EN BD PRIMERO
+                    // 4. GUARDAR PRESUPUESTO EN BD
                     saveBudgetToDatabaseWithCallback(presupuestoData, function(success, message, idBudget, presupuestoNumero) {
                         Swal.close(); // Cerrar el "Procesando..."
                         
@@ -6313,64 +6300,41 @@ function previewPresupuestoPDF() {
                             // Guardar el número real en los datos
                             presupuestoData.presupuestoNumero = presupuestoNumero;
                             
-                            // 2. PREGUNTAR SI DESEA VISUALIZAR
+                            // 5. LLENAR LA VENTANA PREOTERTA
+                            previewWindow.document.open();
+                            
+                            // Generar HTML con el header de instrucciones
+                            const htmlWithHeader = buildPresupuestoHTML(presupuestoData, true);
+                            const baseHref = `${window.location.origin}/SoportePost/`;
+                            let htmlWithBase = htmlWithHeader.replace('<head>', `<head><base href="${baseHref}">`);
+                            
+                            // Generar nombre de archivo para el PDF (Exactamente el número de presupuesto)
+                            const filename = `Presupuesto_${presupuestoNumero}`;
+                            
+                            previewWindow.document.write(htmlWithBase);
+                            previewWindow.document.title = filename; 
+                            previewWindow.document.close();
+                            previewWindow.focus();
+
+                            // Mostrar confirmación de éxito y RECARGAR solo al cerrar
                             Swal.fire({
                                 icon: 'success',
-                                title: 'Presupuesto Guardado',
-                                text: 'El presupuesto se ha guardado correctamente. ¿Desea visualizar el documento?',
-                                showCancelButton: true,
-                                confirmButtonText: 'Ver PDF',
-                                cancelButtonText: 'Cerrar',
+                                title: '¡Presupuesto Generado!',
+                                text: 'El presupuesto ha sido guardado y se ha abierto en una nueva pestaña.',
+                                confirmButtonText: 'Entendido',
                                 confirmButtonColor: '#003594',
-                                cancelButtonColor: '#808080',
-                                reverseButtons: true,
                                 color: 'black'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // Generar HTML con el número real
-                                    const html = buildPresupuestoHTML(presupuestoData);
-                                    const baseHref = `${window.location.origin}/SoportePost/`;
-                                    let htmlWithBase = html.replace('<head>', `<head><base href="${baseHref}">`);
-                                    
-                                    // Abrir en nueva ventana / pestaña
-                                    const previewWindow = window.open('', '_blank');
-                                    if (previewWindow) {
-                                        previewWindow.document.open();
-                                        
-                                        // Generar HTML con el header de instrucciones
-                                        const htmlWithHeader = buildPresupuestoHTML(presupuestoData, true);
-                                        const baseHref = `${window.location.origin}/SoportePost/`;
-                                        let htmlWithBase = htmlWithHeader.replace('<head>', `<head><base href="${baseHref}">`);
-                                        
-                                        // Generar nombre de archivo para el PDF (Exactamente el número de presupuesto)
-                                        const filename = `${presupuestoNumero}`;
-                                        
-                                        previewWindow.document.write(htmlWithBase);
-                                        previewWindow.document.title = filename; // <--- ESTO CAMBIA EL NOMBRE AL GUARDAR
-                                        previewWindow.document.close();
-                                        previewWindow.focus();
-                                        
-                                        // RELOAD PAGE AS REQUESTED
-                                        window.location.reload();
-                                    } else {
-                                        Swal.fire({
-                                            icon: 'warning',
-                                            title: 'Bloqueador de ventanas',
-                                            text: 'Su navegador bloqueó la apertura del presupuesto. Por favor, permita las ventanas emergentes.',
-                                            confirmButtonColor: '#003594',
-                                            color: 'black'
-                                        }).then(() => {
-                                            window.location.reload();
-                                        });
-                                    }
-                                } else {
-                                    // Si elige NO visualizar, solo recarga para ver los cambios
+                            }).then(() => {
+                                // No recargamos inmediatamente para no interrumpir el flujo del usuario
+                                // pero si el usuario quiere ver cambios en la tabla, recargamos
+                                setTimeout(() => {
                                     window.location.reload();
-                                }
+                                }, 500);
                             });
                             
                         } else {
                             // Error al guardar
+                            previewWindow.close(); // Cerrar la ventana en blanco si falló el guardado
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error al guardar',
@@ -6382,52 +6346,46 @@ function previewPresupuestoPDF() {
                     });
                     
                 } else {
-                    Swal.close();
+                    previewWindow.close();
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error',
-                        text: response.message || 'No se pudieron obtener los datos del cliente',
-                        confirmButtonText: 'Ok',
-                        color: 'black',
-                        confirmButtonColor: '#dc3545'
+                        title: 'Error de Datos',
+                        text: response.message || 'No se pudieron obtener los datos necesarios.',
+                        confirmButtonColor: '#dc3545',
+                        color: 'black'
                     });
                 }
             } catch (error) {
-                Swal.close();
-                console.error('Error al parsear la respuesta JSON:', error);
+                previewWindow.close();
+                console.error('Error al procesar respuesta:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error de Respuesta',
-                    text: 'Error al procesar la respuesta del servidor',
-                    confirmButtonText: 'Ok',
-                    color: 'black',
-                    confirmButtonColor: '#dc3545'
+                    title: 'Error de Sistema',
+                    text: 'Ocurrió un error al procesar los datos del presupuesto.',
+                    confirmButtonColor: '#dc3545',
+                    color: 'black'
                 });
             }
         } else {
-            Swal.close();
-            console.error(`Error HTTP ${xhr.status}: ${xhr.statusText}`);
+            previewWindow.close();
             Swal.fire({
                 icon: 'error',
                 title: 'Error de Conexión',
                 text: `Error HTTP ${xhr.status}: ${xhr.statusText}`,
-                confirmButtonText: 'Ok',
-                color: 'black',
-                confirmButtonColor: '#dc3545'
+                confirmButtonColor: '#dc3545',
+                color: 'black'
             });
         }
     };
     
     xhr.onerror = function() {
-        Swal.close();
-        console.error('Error de red al intentar obtener los datos del cliente');
+        previewWindow.close();
         Swal.fire({
             icon: 'error',
             title: 'Error de Red',
-            text: 'Error de conexión con el servidor',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#dc3545'
+            text: 'Error de comunicación con el servidor.',
+            confirmButtonColor: '#dc3545',
+            color: 'black'
         });
     };
     
@@ -6466,12 +6424,15 @@ function generarPresupuestoPDF() {
                         validez: '5 días hábiles',
                         descripcion: data.descripcion,
                         montoTaller: data.montoTaller,
+                        montoExonerado: data.montoExonerado,
+                        porcentajeExoneracion: data.porcentajeExoneracion,
+                        tipoExoneracion: data.tipoExoneracion,
                         montoPagadoUSD: window.presupuestoMontoPagadoUSD || 0,
-                        diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value) || 0,
-                        diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value) || 0,
-                        montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value) || 0,
-                        montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value) || 0,
-                        cliente: clienteData
+                        diferenciaUSD: parseFloat(document.getElementById('presupuestoDiferenciaUSD').value.replace(/[^0-9.]/g, '')) || 0,
+                        diferenciaBS: parseFloat(document.getElementById('presupuestoDiferenciaBS').value.replace(/[^0-9.]/g, '')) || 0,
+                        montoTotalUSD: parseFloat(document.getElementById('presupuestoMontoUSD').value.replace(/[^0-9.]/g, '')) || 0,
+                        montoTotalBS: parseFloat(document.getElementById('presupuestoMontoBS').value.replace(/[^0-9.]/g, '')) || 0,
+                        cliente: clienteData || {}
                     };
                     
                     // Guardar presupuesto primero para obtener el número de registro
@@ -6909,6 +6870,8 @@ function saveBudgetToDatabaseWithCallback(presupuestoData, callback) {
 
 // Función para construir el HTML del presupuesto (basada en buildDeliveryNoteHtml)
 function buildPresupuestoHTML(d, isNewWindow = false) {
+  if (!d) d = {};
+  if (!d.cliente) d.cliente = {};
   const safe = (s) => (s || '').toString();
   const formatCurrency = (amount) => {
     return parseFloat(amount || 0).toFixed(2);
@@ -7044,7 +7007,6 @@ function buildPresupuestoHTML(d, isNewWindow = false) {
             max-width: 600px;
             margin: 0 auto;
             background: white;
-            min-height: calc(100vh - 40px);
             display: flex;
             flex-direction: column;
         }
@@ -7353,16 +7315,21 @@ function buildPresupuestoHTML(d, isNewWindow = false) {
           .print-footer {
             display: block !important;
           }
+
+          /* Ocultar elementos de pantalla que ocupan espacio */
+          .top-header,
+          .no-print {
+            display: none !important;
+          }
           
           /* Ajustar el contenido para dar espacio al header/footer fijos */
           body {
-            margin-top: 50px !important;
+            margin-top: 80px !important; /* Aumentado a 80px para garantizar separación total */
             margin-bottom: 40px !important;
           }
           
           html, body {
             width: 100% !important;
-            height: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
             overflow: visible !important;
@@ -7378,7 +7345,7 @@ function buildPresupuestoHTML(d, isNewWindow = false) {
             width: 100% !important;
             min-height: auto !important;
             height: auto !important;
-            page-break-inside: avoid;
+            page-break-inside: auto !important; /* Permitir que fluya */
           }
           
           .section {
@@ -7390,7 +7357,7 @@ function buildPresupuestoHTML(d, isNewWindow = false) {
           
           .header {
             margin-bottom: 6px !important;
-            padding: 6px 0 !important;
+            padding: 30px 0 6px 0 !important; /* Aumentado a 30px para la separación exacta */
             page-break-after: avoid;
           }
           
@@ -7684,6 +7651,29 @@ function buildPresupuestoHTML(d, isNewWindow = false) {
             <span class="summary-label">SUB-TOTAL:</span>
             <span class="summary-value">$${formatCurrency(d.montoTaller)}</span>
           </div>
+          ${(d.exoneraciones && d.exoneraciones.length > 0) ? d.exoneraciones.map(exo => {
+              const tipoExo = (exo.tipo_exoneracion || '').trim();
+              const porcExo = parseFloat(exo.porcentaje) || 0;
+              const isAnticipoExo = tipoExo.toLowerCase().includes('anticipo');
+              const montoExoCalculado = isAnticipoExo ? (30 * porcExo / 100) : (d.montoTaller * porcExo / 100);
+              
+              return `
+              <div class="summary-row" style="color: #e65100; font-weight: bold; border-bottom: none;">
+                <span class="summary-label">EXONERACIÓN (${tipoExo}) (${porcExo}%):</span>
+                <span class="summary-value">${isAnticipoExo ? `INFORMATIVO: $${formatCurrency(montoExoCalculado)}` : `-$${formatCurrency(montoExoCalculado)}`}</span>
+              </div>
+              <div style="font-size: 10px; color: #777; font-style: italic; margin-top: -6px; padding-bottom: 8px; border-bottom: 1px solid #ddd; margin-bottom: 5px;">
+                * ${isAnticipoExo ? `La exoneración aplica sobre el monto base del anticipo ($30.00)` : `El descuento del ${porcExo}% aplica sobre el monto total de taller ($${formatCurrency(d.montoTaller)})`}
+              </div>`;
+          }).join('') : (d.porcentajeExoneracion > 0 ? `
+          <div class="summary-row" style="color: #e65100; font-weight: bold; border-bottom: none;">
+            <span class="summary-label">EXONERACIÓN ${d.tipoExoneracion ? `(${d.tipoExoneracion}) ` : ''}(${d.porcentajeExoneracion}%):</span>
+            <span class="summary-value">${(d.tipoExoneracion || '').trim().toLowerCase().includes('anticipo') ? `INFORMATIVO: $${formatCurrency(30 * d.porcentajeExoneracion / 100)}` : `-$${formatCurrency(d.montoExonerado)}`}</span>
+          </div>
+          <div style="font-size: 10px; color: #777; font-style: italic; margin-top: -6px; padding-bottom: 8px; border-bottom: 1px solid #ddd; margin-bottom: 5px;">
+            * ${(d.tipoExoneracion || '').trim().toLowerCase().includes('anticipo') ? `La exoneración aplica sobre el monto base del anticipo ($30.00)` : `El descuento aplica sobre el monto total especificado`}
+          </div>
+          ` : '')}
           <div class="summary-row">
             <span class="summary-label">ABONO:</span>
             <span class="summary-value">$${formatCurrency(d.montoPagadoUSD)}</span>
@@ -7827,7 +7817,7 @@ function enviarCorreoTicketCerrado(ticketData) {
     // Agregar a la cola de correos
     emailQueuePendiente.push({
         endpoint: `${ENDPOINT_BASE}${APP_PATH}api/email/send_end_ticket`,
-        params: `id_user=${encodeURIComponent(id_user)}`,
+        params: `id_user=${encodeURIComponent(id_user)}&nro_ticket=${encodeURIComponent(ticketNumber)}`,
         type: 'Ticket Cerrado',
         ticketNumber: ticketNumber,
         ticketData: ticketData
@@ -8251,6 +8241,9 @@ if (modalElementUploadPresupuestoPDFGlobal) {
 // Función para abrir el modal de agregar anticipo
 function openAgregarAnticipoModal(nroTicket, serialPos = '') {
     console.log("openAgregarAnticipoModal called for Ticket:", nroTicket);
+    
+    // ✅ CARGAR DESGLOSE DE EXONERACIONES
+    renderExonerationBreakdownForPayment(nroTicket, serialPos);
     let docUrl = null;
     let docFilename = null;
     let docType = null;
@@ -8484,7 +8477,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Función para guardar los datos de pago (adaptada de consulta_rif)
-function savePaymentPendienteEntrega() {
+async function savePaymentPendienteEntrega() {
     // Obtener todos los valores del formulario
     const serialPosPago = document.getElementById("serialPosPago");
     const idUser = document.getElementById("id_user_pago");
@@ -8693,8 +8686,119 @@ function savePaymentPendienteEntrega() {
         });
         return;
     }
+
+    const saveBtn = document.getElementById("btnGuardarDatosPago");
+    if (saveBtn) saveBtn.disabled = true;
+
+    Swal.fire({ title: 'Validando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    try {
+        // Validacion de Exoneracion Parcial
+        const docTypeForStatus = document.getElementById("document_type_pago") ? document.getElementById("document_type_pago").value : '';
+        const nroTicketVal = nroTicketPago ? nroTicketPago.value : '';
+        const serialPosVal = serialPosPago ? serialPosPago.value : '';
+        const montoRefActual = montoRef && montoRef.value ? parseFloat(montoRef.value) : 0;
+
+        if (docTypeForStatus === 'Anticipo' || docTypeForStatus === 'anticipo' || docTypeForStatus === 'Pago' || docTypeForStatus === 'pago') {
+            const checkExoUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetExoneracionPorcentaje?nro_ticket=${nroTicketVal}&serial_pos=${serialPosVal}`;
+            const exoResponse = await fetch(checkExoUrl);
+            const exoData = await exoResponse.json();
+
+            if (exoData.success && exoData.data) {
+                // Seleccionar el porcentaje correcto según el tipo de documento que se está cargando
+                let porcentaje = 0;
+                const isDocTypeAnticipo = (docTypeForStatus || '').toLowerCase().trim() === 'anticipo';
+                
+                if (isDocTypeAnticipo) {
+                    // Si estamos cargando Anticipo, buscamos específicamente el porcentaje de Anticipo
+                    porcentaje = (exoData.data.anticipo_data ? parseFloat(exoData.data.anticipo_data.porcentaje) : 
+                                 (exoData.data.tipo_exoneracion.toLowerCase() === 'anticipo' ? parseFloat(exoData.data.porcentaje) : 0));
+                } else {
+                    // Si es Pago Taller/Presupuesto, buscamos el porcentaje de taller
+                    porcentaje = (exoData.data.workshop_data ? parseFloat(exoData.data.workshop_data.porcentaje) : 
+                                 (exoData.data.tipo_exoneracion.toLowerCase() !== 'anticipo' ? parseFloat(exoData.data.porcentaje) : 0));
+                }
+                
+                if (porcentaje > 0 && porcentaje < 100) {
+                    const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
+                    const params = new URLSearchParams();
+                    params.append('action', 'GetTotalPaidByTicket');
+                    params.append('nro_ticket', nroTicketVal);
+
+                    const payResponse = await fetch(checkPaymentUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params
+                    });
+                    const payData = await payResponse.json();
+
+                    let totalPaidAnterior = parseFloat(payData.total_paid) || 0;
+                    let tipoExoData = exoData.data.tipo_exoneracion || 'Anticipo';
+                    
+                    let montoBase = 30; // Monto base estándar para Anticipo
+                    if (tipoExoData === 'Presupuesto') {
+                        // totalBudget ya viene en la respuesta de GetTotalPaidByTicket actualizada
+                        montoBase = parseFloat(payData.total_budget) || 0;
+                    }
+
+                    let montoExonerado = (montoBase * porcentaje) / 100;
+                    let montoNetoRequerido = montoBase - montoExonerado;
+                    
+                    if (totalPaidAnterior < montoNetoRequerido) {
+                        let totalConPagoActual = totalPaidAnterior + montoRefActual;
+
+                        if (totalConPagoActual < (montoNetoRequerido - 0.01)) {
+                            let montoRestante = montoNetoRequerido - totalPaidAnterior;
+                            let faltaPorPagar = montoNetoRequerido - totalConPagoActual;
+                            let tipoExoText = exoData.data.tipo_exoneracion === 'Anticipo' ? 'Anticipo' : 'Servicio Taller';
+
+                        if (saveBtn) saveBtn.disabled = false;
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '<span style="color: #003594;">Pago Insuficiente</span>',
+                            html: `<div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #dee2e6; margin-top: 10px;">
+                                <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                    El ticket tiene una <strong>Exoneración Parcial</strong>. El pago que intenta registrar más lo ya pagado no cubre el saldo pendiente requerido.
+                                </p>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 1.1em; color: #495057;">
+                                    <span>Total ${tipoExoText} Base:</span><strong>$${montoBase.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #28a745;">
+                                    <span>Monto Exonerado (${porcentaje}%):</span><strong>-$${montoExonerado.toFixed(2)}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 1.1em; color: #003594;">
+                                    <span>Ya Pagado (Aprobado):</span><strong>$${totalPaidAnterior.toFixed(2)}</strong>
+                                </div>
+                                <hr style="border-color: #adb5bd;">
+                                <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 1.2em; color: #dc3545; font-weight: bold;">
+                                    <span>Saldo Pendiente Actual:</span><span>$${Math.max(0, montoRestante).toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.1em; color: #ff9800; font-weight: bold;">
+                                    <span>Pago que intenta registrar:</span><span>$${montoRefActual.toFixed(2)}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 1.3em; color: #dc3545; font-weight: bold;">
+                                    <span>Faltaría por pagar:</span><span>$${Math.max(0, faltaPorPagar).toFixed(2)}</span>
+                                </div>
+                            </div>`,
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#003594',
+                            color: 'black',
+                            width: '500px'
+                        });
+                        return; // Detiene el guardado
+                    }
+                  } // Fin de verificación `totalPaidAnterior < montoNetoRequerido`
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Error validando pagos para exoneración antes de guardar:", err);
+    }
+
+    Swal.fire({ title: 'Guardando datos...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     
     // Preparar datos para enviar
+
     // El campo fechaPago es type="date", así que ya viene en formato YYYY-MM-DD
     let fechaPagoValue = fechaPago.value;
     
@@ -9997,3 +10101,95 @@ function getPagoEstatus(nroTicket) {
 if (typeof setupPaymentStatusLogic === 'function') {
     setupPaymentStatusLogic();
 }
+
+/**
+ * Carga la tasa del BCV actual para el modal de presupuesto
+ */
+function cargarTasaPresupuesto() {
+    console.log("[DEBUG] cargarTasaPresupuesto - Iniciando petición (Today)...");
+    if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") {
+        console.error("[DEBUG] cargarTasaPresupuesto - ENDPOINT_BASE o APP_PATH no definidos.");
+        return;
+    }
+
+    const fetchTasa = (action) => {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/${action}`);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success && response.exchange_rate) {
+                            resolve(response.exchange_rate);
+                        } else {
+                            reject(`Success false o no hay exchange_rate para ${action}`);
+                        }
+                    } catch (e) {
+                        reject(`Error parsing JSON para ${action}: ${e.message}`);
+                    }
+                } else {
+                    reject(`Error HTTP ${xhr.status} para ${action}`);
+                }
+            };
+            
+            xhr.onerror = () => reject(`Error de red para ${action}`);
+            xhr.send(`action=${action}`);
+        });
+    };
+
+    // Intentar primero con la de hoy, si falla ir por la última registrada
+    fetchTasa('GetExchangeRateToday')
+        .then(rate => {
+            console.log("[DEBUG] cargarTasaPresupuesto - Éxito con Tasa de Hoy.");
+            updateTasaUI(rate);
+        })
+        .catch(err => {
+            console.warn("[DEBUG] cargarTasaPresupuesto - Falló Tasa Hoy, intentando fallback:", err);
+            return fetchTasa('GetExchangeRate');
+        })
+        .then(rate => {
+            if (rate) {
+                console.log("[DEBUG] cargarTasaPresupuesto - Éxito con Tasa Fallback.");
+                updateTasaUI(rate);
+            }
+        })
+        .catch(finalErr => {
+            console.error("[DEBUG] cargarTasaPresupuesto - Error final:", finalErr);
+            const labelFecha = document.getElementById('labelTasaBCVDate');
+            if (labelFecha) labelFecha.textContent = "(Error al cargar)";
+        });
+
+    function updateTasaUI(exchange_rate) {
+        const tasa = parseFloat(exchange_rate.tasa_dolar || 0);
+        const fechaRaw = exchange_rate.fecha_tasa || '';
+        
+        window.presupuestoTasaCambio = tasa;
+        
+        const tasaInput = document.getElementById('presupuestoTasaBCV');
+        if (tasaInput) {
+            tasaInput.value = tasa.toFixed(2);
+            tasaInput.placeholder = "";
+        }
+        
+        const labelFecha = document.getElementById('labelTasaBCVDate');
+        if (labelFecha && fechaRaw) {
+            let fechaFormateada = fechaRaw;
+            try {
+                const partes = fechaRaw.split('-');
+                if(partes.length === 3) fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;
+            } catch(e) {}
+            
+            labelFecha.textContent = `(${fechaFormateada})`;
+            labelFecha.className = "text-muted small ms-1";
+        }
+        
+        if (typeof calcularDiferenciaPresupuesto === 'function') {
+            calcularDiferenciaPresupuesto(false);
+        }
+    }
+}
+
+

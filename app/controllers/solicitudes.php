@@ -4,9 +4,11 @@ require_once __DIR__ . "/../../libs/Controller.php";
 
 session_start();
 
-class exoneracion extends Controller {
 
+class solicitudes extends Controller {
     public $view;
+
+    public $userModel;
 
     function __construct() {
         parent::__construct();
@@ -18,6 +20,7 @@ class exoneracion extends Controller {
         }
 
         Model::exists('user'); // Si Model::exists() carga la clase, esto es bueno.
+        $this->userModel = new UserModel(); 
     
         if (isset($_SESSION['id_user']) && isset($_SESSION['session_id'])) {
             $model = new UserModel(); // O pásalo por inyección de dependencias
@@ -90,8 +93,8 @@ class exoneracion extends Controller {
         $this->validataExpiresSessions($usuario_id);
 
         // Incorporates the FrontEnd Controller
-        $this->view->js = array('exoneracion/js/frontEnd.js');
-        $this->view->render('exoneracion/index', 1);
+        $this->view->js = array('solicitudes/js/frontEnd.js');
+        $this->view->render('solicitudes/index', 1);
     }
 
     private function validataExpiresSessions($usuario_id) {

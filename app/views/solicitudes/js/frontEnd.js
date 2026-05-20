@@ -17,6 +17,7 @@ let ExoInput = null;
 let PagoInput = null;
 let modalPagoPresupuestoInstance = null; // Global instance for the payment modal
 let editPaymentModalInstance = null; // Global instance for edit payment modal
+let viewDocumentModalInstance = null; // Global instance for view document modal
 // --- CUSTOM STYLES FOR NON-BOOTSTRAP LOOK ---
 const customSwalStyles = `
 <style id="custom-swal-styles">
@@ -75,6 +76,10 @@ const customSwalStyles = `
             margin: 5px 0 !important;
         }
     }
+    /* Ensure Swal is always on top of EVERYTHING */
+    .swal2-container {
+        z-index: 2000 !important;
+    }
 </style>
 `;
 if (!document.getElementById('custom-swal-styles')) {
@@ -86,12 +91,16 @@ let currentTicketNro = null;
 let currentTicketData = null;
 let TicketData = []; // Variable global para almacenar los tickets cargados
 let currentBudgetAmount = null; // New global variable for budget amount
+let currentExonerationHistory = []; // Historial global para edición
 
 document.addEventListener("DOMContentLoaded", function () {
   console.log("--> DOMContentLoaded FIRED in frontEnd.js <--"); // DEBUG
 
   // Inicializar las instancias de los modales de Bootstrap para poder controlarlos con JS
-  const viewDocumentModalInstance = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+  const viewDocEl = document.getElementById('viewDocumentModal');
+  if (viewDocEl) {
+      viewDocumentModalInstance = new bootstrap.Modal(viewDocEl);
+  }
   
   const modalPagoElement = document.getElementById("modalPagoPresupuesto");
   if (modalPagoElement) {
@@ -400,7 +409,9 @@ async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  getTicketDataCoordinator(); // Llama a la función para cargar los datos
+  if (typeof getTicketDataCoordinator === 'function') {
+    getTicketDataCoordinator(); // Llama a la función para cargar los datos si existe
+  }
 
   // Obtén la referencia al botón cerrar FUERA de la función getTicketData y del bucle
   const cerrar = document.getElementById("close-button");
@@ -408,21 +419,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const inputRegion = document.getElementById("InputRegion"); // Obtén el input de región
 
   // Agrega el event listener al botón cerrar
-  cerrar.addEventListener("click", function () {
-    if (modalInstance) {
-      modalInstance.hide();
-      currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
-      inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
-    }
-    document.getElementById("idSelectionTec").value = "";
-  });
+  if (cerrar) {
+    cerrar.addEventListener("click", function () {
+      if (typeof modalInstance !== 'undefined' && modalInstance) {
+        modalInstance.hide();
+        currentTicketId = null; // Limpia el ID del ticket al cerrar el modal
+        if(inputRegion) inputRegion.value = ""; // Limpia el campo de región al cerrar el modal
+      }
+      const selTec = document.getElementById("idSelectionTec");
+      if (selTec) selTec.value = "";
+    });
+  }
+  
   // Agrega el event listener al botón "Asignar"
-  assignButton.addEventListener("click", AssignTicket);
+  if (assignButton && typeof AssignTicket !== 'undefined') {
+    assignButton.addEventListener("click", AssignTicket);
+  }
 });
 
 function getTicketDataCoordinator() {
   const xhr = new XMLHttpRequest();
-  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataPagos`);
+  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDataTicketSolicitud`);
 
   const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
 
@@ -510,38 +527,45 @@ function getTicketDataCoordinator() {
             if ((data.presupuesto === 'Si' || data.presupuesto === 'Sí') && idStatusPayment !== 1 && idStatusPayment !== 3) {
             */
             // Se muestra SIEMPRE (Comportamiento solicitado: "lo haré visible SIEMPRE")
-            if (true) { 
-              actionButtonsHtml += `
-                  <button type="button" id="btnPaymentBudget" class="btn generate-presupuesto-btn" 
-                    data-ticket-id="${data.id_ticket}" 
-                    data-serial-pos="${data.serial_pos}" 
-                    data-nro-ticket="${data.nro_ticket}" 
-                    data-budget-amount="${data.budget_amount || 0}"
-                    data-razon-social="${data.razonsocial_cliente || ''}"
-                    data-rif="${data.rif || ''}"
-                    data-telefono="${data.telefono_cliente || ''}"
-                    data-estatus-pos="${data.estatus_inteliservices || ''}"
-                    data-has-presupuesto="${data.presupuesto || 'No'}"
-                    title="Agregar pagos" 
-                    style="background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-plus-lg" viewBox="0 0 16 16" style="display: inline-block;">
-                        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
-                      </svg>
-                      <span class="presupuesto-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Agregar pagos</span>
-                  </button>
-              `;
-            }
+            const ticketTienePago = data.ticket_tiene_pago === 't' || data.ticket_tiene_pago === 'true' || data.ticket_tiene_pago === true;
 
-            if (data.envio === 'Si' || data.exoneracion === 'Si' || data.anticipo === 'Si' || data.presupuesto === 'Si' || data.pago === 'Si') {
+            actionButtonsHtml += `
+                <button type="button" id="btnExonerationRegistration" class="btn btn-exoneration-reg" 
+                  data-ticket-id="${data.id_ticket}" 
+                  data-serial-pos="${data.serial_pos}" 
+                  data-nro-ticket="${data.nro_ticket}" 
+                  data-id-cliente-sql="${data.id_cliente_intelipunto || 0}"
+                  data-budget-amount="${data.budget_amount || 0}"
+                  data-razon-social="${data.razonsocial_cliente || ''}"
+                  data-rif="${data.rif || ''}"
+                  data-telefono="${data.telefono_cliente || ''}"
+                  data-estatus-pos="${data.estatus_inteliservices || ''}"
+                  data-has-presupuesto="${data.presupuesto || 'No'}"
+                  data-ticket-tiene-pago="${ticketTienePago}"
+                  title="Registrar Exoneración" 
+                  style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-receipt-cutoff" viewBox="0 0 16 16" style="display: inline-block;">
+                      <path d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5M11.5 4a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                      <path d="M2.354.646a.5.5 0 0 0-.801.13l-.5 1A.5.5 0 0 0 1 2v13H.5a.5.5 0 0 0 0 1h15a.5.5 0 0 0 0-1H15V2a.5.5 0 0 0-.053-.224l-.5-1a.5.5 0 0 0-.8-.13L13 1.293l-.646-.647a.5.5 0 0 0-.708 0L11 1.293l-.646-.647a.5.5 0 0 0-.708 0L9 1.293 8.354.646a.5.5 0 0 0-.708 0L7 1.293 6.354.646a.5.5 0 0 0-.708 0L5 1.293 4.354.646a.5.5 0 0 0-.708 0L3 1.293zm.292.854L3.293 2.146a.5.5 0 0 0 .708 0l.646-.646.646.646a.5.5 0 0 0 .708 0l.646-.646.646.646a.5.5 0 0 0 .708 0l.646-.646.646.646a.5.5 0 0 0 .708 0l.646-.646.646.646a.5.5 0 0 0 .708 0l.646-.646.646.646a.5.5 0 0 0 .708 0l.5-.5V15h-11V2.5l.5-.5z"/>
+                    </svg>
+                    <span class="exoneration-reg-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Registrar Exoneración</span>
+                </button>
+            `;
+
+            console.log(data.id_cliente_intelipunto);
+
+            if (data.envio === 'Si' || data.exoneracion === 'Si' || data.presupuesto === 'Si' || data.pago === 'Si') {
               actionButtonsHtml += `
                 <button id="botonMostarImage" class="btn btn-sm btn-view-image" data-bs-placement="top" title="Visualizar Documentos"
-                  data-ticket-id="${data.id_ticket}"
-                  data-nro-ticket="${data.nro_ticket}"
+                  data-ticket-id="${data.id_ticket || data.id_solicitud}"
+                  data-nro-ticket="${data.nro_ticket || data.nro_solicitud}"
                   data-envio="${data.envio}"
                   data-exoneracion="${data.exoneracion}"
+                  data-anticipo="${data.anticipo || 'No'}"
+                  data-pago-taller="${data.pago_taller || 'No'}"
                   data-pago="${data.pago}"
-                  data-presupuesto="${data.presupuesto}"
-                  data-rechazado="${data.rechazado}">
+                  data-presupuesto="${data.presupuesto || 'No'}"
+                  data-rechazado="${data.rechazado || 'f'}">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-fill" viewBox="0 0 16 16">
                     <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
                     <path d="M.046 8.5C.138 7.042 1.517 5.0 8 5.0s7.862 2.042 7.954 3.5c-.092 1.458-1.472 3.5-7.954 3.5S.138 9.958.046 8.5M13 8a5 5 0 1 0-10 0 5 5 0 0 0 10 0"/>
@@ -857,7 +881,11 @@ function getTicketDataCoordinator() {
             },
           });
 
-          $("#tabla-ticket").resizableColumns();
+          try {
+            $("#tabla-ticket").resizableColumns();
+          } catch (e) {
+            console.warn("Plugin resizableColumns no disponible o error al inicializar:", e);
+          }
 
           $("#tabla-ticket tbody")
             .off("click", "tr")
@@ -994,16 +1022,33 @@ function getTicketDataCoordinator() {
 
               const PagoInputModal = document.getElementById('imagenPago');
               const PagoLabelModal = document.getElementById('labelPago');
+              const ExoneracionInputModal = document.getElementById('imagenExoneracion');
+              const ExoneracionLabelModal = document.getElementById('labelExoneracion');
               const PresupuestoInputModal = document.getElementById('imagenPresupuesto');
               const PresupuestoLabelModal = document.getElementById('labelPresupuesto');
 
-              if (pagoValor === 'Sí' || pagoValor === 'Si') {
-                PagoInputModal.style.display = 'block';
-                PagoLabelModal.style.display = 'block';
-              } else {
-                PagoInputModal.style.display = 'none';
-                PagoLabelModal.style.display = 'none';
-              }
+               const anticipoValor = $(this).data("anticipo");
+               const pagoTallerValor = $(this).data("pago-taller");
+
+               if (anticipoValor === 'Sí' || anticipoValor === 'Si') {
+                 PagoInputModal.style.display = 'block';
+                 PagoLabelModal.style.display = 'block';
+               } else {
+                 PagoInputModal.style.display = 'none';
+                 PagoLabelModal.style.display = 'none';
+               }
+
+               if (pagoTallerValor === 'Sí' || pagoTallerValor === 'Si') {
+                 if (ExoneracionInputModal && ExoneracionLabelModal) {
+                   ExoneracionInputModal.style.display = 'block';
+                   ExoneracionLabelModal.style.display = 'block';
+                 }
+               } else {
+                 if (ExoneracionInputModal && ExoneracionLabelModal) {
+                    ExoneracionInputModal.style.display = 'none';
+                    ExoneracionLabelModal.style.display = 'none';
+                 }
+               }
               if (presupuestoValor === 'Si' || presupuestoValor === 'Sí') {
                 if (PresupuestoInputModal && PresupuestoLabelModal) {
                     PresupuestoInputModal.style.display = 'block';
@@ -1037,10 +1082,10 @@ function getTicketDataCoordinator() {
                   BotonRechazo.style.display = 'block';
                 }*/
                 getMotivos(selectedOption);
-                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentByType`, {
+                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentExoneracionByType`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                  body: `action=GetDocumentByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
+                  body: `action=GetDocumentExoneracionByType&ticketId=${currentTicketNroForImage}&documentType=${selectedOption}`
                 })
                   .then(response => response.json())
                   .then(data => {
@@ -1122,518 +1167,6 @@ function getTicketDataCoordinator() {
   xhr.send(datos);
 }
 
-function getTechnicianData(ticketIdToFetch) {
-  // Cambié el nombre del parámetro para evitar cualquier posible confusión
-
-  // Validar que ticketIdToFetch no es un objeto Event
-  if (typeof ticketIdToFetch === "object" && ticketIdToFetch !== null) {
-    if (ticketIdToFetch.type && ticketIdToFetch.target) {
-      // Podría ser un objeto Event
-      console.error(
-        "ERROR CRÍTICO: Se intentó pasar un objeto Event a getTechnicianData. Esto no debería ocurrir."
-      );
-      alert(
-        "Error interno: No se pudo procesar el ID del ticket. Contacte a soporte."
-      );
-      return Promise.reject(
-        new Error("Invalid ticket ID: received an event object.")
-      );
-    }
-  }
-
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
-
-    xhr.open("POST", API_URL_GET_TECHNICIANS);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    xhr.onload = function () {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          const inputNtecnico = document.getElementById("currentTechnicianDisplay");
-          const inputFecha = document.getElementById("currentAssignmentDateDisplay");
-          const inputRegion = document.getElementById("currentRegion");
-          const technicianSelect = document.getElementById("technicianSelect");
-
-          if (response.success) {
-            // *** ESTA ES LA LÍNEA CRÍTICA ***
-            // 1. Asigna el valor del técnico actual a la variable global 'inputTecnicoActual'
-            inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
-            currentTicketOldTechnicianId = response.technicians.id_tecnico;
-
-
-            // 2. Luego, usa inputTecnicoActual (o directamente response.technicians.full_tecnicoassig1) para actualizar el DOM
-            // Ya tienes 'inputNtecnico' que es la referencia a "currentTechnicianDisplay"
-            if (inputNtecnico) { // Reutiliza inputNtecnico que ya está declarado
-              inputNtecnico.innerHTML = inputTecnicoActual; // Usa la variable global que ya tiene el valor
-            }
-
-            // Continuar con las otras actualizaciones del DOM
-            inputFecha.innerHTML = response.technicians.fecha_asignacion || "N/A";
-            inputRegion.innerHTML = response.technicians.name_region || "N/A";
-
-          } else {
-            // Si la respuesta no es exitosa, asegúrate de que inputTecnicoActual también se maneje
-            inputTecnicoActual = "No Asignado"; // Establece un valor predeterminado
-            if (inputNtecnico) {
-              inputNtecnico.innerHTML = "No Asignado";
-            }
-            inputFecha.innerHTML = "N/A";
-            inputRegion.innerHTML = "N/A";
-            if (technicianSelect) { // Asegúrate de que technicianSelect existe antes de intentar acceder a .value
-              technicianSelect.value = "";
-            }
-            console.error("Error en la respuesta de la API:", response.message);
-          }
-          resolve(response);
-        } catch (error) {
-          console.error("Error parsing JSON para obtener técnicos:", error);
-          reject(error);
-        }
-      } else {
-        console.error(
-          "Error en la solicitud para obtener técnicos:",
-          xhr.status,
-          xhr.statusText
-        );
-        reject(new Error(`HTTP error! status: ${xhr.status}`));
-      }
-    };
-
-    xhr.onerror = function () {
-      console.error("Error de red al intentar obtener técnicos.");
-      reject(new Error("Error de red"));
-    };
-
-    const dataToSend = `action=GetTechniciansAndCurrentTicketTechnician&ticket_id=${ticketIdToFetch}`;
-    xhr.send(dataToSend);
-  });
-}
-
-async function reassignTicket(ticketId, newTechnicianId) {
-  try {
-    const xhr = new XMLHttpRequest();
-    const id_user = document.getElementById("id_user").value; // Asumiendo que tienes el ID del usuario logueado
-    const comment = document.getElementById("reassignObservation").value; // Asumiendo que tienes el comentario del usuario
-    const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/users/ReassignTicket`;
-
-    xhr.open("POST", API_URL_REASSIGN);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-    const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}&id_user=${id_user}&comment=${comment}`;
-
-    // Convertir el callback de xhr a una promesa para usar await
-    const response = await new Promise((resolve, reject) => {
-      xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response.success);
-          } catch (error) {
-            console.error("Error parsing JSON para reasignar ticket:", error);
-            reject(error);
-          }
-        } else {
-          console.error(
-            "Error en la solicitud para reasignar ticket:",
-            xhr.status,
-            xhr.statusText
-          );
-          reject(new Error(`HTTP error! status: ${xhr.status}`));
-        }
-      };
-
-      xhr.onerror = function () {
-        console.error("Error de red al intentar reasignar ticket.");
-        reject(new Error("Error de red"));
-      };
-
-      xhr.send(dataToSend);
-    });
-
-    return response;
-  } catch (error) {
-    throw error; // Relanzar el error para que pueda ser manejado por el llamador
-  }
-}
-
-// Ejecutar esto una vez al cargar la página o cuando se abre la vista del historial
-function markTicketAsReceived(ticketId, nroTicket, serialPos) {
-  // Asegúrate de que nroTicket esté como parámetro
-  const id_user = document.getElementById("id_user").value;
-  // SVG que quieres usar
-  const customWarningSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="#ffc107" class="bi bi-question-triangle-fill custom-icon-animation" viewBox="0 0 16 16"><path d="M9.05.435c-.58-.58-1.52-.58-2.1 0L.436 6.95c-.58.58-.58 1.519 0 2.098l6.516 6.516c.58.58 1.519.58 2.098 0l6.516-6.516c.58-.58.58-1.519 0-2.098zM5.495 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927"/></svg>`;
-  Swal.fire({
-    // El nuevo texto del header va aquí
-    title: `Confirmación de recibido`, // Texto fijo para el encabezado
-    // El contenido del cuerpo (SVG y texto explicativo) va en 'html'
-    html: `${customWarningSvg}<p class="mt-3" id = "textConfirm">¿Deseas Marcar el ticket Nro: <span id = "NroTicketConfirReceiCoord">${nroTicket}</span> Asociado el Pos: <span id = "NroTicketConfirReceiCoord">${serialPos}</span> como recibido? 
-    </p><p id = "textConfirmp">Esta acción registrará la fecha de recepción y habilitará la asignación de técnico.</p>`,
-    showCancelButton: true,
-    confirmButtonColor: "#003594",
-    cancelButtonColor: "#6c757d",
-    confirmButtonText: "Recibir Pos",
-    cancelButtonText: "Cancelar",
-    color: "black",
-    customClass: {
-      popup: "swal2-custom-header-popup", // Clase principal para el popup
-      title: "swal2-custom-title", // Clase para el título (para estilizarlo en CSS)
-      content: "custom-content", // Puedes mantener esta si la usas para el contenido del cuerpo
-      actions: "custom-actions",
-      confirmButton: "swal2-confirm-receive-ticket-class",
-      cancelButton: "swal2-cancel-receive-ticket-class",
-    },
-    didOpen: (popup) => {
-      const confirmBtn = popup.querySelector(
-        ".swal2-confirm-receive-ticket-class"
-      );
-      const cancelBtn = popup.querySelector(
-        ".swal2-cancel-receive-ticket-class"
-      );
-
-      if (confirmBtn) {
-        confirmBtn.id = "swal2-confirm-receive-ticket-id";
-      }
-      if (cancelBtn) {
-        cancelBtn.id = "swal2-cancel-receive-ticket-id";
-      }
-    },
-  }).then((result) => {
-    if (result.isConfirmed) {
-      const xhr = new XMLHttpRequest();
-      xhr.open(
-        "POST",
-        `${ENDPOINT_BASE}${APP_PATH}api/historical/MarkTicketReceived`
-      ); // Necesitas una nueva ruta de API para esto
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-      xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            if (response.success) {
-              Swal.fire({
-                title: "¡Recibido!",
-                html: `El ticket Nr: <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${nroTicket}</span> ha sido marcado como recibido.`,
-                icon: "success",
-                color: "black",
-                confirmButtonColor: "#003594",
-              });
-              getTicketDataCoordinator();
-              if (modalInstanceCoordinator) {
-                modalInstanceCoordinator.hide();
-              } else {
-                console.error(
-                  "No se pudo cerrar el modal: la instancia no está disponible."
-                );
-              }
-            } else {
-              Swal.fire(
-                "Error",
-                response.message ||
-                "Hubo un error al marcar el ticket como recibido.",
-                "error"
-              );
-            }
-          } catch (error) {
-            Swal.fire(
-              "Error",
-              "Error al procesar la respuesta del servidor.",
-              "error"
-            );
-            console.error(
-              "Error parsing JSON for markTicketAsReceived:",
-              error
-            );
-          }
-        } else {
-          Swal.fire(
-            "Error",
-            `Error al conectar con el servidor: ${xhr.status} ${xhr.statusText}`,
-            "error"
-          );
-          console.error(
-            "Error en markTicketAsReceived:",
-            xhr.status,
-            xhr.statusText
-          );
-        }
-      };
-      xhr.onerror = function () {
-        Swal.fire(
-          "Error",
-          "Error de red al intentar marcar el ticket como recibido.",
-          "error"
-        );
-        console.error("Network error for markTicketAsReceived");
-      };
-
-      const data = `action=MarkTicketReceived&ticket_id=${ticketId}&id_user=${encodeURIComponent(
-        id_user
-      )}`;
-      xhr.send(data);
-    }
-  });
-}
-
-function AssignTicket() {
-  const id_tecnico_asignado = document.getElementById("idSelectionTec").value;
-
-  if (!currentTicketId || !id_tecnico_asignado) {
-    Swal.fire({
-      icon: "warning",
-      title: "¡Atención!",
-      text: "Por favor, selecciona un técnico antes de asignar.",
-      color: "black",
-      confirmButtonText: "Ok",
-      confirmButtonColor: "#003594",
-    });
-    return;
-  }
-
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/AssignTicket`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          Swal.fire({
-            icon: "success",
-            title: response.message,
-            html: `El Pos asociado <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketSerialPosForAssignment}</span> al nro de ticket: <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNroForAssignment}</span> ha sido asignado correctamente.`,
-            color: "black",
-            showConfirmButton: true,
-            confirmButtonText: "Ok",
-            confirmButtonColor: "#003594",
-          }).then((result) => {
-            if (result.isConfirmed) {
-              getTicketDataCoordinator();
-              if (modalInstanceCoordinator) {
-                modalInstanceCoordinator.hide();
-                document.getElementById("InputRegion").value = "";
-              }
-            }
-          });
-          document.getElementById("idSelectionTec").value = "";
-          currentTicketId = null;
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error al asignar",
-            text: response.message,
-            color: "black",
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        Swal.fire({
-          icon: "error",
-          title: "Error en el servidor",
-          text: "Ocurrió un error al procesar la respuesta.",
-          color: "black",
-        });
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      Swal.fire({
-        icon: "error",
-        title: "Error de conexión",
-        text: "No se pudo conectar con el servidor.",
-        color: "black",
-      });
-    }
-  };
-  const datos = `action=AssignTicket&id_ticket=${encodeURIComponent(
-    currentTicketId
-  )}&id_tecnico=${encodeURIComponent(id_tecnico_asignado)}`;
-  xhr.send(datos);
-}
-
-function getTecnico21(tecnicoActualParaFiltrar) { // Nuevo parámetro
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const select2 = document.getElementById("technicianSelect");
-
-          select2.innerHTML = '<option value="">Seleccione</option>';
-
-          if (
-            Array.isArray(response.tecnicos) &&
-            response.tecnicos.length > 0
-          ) {
-            response.tecnicos.forEach((tecnico) => {
-              if (tecnico.full_name !== tecnicoActualParaFiltrar) {
-                const option2 = document.createElement("option");
-                option2.value = tecnico.id_user;
-                option2.textContent = tecnico.full_name;
-                select2.appendChild(option2);
-              } else {
-              }
-            });
-
-            select2.addEventListener("change", function () {
-              const selectedTecnicoId = this.value;
-              if (selectedTecnicoId) {
-                GetRegionUser(selectedTecnicoId);
-              } else {
-                document.getElementById("InputRegionUser2").value = "";
-              }
-            });
-
-          } else {
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No hay Técnicos Disponibles";
-            select.appendChild(option);
-            select2.appendChild(option.cloneNode(true));
-          }
-        } else {
-          document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener los Técnicos.";
-          console.error("Error al obtener los técnicos:", response.message);
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de los Técnicos.";
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para los Técnicos.";
-    }
-  };
-
-  const datos = `action=GetTecnico2`;
-  xhr.send(datos);
-}
-
-function getTecnico2() { // Nuevo parámetro
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const select = document.getElementById("idSelectionTec");
-          const select2 = document.getElementById("technicianSelect");
-
-          select.innerHTML = '<option value="">Seleccione</option>';
-
-          if (
-            Array.isArray(response.tecnicos) &&
-            response.tecnicos.length > 0
-          ) {
-            response.tecnicos.forEach((tecnico) => {
-              const option = document.createElement("option");
-              option.value = tecnico.id_user;
-              option.textContent = tecnico.full_name;
-              select.appendChild(option);
-
-
-            });
-
-            // Event Listeners (no cambian)
-            select.addEventListener("change", function () {
-              const selectedTecnicoId = this.value;
-              if (selectedTecnicoId) {
-                GetRegionUser(selectedTecnicoId);
-              } else {
-                document.getElementById("InputRegion").value = "";
-              }
-            });
-
-          } else {
-            const option = document.createElement("option");
-            option.value = "";
-            option.textContent = "No hay Técnicos Disponibles";
-            select.appendChild(option);
-            select2.appendChild(option.cloneNode(true));
-          }
-        } else {
-          document.getElementById("rifMensaje").innerHTML +=
-            "<br>Error al obtener los Técnicos.";
-          console.error("Error al obtener los técnicos:", response.message);
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de los Técnicos.";
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para los Técnicos.";
-    }
-  };
-
-  const datos = `action=GetTecnico2`;
-  xhr.send(datos);
-}
-
-document.addEventListener("DOMContentLoaded", getTecnico2);
-
-function GetRegionUser(id_user) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/GetRegionUsersAssign`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhr.onload = function () {
-    if (xhr.status === 200) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const inputRegion = document.getElementById("InputRegion");
-          const inputRegionUser2 = document.getElementById("InputRegionUser2");
-          const region = response.regionusers || "";
-
-          if (region) {
-            inputRegion.value = region;
-            inputRegionUser2.value = region; // Asignar la región al campo según el técnico seleccionado
-          } else {
-            inputRegion.value = ""; // Limpiar el campo si no hay región
-            inputRegionUser2.value = ""; // Limpiar el campo si no hay región
-          }
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Por favor, selecciona un ticket antes de asignar un técnico.",
-            color: "black",
-          });
-        }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        document.getElementById("rifMensaje").innerHTML +=
-          "<br>Error al procesar la respuesta de la región del técnico.";
-        document.getElementById("InputRegion").value = "";
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-      document.getElementById("rifMensaje").innerHTML +=
-        "<br>Error de conexión con el servidor para la región del técnico.";
-      document.getElementById("InputRegion").value = "";
-    }
-  };
-  const datos = `action=GetRegionUsersAssign&id_user=${encodeURIComponent(
-    id_user
-  )}`;
-  xhr.send(datos);
-}
-
 // Función adaptada para cargar los motivos
 function getMotivos(documentType) {
   const xhr = new XMLHttpRequest();
@@ -1688,6 +1221,445 @@ function getMotivos(documentType) {
   const datos = `action=GetMotivos&documentType=${documentType}`;
   xhr.send(datos);
 }
+
+/**
+ * Función Principal: Obtiene y renderiza el listado de solicitudes administrativas.
+ * Adaptada para el módulo de Reportes Administrativos (Solicitudes).
+ */
+function getTicketDataFinaljs() {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDataTicketSolicitud`);
+  
+  const detailsPanel = document.getElementById("ticket-details-panel");
+  const tableContainer = document.querySelector(".table-responsive");
+  const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
+
+  // Destruye DataTables si ya está inicializado
+  if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+    $("#tabla-ticket").DataTable().destroy();
+    tbody.innerHTML = "";
+  }
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          // Asignación a la variable global (sin const) como requerido
+          TicketData = response.data || response.ticket || []; 
+          
+          if (TicketData && TicketData.length > 0) {
+            
+            // Inicializar texto default en el panel de detalles
+            if (detailsPanel) {
+                detailsPanel.innerHTML = "<p>Selecciona una solicitud de la tabla para ver sus detalles aquí.</p>";
+            }
+
+            const dataForDataTable = [];
+
+            TicketData.forEach((data) => {
+              // El número de solicitud ya viene formateado desde la bd (ej. GRS-0804260024)
+              const formattedCode = data.nro_solicitud || "N/A";
+
+              // Representación visual del estatus administrativo basada en el ID
+              const statusName = data.status_name || "Desconocido";
+              const idStatus = parseInt(data.id_status_administrativo, 10);
+              let statusHtml = '';
+
+              if (idStatus === 1 || idStatus === 2) {
+                  // Amarillo con texto oscuro para máxima legibilidad
+                  statusHtml = `<span class="badge" style="background-color: #ffc107; color: #000 !important; font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              } else if (idStatus === 3) {
+                  // Verde
+                  statusHtml = `<span class="badge" style="background-color: #28a745; color: white !important; font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              } else if (idStatus === 4) {
+                  // Rojo
+                  statusHtml = `<span class="badge" style="background-color: #dc3545; color: white !important; font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              } else {
+                  // Por defecto
+                  statusHtml = `<span class="badge bg-secondary text-white" style="font-weight: 700; padding: 6px 12px; border-radius: 20px;">${statusName.toUpperCase()}</span>`;
+              }
+
+              const isPendiente = parseInt(data.id_status_administrativo) === 1;
+
+              let actionButtonsHtml = `
+                <div style="display:inline-flex; gap:6px; align-items:center;">
+                  <!-- Botón Ver Documento -->
+                  <button class="view-admin-detail-btn" title="Ver Documento"
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 7px 10px;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      border: none;
+                      border-radius: 50px;
+                      cursor: pointer;
+                      box-shadow: 0 3px 10px rgba(102,126,234,0.45);
+                      transition: all 0.25s ease;
+                    "
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(102,126,234,0.65)';"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 3px 10px rgba(102,126,234,0.45)';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
+                      <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
+                    </svg>
+                  </button>
+                  <!-- Botón Editar: solo visible cuando estatus = 1 (Pendiente por Aprobar) -->
+                  ${isPendiente ? `
+                  <button class="edit-admin-req-btn" title="Editar Solicitud"
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 7px 10px;
+                      background: linear-gradient(135deg, #1a6dff 60%, #ffffff 100%);
+                      color: white;
+                      border: none;
+                      border-radius: 50px;
+                      cursor: pointer;
+                      box-shadow: 0 3px 10px rgba(26,109,255,0.45);
+                      transition: all 0.25s ease;
+                    "
+                    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 18px rgba(26,109,255,0.65)';"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 3px 10px rgba(26,109,255,0.45)';">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
+                    </svg>
+                  </button>` : ''}
+                </div>
+              `;
+
+              dataForDataTable.push([
+                data.id || data.id_ticket, // Hidden ID para uso interno (índice 0)
+                data.id_cliente || "N/A",  // ID Cliente (índice 1)
+                formattedCode, // Nro Solicitud (índice 2)
+                data.razon_social || data.razonsocial_cliente || "N/A", // Razón Social (índice 3)
+                data.rif_cliente || "N/A", // RIF (índice 4)
+                data.tipo_nombre || data.tipo_solicitud || "N/A", // Tipo de Solicitud (índice 5)
+                data.observacion || "N/A", // Observación (índice 6)
+                statusHtml, // Estatus (índice 7)
+                data.user_creation || data.name_user_gestion || "N/A", // Usuario Creación (índice 8)
+                data.created_at ? data.created_at.substring(0, 16) : "N/A", // Fecha Creación (índice 9)
+                actionButtonsHtml // Acciones (índice 10)
+              ]);
+            });
+
+            // Inicialización de DataTables con la data formateada
+            const dataTableInstance = $("#tabla-ticket").DataTable({
+              data: dataForDataTable,
+              scrollX: true,
+              responsive: false,
+              pagingType: "simple_numbers",
+              lengthMenu: [[5, 10, 25, 50], ["5", "10", "25", "50"]],
+              autoWidth: false,
+              columns: [
+                {
+                  title: "N°",
+                  orderable: false,
+                  searchable: false,
+                  render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                  },
+                },
+                { title: "ID Cliente", width: "8%" },
+                { 
+                  title: "Nro Solicitud",
+                  width: "10%",
+                  render: function(data, type, row) {
+                    return `<span class="font-weight-bold" style="color: #003594;">${data}</span>`;
+                  }
+                },
+                { 
+                  title: "Razón Social",
+                  width: "20%",
+                  render: function (data, type, row) {
+                    if (type === "display" && typeof data === 'string') {
+                      return `<span class="truncated-cell" data-full-text="${data}">${data.length > 20 ? data.substring(0, 20) + "..." : data}</span>`;
+                    }
+                    return data;
+                  }
+                },
+                { title: "RIF", width: "8%" },
+                { title: "Tipo de Solicitud", width: "10%" },
+                { 
+                  title: "Observación", 
+                  width: "15%",
+                  render: function (data, type, row) {
+                    if (type === "display" && typeof data === 'string') {
+                      return `<span class="truncated-cell" data-full-text="${data}">${data.length > 20 ? data.substring(0, 20) + "..." : data}</span>`;
+                    }
+                    return data;
+                  }
+                },
+                { title: "Estatus", width: "8%" },
+                { title: "Usuario Creación", width: "10%" },
+                { title: "Fecha Creación", width: "8%" },
+                { title: "Acciones", width: "3%", orderable: false, searchable: false }
+              ],
+              language: {
+                url: "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json",
+              },
+              order: [[1, "desc"]], // Ordenar por Nro Solicitud descendente
+              initComplete: function (settings, json) {
+                try {
+                  if (typeof $.fn.resizableColumns === 'function') {
+                    $("#tabla-ticket").resizableColumns();
+                  }
+                } catch (e) {
+                  console.warn("Plugin resizableColumns no disponible:", e);
+                }
+              }
+            });
+
+            // Truncado de celdas
+            $("#tabla-ticket")
+            .off("click", ".truncated-cell, .expanded-cell")
+            .on("click", ".truncated-cell, .expanded-cell", function (e) {
+              e.stopPropagation();
+              const $cellSpan = $(this);
+              const fullText = $cellSpan.data("full-text");
+              const displayLength = 25;
+              if ($cellSpan.hasClass("truncated-cell")) {
+                $cellSpan.removeClass("truncated-cell").addClass("expanded-cell").text(fullText);
+              } else if ($cellSpan.hasClass("expanded-cell")) {
+                $cellSpan.removeClass("expanded-cell").addClass("truncated-cell");
+                $cellSpan.text(fullText.length > displayLength ? fullText.substring(0, displayLength) + "..." : fullText);
+              }
+            });
+
+            // Handler dedicado para el botón "Ver Detalles" - REGISTRADO PRIMERO para que stopImmediatePropagation funcione
+            $("#tabla-ticket")
+              .off("click", ".view-admin-detail-btn")
+              .on("click", ".view-admin-detail-btn", function (e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                const btn = $(this);
+                const tr = btn.closest("tr");
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+
+                // Resaltar fila
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+
+                const reqId = rowData[0];
+                const ticket = TicketData.find(t => (t.id || t.id_ticket) == reqId);
+                if (!ticket) return;
+
+                const nroSolicitud = ticket.nro_solicitud || ticket.nro_ticket || '';
+                const razonSocial  = ticket.razon_social || ticket.razonsocial_cliente || 'N/A';
+                const tipoSolicitud = ticket.tipo_nombre || ticket.tipo_solicitud || 'Solicitud';
+
+                // Estado de carga en el botón
+                const originalHtml = btn.html();
+                btn.html(`<span class="spinner-border spinner-border-sm" role="status"></span>`).prop('disabled', true);
+
+                // Llamar al API para obtener el documento adjunto de la solicitud
+                const formData = new FormData();
+                formData.append('record_number', nroSolicitud);
+
+                fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentAttachmentByRecordNumber`, {
+                  method: 'POST',
+                  body: formData
+                })
+                .then(r => r.json())
+                .then(res => {
+                  btn.html(originalHtml).prop('disabled', false);
+
+                  const customTitle = `
+                    <i class="fas fa-file-alt me-2"></i>
+                    Soporte Digital &mdash; <span style="font-weight:400; font-size:0.9em;">${nroSolicitud}</span>
+                  `;
+                  const subtitle = `<span class="text-muted" style="font-size:0.85em;">${tipoSolicitud} &bull; ${razonSocial}</span>`;
+
+                  if (res && res.success && res.attachment) {
+                    const att = res.attachment;
+                    const filePath = att.file_path || '';
+                    const mime     = att.mime_type || '';
+                    const fileName = att.original_filename || 'Documento';
+
+                    const isImage = mime.startsWith('image/');
+                    const isPdf   = mime === 'application/pdf' || filePath.toLowerCase().endsWith('.pdf');
+
+                    if (typeof showViewModal === 'function') {
+                      showViewModal(
+                        reqId,
+                        nroSolicitud,
+                        isImage ? filePath : null,       // imageUrl
+                        isPdf   ? filePath : null,       // pdfUrl
+                        fileName,
+                        false,       // fromSelector = false (no regresar al selector)
+                        customTitle,
+                        subtitle
+                      );
+                    }
+                  } else {
+                    // Sin documento adjunto — mostrar modal con mensaje
+                    if (typeof showViewModal === 'function') {
+                      showViewModal(
+                        reqId,
+                        nroSolicitud,
+                        null,   // sin imagen
+                        null,   // sin pdf
+                        '',
+                        false,
+                        customTitle,
+                        subtitle
+                      );
+                    }
+                  }
+                })
+                .catch(err => {
+                  btn.html(originalHtml).prop('disabled', false);
+                  console.error('Error al obtener adjunto de solicitud:', err);
+                  if (typeof showViewModal === 'function') {
+                    showViewModal(reqId, nroSolicitud, null, null, '', false,
+                      `<i class="fas fa-exclamation-triangle me-2 text-warning"></i> Error al cargar documento`,
+                      null
+                    );
+                  }
+                });
+              });
+
+            // Handler del botón Editar (edit-admin-req-btn) - registrado antes de tbody tr
+            $("#tabla-ticket")
+              .off("click", ".edit-admin-req-btn")
+              .on("click", ".edit-admin-req-btn", function (e) {
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                const tr = $(this).closest("tr");
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+
+                const reqId = rowData[0];
+                const ticket = TicketData.find(t => (t.id || t.id_ticket) == reqId);
+                if (!ticket) return;
+
+                // Actualizar datos globales del ticket seleccionado
+                if (typeof currentTicketData !== 'undefined') currentTicketData = ticket;
+                else window.currentTicketData = ticket;
+
+                // Disparar evento personalizado con los datos de la solicitud
+                // Escúchalo con: document.addEventListener('adminReqEdit', e => { ... e.detail ... })
+                document.dispatchEvent(new CustomEvent('adminReqEdit', { detail: ticket }));
+              });
+
+            // Selección de Fila y Visualización de Detalles (registrado DESPUÉS del handler del botón)
+            $("#tabla-ticket")
+              .off("click", "tbody tr")
+              .on("click", "tbody tr", function (e) {
+                const clickedElement = $(e.target);
+                // Si el clic fue en cualquier botón (incluyendo view-admin-detail-btn), no procesar
+                if (clickedElement.is('button') ||
+                    clickedElement.closest('button').length > 0 ||
+                    clickedElement.hasClass('truncated-cell') ||
+                    clickedElement.hasClass('expanded-cell')) {
+                    return;
+                }
+                
+                e.stopPropagation();
+                
+                const tr = $(this);
+                const rowData = dataTableInstance.row(tr).data();
+                if (!rowData) return;
+                
+                $("#tabla-ticket tbody tr").removeClass("table-active");
+                tr.addClass("table-active");
+                
+                const reqId = rowData[0];
+                const selectedTicketDetails = TicketData.find(t => (t.id || t.id_ticket) == reqId);
+                
+                if (selectedTicketDetails && detailsPanel) {
+                  if (typeof currentTicketData !== 'undefined') currentTicketData = selectedTicketDetails;
+                  else window.currentTicketData = selectedTicketDetails;
+
+                  if (typeof formatAdminRequestDetailsPanel === "function") {
+                     detailsPanel.innerHTML = formatAdminRequestDetailsPanel(selectedTicketDetails);
+                  } else if (typeof formatTicketDetailsPanel === "function") {
+                     detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                  } else {
+                     detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                  }
+
+                  if (typeof loadTicketHistory === "function") {
+                     loadTicketHistory(reqId, selectedTicketDetails.nro_solicitud || selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '', selectedTicketDetails.id_cliente || '');
+                  }
+
+                  if (selectedTicketDetails.serial_pos && typeof downloadImageModal === "function") {
+                    downloadImageModal(selectedTicketDetails.serial_pos);
+                  } else {
+                    const imgElement = document.getElementById("device-ticket-image");
+                    if (imgElement) {
+                      imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                      imgElement.alt = "Serial no disponible";
+                    }
+                  }
+                } else {
+                  if (detailsPanel) detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                }
+              });
+
+
+            if (tableContainer) {
+              tableContainer.style.display = "";
+            }
+
+          } else {
+            // Sin datos disponibles
+            if (tableContainer) {
+                tableContainer.innerHTML = `
+                  <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Sin Solicitudes Disponibles</h5>
+                    <p>No hay solicitudes administrativas vigentes en este momento.</p>
+                  </div>`;
+                tableContainer.style.display = "";
+            }
+          }
+        } else {
+          tbody.innerHTML = '<tr><td colspan="8">Error al cargar datos del servidor</td></tr>';
+          console.error("API Error:", response.message);
+        }
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="8">Error al procesar la respuesta</td></tr>';
+        console.error("JSON Error parsing:", error);
+      }
+    } else if (xhr.status === 404) {
+        if (tableContainer) {
+            tableContainer.innerHTML = `
+              <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Sin Datos Disponibles</h5>
+                <p>Endpoint no encontrado o no generó datos.</p>
+              </div>`;
+            tableContainer.style.display = "";
+        }
+    } else {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8">Error de conexión</td></tr>';
+      console.error("Connection Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  xhr.onerror = function () {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8">Fallo en red</td></tr>';
+    console.error("Network problem");
+  };
+
+  xhr.send();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById("tabla-ticket") && window.location.pathname.includes('solicitudes')) {
+        getTicketDataFinaljs();
+    }
+});
 
 // Obtén una referencia al modal y al tbody de la tabla
 
@@ -1764,7 +1736,7 @@ function getDocumentType(url) {
 
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
 // Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null) {
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null, subtitle = null) {
   const modalElementView = document.getElementById("viewDocumentModal");
   const modalTitleView = document.getElementById("viewDocumentModalLabel"); // The H5 title
   const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
@@ -1772,6 +1744,7 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
   const pdfViewViewer = document.getElementById("pdfViewViewer");
   const messageContainer = document.getElementById("viewDocumentMessage");
   const nameDocumento = document.getElementById("NombreImage");
+  const subtituloDocumento = document.getElementById("SubtituloDocumento");
   const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
   const BotonCerrarModalSelect = document.getElementById("BotonCerrarSelectDocument");
 
@@ -1789,6 +1762,10 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
   pdfViewViewer.style.display = "none";
   messageContainer.textContent = "";
   messageContainer.classList.add("hidden");
+  
+  if (subtituloDocumento) {
+    subtituloDocumento.innerHTML = subtitle || "";
+  }
 
   if (imageUrl) {
     // Es una imagen
@@ -1813,29 +1790,34 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, from
     nameDocumento.textContent = "";
   }
 
-  const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
-  const VizualizarImage = document.getElementById('visualizarImagenModal');
-  const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
-  viewDocumentModal.show();
+  // Usamos el constructor directamente como pidió el usuario
+  const modalInstance = new bootstrap.Modal(modalElementView);
+  modalInstance.show();
   
   // Usamos onclick para limpiar listeners anteriores y manejar la lógica condicional
   BotonCerrarModal.onclick = function () {
     // Ocultar el modal de visualización
-    viewDocumentModal.hide();
+    modalInstance.hide();
                 
     // Mostrar nuevamente el modal de selección SOLO si venimos de él
     if (fromSelector) {
         setTimeout(() => {
-          visualizarImagenModal.show();
+          // Si el modal de selección existe, lo mostramos
+          const selectDocModal = document.getElementById('selectDocumentModal');
+          if (selectDocModal) {
+              const selectModalInstance = new bootstrap.Modal(selectDocModal);
+              selectModalInstance.show();
+          }
         }, 300); 
     }
   };
 
-  BotonCerrarModalSelect.addEventListener('click', function () {
-    // Ocultar el modal de visualización
-    visualizarImagenModal.hide();
-    
-  });
+  if (BotonCerrarModalSelect) {
+    BotonCerrarModalSelect.addEventListener('click', function () {
+      // Ocultar el modal de visualización
+      modalInstance.hide();
+    });
+  }
 }
 
 /**
@@ -1910,9 +1892,22 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 // --- Delegación de eventos para botones generados dinámicamente (Patrón del usuario) ---
     document.addEventListener("click", function (event) {
         
+        // Delegación para el botón "Registrar Exoneración"
+        const btnExoReg = event.target.closest("#btnExonerationRegistration");
+        if (btnExoReg) {
+            event.preventDefault();
+            const ticketId = btnExoReg.getAttribute("data-ticket-id");
+            const idClienteSQL = btnExoReg.getAttribute("data-id-cliente-sql");
+            const nroTicket = btnExoReg.getAttribute("data-nro-ticket");
+            const serialPos = btnExoReg.getAttribute("data-serial-pos");
+            const ticketTienePago = btnExoReg.getAttribute("data-ticket-tiene-pago") === "true"; // ✅ Capturar bandera
+            
+            openModalRegistroExoneracion(nroTicket, ticketId, serialPos, idClienteSQL, ticketTienePago);
+            return;
+        }
+
         // Delegación para el botón "Pago Presupuesto"
         const btnPayment = event.target.closest("#btnPaymentBudget");
-        
         if (btnPayment) {
             console.log("Click detected on #btnPaymentBudget (Native JS Delegation)"); // DEBUG
             event.preventDefault();
@@ -1964,7 +1959,7 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
     });
 
     // LISTENER PARA EL INPUT DE DOCUMENTO DE PAGO (Regular)
-    // === SOPORTE DIGITAL (NUEVO PAGO) ===
+    // Soporte Digital (Regular Pago Modal)
     if (document.getElementById('pago_documentFile')) {
         $(document).on('change', '#pago_documentFile', function() {
             handleFileSelection(
@@ -1985,44 +1980,12 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
         });
     }
 
-    // Botón Limpiar Pago (NUEVO PAGO)
+    // Botón Limpiar Pago (Regular)
     $(document).on('click', '#btn_clear_pago_file', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        resetFormPago(); // Reuse existing reset or custom one
-    });
-
-    function resetFormPago() {
-        // Reset Wrapper
-        const wrapper = document.getElementById('pago_upload_wrapper');
-        if (wrapper) {
-            wrapper.style.background = "transparent";
-            wrapper.style.border = "none";
-            wrapper.style.padding = "0";
-        }
-
-        // Reset inputs
-        const ids = ["formaPago", "montoBs", "montoRef", "referencia", "depositante", "obsAdministracion", "pago_documentFile"];
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = "";
-        });
-
-        const moneda = document.getElementById("moneda");
-        if (moneda) {
-            moneda.value = "";
-            moneda.removeAttribute("disabled");
-        }
-
-        // Reset File UI
         resetDocumentoPagoUI();
-        
-        const bancoCont = document.getElementById("bancoFieldsContainer");
-        if (bancoCont) bancoCont.style.display = "none";
-        
-        const pmCont = document.getElementById("pagoMovilFieldsContainer");
-        if (pmCont) pmCont.style.display = "none";
-    }
+    });
 
     function resetDocumentoPagoUI() {
         const wrapper = document.getElementById('pago_upload_wrapper');
@@ -2031,7 +1994,9 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
             wrapper.style.border = "none";
             wrapper.style.padding = "0";
         }
+        
         resetFileUI("pago_documentFile", "pago_fileStatusContainer", "pago_fileIconDisplay", "pago_fileNameText", "pago_fileDropZone");
+        validateBudget(false);
     }
 
     // VALIDACION DE MONTO LIMITE (PRESUPUESTO)
@@ -3140,6 +3105,720 @@ function loadPaymentHistory(nroTicket) {
 }
 
 /**
+ * Abre el modal de registro de exoneración
+ */
+function openModalRegistroExoneracion(nroTicket, ticketId, serialPos, idIntelipunto = '', ticketTienePago = false) {
+    // 1. Inicializar el modal de Bootstrap
+    const modalElement = document.getElementById('modalRegistroExoneracion');
+    if (!modalElement) {
+        console.error("Error: No se encontró el elemento modalRegistroExoneracion");
+        return;
+    }
+    
+    // Crear o recuperar la instancia del modal
+    modalRegistroExoInstance = new bootstrap.Modal(modalElement);
+    
+    // 2. Resetear el formulario y variables globales de control
+    const form = document.getElementById('formRegistroExoneracion');
+    if (form) form.reset();
+
+    // Sincronizamos la variable global para que los clics posteriores tengan el ID
+    idClienteSQL = idIntelipunto; 
+    
+    // 3. Llenar campos ocultos y de referencia
+    document.getElementById('exo_ticket_id').value = ticketId;
+    document.getElementById('exo_nro_ticket').value = nroTicket;
+    document.getElementById('exo_serial_pos').value = serialPos;
+    
+    const intelInput = document.getElementById('exo_id_intelipunto');
+    if (intelInput) intelInput.value = idIntelipunto || '';
+    
+    document.getElementById('subtituloExo').innerText = `Ticket #${nroTicket}`;
+    
+    // 4. Resetear botones de tipo y estados de bloqueo
+    document.querySelectorAll('.exoneration-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.remove('disabled');
+        btn.disabled = false;
+        // Restaurar texto original según el atributo data-type
+        const type = btn.getAttribute('data-type');
+        if (type === 'Anticipo') {
+            btn.innerHTML = '<i class="bi bi-cash"></i> Anticipo';
+        } else {
+            btn.innerHTML = '<i class="bi bi-tools"></i> Pago taller';
+        }
+    });
+
+    // 5. LÓGICA DE BLOQUEO: Si ya tiene pago, inhabilitar "Anticipo"
+    if (ticketTienePago) {
+        const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
+        if (btnAnticipo) {
+            btnAnticipo.classList.add('disabled');
+            btnAnticipo.disabled = true;
+            btnAnticipo.innerHTML = '<i class="bi bi-lock-fill"></i> Anticipo pagado';
+            
+            // Forzar selección de "Pago taller"
+            const btnPagoTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
+            if (btnPagoTaller) {
+                btnPagoTaller.click(); // Disparar el click para activar Pago Taller
+            }
+        }
+    } else {
+        // Estado normal: Seleccionar Anticipo por defecto
+        const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
+        if (btnAnticipo) {
+            btnAnticipo.classList.add('active');
+            const typeInput = document.getElementById('exo_tipo_seleccionado');
+            if (typeInput) typeInput.value = 'Anticipo';
+            updateExoCodeByType('Anticipo', idIntelipunto);
+            adjustExoSliderByType('Anticipo');
+        }
+    }
+    
+    // 6. Cargar historial
+    loadExonerationHistory(nroTicket);
+    
+    // 7. Resetear Soporte Digital
+    const fileInput = document.getElementById('exo_documentFile');
+    const fileStatus = document.getElementById('exo_fileStatus');
+    const dropZone = document.getElementById('exo_fileDropZone');
+    
+    if (fileInput) fileInput.value = '';
+    if (fileStatus) fileStatus.classList.add('d-none');
+    if (dropZone) dropZone.classList.remove('d-none');
+    
+    // 8. Mostrar el modal
+    modalRegistroExoInstance.show();
+
+    console.log(`Modal abierto para Ticket: ${nroTicket}, Cliente ID: ${idIntelipunto}`);
+}
+
+/**
+ * Actualiza el código de exoneración dinámicamente según el tipo seleccionado.
+ */
+
+function updateExoCodeByType(tipo, idClienteSQL) {
+    const serial = (document.getElementById('exo_serial_pos')?.value || '').toString();
+    const digits = serial.replace(/\D/g, '');
+    let last4 = digits.length >= 4 ? digits.slice(-4) : digits.padStart(4, '0');
+
+    const idPart = String(idClienteSQL || "0").substring(0, 4);
+
+    // Si no pasamos el tipo por parámetro, lo buscamos en el DOM
+    let tipoFinal = tipo;
+    if (!tipoFinal) {
+        // Buscamos el div que tiene la clase 'active' dentro del grupo
+        const btnActivo = document.querySelector('.exoneration-type-btn.active');
+        tipoFinal = btnActivo ? btnActivo.getAttribute('data-type') : 'Anticipo';
+    }
+
+    const typeIndicator = (tipoFinal === 'Anticipo') ? 'A' : 'T';
+    const autoCode = `Exo${idPart}-${last4}-${typeIndicator}`;
+    
+    const display = document.getElementById('exo_nro_generado');
+    if (display) display.innerText = autoCode;
+
+    const hidden = document.getElementById('exo_nro_hidden');
+    if (hidden) hidden.value = autoCode;
+}
+
+/**
+ * Ajusta el slider de exoneración según el tipo seleccionado.
+ * Para 'Anticipo', se fija en 100% y se deshabilita.
+ */
+function adjustExoSliderByType(type, isEdit = false) {
+    const sliderId = isEdit ? 'edit_porcentaje_slider' : 'exo_slider';
+    const badgeId = isEdit ? 'edit_porcentaje_badge' : 'exo_porcentaje_valor';
+    
+    const slider = document.getElementById(sliderId);
+    const badge = document.getElementById(badgeId);
+
+    if (!slider) return;
+
+    if (type === 'Anticipo') {
+        slider.value = 100;
+        slider.disabled = true;
+        slider.style.cursor = 'not-allowed';
+        slider.style.opacity = '0.7';
+        if (badge) badge.innerText = '100%';
+    } else {
+        slider.disabled = false;
+        slider.style.cursor = 'pointer';
+        slider.style.opacity = '1';
+        // No reseteamos el valor para permitir que el usuario elija, 
+        // pero podrías poner un default si prefieres.
+    }
+}
+
+/**
+ * Carga el historial de exoneraciones para un ticket.
+ */
+
+/**
+ * Valida el impacto de la exoneración propuesta contra lo ya pagado 
+ * para evitar sobrepagos/excedentes de dinero.
+ */
+function validateExonerationOverpaymentImpact() {
+    const selectedType = document.getElementById('exo_tipo_seleccionado')?.value || 'Anticipo';
+    const sliderVal = parseFloat(document.getElementById('exo_slider')?.value) || 0;
+    
+    if (typeof window.currentGrossBudget === 'undefined') return true;
+
+    const gross = window.currentGrossBudget || 0;
+    const currentPaid = window.currentTotalPaid || 0;
+    const currentHistory = window.currentExonerations || [];
+
+    // Lógica espejo del backend para el total ahorro (Suma de tipos, luego Max entre tipos)
+    let workshopSavingsTotal = 0;
+    let anticipoSavingsTotal = 0;
+
+    // 1. Sumar ahorros actuales del historial (evitar duplicar si es edición, pero aquí es registro nuevo)
+    currentHistory.forEach(exo => {
+        let type = (exo.tipo_exoneracion || 'Anticipo').toLowerCase();
+        let pct = parseFloat(exo.porcentaje) || 0;
+        if (type === 'pago taller' || type === 'taller' || type === 'presupuesto') {
+            workshopSavingsTotal += (gross * pct) / 100;
+        } else if (type === 'anticipo') {
+            anticipoSavingsTotal += (30.00 * pct) / 100;
+        }
+    });
+
+    // 2. Sumar el propuesto en el modal
+    if (selectedType.toLowerCase() === 'pago taller' || selectedType.toLowerCase() === 'taller' || selectedType.toLowerCase() === 'presupuesto') {
+        workshopSavingsTotal += (gross * sliderVal) / 100;
+    } else if (selectedType.toLowerCase() === 'anticipo') {
+        anticipoSavingsTotal += (30.00 * sliderVal) / 100;
+    }
+
+    // Ahorro total máximo (regla de absorción de anticipo)
+    let totalSaving = Math.max(workshopSavingsTotal, anticipoSavingsTotal);
+    let newNetBudget = Math.max(0, gross - totalSaving);
+
+    const infoContainer = document.getElementById('exo_limit_info_container');
+    const btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+
+    // 3. Validación: ¿Abonado > Presupuesto Neto?
+    if (currentPaid > (newNetBudget + 0.05) && gross > 0) {
+        const overflow = currentPaid - newNetBudget;
+        if (infoContainer) {
+            infoContainer.innerHTML = `
+                <div class="alert alert-danger border-0 shadow-sm mb-4 animate__animated animate__shakeX" 
+                     style="background: #fff5f5; border-radius: 12px; border-left: 5px solid #ff4d4f !important; padding: 15px; margin-top:-10px;">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px; min-width: 32px; box-shadow: 0 4px 10px rgba(255, 77, 79, 0.3);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 text-danger" style="font-weight: 700; font-size: 0.95rem;">Excedente de Pago Detectado</h6>
+                            <p class="mb-0 text-muted" style="font-size: 0.85rem; line-height: 1.4;">
+                                El cliente ya pagó <span class="fw-bold text-dark">$${currentPaid.toFixed(2)}</span>. 
+                                Con esta exoneración, el monto total baja a <span class="fw-bold text-dark">$${newNetBudget.toFixed(2)}</span>.
+                                <br><span class="text-danger fw-bold">Sobrante: $${overflow.toFixed(2)}</span>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+            btnGuardar.style.boxShadow = 'none';
+            btnGuardar.innerHTML = `<i class="fas fa-coins me-2"></i>Pago Excedido`;
+        }
+        return false;
+    } else {
+        if (infoContainer) infoContainer.innerHTML = "";
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.style.background = 'linear-gradient(135deg, #da1b60 0%, #ff8a00 100%)';
+            btnGuardar.style.boxShadow = '0 4px 15px rgba(218, 27, 96, 0.3)';
+            btnGuardar.innerHTML = `<i class="fas fa-save me-2"></i>Guardar Exoneración`;
+        }
+        return true;
+    }
+}
+
+// Listeners para el modal de exoneración (Slider y Botones de Tipo)
+document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'exo_slider') {
+        const val = e.target.value;
+        const display = document.getElementById('exo_porcentaje_valor');
+        if (display) display.innerText = `${val}%`;
+        // Validar impacto de sobrepago
+        validateExonerationOverpaymentImpact();
+    }
+    if (e.target && e.target.id === 'edit_porcentaje_slider') {
+        const val = e.target.value;
+        const display = document.getElementById('edit_porcentaje_badge');
+        if (display) display.innerText = `${val}%`;
+    }
+});
+
+document.addEventListener('click', function(e) {
+    // Selección de tipo (Anticipo o Pago Taller)
+    const typeBtn = e.target.closest('.exoneration-type-btn');
+    if (typeBtn) {
+        if (typeBtn.classList.contains('disabled')) return;
+        
+        // UI: Cambiar la clase activa
+        document.querySelectorAll('.exoneration-type-btn').forEach(btn => btn.classList.remove('active'));
+        typeBtn.classList.add('active');
+        
+        const selectedType = typeBtn.getAttribute('data-type');
+        const hiddenInput = document.getElementById('exo_tipo_seleccionado');
+        if (hiddenInput) hiddenInput.value = selectedType;
+        
+        // ACTUALIZACIÓN: Pasamos el tipo y la variable global idClienteSQL
+        updateExoCodeByType(selectedType, idClienteSQL);
+        
+        // REGLA DEL 100% PARA ANTICIPO
+        adjustExoSliderByType(selectedType);
+        // Validar impacto de sobrepago
+        validateExonerationOverpaymentImpact();
+    }
+    
+    // Botón Sincronizar (Guardar Directo con Confirmación)
+    if (e.target && e.target.id === 'btnSincronizarExoneracion') {
+        // Asegurarnos que es el del modal de registro
+        if (e.target.closest('#modalRegistroExoneracion')) {
+            confirmAndSaveExoneration();
+        }
+    }
+
+    // Botón Cerrar Modal Exoneración
+    const closeExoBtn = e.target.closest('.btn-close-custom');
+    if (closeExoBtn) {
+        if (typeof modalRegistroExoInstance !== 'undefined' && modalRegistroExoInstance) {
+            modalRegistroExoInstance.hide();
+        } else {
+            const modalElement = document.getElementById('modalRegistroExoneracion');
+            if (modalElement) {
+                bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+            }
+        }
+    }
+    
+    // Botones para cerrar el Modal de Edición de Exoneración (X y Cancelar)
+    const btnCloseEditExo = e.target.closest('#btnCloseEditExoneracion, #btnCancelEditExoneracion');
+    if (btnCloseEditExo) {
+        if (window.editExoModalInstance) {
+            window.editExoModalInstance.hide();
+        } else {
+            // Fallback en caso de que la instancia no esté disponible
+            const el = document.getElementById('modalEditExoneracion');
+            if (el) bootstrap.Modal.getOrCreateInstance(el).hide();
+        }
+    }
+    // Botón Guardar Edición Exoneración
+    const btnSaveEditExo = e.target.closest('#btnGuardarEdicionExo');
+    if (btnSaveEditExo) {
+        confirmAndUpdateExoneration();
+    }
+});
+
+/**
+ * Procesa la actualización de una exoneración existente.
+ */
+function confirmAndUpdateExoneration() {
+    const form = document.getElementById('formEditExoneracion');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const btn = document.getElementById('btnGuardarEdicionExo');
+    
+    // FIX: Si el slider está deshabilitado, FormData lo ignora.
+    if (!formData.has('porcentaje')) {
+        const slider = document.getElementById('edit_porcentaje_slider');
+        if (slider) formData.append('porcentaje', slider.value);
+    }
+
+    // El nro de ticket lo obtenemos del campo oculto del modal de REGISTRO que es el Padre
+    const nroTicket = document.getElementById('exo_nro_ticket').value;
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+    btn.disabled = true;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateExoneration`);
+    
+    xhr.onload = function() {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Actualizado!',
+                        text: 'La exoneración ha sido actualizada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Cerrar Modal de Edición
+                    if (window.editExoModalInstance) window.editExoModalInstance.hide();
+                    
+                    // Recargar el Historial para mostrar los cambios
+                    if (typeof loadExonerationHistory === 'function') {
+                        loadExonerationHistory(nroTicket);
+                    }
+                    
+                } else {
+                    Swal.fire('Error', data.message || 'Error al actualizar', 'error');
+                }
+            } catch (e) {
+                console.error("Error procesando respuesta:", e);
+                Swal.fire('Error', 'Error procesando respuesta del servidor', 'error');
+            }
+        } else {
+            Swal.fire('Error', 'Error de conexión con el servidor', 'error');
+        }
+    };
+    
+    xhr.onerror = () => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        Swal.fire('Error', 'Error de red', 'error');
+    };
+
+    xhr.send(formData);
+}
+
+/**
+ * Muestra aviso informativo y guarda la exoneración directamente en la tabla principal.
+ */
+function confirmAndSaveExoneration() {
+    const form = document.getElementById('formRegistroExoneracion');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    const nroTicket = formData.get('nro_ticket');
+    const tipo = formData.get('tipo_exoneracion');
+    
+    // FIX: Si el slider está deshabilitado (como en Anticipo), FormData lo ignora.
+    if (!formData.has('porcentaje')) {
+        const slider = document.getElementById('exo_slider');
+        if (slider) formData.append('porcentaje', slider.value);
+    }
+    
+    const porcentaje = formData.get('porcentaje');
+    const nroExo = formData.get('nro_exoneracion');
+    const btn = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+    const fileInput = document.getElementById('exo_documentFile');
+
+    // Validación final de sobrepago antes de confirmar
+    if (!validateExonerationOverpaymentImpact()) {
+        return; // El mensaje ya se muestra en el modal y el botón está bloqueado
+    }
+
+    // Validación de archivo obligatoria
+    if (!fileInput || !fileInput.files.length) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Soporte Requerido',
+            text: 'Debe adjuntar el documento de soporte digital para procesar la exoneración.',
+            confirmButtonColor: '#da1b60'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: '',
+        html: `
+            <div style="text-align: center; margin-bottom: 25px; margin-top: -15px;">
+                <!-- Guaranteed Icon Render -->
+                <div style="
+                    display: inline-block;
+                    width: 76px;
+                    height: 76px;
+                    background-color: #f0fdf4;
+                    border-radius: 22px;
+                    border: 2px solid #dcfce7;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 15px auto;
+                    box-shadow: 0 8px 16px rgba(34, 197, 94, 0.08);
+                ">
+                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iIzIyYzU1ZSIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMTAuODU0IDcuMTQ2YS41LjUuMCAwIDEgMCAuNzA4bC0zIDNhLjUuNSAwIDAgMS0uNzA4IDBsLTEuNS0xLjVhLjUuNSAwIDEgMSAuNzA4LS43MDhMNy41IDkuNzkzbDIuNjQ2LTIuNjQ3YS41LjUuMCAwIDEgLjcwOCAweiIvPjxwYXRoIGQ9Ik00IDBhMiAyIDAgMCAwLTIgMnYxMmEyIDIgMCAwIDAgMiAyaDhhMiAyIDAgMCAwIDItMlY0LjcwN0ExIDEgMCAwIDAgMTEuNzA3IDRMOC41IDAuNzkzQTEgMSAwIDAgMCA3LjI5MyAwSDR6bTAgMWgzdjIuNUExLjUgMS41IDAgMCAwIDguNSA1SDExdjlhMSAxIDAgMCAxLTEgMUg0YTEgMSAwIDAgMS0xLTFWMmExIDEgMCAwIDEgMS0xaDUuNXYyeiIvPjwvc3ZnPg==" 
+                         style="width: 40px; height: 40px; display: block;" 
+                         alt="Success" />
+                </div>
+                
+                <h2 style="color: #0f172a; font-weight: 800; font-size: 1.65rem; margin: 0; letter-spacing: -0.02em; font-family: 'Inter', sans-serif;">Confirmar Registro</h2>
+                <p style="color: #64748b; font-size: 0.95rem; margin-top: 6px; font-weight: 400; font-family: 'Inter', sans-serif;">¿Los datos ingresados son correctos?</p>
+            </div>
+
+                <div style="padding: 0 5px;">
+                    <!-- Card Principal -->
+                    <div style="
+                        background: #ffffff;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 24px;
+                        padding: 20px;
+                        text-align: left;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+                    ">
+                        <!-- Sección Superior: Info Ticket -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                            <div>
+                                <span style="display: block; font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; font-family: 'Inter', sans-serif;">Número de Ticket</span>
+                                <span style="font-size: 1.1rem; font-weight: 800; color: #1e293b; font-family: 'Inter', sans-serif;">#${nroTicket}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="display: block; font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; font-family: 'Inter', sans-serif;">Tipo Aplicado</span>
+                                <span style="
+                                    display: inline-block;
+                                    padding: 4px 12px;
+                                    border-radius: 8px;
+                                    font-size: 0.75rem;
+                                    font-weight: 700;
+                                    font-family: 'Inter', sans-serif;
+                                    background: ${tipo === 'Anticipo' ? '#fffbeb' : '#fef2f2'};
+                                    color: ${tipo === 'Anticipo' ? '#b45309' : '#b91c1c'};
+                                    border: 1px solid ${tipo === 'Anticipo' ? '#fde68a' : '#fecaca'};
+                                ">
+                                    ${tipo.toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Sección Central: Código Destacado -->
+                        <div style="
+                            background: #f8fafc;
+                            border-radius: 18px;
+                            padding: 15px;
+                            text-align: center;
+                            margin-bottom: 20px;
+                            border: 1px dashed #cbd5e1;
+                        ">
+                            <span style="display: block; font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; font-family: 'Inter', sans-serif;">Código de Identificación</span>
+                            <span style="
+                                font-family: 'Monaco', 'Consolas', monospace;
+                                font-size: 1.25rem;
+                                font-weight: 800;
+                                color: #da1b60;
+                                letter-spacing: 1px;
+                            ">${nroExo || '—'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sección Inferior: Detalles -->
+            <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
+                    <span style="color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#2563eb" viewBox="0 0 16 16"><path d="M13.5 1a1.5 1.5 0 0 1 1.5 1.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11A1.5 1.5 0 0 1 2.5 1h11zM2.5 2a.5.5 0 0 0-.5.5v11a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-11a.5.5 0 0 0-.5-.5h-11z"/><path d="M4 4.5a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5H7a.5.5 0 0 1 0 1H4.5a.5.5 0 0 1-.5-.5zM9 4a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V4zm1 .5v1h1v-1h-1zM9 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V8zm1 .5v1h1v-1h-1z"/></svg>
+                                Descuento Aplicado
+                            </span>
+                            <span style="font-weight: 800; color: #2563eb; font-size: 1.1rem;">${porcentaje}%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#16a34a" viewBox="0 0 16 16"><path d="M4.5 3a.5.5 0 0 0-.5.5V11h8V3.5a.5.5 0 0 0-.5-.5h-7z"/><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3z"/></svg>
+                                Documento Soporte
+                            </span>
+                            <span style="color: #1e293b; font-size: 0.75rem; font-weight: 500; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                ${fileInput.files[0].name}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'GUARDAR REGISTRO',
+        cancelButtonText: 'CANCELAR',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#f1f5f9',
+        reverseButtons: true,
+        padding: '2rem',
+        background: '#ffffff',
+        customClass: {
+            popup: 'swal2-modern-popup',
+            confirmButton: 'swal2-modern-confirm',
+            cancelButton: 'swal2-modern-cancel'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .swal2-modern-popup {
+                    border-radius: 32px !important;
+                    font-family: 'Inter', -apple-system, sans-serif !important;
+                }
+                .swal2-modern-confirm {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+                    color: white !important;
+                    border-radius: 16px !important;
+                    padding: 14px 32px !important;
+                    font-weight: 700 !important;
+                    font-size: 0.9rem !important;
+                    letter-spacing: 0.02em !important;
+                    border: none !important;
+                    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2) !important;
+                    margin-left: 10px !important;
+                    cursor: pointer !important;
+                }
+                .swal2-modern-cancel {
+                    background: #f8fafc !important;
+                    color: #64748b !important;
+                    border-radius: 16px !important;
+                    padding: 14px 32px !important;
+                    font-weight: 700 !important;
+                    font-size: 0.9rem !important;
+                    border: 1px solid #e2e8f0 !important;
+                    cursor: pointer !important;
+                }
+                .swal2-html-container {
+                    margin: 1.5rem 0 0 0 !important;
+                    overflow: visible !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Proceder al guardado directo
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+            btn.disabled = true;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveExoneracionDirect`);
+            
+            xhr.onload = function() {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Guardado!',
+                                text: 'La exoneración y su soporte han sido registrados correctamente.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            // Recargar historial
+                            loadExonerationHistory(nroTicket);
+                            // Resetear formulario y archivo
+                            form.reset();
+                            const fileStatus = document.getElementById('exo_fileStatus');
+                            const dropZone = document.getElementById('exo_fileDropZone');
+                            if (fileStatus) fileStatus.classList.add('d-none');
+                            if (dropZone) dropZone.classList.remove('d-none');
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'No se pudo registrar la exoneración.'
+                            });
+                        }
+                    } catch (e) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Error al procesar la respuesta.' });
+                    }
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error HTTP ' + xhr.status });
+                }
+            };
+            
+            xhr.onerror = () => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Error de red.' });
+            };
+
+            // Enviar como FormData para incluir el archivo
+            xhr.send(formData);
+        }
+    });
+}
+
+/**
+ * Manejo de eventos para el Soporte Digital (Archivos)
+ */
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'exo_documentFile') {
+        const file = e.target.files[0];
+        const statusDiv = document.getElementById('exo_fileStatus');
+        const fileNameSpan = document.getElementById('exo_fileName');
+        const dropZone = document.getElementById('exo_fileDropZone');
+        const uploadContainer = document.querySelector('.exo-upload-container');
+
+        if (!file) {
+            if (statusDiv) statusDiv.classList.add('d-none');
+            if (dropZone) dropZone.classList.remove('d-none');
+            if (uploadContainer) {
+                uploadContainer.style.background = '#ffffff';
+                uploadContainer.style.border = 'none';
+            }
+            return;
+        }
+
+        const maxSize = 5 * 1024 * 1024;
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+
+        if (file.size > maxSize || !allowedTypes.includes(file.type)) {
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Archivo no válido', 
+                text: file.size > maxSize ? 'No debe exceder los 5MB.' : 'Formato no permitido.' 
+            });
+            e.target.value = '';
+            return;
+        }
+
+        if (statusDiv && fileNameSpan && dropZone) {
+            fileNameSpan.textContent = file.name;
+            statusDiv.classList.remove('d-none');
+            dropZone.classList.add('d-none');
+            
+            if (uploadContainer) {
+                uploadContainer.style.background = '#ecfdf5';
+                uploadContainer.style.border = '2px dashed #10b981';
+                uploadContainer.style.borderRadius = '20px';
+                uploadContainer.style.padding = '10px';
+            }
+        }
+    }
+});
+
+// Lógica para limpiar el archivo en el modal de registro/detalle
+document.addEventListener('click', function(e) {
+    if (e.target.closest('#btn_clear_exo_file')) {
+        const fileInput = document.getElementById('exo_documentFile');
+        const statusDiv = document.getElementById('exo_fileStatus');
+        const dropZone = document.getElementById('exo_fileDropZone');
+        const uploadContainer = document.querySelector('.exo-upload-container');
+        
+        if (fileInput) fileInput.value = '';
+        if (statusDiv) statusDiv.classList.add('d-none');
+        if (dropZone) dropZone.classList.remove('d-none');
+        
+        if (uploadContainer) {
+            uploadContainer.style.background = '#ffffff';
+            uploadContainer.style.border = 'none';
+            uploadContainer.style.padding = '0';
+        }
+    }
+});
+
+// Al hacer clic en el status del archivo, permitir cambiarlo
+document.addEventListener('click', function(e) {
+    const fileStatus = e.target.closest('#exo_fileStatus');
+    if (fileStatus) {
+        document.getElementById('exo_documentFile').click();
+    }
+});
+
+/**
  * Carga el monto total abonado para un ticket específico.
  * @param {string} nroTicket - Número de ticket
  * @param {number} budgetAmount - Monto del presupuesto
@@ -3184,8 +3863,8 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     // El usuario pide que el Card de Presupuesto muestre el monto bruto (sin deducciones)
                     let totalGrossBudget = parseFloat(response.gross_budget) || totalBudget;
                     
-                    // El "Restante" se calcula sobre el presupuesto NETO (ya exonerado)
-                    // Incluimos tanto lo PAGADO como lo PENDIENTE para evitar sobre-presupuesto.
+                    // El "Restante" para PAGAR se calcula restando tanto lo PAGADO como lo PENDIENTE
+                    // para evitar duplicidad de pagos mientras se revisan (usando el presupuesto NETO).
                     const coveredAmount = totalPaid + totalPending;
                     const remaining = Math.max(0, totalBudget - coveredAmount);
                     
@@ -3196,6 +3875,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     window.currentGrossBudget = totalGrossBudget; // Official gross budget
                     window.currentRemaining = remaining;
                     window.currentExoneracionPorcentaje = exoneracionPorcentaje;
+                    window.currentExonerations = response.all_exonerations || []; // Guardamos el historial completo
                     
                     // Bandera para permitir carga de Anticipo ($30) aunque el presupuesto sea 0
                     window.isAnticipoPhase = (totalBudget <= 0 && exoneracionPorcentaje > 0);
@@ -3218,51 +3898,32 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
                     montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
                     
-                    // 3. SECCIÓN DEDICADA DE EXONERACIÓN (INFORMATIVA - DESGLOSE DETALLADO)
+                    // 3. SECCIÓN DEDICADA DE EXONERACIÓN (INFORMATIVA)
                     const exonerationSection = document.getElementById("exonerationSection");
-                    const exonerationList = document.getElementById("exonerationBreakdownList");
-                    const totalAhorroElement = document.getElementById("exonerationTotalAhorro");
-
-                    if (exonerationSection && exonerationList && response.all_exonerations && response.all_exonerations.length > 0) {
+                    const exonerationDetailText = document.getElementById("exonerationDetailText");
+                    const exonerationAmountText = document.getElementById("exonerationAmountText");
+                    
+                    if (exoneracionPorcentaje > 0 && exonerationSection) {
                         exonerationSection.style.display = "block";
-                        exonerationList.innerHTML = "";
-                        let workshopTotalAhorro = 0;
-                        let anticipoTotalAhorro = 0;
-
-                        response.all_exonerations.forEach(exo => {
-                            let type = exo.tipo_exoneracion || 'Anticipo';
-                            let pct = parseFloat(exo.porcentaje) || 0;
-                            
-                            // Determinar base según tipo
-                            let baseValue = 30.00; // Default Anticipo
-                            if (type.toLowerCase() === 'pago taller' || type.toLowerCase() === 'taller' || type.toLowerCase() === 'presupuesto') {
-                                let grossBudget = parseFloat(response.gross_budget) || totalBudget;
-                                baseValue = grossBudget > 0 ? grossBudget : 0;
-                                workshopTotalAhorro += (baseValue * pct) / 100;
-                            } else if (type.toLowerCase() === 'anticipo') {
-                                anticipoTotalAhorro += (30.00 * pct) / 100;
+                        if (exonerationDetailText) {
+                            // Base para el cálculo informativo: Dinámico basado en tipo_exoneracion
+                            let baseParaInfo = window.nominalAnticipoBase; // Default
+                            if (tipoExoneracion === 'Presupuesto') {
+                                baseParaInfo = totalBudget > 0 ? totalBudget : 0;
                             }
                             
-                            let individualSavings = (baseValue * pct) / 100;
-
-                            const row = document.createElement("div");
-                            row.className = "d-flex justify-content-between align-items-center mb-2";
-                            row.style.fontSize = "0.85rem";
-                            row.innerHTML = `
-                                <div class="text-muted">
-                                    <span class="fw-bold text-dark">${type}:</span> 
-                                    Base $${baseValue.toFixed(2)} (${pct}%)
-                                </div>
-                                <div class="fw-bold text-success">-$${individualSavings.toFixed(2)}</div>
+                            const descuentoInfo = (baseParaInfo * exoneracionPorcentaje) / 100;
+                            const montoNetoInformativo = baseParaInfo - descuentoInfo;
+                            
+                            exonerationDetailText.innerHTML = `
+                                <span style="font-weight: 500;">Base (${tipoExoneracion}):</span> $${baseParaInfo.toFixed(2)} | 
+                                <span style="font-weight: 500;">Exoneración:</span> ${exoneracionPorcentaje}% | 
+                                <span style="font-weight: 500;">Neto:</span> $${montoNetoInformativo.toFixed(2)}
                             `;
-                            exonerationList.appendChild(row);
-                        });
-
-                        // El ahorro total es el máximo de los dos tipos
-                        let finalAhorro = Math.max(workshopTotalAhorro, anticipoTotalAhorro);
-
-                        if (totalAhorroElement) {
-                            totalAhorroElement.textContent = `-$${finalAhorro.toFixed(2)}`;
+                            
+                            if (exonerationAmountText) {
+                                exonerationAmountText.textContent = `Ahorro -$${descuentoInfo.toFixed(2)}`;
+                            }
                         }
                     } else if (exonerationSection) {
                         exonerationSection.style.display = "none";
@@ -3756,13 +4417,7 @@ function validateBudget(showModal = false) {
     const remaining = window.currentRemaining || 0;
     
     // Safety check: if remaining is 0 (Fully Paid) AND we have a budget, keep it disabled
-    if (window.currentBudgetAmount > 0 && remaining <= 0.001) {
-         if (btnGuardar) btnGuardar.disabled = true;
-         return;
-    }
-    
-    // Lógica de Bloqueo "Sin Restricciones" para Anticipos
-    // Si estamos en fase Anticipo (budget 0), permitimos hasta $30 nominales
+    // If estamos en fase Anticipo (budget 0), permitimos cargar pagos siempre.
     let isOverBudget = false;
     if (window.isAnticipoPhase) {
         isOverBudget = inputAmount > (window.nominalAnticipoBase + 0.001);
@@ -4316,7 +4971,7 @@ function initializeDocumentNameGenerator() {
 
 /**
  * Generador dinámico de número de registro para el modal de Sustituir Pago.
- * Sigue el patrón: Pago[Ultimos4Ref]_[Ultimos4Serial]
+ * Sigue el patrón: Pago + [Ultimos4Ref] + _ + [Ultimos4Serial]
  */
 function initializeSustDocumentNameGenerator() {
     const referenciaInput = document.getElementById("sust_referencia");
@@ -4958,6 +5613,12 @@ function abrirModalSustituirPago(paymentData) {
 }
 
 function resetSustFileUI() {
+    const wrapper = document.getElementById('sust_upload_wrapper');
+    if (wrapper) {
+        wrapper.style.background = "transparent";
+        wrapper.style.border = "none";
+        wrapper.style.padding = "0";
+    }
     resetFileUI("sust_documentFile", "sust_fileStatusContainer", "sust_fileIconDisplay", "sust_fileNameText", "sust_fileDropZone");
     validateSustBudget(false);
 }
@@ -4990,15 +5651,18 @@ function handleFileSelection(input, containerId, iconId, textId, dropZoneId, btn
         const isValidType = allowedTypes.includes(file.type);
         const isValidSize = file.size <= 5 * 1024 * 1024;
 
+        const successIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#22c55e" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>';
+        const errorIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ef4444" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293z"/></svg>';
+
         if (isValidType && isValidSize) {
-            // Estilo Premium: Tarjeta blanca sobre fondo esmeralda (fondo puesto por el listener)
+            // Estilo Premium: Tarjeta blanca sobre fondo esmeralda (manejado por el listener)
             if (container) {
                 container.style.background = "#ffffff";
                 container.style.border = "1px solid #d1fae5";
-                container.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)";
-                container.style.borderRadius = "16px";
+                container.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05)";
             }
             if (text) text.style.color = "#065f46";
+            if (icon) icon.innerHTML = successIcon;
             if (btn) btn.disabled = false;
         } else {
             if (container) {
@@ -5009,6 +5673,7 @@ function handleFileSelection(input, containerId, iconId, textId, dropZoneId, btn
                 text.style.color = "#c53030";
                 text.textContent = !isValidType ? "Formato no permitido" : "Excede 5MB";
             }
+            if (icon) icon.innerHTML = errorIcon;
             if (btn) {
                 btn.disabled = true;
                 btn.title = "Archivo no válido";
@@ -5326,7 +5991,7 @@ $(document).on('change', '#sust_documentFile', function() {
     }
 });
 
-// Botón Limpiar Sustitución (Sustituir pago)
+// Botón Limpiar Sustitución (Sustituir modal)
 $(document).on('click', '#btn_clear_sust_file', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -5340,14 +6005,9 @@ function resetSustFileUI() {
         wrapper.style.border = "none";
         wrapper.style.padding = "0";
     }
+    
     resetFileUI("sust_documentFile", "sust_fileStatusContainer", "sust_fileIconDisplay", "sust_fileNameText", "sust_fileDropZone");
 }
-
-// Permitir resetear al hacer click en el cuadro del nombre (Sustitución modal)
-$(document).on('click', '#sust_fileStatusContainer', function() {
-    resetSustFileUI();
-    document.getElementById('sust_documentFile').click();
-});
 
 // Drag-and-drop
 $(document).on('dragover', '#sust_fileDropZone', function(e) {
@@ -5518,3 +6178,826 @@ $(document).on('click', '#btnGuardarSustituirPago', async function() {
     }
 });
 
+/**
+ * =========================================================================
+ * HISTORIAL DE EXONERACIONES - VER SOPORTE Y EDITAR DATOS
+ * =========================================================================
+ */
+
+/**
+ * Muestra el soporte de la exoneración (PDF o Imagen)
+ */
+
+/**
+ * Lista global de historial para poder recuperar los datos a editar.
+ * Modificamos loadExonerationHistory para que guarde globalmente los datos.
+ */
+
+/**
+ * Abre el modal de edición de datos para una exoneración
+ */
+
+// Event Listeners para Modal Edición
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Slider Porcentaje
+    const editSlider = document.getElementById('edit_porcentaje_slider');
+    const editBadge = document.getElementById('edit_porcentaje_badge');
+    if (editSlider && editBadge) {
+        editSlider.addEventListener('input', (e) => {
+            editBadge.textContent = `${e.target.value}%`;
+        });
+    }
+
+    // File Input
+    // File Input (Premium)
+    const editFile = document.getElementById('edit_documentFile');
+    if (editFile) {
+        editFile.addEventListener('change', (e) => {
+            const initial = document.getElementById('edit_upload_initial');
+            const preview = document.getElementById('edit_upload_preview');
+            const fileNameComp = document.getElementById('edit_fileNameDisplay');
+            const uploadArea = document.getElementById('edit_upload_area');
+
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if (fileNameComp) fileNameComp.textContent = file.name;
+                
+                if (initial) initial.classList.add('d-none');
+                if (preview) preview.classList.remove('d-none');
+                if (uploadArea) {
+                    uploadArea.style.background = '#ecfdf5';
+                    uploadArea.style.borderColor = '#10b981';
+                }
+            } else {
+                if (initial) initial.classList.remove('d-none');
+                if (preview) preview.classList.add('d-none');
+                if (uploadArea) {
+                    uploadArea.style.background = '#fafafa';
+                    uploadArea.style.borderColor = '#e2e8f0';
+                }
+            }
+        });
+    }
+
+    // Botón para limpiar selección de archivo
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#btn_clear_edit_file')) {
+            const input = document.getElementById('edit_documentFile');
+            if (input) {
+                input.value = '';
+                input.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+
+    // Guardar Edición (Eliminado: duplicado manejado en listener delegado)
+});
+
+// =========================================================================
+// FUNCIONES GLOBALES DE EXONERACIÓN (Fuera de DOMContentLoaded para alcance)
+// =========================================================================
+
+/**
+ * Carga el historial de exoneraciones para un ticket.
+ */
+function loadExonerationHistory(nroTicket) {
+    const tableBody = document.getElementById("historyExonerationBody");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = `<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin me-2"></i>Cargando historial...</td></tr>`;
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetExonerationHistory`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            try {
+                const data = JSON.parse(xhr.responseText);
+                if (data.success && data.history) {
+                    
+                    // Asignar al contexto global para el editor
+                    currentExonerationHistory = data.history;
+
+                    // Analizar tipos existentes para deshabilitar botones y mostrar info limit
+                    let hasAnticipo = false;
+                    let hasTaller = false;
+                    let hasWorkshop = data.has_workshop_history || false;
+                    let rejectionCount = 0;
+                    let dataAnticipo = null;
+                    let dataTaller = null;
+                    
+                    if (data.history.length === 0) {
+                        tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay exoneraciones registradas.</td></tr>`;
+                    } else {
+                        let html = '';
+                        data.history.forEach(exo => {
+                            const isRejected = parseInt(exo.id_status_payment) === 12;
+                            if (isRejected) {
+                                rejectionCount++;
+                            }
+
+                            if (exo.tipo_exoneracion === 'Anticipo' && !isRejected) {
+                                hasAnticipo = true;
+                                dataAnticipo = exo;
+                            }
+                            if (exo.tipo_exoneracion === 'Pago taller' && !isRejected) {
+                                hasTaller = true;
+                                dataTaller = exo;
+                            }
+
+                             const date = new Date(exo.fecha_creacion).toLocaleDateString('es-VE');
+                             const typeBadgeClass = exo.tipo_exoneracion === 'Anticipo' ? 'bg-warning' : 'bg-danger';
+                             
+                             // Mapeo de Estatus (id_status_payment)
+                             let statusLabel = 'Desconocido';
+                             let statusBadgeClass = 'bg-secondary';
+                             
+                             const statusId = parseInt(exo.id_status_payment);
+                             if (statusId === 4) {
+                                 statusLabel = 'Aprobado';
+                                 statusBadgeClass = 'bg-success';
+                             } else if (statusId === 5) {
+                                 statusLabel = 'Pendiente';
+                                 statusBadgeClass = 'bg-warning';
+                             } else if (statusId === 12) {
+                                 statusLabel = 'Rechazado';
+                                 statusBadgeClass = 'bg-danger';
+                             }
+                            
+                            // Botón VER (Búsqueda dinámica por Nro)
+                            const btnView = `<button class="btn btn-sm shadow-none border-0 px-2 py-1 m-1" 
+                                               onclick="viewExonerationSupportByNro('${exo.nro_exoneracion}', '${nroTicket}')" 
+                                               title="Ver Soporte" 
+                                               style="display: inline-flex; align-items: center; justify-content: center; background: #3b82f6; color: white; border-radius: 8px; width: 32px; height: 32px; transition: all 0.2s;">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                              </svg>
+                                           </button>`;
+
+                            // Botón EDITAR (Solo si NO está aprobado)
+                            const btnEdit = (statusId !== 4) ? `<button class="btn btn-sm shadow-none border-0 px-2 py-1 m-1" 
+                                                onclick="openEditExonerationModal(${exo.id_exoneracion})" 
+                                                title="Editar Datos" 
+                                                style="display: inline-flex; align-items: center; justify-content: center; background: #17ad37; color: white; border-radius: 8px; width: 32px; height: 32px; transition: all 0.2s;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>` : '';
+
+                            html += `
+                                 <tr>
+                                     <td class="text-center align-middle"><span class="badge ${typeBadgeClass}" style="font-size: 0.75rem; border-radius: 4px; padding: 4px 8px;">${exo.tipo_exoneracion}</span></td>
+                                     <td class="font-weight-bold text-center align-middle" style="font-size: 0.95rem;">${Math.round(parseFloat(exo.porcentaje))}%</td>
+                                     <td class="text-center align-middle"><span class="text-primary font-weight-bold" style="font-size: 0.9rem;">${exo.nro_exoneracion}</span></td>
+                                     <td class="text-xxs text-center align-middle">${date}</td>
+                                     <td class="text-center align-middle"><span class="badge ${statusBadgeClass}" style="font-size: 0.75rem; border-radius: 4px; padding: 4px 8px;">${statusLabel}</span></td>
+                                    <td class="text-center align-middle" style="min-width: 100px;">
+                                        ${btnView}
+                                        ${btnEdit}
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        tableBody.innerHTML = html;
+                    }
+
+                    // Actualizar estado de los botones de tipo (Gris si ya existe)
+                    const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
+                    const btnTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
+                    
+                    if (btnAnticipo) {
+                        if (hasAnticipo || hasWorkshop) {
+                            btnAnticipo.classList.add('disabled');
+                            btnAnticipo.classList.remove('active'); // Remover active si estaba
+                            btnAnticipo.style.opacity = '0.5';
+                            btnAnticipo.style.background = '#e9ecef';
+                            btnAnticipo.style.color = '#adb5bd';
+                            btnAnticipo.style.borderColor = '#dee2e6';
+                            btnAnticipo.title = hasWorkshop ? "No se permite exoneración de Anticipo porque el ticket ya pasó por taller" : "Ya existe una exoneración de este tipo";
+                        } else {
+                            btnAnticipo.classList.remove('disabled');
+                            btnAnticipo.style.opacity = '1';
+                            btnAnticipo.style.background = ''; // Volver al estilo original
+                            btnAnticipo.style.color = '';
+                            btnAnticipo.style.borderColor = '';
+                            btnAnticipo.title = "Exoneración de Anticipo";
+                        }
+                    }
+                    
+                    if (btnTaller) {
+                        if (hasTaller) {
+                            btnTaller.classList.add('disabled');
+                            btnTaller.classList.remove('active');
+                            btnTaller.style.opacity = '0.5';
+                            btnTaller.style.background = '#e9ecef';
+                            btnTaller.style.color = '#adb5bd';
+                            btnTaller.style.borderColor = '#dee2e6';
+                            btnTaller.title = "Ya existe una exoneración de este tipo";
+                        } else {
+                            btnTaller.classList.remove('disabled');
+                            btnTaller.style.opacity = '1';
+                            btnTaller.style.background = '';
+                            btnTaller.style.color = '';
+                            btnTaller.style.borderColor = '';
+                            btnTaller.title = "Exoneración de Taller";
+                        }
+                    }
+
+                    // LÓGICA DE LÍMITE Y BLOQUE INFORMATIVO
+                    const btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
+                    const infoContainer = document.getElementById('exo_limit_info_container');
+
+                    const hasReachedAttemptLimit = rejectionCount >= 2;
+                    const hasBothTypes = hasAnticipo && hasTaller;
+
+                    if (hasReachedAttemptLimit || hasBothTypes) {
+                        // BLOQUEO TOTAL
+                        if (btnGuardar) {
+                            btnGuardar.disabled = true;
+                            btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
+                            btnGuardar.style.boxShadow = 'none';
+                            btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Límite Alcanzado`;
+                        }
+                        
+                        // Inyectar bloque informativo premium
+                        if (infoContainer) {
+                            const getStatusText = (id) => {
+                                id = parseInt(id);
+                                if (id === 4) return '<span style="color: #10b981; font-weight: 700;">Aprobado</span>';
+                                if (id === 5) return '<span style="color: #f59e0b; font-weight: 700;">Pendiente</span>';
+                                if (id === 7) return '<span style="color: #f59e0b; font-weight: 700;">Pendiente</span>';
+                                if (id === 12) return '<span style="color: #ef4444; font-weight: 700;">Rechazado</span>';
+                                return '<span class="text-secondary">Desconocido</span>';
+                            };
+
+                            let title = "Límite de Exoneraciones Alcanzado";
+                            let message = "Este ticket ya cuenta con ambas exoneraciones permitidas:";
+                            let icon = "fa-shield-alt";
+                            let accentColor = "#667eea";
+                            let glowColor = "rgba(102, 126, 234, 0.4)";
+
+                            if (hasReachedAttemptLimit) {
+                                title = "ATENCIÓN: INTENTOS AGOTADOS";
+                                message = "Se ha alcanzado el límite máximo de <b>2 exoneraciones rechazadas</b> para este ticket.";
+                                icon = "fa-exclamation-triangle";
+                                accentColor = "#da1b60"; // Rosa fuerte/Rojo
+                                glowColor = "rgba(218, 27, 96, 0.4)";
+                            }
+
+                            // Build the details list based on active docs
+                            let detailsHtml = '';
+                            if (hasBothTypes) {
+                                const dateAnt = new Date(dataAnticipo.fecha_creacion).toLocaleDateString('es-VE');
+                                const dateTal = new Date(dataTaller.fecha_creacion).toLocaleDateString('es-VE');
+                                detailsHtml = `
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-6">
+                                            <div class="p-3" style="background: white; border-radius: 12px; border: 1px solid #e1e7f0; border-left: 5px solid #ff9800; box-shadow: 0 4px 10px rgba(0,0,0,0.02); height: 100%;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div style="font-size: 0.65rem; font-weight: 850; color: #3b50a3; letter-spacing: 0.8px; text-transform: uppercase;">ANTICIPO</div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f8fafc; padding: 2px 8px; border-radius: 6px; border: 1px solid #f1f5f9;">${Math.round(dataAnticipo.porcentaje)}%</div>
+                                                </div>
+                                                <div style="font-size: 0.95rem; color: #1e293b; font-weight: 700; margin-bottom: 1px;">${dateAnt}</div>
+                                                <div style="font-size: 0.8rem; color: #475569; margin-bottom: 8px; font-family: monospace; font-weight: 600;">${dataAnticipo.nro_exoneracion}</div>
+                                                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                                                    <div style="font-size: 0.85rem;">${getStatusText(dataAnticipo.id_status_payment)}</div>
+                                                    <div style="font-size: 0.7rem; color: #94a3b8; text-align: right;">
+                                                        <i class="fas fa-user-circle me-1"></i>${dataAnticipo.user_name} ${dataAnticipo.user_surname}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="p-3" style="background: white; border-radius: 12px; border: 1px solid #e1e7f0; border-left: 5px solid #f44336; box-shadow: 0 4px 10px rgba(0,0,0,0.02); height: 100%;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div style="font-size: 0.65rem; font-weight: 850; color: #3b50a3; letter-spacing: 0.8px; text-transform: uppercase;">PAGO TALLER</div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f8fafc; padding: 2px 8px; border-radius: 6px; border: 1px solid #f1f5f9;">${Math.round(dataTaller.porcentaje)}%</div>
+                                                </div>
+                                                <div style="font-size: 0.95rem; color: #1e293b; font-weight: 700; margin-bottom: 1px;">${dateTal}</div>
+                                                <div style="font-size: 0.8rem; color: #475569; margin-bottom: 8px; font-family: monospace; font-weight: 600;">${dataTaller.nro_exoneracion}</div>
+                                                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                                                    <div style="font-size: 0.85rem;">${getStatusText(dataTaller.id_status_payment)}</div>
+                                                    <div style="font-size: 0.7rem; color: #94a3b8; text-align: right;">
+                                                        <i class="fas fa-user-circle me-1"></i>${dataTaller.user_name} ${dataTaller.user_surname}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            }
+
+                            infoContainer.innerHTML = `
+                                <div class="premium-limit-alert p-4 animate__animated animate__fadeInDown" 
+                                     style="background: #ffffff; 
+                                            border-radius: 24px; 
+                                            border: 2px solid ${accentColor}; 
+                                            box-shadow: 0 20px 50px rgba(0,0,0,0.1), 0 0 20px ${glowColor}; 
+                                            position: relative; 
+                                            overflow: hidden;
+                                            margin-bottom: 25px;">
+                                    
+                                    <!-- Background Pattern -->
+                                    <div style="position: absolute; right: -20px; top: -20px; opacity: 0.05; transform: rotate(-15deg);">
+                                        <i class="fas ${icon}" style="font-size: 150px; color: ${accentColor};"></i>
+                                    </div>
+
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="limit-icon-container" style="background: #7389f4; color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(115, 137, 244, 0.3);">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="white" viewBox="0 0 16 16">
+                                                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ms-3">
+                                            <h6 class="mb-0" style="color: #0f172a; font-weight: 850; letter-spacing: 0.5px; text-transform: uppercase; font-size: 0.95rem;">${title}</h6>
+                                        </div>
+                                    </div>
+
+                                    <p style="color: #475569; font-size: 0.95rem; line-height: 1.5; margin-bottom: 0;">${message}</p>
+                                    ${detailsHtml}
+                                    
+                                    <div class="mt-3 py-2 px-3" style="background: rgba(0,0,0,0.03); border-radius: 10px; border: 1px dashed #cbd5e1;">
+                                        <span class="small text-muted"><i class="fas fa-info-circle me-1"></i> Para casos especiales, contacte al administrador del sistema.</span>
+                                    </div>
+
+                                    <style>
+                                        .limit-icon-pulse { animation: iconPulse 2s infinite; }
+                                        @keyframes iconPulse {
+                                            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0.15); }
+                                            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0,0,0,0); }
+                                            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+                                        }
+                                    </style>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        // Resetear si no hay límite
+                        if (btnGuardar) {
+                            btnGuardar.disabled = false;
+                            btnGuardar.style.background = 'linear-gradient(135deg, #da1b60 0%, #ff8a00 100%)';
+                            btnGuardar.style.boxShadow = '0 4px 15px rgba(218, 27, 96, 0.3)';
+                            btnGuardar.innerHTML = `
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" class="me-2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                Guardar Exoneración
+                            `;
+                        }
+                        if (infoContainer) infoContainer.innerHTML = '';
+                    }
+
+                    // Si uno ya existe, intentar seleccionar el otro automáticamente
+                    if (hasAnticipo && !hasTaller && btnTaller) {
+                        btnTaller.click();
+                    } else if (hasTaller && !hasAnticipo && btnAnticipo) {
+                        btnAnticipo.click();
+                    }
+
+                }
+            } catch (e) {
+                console.error("Error parsing history JSON:", e);
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error al procesar el historial.</td></tr>`;
+            }
+        }
+    };
+
+    xhr.send(`nro_ticket=${nroTicket}`);
+}
+
+/**
+ * Muestra el soporte de la exoneración (PDF o Imagen)
+ * Redirigido a showViewModal para unificación y limpieza de rutas.
+ */
+function viewExonerationSupport(filePath, nroTicket = '', nroExoneracion = '') {
+    if (!filePath) return;
+    
+    // Obtener extensión para determinar si es imagen o PDF
+    const ext = filePath.split('.').pop().toLowerCase();
+    const isPdf = (ext === 'pdf');
+    const documentName = 'Soporte de Exoneración';
+    
+    // Titular unificado
+    const title = 'Visualizando Soporte de Exoneración';
+    // Subtítulo descriptivo con Ticket y Exoneración para el cuerpo del modal
+    const subtitle = `Ticket: <b>${nroTicket}</b> | Exoneración: <b>${nroExoneracion}</b>`;
+    
+    // Redirigir al visor unificado que ya aplica cleanFilePath
+    if (isPdf) {
+        showViewModal('', nroTicket, null, filePath, documentName, false, title, subtitle);
+    } else {
+        showViewModal('', nroTicket, filePath, null, documentName, false, title, subtitle);
+    }
+}
+
+/**
+ * Busca y visualiza el soporte de una exoneración por su número (record_number).
+ */
+function viewExonerationSupportByNro(nroExoneracion, nroTicket = '') {
+    if (!nroExoneracion) {
+        Swal.fire({ icon: 'warning', title: 'Sin número', text: 'No se puede buscar el soporte sin el número de exoneración.' });
+        return;
+    }
+
+    // Mostrar loader con SweetAlert2 para una experiencia más fluida
+    Swal.fire({
+        title: 'Buscando soporte...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPaymentAttachmentByRecordNumber`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function() {
+        Swal.close();
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success && response.attachment && response.attachment.file_path) {
+                    viewExonerationSupport(response.attachment.file_path, nroTicket, nroExoneracion);
+                } else {
+                    Swal.fire({ icon: 'info', title: 'Aviso', text: 'No se encontró un documento adjunto para esta exoneración.' });
+                }
+            } catch (e) {
+                console.error("Error parsing attachment JSON:", e);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Ocurrió un error al procesar la respuesta del servidor.' });
+            }
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo conectar con el servidor para obtener el soporte.' });
+        }
+    };
+
+    xhr.onerror = function() {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'Error de Red', text: 'Hubo un problema de conexión al buscar el documento.' });
+    };
+
+    const params = [
+        `record_number=${encodeURIComponent(nroExoneracion)}`,
+        nroTicket ? `nro_ticket=${encodeURIComponent(nroTicket)}` : '',
+        `document_type=${encodeURIComponent('Exoneracion')}`
+    ].filter(Boolean).join('&');
+
+    xhr.send(params);
+}
+
+/**
+ * Versión base64 del visor
+ */
+function viewExonerationSupportBase64(base64Path) {
+    try {
+        const decodedPath = decodeURIComponent(escape(atob(base64Path)));
+        viewExonerationSupport(decodedPath);
+    } catch (e) {
+        console.error("Error decoding path:", e);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Ruta de archivo inválida.' });
+    }
+}
+
+/**
+ * Abre el modal de edición de exoneración.
+ */
+function openEditExonerationModal(idExoneracion) {
+    const exoData = currentExonerationHistory.find(e => parseInt(e.id_exoneracion) === parseInt(idExoneracion));
+    if (!exoData) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se encontraron los datos de la exoneración.' });
+        return;
+    }
+
+    // Setear datos iniciales
+    document.getElementById('edit_id_exoneracion').value = exoData.id_exoneracion;
+    document.getElementById('edit_tipo_exoneracion').value = exoData.tipo_exoneracion;
+    
+    const slider = document.getElementById('edit_porcentaje_slider');
+    if (slider) {
+        slider.value = exoData.porcentaje || 50;
+        // Aplicar regla del 100% si es anticipo
+        adjustExoSliderByType(exoData.tipo_exoneracion, true);
+        
+        // Si no es Anticipo, actualizar el badge con el valor real
+        if (exoData.tipo_exoneracion !== 'Anticipo') {
+            const badge = document.getElementById('edit_porcentaje_badge');
+            if (badge) badge.textContent = `${Math.round(slider.value)}%`;
+        }
+    }
+
+    // Resetear input file y UI Premium
+    const fileInput = document.getElementById('edit_documentFile');
+    if (fileInput) {
+        fileInput.value = '';
+        fileInput.dispatchEvent(new Event('change'));
+    }
+
+    // Inicializar Bootstrap Modal
+    const editModalEl = document.getElementById('modalEditExoneracion');
+    let editModal = window.editExoModalInstance || new bootstrap.Modal(editModalEl);
+    window.editExoModalInstance = editModal;
+
+    // ✅ Cerrar el modal de registro/historial antes de abrir el de edición
+    const regModalEl = document.getElementById('modalRegistroExoneracion');
+    if (regModalEl) {
+        new bootstrap.Modal(regModalEl).hide();
+    }
+
+    editModal.show();
+}
+
+/* ============================================================
+   MODAL DE EDICIÓN DE SOLICITUD ADMINISTRATIVA
+   Escucha el evento 'adminReqEdit' disparado por el botón ✏️
+   ============================================================ */
+document.addEventListener('adminReqEdit', function (e) {
+  const ticket = e.detail;
+  if (!ticket) return;
+
+  const nroSolicitud  = ticket.nro_solicitud  || ticket.nro_ticket   || '';
+  const razonSocial   = ticket.razon_social   || ticket.razonsocial_cliente || 'N/A';
+  const tipo          = ticket.tipo_nombre    || ticket.tipo_solicitud || 'N/A';
+  const observacion   = ticket.observacion    || '';
+  const reqId         = ticket.id            || ticket.id_ticket     || '';
+
+  // Poblar campos del modal
+  document.getElementById('editReqId').value           = reqId;
+  document.getElementById('editReqNro').value          = nroSolicitud;
+  document.getElementById('editReqTipo').value         = tipo;
+  document.getElementById('editReqRazon').value        = razonSocial;
+  document.getElementById('editReqObservacion').value  = observacion;
+  
+  // Limpiar archivo previo y resetear UI de soporte digital
+  resetEditReqFileUI();
+
+  // Subtítulo del modal
+  const subtitle = document.getElementById('editAdminReqSubtitle');
+  if (subtitle) subtitle.textContent = `${nroSolicitud}  ·  ${razonSocial}`;
+
+  // Limpiar alerta previa
+  const alertEl = document.getElementById('editReqAlert');
+  if (alertEl) { alertEl.className = 'alert mt-3 d-none'; alertEl.textContent = ''; }
+
+  // Limpiar validaciones visuales previas
+  const obs = document.getElementById('editReqObservacion');
+  if (obs) obs.classList.remove('is-invalid');
+
+  // Abrir el modal
+  const modalEl = document.getElementById('editAdminReqModal');
+  if (modalEl) {
+    // Guardamos la instancia en una variable global para poder cerrarla luego
+    window.editAdminReqModalInstance = new bootstrap.Modal(modalEl);
+    window.editAdminReqModalInstance.show();
+  }
+});
+
+/* ---- Handler del botón "Guardar Cambios" del modal de edición ---- */
+document.addEventListener('DOMContentLoaded', function () {
+  const saveBtn = document.getElementById('editReqSaveBtn');
+  if (!saveBtn) return;
+
+  saveBtn.addEventListener('click', function () {
+    const nroSolicitud = document.getElementById('editReqNro').value.trim();
+    const observacion  = document.getElementById('editReqObservacion').value.trim();
+    const fileInput    = document.getElementById('editReqFile');
+    const alertEl      = document.getElementById('editReqAlert');
+    const obsEl        = document.getElementById('editReqObservacion');
+
+    if (!observacion) {
+      obsEl.classList.add('is-invalid');
+      if (alertEl) {
+        alertEl.className = 'alert alert-premium-danger mt-3';
+        alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> <span>La observación es obligatoria.</span>`;
+        alertEl.classList.remove('d-none');
+      }
+      return;
+    }
+    
+    if (!fileInput || fileInput.files.length === 0) {
+      if (alertEl) {
+        alertEl.className = 'alert alert-premium-danger mt-3';
+        alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> <span>Debe subir un nuevo soporte digital para realizar la actualización.</span>`;
+        alertEl.classList.remove('d-none');
+      }
+      const statusCard = document.getElementById('editReqFileStatusCard');
+      if (statusCard) statusCard.style.setProperty('border-color', '#dc3545', 'important');
+      return;
+    }
+
+    obsEl.classList.remove('is-invalid');
+    if (alertEl) alertEl.classList.add('d-none');
+    const statusCard = document.getElementById('editReqFileStatusCard');
+    if (statusCard) statusCard.style.removeProperty('border-color');
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando...`;
+
+    const formData = new FormData();
+    formData.append('nro_solicitud', nroSolicitud);
+    formData.append('observacion',   observacion);
+    if (fileInput && fileInput.files.length > 0) {
+      formData.append('support_file', fileInput.files[0]);
+    }
+
+    fetch(`${ENDPOINT_BASE}${APP_PATH}api/consulta/UpdateAdministrativeRequest`, {
+      method: 'POST',
+      body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i class="bi bi-save2-fill"></i> Guardar Cambios`;
+
+      if (res && res.success) {
+        if (alertEl) {
+          alertEl.className = 'alert alert-premium-success mt-3';
+          alertEl.innerHTML = `<i class="bi bi-check-circle-fill"></i> <span>${res.message || 'Solicitud actualizada correctamente.'}</span>`;
+        }
+        setTimeout(() => {
+          if (window.editAdminReqModalInstance) {
+            window.editAdminReqModalInstance.hide();
+          } else {
+            document.getElementById('CloseEditReqModal')?.click();
+          }
+          if (typeof getTicketDataFinaljs === 'function') getTicketDataFinaljs();
+        }, 1500);
+      } else {
+        if (alertEl) {
+          alertEl.className = 'alert alert-premium-danger mt-3';
+          alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> <span>${res.message || 'Error al actualizar la solicitud.'}</span>`;
+        }
+      }
+    })
+    .catch(err => {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = `<i class="bi bi-save2-fill"></i> Guardar Cambios`;
+      if (alertEl) {
+        alertEl.className = 'alert alert-premium-danger mt-3';
+        alertEl.innerHTML = `<i class="bi bi-wifi-off"></i> <span>Error de conexión.</span>`;
+      }
+    });
+  });
+
+  // Limpiar error de observación al escribir
+  const obsInput = document.getElementById('editReqObservacion');
+  if (obsInput) {
+    obsInput.addEventListener('input', function() {
+      this.classList.remove('is-invalid');
+      const alertEl = document.getElementById('editReqAlert');
+      if (alertEl && alertEl.textContent.includes('observación')) {
+        alertEl.classList.add('d-none');
+      }
+    });
+  }
+});
+
+/**
+ * Resetea la UI del campo de soporte digital en el modal de edición de solicitudes
+ */
+function resetEditReqFileUI() {
+    const input = document.getElementById('editReqFile');
+    const container = document.getElementById('editReqFileStatus');
+    const fileName = document.getElementById('editReqFileName');
+    const dropZone = document.getElementById('editReqFileDropZone');
+    const card = document.getElementById('editReqFileStatusCard');
+    const iconBg = document.getElementById('editReqFileIconBg');
+    const iconContainer = document.getElementById('editReqFileIcon');
+    const badge = document.getElementById('editReqFileBadge');
+    const statusText = document.getElementById('editReqStatusText');
+    const saveBtn = document.getElementById('editReqSaveBtn');
+
+    if (input) input.value = '';
+    if (container) {
+        container.classList.add('d-none');
+        container.style.setProperty('display', 'none', 'important');
+    }
+    if (fileName) fileName.textContent = '';
+    if (dropZone) dropZone.style.setProperty('display', 'block', 'important');
+    
+    // Reset styles to success (default)
+    if (card) {
+        card.style.background = "#ffffff";
+        card.style.borderColor = "#d1fae5";
+    }
+    if (iconBg) iconBg.style.background = "#ecfdf5";
+    if (iconContainer) {
+        iconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#059669" class="bi bi-file-earmark-check" viewBox="0 0 16 16"><path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>`;
+    }
+    if (badge) badge.style.background = "#10b981";
+    if (statusText) {
+        statusText.textContent = "Listo para actualizar";
+        statusText.className = "text-success fw-bold";
+    }
+    if (saveBtn) saveBtn.disabled = false;
+}
+
+/**
+ * Listeners para el nuevo cargador de archivos Premium
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById('editReqFile');
+    const clearBtn = document.getElementById('btn_clear_editReq_file');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            const statusContainer = document.getElementById('editReqFileStatus');
+            const fileNameDisplay = document.getElementById('editReqFileName');
+            const dropZone = document.getElementById('editReqFileDropZone');
+            
+            const card = document.getElementById('editReqFileStatusCard');
+            const iconBg = document.getElementById('editReqFileIconBg');
+            const iconContainer = document.getElementById('editReqFileIcon');
+            const badge = document.getElementById('editReqFileBadge');
+            const statusText = document.getElementById('editReqStatusText');
+            const saveBtn = document.getElementById('editReqSaveBtn');
+
+            if (file) {
+                if (fileNameDisplay) fileNameDisplay.textContent = file.name;
+                
+                if (statusContainer) {
+                    statusContainer.classList.remove('d-none');
+                    statusContainer.style.setProperty('display', 'block', 'important');
+                }
+                
+                if (dropZone) {
+                    dropZone.style.setProperty('display', 'none', 'important');
+                }
+
+                // VALIDACIÓN DE TAMAÑO (10MB)
+                const maxSize = 10 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    // ESTILO DE ERROR (Rojo)
+                    if (card) {
+                        card.style.background = "#fff5f5";
+                        card.style.borderColor = "#ff8a8a";
+                    }
+                    if (iconBg) {
+                        iconBg.style.background = "#ffe4e4";
+                        iconBg.style.borderRadius = "12px";
+                    }
+                    if (iconContainer) {
+                        iconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ef4444" class="bi bi-file-earmark-x" viewBox="0 0 16 16"><path d="M6.854 7.146a.5.5 0 1 0-.708.708L7.293 9l-1.147 1.146a.5.5 0 0 0 .708.708L8 9.707l1.146 1.147a.5.5 0 0 0 .708-.708L8.707 9l1.147-1.146a.5.5 0 0 0-.708-.708L8 8.293z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>`;
+                    }
+                    if (badge) {
+                        badge.style.background = "#ef4444";
+                        badge.style.color = "white";
+                    }
+                    if (statusText) {
+                        statusText.textContent = "Excede 10MB";
+                        statusText.className = "text-danger fw-bold ms-2";
+                        statusText.style.fontSize = "0.75rem";
+                    }
+                    if (saveBtn) {
+                        saveBtn.disabled = true;
+                        saveBtn.style.opacity = "0.6";
+                        saveBtn.style.cursor = "not-allowed";
+                        saveBtn.style.boxShadow = "none";
+                    }
+                } else {
+                    // RESET A ÉXITO (por si venía de un error previo)
+                    if (card) {
+                        card.style.background = "#ffffff";
+                        card.style.borderColor = "#d1fae5";
+                    }
+                    if (iconBg) iconBg.style.background = "#ecfdf5";
+                    if (iconContainer) {
+                        iconContainer.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#059669" class="bi bi-file-earmark-check" viewBox="0 0 16 16"><path d="M10.854 7.854a.5.5 0 0 0-.708-.708L7.5 9.793 6.354 8.646a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/></svg>`;
+                    }
+                    if (badge) {
+                        badge.style.background = "#10b981";
+                        badge.style.color = "white";
+                    }
+                    if (statusText) {
+                        statusText.textContent = "Listo para actualizar";
+                        statusText.className = "text-success fw-bold";
+                        statusText.style.fontSize = "0.7rem";
+                    }
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.style.opacity = "1";
+                        saveBtn.style.cursor = "pointer";
+                        saveBtn.style.boxShadow = "0 4px 14px rgba(26,109,255,0.4)";
+                    }
+                }
+            }
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            resetEditReqFileUI();
+        });
+    }
+});
+
+/* ---- Handler para cerrar el modal manualmente si falla data-bs-dismiss ---- */
+document.addEventListener('click', function (e) {
+  if (e.target.closest('#CloseEditReqModal')) {
+    if (window.editAdminReqModalInstance) {
+      window.editAdminReqModalInstance.hide();
+    }
+    // El atributo data-bs-dismiss="modal" en el HTML también ayudará.
+  }
+});

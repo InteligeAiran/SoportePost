@@ -94,11 +94,11 @@ class UserRepository
    public function getUserPermissions($userId) {
         $permissions = [];
 
-        // Obtén todas las vistas disponibles
         $resultViews = $this->model->getview();
         $viewsToCheck = [];
+        
+        error_log("DEBUG PERMISSIONS: Found " . ($resultViews['numRows'] ?? 0) . " views to check.");
 
-        // Itera sobre los resultados y extrae los nombres de las vistas
         for ($i = 0; $i < $resultViews['numRows']; $i++) {
             $row = pg_fetch_assoc($resultViews['query'], $i);
             if ($row && isset($row['name_view'])) {
@@ -107,20 +107,17 @@ class UserRepository
         }
         pg_free_result($resultViews['query']);
 
-        // Ahora itera sobre los nombres de las vistas y obtén los permisos del usuario
         foreach ($viewsToCheck as $viewName) {
             $resultPermission = $this->model->getUserPermission($userId, $viewName);
-            //var_dump($resultPermission); // Para depurar, muestra los resultados de la consulta
-
-        
-                $permissionValue = reset($resultPermission['row']);
-                if ($permissionValue === true || ($permissionValue) === 't') {
-                    $permissions[$viewName] = true;
-                    //var_dump($viewName.'-> '.($permissionValue === true? 'Permitido' : 'Denegado'));
-                } else {
-                    $permissions[$viewName] = false;
-                   // var_dump($viewName.'-> Denegado');
-                }
+            $permissionValue = reset($resultPermission['row']);
+            
+            // Convertir a booleano de forma flexible
+            $hasPerm = ($permissionValue === true || $permissionValue === 't' || $permissionValue === 1 || $permissionValue === '1');
+            $permissions[$viewName] = $hasPerm;
+            
+            if ($hasPerm) {
+                error_log("DEBUG PERMISSIONS: User $userId HAS permission for $viewName ($permissionValue)");
+            }
         }
         return $permissions;
     }
@@ -244,6 +241,10 @@ class UserRepository
         return $result;
     }
     
+    public function UpdateSession($id_user, $session_id) {
+        return $this->model->UpdateSession($id_user, $session_id);
+    }
+
     public function checkUserStatus($id_user){
         // Lógica para verificar el estado del usuario
         $result = $this->model->checkUserStatus($id_user);
