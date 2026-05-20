@@ -1476,12 +1476,12 @@ function mi_navbar() {}
                                         <button type="button" class="btn-custom-action btn-falla2" id="createTicketFalla2Btn">
                                             Ticket Falla 2
                                         </button>
-                                        <button type="button" class="btn-custom-action btn-visita" id="registrarVisitaBtn">
+                                        <!--button type="button" class="btn-custom-action btn-visita" id="registrarVisitaBtn">
                                             <i class="bi bi-calendar-check-fill me-2"></i>Registrar Visita
-                                        </button>
-                                        <button type="button" class="btn-custom-action btn-crear-solicitud" id="crearSolicitudBtn" style="background: linear-gradient(135deg, #0dcaf0 0%, #00acc1 100%); border: none; color: white; padding: 10px 20px; border-radius: 12px; font-weight: 700;">
+                                        </button-->
+                                        <!--button type="button" class="btn-custom-action btn-crear-solicitud" id="crearSolicitudBtn" style="background: linear-gradient(135deg, #0dcaf0 0%, #00acc1 100%); border: none; color: white; padding: 10px 20px; border-radius: 12px; font-weight: 700;">
                                              <i class="bi bi-plus-circle-fill me-2"></i>Crear Solicitud
-                                        </button>
+                                        </button-->
                                     </div>
                                     <div class="mt-3 w-100 d-flex justify-content-center" id="txtDescripcion"></div>
                                     <!--div class="mt-3 w-100 d-flex justify-content-center">
