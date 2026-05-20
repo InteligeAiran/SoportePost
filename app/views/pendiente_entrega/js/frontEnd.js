@@ -279,7 +279,7 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
             }
 
           // Construir la URL completa
-          return `http://${HOST}/Documentos/${cleanPath}`;
+          return `//${HOST}/Documentos/${cleanPath}`;
         }
 
     // Función para mostrar un documento

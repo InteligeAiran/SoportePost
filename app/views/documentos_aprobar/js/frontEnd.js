@@ -2800,7 +2800,10 @@ $(document).ready(function () {
   }
 });
 
-function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0, paymentReference = null, recordNumber = null) {
+function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName, serialPos, documentoRechazado, idStatusPayment = 0, paymentReference = null, recordNumber = null, specificRecordId = null, tipoExoneracion = '', porcentaje = '') {
+    if (specificRecordId) {
+        currentIdPaymentRecord = specificRecordId;
+    }
     console.log("showApprovalModal called with ticketId (Display/ID):", ticketId);
     currentTicketIdForImage = ticketId; // Usar el ID recibido (puede ser el nro_ticket, el backend lo resolverá si es necesario)
     // Obtener elementos del modal de aprobación
@@ -2817,8 +2820,36 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     const rejectDocumentBtn = document.getElementById("RechazoDocumento");
     const paymentValidationContainer = document.getElementById("paymentValidationContainer");
     
-    // ✅ Verificar si el documento está aprobado (id_status_payment = 6)
-    const isDocumentApproved = parseInt(idStatusPayment) === 6;
+    // ✅ Almacenar metadatos específicos en el botón para la aprobación individual
+    if (approveTicketFromImageBtn) {
+        if (specificRecordId) {
+            approveTicketFromImageBtn.setAttribute('data-record-id', specificRecordId);
+        } else {
+            approveTicketFromImageBtn.removeAttribute('data-record-id');
+        }
+
+        if (recordNumber) {
+            approveTicketFromImageBtn.setAttribute('data-record-number', recordNumber);
+        } else {
+            approveTicketFromImageBtn.removeAttribute('data-record-number');
+        }
+
+        if (tipoExoneracion) {
+            approveTicketFromImageBtn.setAttribute('data-tipo-exoneracion', tipoExoneracion);
+        } else {
+            approveTicketFromImageBtn.removeAttribute('data-tipo-exoneracion');
+        }
+
+        if (porcentaje) {
+            approveTicketFromImageBtn.setAttribute('data-porcentaje', porcentaje);
+        } else {
+            approveTicketFromImageBtn.removeAttribute('data-porcentaje');
+        }
+    }
+    
+    // ✅ Verificar si el documento está aprobado (4=Exo Aprobada, 6=Aprobado Genérico)
+    // El estatus 5 es "Pendiente por revisión", por lo que NO cuenta como aprobado para ocultar botones.
+    const isDocumentApproved = [4, 6].includes(parseInt(idStatusPayment));
 
     // LIMPIEZA COMPLETA Y FORZADA
     if (mediaViewerContainer) {
@@ -2850,7 +2881,11 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     }
 
     // Establecer información del ticket
+    const currentRecordNumberDisplay = document.getElementById("currentRecordNumberDisplay");
     currentTicketIdDisplay.textContent = ticketId;
+    if (currentRecordNumberDisplay) {
+        currentRecordNumberDisplay.textContent = recordNumber || 'N/A';
+    }
     currentImageTypeDisplay.textContent = documentType;
     currentDocumentNameDisplay.textContent = fileName || 'Sin nombre';
     currentSerialDisplay.textContent = serialPos || 'Sin posición';
@@ -2875,7 +2910,8 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
     if (pathSegments.length > 1) {
       cleanPath = pathSegments[1];
     }
-    return `http://${HOST}/Documentos/${cleanPath}`;
+    const host = (typeof HOST !== 'undefined' && HOST) ? HOST : window.location.host;
+    return `//${host}/Documentos/${cleanPath}`;
   }
 
     // CONFIGURAR EL CONTENIDO CON MANEJO DE ERRORES
@@ -2949,7 +2985,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             approveTicketFromImageBtn.style.display = 'block';
         }
         if (rejectDocumentBtn) {
-            rejectDocumentBtn.style.display = documentoRechazado ? 'none' : 'block';
+            rejectDocumentBtn.style.display = (documentoRechazado === 'Sí') ? 'none' : 'block';
         }
     } else {
         console.log('No es documento de Anticipo, ocultando contenedor de validación');
@@ -2962,7 +2998,7 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             approveTicketFromImageBtn.style.display = 'block';
         }
         if (rejectDocumentBtn) {
-            rejectDocumentBtn.style.display = documentoRechazado ? 'none' : 'block';
+            rejectDocumentBtn.style.display = (documentoRechazado === 'Sí') ? 'none' : 'block';
         }
     }
     
@@ -7596,7 +7632,7 @@ $(document).ready(function() {
         });
 
         $.ajax({
-            url: `${ENDPOINT_BASE}get-payment-attachment`,
+            url: `${ENDPOINT_BASE}${APP_PATH}api/consulta/get-payment-attachment`,
             type: 'POST',
             data: { record_number: recordNumber },
             dataType: 'json',

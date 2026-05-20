@@ -32,12 +32,21 @@ define("bd_clave", 'Int3l1punt0.VEN');*/
 //define("database", 'soporte_postventa');
 
 /*ENDPOINT*/
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+//$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+
+$protocol = 'http://';
+if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+    (strpos($_SERVER['HTTP_HOST'], 'soportepost.intelipunto.com') !== false)) {
+    $protocol = 'https://';
+}
+
 $host = $_SERVER['HTTP_HOST'];
 
 define ('HOST', $host);
 define('ENDPOINT_BASE_DYNAMIC', $protocol . $host);
-define('APP_BASE_PATH', '/SoportePost/');
+//define('APP_BASE_PATH', '/SoportePost/');
+define('APP_BASE_PATH', APP);
 define('tituloPagina', value: 'Soporte Post Venta');
 
 define('UPLOAD_BASE_DIR', 'C:\Documentos_SoportePost\\');
@@ -47,7 +56,7 @@ define('UPLOAD_BASE_DIR', 'C:\Documentos_SoportePost\\');
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_AUTH', true);
 define('SMTP_USERNAME', 'soporte.sistemas@inteligensa.com');
-define('SMTP_PASSWORD', 'igqq foym bqhf kqrs');
+define('SMTP_PASSWORD', 'stxz vwzs wmhn lntw');
 define('SMTP_SECURE', 'PHPMailer::ENCRYPTION_STARTTLS');
 define('SMTP_PORT', 587);
 // ¡¡¡ ACTIVA LA DEPURACIÓN AL MÁXIMO !!!
