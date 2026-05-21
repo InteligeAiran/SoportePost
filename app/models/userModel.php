@@ -511,6 +511,9 @@ public function VerificaUsuario($nombre, $apellido){ // Ahora recibe nombre y ap
             $escaped_username = pg_escape_literal($this->db->getConnection(), $username);
             $sql = "SELECT email FROM users WHERE username = ".$escaped_username.";";
             $result = Model::getResult($sql, $this->db);
+            if (!$result || !$result['query']) {
+                error_log("PostgreSQL Error in getEmailByUsername. SQL: " . $sql . " | Error: " . pg_last_error($this->db->getConnection()));
+            }
             return $result;
         } catch (Throwable $e) {
             // Loguear el error para depuración
