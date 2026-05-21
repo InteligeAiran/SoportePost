@@ -3869,7 +3869,8 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     let netBudget = totalBudget;
 
                     if (window.isAnticipoPhase) {
-                        totalGrossBudget = window.nominalAnticipoBase;
+                        // Si no hay presupuesto aprobado, el monto de presupuesto (card verde) es 0.00
+                        totalGrossBudget = 0.00;
                         let anticipoTotalAhorro = 0;
                         if (response.all_exonerations && response.all_exonerations.length > 0) {
                             response.all_exonerations.forEach(exo => {
@@ -3902,19 +3903,20 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     
                     // --- ACTUALIZACIÓN DE UI (TARJETAS) ---
                     
-                    // 1. Tarjeta Izquierda: MONTO PRESUPUESTO / ANTICIPO
+                    // 1. Tarjeta Izquierda: MONTO PRESUPUESTO
                     const montoPresupuestoDisplay = document.getElementById("montoPresupuestoDisplay");
                     const labelPresupuesto = document.getElementById("labelMontoPresupuesto");
                     
                     if (montoPresupuestoDisplay) {
                         montoPresupuestoDisplay.textContent = `$${totalGrossBudget.toFixed(2)}`;
                         if (labelPresupuesto) {
-                            labelPresupuesto.textContent = window.isAnticipoPhase ? "Monto Anticipo" : "Monto Presupuesto";
+                            labelPresupuesto.textContent = "Monto Presupuesto";
                         }
                     }
 
                     // 2. Tarjeta Derecha: MONTO ABONADO Y RESTANTE
-                    montoAbonadoElement.textContent = `$${totalPaid.toFixed(2)}`;
+                    // Mostramos la suma de lo pagado y lo pendiente (el abono total registrado)
+                    montoAbonadoElement.textContent = `$${(totalPaid + totalPending).toFixed(2)}`;
                     montoRestanteElement.textContent = `Restante: $${remaining.toFixed(2)}`;
                     
                     // 3. SECCIÓN DEDICADA DE EXONERACIÓN (INFORMATIVA)
