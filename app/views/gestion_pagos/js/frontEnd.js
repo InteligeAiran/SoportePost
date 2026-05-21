@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  const selectTechnicianModalInstance = new bootstrap.Modal(
+  selectTechnicianModalInstance = new bootstrap.Modal(
     document.getElementById("selectTechnicianModal"),
     {
       backdrop: "static",
@@ -3180,26 +3180,45 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     const exoneracionPorcentaje = parseFloat(response.exoneracion_porcentaje) || 0;
                     const tipoExoneracion = response.tipo_exoneracion || 'Anticipo';
                     
+                    // Bandera para permitir carga de Anticipo ($30) aunque el presupuesto sea 0
+                    window.isAnticipoPhase = (totalBudget <= 0);
+                    window.nominalAnticipoBase = 30.00; // Base nominal para el anticipo info
+                    
                     // DETERMINAR EL MONTO PARA LAS TARJETAS (Header, Card Izquierda, Restante)
                     // El usuario pide que el Card de Presupuesto muestre el monto bruto (sin deducciones)
                     let totalGrossBudget = parseFloat(response.gross_budget) || totalBudget;
+                    let netBudget = totalBudget;
+
+                    if (window.isAnticipoPhase) {
+                        totalGrossBudget = window.nominalAnticipoBase;
+                        let anticipoTotalAhorro = 0;
+                        if (response.all_exonerations && response.all_exonerations.length > 0) {
+                            response.all_exonerations.forEach(exo => {
+                                let type = exo.tipo_exoneracion || 'Anticipo';
+                                let pct = parseFloat(exo.porcentaje) || 0;
+                                if (type.toLowerCase() === 'anticipo') {
+                                    anticipoTotalAhorro += (window.nominalAnticipoBase * pct) / 100;
+                                }
+                            });
+                        }
+                        if (exoneracionPorcentaje > 0 && tipoExoneracion.toLowerCase() === 'anticipo' && anticipoTotalAhorro === 0) {
+                            anticipoTotalAhorro = (window.nominalAnticipoBase * exoneracionPorcentaje) / 100;
+                        }
+                        netBudget = window.nominalAnticipoBase - anticipoTotalAhorro;
+                    }
                     
                     // El "Restante" se calcula sobre el presupuesto NETO (ya exonerado)
                     // Incluimos tanto lo PAGADO como lo PENDIENTE para evitar sobre-presupuesto.
                     const coveredAmount = totalPaid + totalPending;
-                    const remaining = Math.max(0, totalBudget - coveredAmount);
+                    const remaining = Math.max(0, netBudget - coveredAmount);
                     
                     // Store in global variables for references and logic
                     window.currentTotalPaid = totalPaid;
                     window.currentTotalPending = totalPending;
-                    window.currentBudgetAmount = totalBudget; // Official net budget (0 if none)
+                    window.currentBudgetAmount = netBudget; // Official net budget
                     window.currentGrossBudget = totalGrossBudget; // Official gross budget
                     window.currentRemaining = remaining;
                     window.currentExoneracionPorcentaje = exoneracionPorcentaje;
-                    
-                    // Bandera para permitir carga de Anticipo ($30) aunque el presupuesto sea 0
-                    window.isAnticipoPhase = (totalBudget <= 0 && exoneracionPorcentaje > 0);
-                    window.nominalAnticipoBase = 30.00; // Base nominal para el anticipo info
                     
                     // --- ACTUALIZACIÓN DE UI (TARJETAS) ---
                     
@@ -3210,7 +3229,7 @@ function loadTotalPaid(nroTicket, budgetAmount) {
                     if (montoPresupuestoDisplay) {
                         montoPresupuestoDisplay.textContent = `$${totalGrossBudget.toFixed(2)}`;
                         if (labelPresupuesto) {
-                            labelPresupuesto.textContent = "Monto Presupuesto";
+                            labelPresupuesto.textContent = window.isAnticipoPhase ? "Monto Anticipo" : "Monto Presupuesto";
                         }
                     }
 
