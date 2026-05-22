@@ -320,8 +320,8 @@ let usuariosAcciones = {
     modulo: 'tecnico',
     modalId: 'tecnicoModal', // Replace with actual modal ID (e.g., for Recibido/Reasignado)
     buttonId: 'btn-recibidos',
-    filterTerm: 'Asignado al Técnico|Recibido por el Técnico|Reasignado al Técnico|Entregado a Cliente',
-    acciones: [6, 10, 11, 16], // Added 11 for Reasignado al Técnico
+    filterTerm: 'Asignado al Técnico|Recibido por el Técnico|Reasignado al Técnico|Entregado a Cliente|Ticket Cerrado',
+    acciones: [6, 10, 11, 16, 21], // Added 11 for Reasignado al Técnico
   },
 
   rosal: {
@@ -1631,6 +1631,11 @@ function formatPendinRespueTicketsDetails(details){
                           ticket.date_create_ticket
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
+                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                            Cerrar Ticket
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1797,6 +1802,11 @@ if (!Array.isArray(details)) {
                           ticket.date_create_ticket
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
+                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                            Cerrar Ticket
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1959,6 +1969,11 @@ function formatProcessReparacionDetails(details) {
                           ticket.date_create_ticket
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
+                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                            Cerrar Ticket
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -2127,6 +2142,13 @@ function formatIndividualTickets(tickets, month, status) {
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
                     </dl>
+                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        ${(ticket.status_name_ticket && ticket.status_name_ticket.toUpperCase() === 'CERRADO') || (status && status.toUpperCase() === 'CERRADO') ? '' : `
+                            <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                                Cerrar Ticket
+                            </button>
+                        `}
+                    </div>
                 </div>
             </div>
         `;
@@ -2433,6 +2455,9 @@ function formatOpenDetails(details) {
                      <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
                         ${documentButtonsHtml}
                         ${markReceivedButtonHtml}
+                        <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                            Cerrar Ticket
+                        </button>
                     </div>
                 </div>
             </div>
@@ -3031,6 +3056,9 @@ function formatProcessTicketsDetails(details){
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
                       <button class="btn btn-info btn-sm mt-3 view-timeline-btn" data-id-ticket="${ticket.id_ticket}" disabled>Ver Flujo del Ticket</button>
+                      <button type="button" class="btn btn-danger btn-sm mt-3 ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                          Cerrar Ticket
+                      </button>
                 </div>
             </div>
         `;
@@ -3557,6 +3585,9 @@ function formatTallerDetails(details) {
                         
                      <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
                         ${markReceivedButtonHtml}
+                        <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                            Cerrar Ticket
+                        </button>
                     </div>
                     </dl>
                 </div>
@@ -5182,6 +5213,13 @@ function formatIndividualRegionTickets(tickets, region) {
                         <dt class="col-sm-4">Fecha Creación:</dt>
                         <dd class="col-sm-8">${ticket.date_create_ticket}</dd>
                     </dl>
+                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        ${ticket.status_name_ticket && ticket.status_name_ticket.toUpperCase() === 'CERRADO' ? '' : `
+                            <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                                Cerrar Ticket
+                            </button>
+                        `}
+                    </div>
                 </div>
             </div>
         `;
@@ -5414,6 +5452,11 @@ function formatDetalleTicketComercial(details) {
                           ticket.date_create_ticket
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
+                    <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
+                        <button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                            Cerrar Ticket
+                        </button>
+                    </div>
                 </div>
             </div>
         `;

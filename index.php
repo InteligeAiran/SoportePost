@@ -1,4 +1,3 @@
-
 <?php
 /*
  *Archivo Inicial para el MVC
@@ -19,4 +18,3 @@
   require 'config/paths.php';
   require 'libs/database.php';
   $app = new Bootstrap();
-?>

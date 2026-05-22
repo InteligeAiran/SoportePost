@@ -1032,6 +1032,8 @@ function mi_navbar() {}
         <!--  SweetAlert   -->
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.js"></script>
         <script src="<?php echo APP; ?>app/plugins/sweetalert2/sweetalert2.all.js"></script>
+        <!-- Ticket Utilities Component -->
+        <script src="<?php echo APP; ?>app/core/components/ticket/js/ticket-utils.js"></script>
         <!--MASCARAS JQUERY-->
         <script src="<?php echo APP; ?>app/plugins/jquery-easing/jquery.easing.min.js"></script>
         <!-- Custom scripts for all pages-->

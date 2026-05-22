@@ -53,6 +53,15 @@ function formatTicketDetailsPanel(d) {
     estatusColorStyle = '#ef4444'; // red
   }
 
+  // Detecta si el ticket está cerrado
+  const isTicketClosed = (
+    (d.name_status_ticket && d.name_status_ticket.trim().toLowerCase() === 'cerrado') ||
+    (d.name_accion_ticket && (
+      d.name_accion_ticket.trim().toLowerCase() === 'cerrado' ||
+      d.name_accion_ticket.trim().toLowerCase() === 'ticket cerrado'
+    ))
+  );
+
   return `
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
@@ -186,12 +195,33 @@ function formatTicketDetailsPanel(d) {
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${observacionToDisplay}</span>
                         </div>
-                        `}
-                        <div class="col-sm-6 mb-2" style="display: ${(isAdminReq || d.name_accion_ticket === 'En espera de confirmar recibido en Región') ? 'none' : 'block'};">
+                        <div class="col-12 mt-3 mb-1" style="display: ${
+                            isTicketClosed ||
+                            (window.location.pathname.toLowerCase().includes('asignar_tecnico') &&
+                             (!d.full_name_tecnico_n2_actual || 
+                              d.full_name_tecnico_n2_actual.trim() === '' || 
+                              d.full_name_tecnico_n2_actual.trim().toLowerCase() === 'no asignado'))
+                            ? 'none' : 'block'
+                        };">
+                            <button type="button"
+                                id="btnCerrarTicketGlobal"
+                                class="btn btn-danger w-100 fw-semibold shadow-sm"
+                                data-id-ticket="${d.id_ticket || d.id || ''}"
+                                data-nro-ticket="${d.nro_ticket || ''}"
+                                data-serial-pos="${d.serial_pos || ''}"
+                                style="background: linear-gradient(135deg,#c0392b,#e74c3c); border:none; border-radius:10px; letter-spacing:.5px; transition:all .25s;">
+                                <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-x-octagon-fill me-2' viewBox='0 0 16 16'>
+                                    <path d='M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353zm-6.106 4.5L8 8.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 9l2.647 2.646a.5.5 0 0 1-.708.708L8 9.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 9 4.646 6.354a.5.5 0 1 1 .708-.708'/>
+                                </svg>
+                                Cerrar Ticket
+                            </button>
+                        </div>
+                        <div class="col-sm-6 mb-2" style="display: ${(isTicketClosed || isAdminReq || d.name_accion_ticket === 'En espera de confirmar recibido en Región') ? 'none' : 'block'};">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || d.id || ""}" data-serial-pos = "${d.serial_pos || ""}">
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
                         </div>    
+                        `}
                     </div>
                 </div>
             </div>
@@ -1705,3 +1735,373 @@ function showElapsedLegend(e) {
         width: 520,
     });
 }
+
+// ===================================================================
+// FUNCIÓN GENÉRICA: Cerrar Ticket con Comentario
+// Disponible en TODOS los módulos a través de ticket-utils.js
+// ===================================================================
+
+/**
+ * Muestra un diálogo SweetAlert2 pidiendo un comentario y luego cierra el ticket.
+ * @param {string|number} ticketId  - id_ticket (PK)
+ * @param {string}        nroTicket - número visible del ticket
+ * @param {string}        serialPos - serial del POS (para el mensaje)
+ */
+function closeTicketWithComment(ticketId, nroTicket, serialPos) {
+    // Validación básica
+    if (!ticketId) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Sin ticket seleccionado',
+            text: 'Por favor selecciona un ticket antes de cerrarlo.',
+            confirmButtonColor: '#003594',
+            color: 'black'
+        });
+        return;
+    }
+
+    const id_user = (
+        document.getElementById('userId') ||
+        document.getElementById('id_user') ||
+        document.getElementById('iduser') ||
+        document.getElementById('id_user_pago')
+    )?.value || '';
+
+    // --- Paso 1: Confirmación ---
+    Swal.fire({
+        icon: 'warning',
+        iconColor: '#f43f5e',
+        title: '<span style="font-family: \'Outfit\', \'Inter\', sans-serif; font-weight: 700; color: #1f2937; font-size: 1.45rem;">¿Cerrar Ticket?</span>',
+        html: `
+            <div style="font-family: 'Inter', sans-serif; text-align: center; color: #4b5563; font-size: 0.95rem; line-height: 1.6; padding: 0 5px;">
+                <p style="margin-bottom: 20px;">
+                    ¿Estás seguro de que deseas cerrar el ticket 
+                    <span class="swal-badge swal-badge-ticket">#${nroTicket || ticketId}</span>
+                    ${serialPos ? `con serial <span class="swal-badge swal-badge-ticket">${serialPos}</span>` : ''}?
+                </p>
+                <div class="swal-warning-box">
+                    <span class="swal-warning-icon">⚠️</span>
+                    <span class="swal-warning-text">
+                        Esta acción <strong>no se puede deshacer</strong> y registrará de forma permanente el estado final del ticket en la bitácora del sistema.
+                    </span>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cerrar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#e11d48',
+        cancelButtonColor: '#6b7280',
+        color: '#1f2937',
+        background: '#ffffff',
+        focusConfirm: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        keydownListenerCapture: true,
+        customClass: {
+            popup: 'premium-swal-popup premium-swal-danger-theme',
+            confirmButton: 'premium-swal-confirm-btn-danger',
+            cancelButton: 'premium-swal-cancel-btn'
+        },
+        didOpen: () => {
+            if (!document.getElementById('premium-swal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'premium-swal-styles';
+                style.innerHTML = `
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap');
+                    
+                    .premium-swal-popup {
+                        border-radius: 16px !important;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+                        padding: 32px 24px 24px 24px !important;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    /* Accent top border */
+                    .premium-swal-popup::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        height: 6px;
+                        border-top-left-radius: 16px;
+                        border-top-right-radius: 16px;
+                    }
+                    
+                    .premium-swal-danger-theme::before {
+                        background: linear-gradient(90deg, #f43f5e, #e11d48) !important;
+                    }
+                    
+                    .premium-swal-primary-theme::before {
+                        background: linear-gradient(90deg, #3b82f6, #2563eb) !important;
+                    }
+                    
+                    /* Badges */
+                    .swal-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 3px 10px;
+                        border-radius: 20px;
+                        font-weight: 600;
+                        font-size: 0.88rem;
+                        font-family: 'Inter', sans-serif;
+                        margin: 0 2px;
+                        vertical-align: middle;
+                        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+                    }
+                    .swal-badge-ticket {
+                        background: #eff6ff;
+                        color: #2563eb;
+                        border: 1px solid #dbeafe;
+                    }
+                    
+                    /* Warning box */
+                    .swal-warning-box {
+                        background: #fef2f2;
+                        border: 1px solid #fee2e2;
+                        padding: 14px 16px;
+                        border-radius: 12px;
+                        display: flex;
+                        align-items: start;
+                        gap: 12px;
+                        text-align: left;
+                        margin-top: 20px;
+                    }
+                    .swal-warning-icon {
+                        font-size: 1.25rem;
+                        line-height: 1;
+                        margin-top: 1px;
+                    }
+                    .swal-warning-text {
+                        font-size: 0.88rem;
+                        color: #991b1b;
+                        line-height: 1.5;
+                        font-weight: 500;
+                    }
+                    
+                    /* Textarea style */
+                    .swal-textarea-container {
+                        position: relative;
+                        margin-top: 15px;
+                    }
+                    .swal-textarea {
+                        width: 100% !important;
+                        border-radius: 10px !important;
+                        border: 1.5px solid #e5e7eb !important;
+                        padding: 14px !important;
+                        font-size: 0.95rem !important;
+                        line-height: 1.5 !important;
+                        resize: none !important;
+                        box-sizing: border-box !important;
+                        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                        font-family: 'Inter', sans-serif !important;
+                        background-color: #f9fafb !important;
+                        color: #1f2937 !important;
+                    }
+                    .swal-textarea:focus {
+                        background-color: #ffffff !important;
+                        border-color: #2563eb !important;
+                        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+                        outline: none !important;
+                    }
+                    
+                    /* Buttons styling */
+                    .premium-swal-confirm-btn-danger, .premium-swal-confirm-btn-primary, .premium-swal-cancel-btn {
+                        padding: 11px 24px !important;
+                        font-family: 'Inter', sans-serif !important;
+                        font-size: 0.95rem !important;
+                        font-weight: 600 !important;
+                        border-radius: 8px !important;
+                        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                        letter-spacing: 0.01em !important;
+                        border: none !important;
+                        outline: none !important;
+                    }
+                    
+                    .premium-swal-confirm-btn-danger {
+                        background: linear-gradient(135deg, #f43f5e, #e11d48) !important;
+                        color: #ffffff !important;
+                        box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.2) !important;
+                    }
+                    .premium-swal-confirm-btn-danger:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 16px -2px rgba(225, 29, 72, 0.35) !important;
+                        background: linear-gradient(135deg, #e11d48, #be123c) !important;
+                    }
+                    .premium-swal-confirm-btn-danger:active {
+                        transform: translateY(0);
+                    }
+                    
+                    .premium-swal-confirm-btn-primary {
+                        background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+                        color: #ffffff !important;
+                        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2) !important;
+                    }
+                    .premium-swal-confirm-btn-primary:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 16px -2px rgba(37, 99, 235, 0.35) !important;
+                        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+                    }
+                    .premium-swal-confirm-btn-primary:active {
+                        transform: translateY(0);
+                    }
+                    
+                    .premium-swal-cancel-btn {
+                        background: #f3f4f6 !important;
+                        color: #4b5563 !important;
+                        border: 1px solid #e5e7eb !important;
+                    }
+                    .premium-swal-cancel-btn:hover {
+                        background: #e5e7eb !important;
+                        color: #1f2937 !important;
+                        transform: translateY(-2px);
+                    }
+                    .premium-swal-cancel-btn:active {
+                        transform: translateY(0);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        // --- Paso 2: Solicitar comentario ---
+        Swal.fire({
+            icon: 'question',
+            iconColor: '#2563eb',
+            title: '<span style="font-family: \'Outfit\', \'Inter\', sans-serif; font-weight: 700; color: #1f2937; font-size: 1.45rem;">Motivo de Cierre</span>',
+            html: `
+                <div style="font-family: 'Inter', sans-serif; text-align: left; color: #4b5563; font-size: 0.95rem; line-height: 1.6; padding: 0 5px;">
+                    <p style="margin-bottom: 16px; text-align: center;">
+                        Por favor ingresa el motivo o comentario del cierre para el ticket 
+                        <span class="swal-badge swal-badge-ticket">#${nroTicket || ticketId}</span>:
+                    </p>
+                    <div class="swal-textarea-container">
+                        <textarea id="comentarioCierreTicket" class="swal-textarea" rows="4" 
+                            placeholder="Ej: Equipo no reparable, cliente solicitó cierre, falla en camino..."></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar Cierre',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#6b7280',
+            color: '#1f2937',
+            background: '#ffffff',
+            focusConfirm: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            keydownListenerCapture: true,
+            width: '520px',
+            customClass: {
+                popup: 'premium-swal-popup premium-swal-primary-theme',
+                confirmButton: 'premium-swal-confirm-btn-primary',
+                cancelButton: 'premium-swal-cancel-btn'
+            },
+            preConfirm: () => {
+                const comentario = Swal.getPopup().querySelector('#comentarioCierreTicket').value.trim();
+                if (!comentario) {
+                    Swal.showValidationMessage('El comentario de cierre no puede estar vacío.');
+                    return false;
+                }
+                return { comentario };
+            }
+        }).then((res) => {
+            if (!res.isConfirmed) return;
+
+            const comentario = res.value.comentario;
+
+            // --- Paso 3: Llamar al API ---
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/EntregarTicketGenerico`);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Mostrar loader
+            Swal.fire({
+                title: 'Procesando...',
+                text: 'Cerrando el ticket, por favor espere.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            xhr.onload = function () {
+                Swal.close();
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            const ticketData = (response.ticket_data || [])[0] || null;
+
+                            const detallesHtml = ticketData ? `
+                                <div style="text-align:left;padding:10px;">
+                                    <h3 style="color:#c0392b;text-align:center;margin-bottom:15px;">❌ Ticket Cerrado ❌</h3>
+                                    <p><strong>🎫 Nro. Ticket:</strong> <span style="color:#c0392b;font-weight:bold;">${ticketData.nro_ticket || nroTicket}</span></p>
+                                    <p><strong>⚙️ Serial:</strong> <span style="padding:2px 8px;border-radius:6px;background:#e0f7fa;color:#007bff;">${ticketData.serial_pos || serialPos || 'N/A'}</span></p>
+                                    <p><strong>📋 Acción:</strong> <span style="color:#007bff;font-weight:bold;">${ticketData.name_accion_ticket || 'Cerrado'}</span></p>
+                                    <p><strong>🔄 Estatus:</strong> <span style="color:#c0392b;font-weight:bold;">${ticketData.name_status_ticket || 'Cerrado'}</span></p>
+                                    <p><strong>📝 Motivo:</strong> ${comentario}</p>
+                                    <p style="font-size:.88rem;color:green;text-align:center;margin-top:15px;">
+                                        El ticket ha sido cerrado y registrado en el historial del sistema.
+                                    </p>
+                                </div>` : `<p style="color:green;">El ticket #${nroTicket || ticketId} ha sido cerrado exitosamente.</p>`;
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Ticket Cerrado',
+                                html: detallesHtml,
+                                color: 'black',
+                                confirmButtonText: 'Cerrar',
+                                confirmButtonColor: '#003594',
+                                showClass: { popup: 'animate__animated animate__fadeInDown' },
+                                hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                width: '620px'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error', response.message || 'No se pudo cerrar el ticket.', 'error');
+                        }
+                    } catch (e) {
+                        Swal.fire('Error', 'Error al procesar la respuesta del servidor.', 'error');
+                    }
+                } else {
+                    Swal.fire('Error', `Error de servidor: ${xhr.status} ${xhr.statusText}`, 'error');
+                }
+            };
+
+            xhr.onerror = function () {
+                Swal.fire('Error de red', 'No se pudo conectar con el servidor.', 'error');
+            };
+
+            const params = `action=EntregarTicketGenerico&id_ticket=${encodeURIComponent(ticketId)}&id_user=${encodeURIComponent(id_user)}&comentario=${encodeURIComponent(comentario)}`;
+            xhr.send(params);
+        });
+    });
+}
+
+// ===================================================================
+// EVENT DELEGATION GLOBAL para #btnCerrarTicketGlobal
+// Se inicializa una sola vez en DOMContentLoaded.
+// ===================================================================
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('#btnCerrarTicketGlobal');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const idTicket  = btn.dataset.idTicket  || btn.getAttribute('data-id-ticket')  || '';
+    const nroTicket = btn.dataset.nroTicket  || btn.getAttribute('data-nro-ticket') || idTicket;
+    const serialPos = btn.dataset.serialPos  || btn.getAttribute('data-serial-pos') || '';
+
+    closeTicketWithComment(idTicket, nroTicket, serialPos);
+});
+
+// Exponer al scope global por si algún módulo la llama directamente
+window.closeTicketWithComment = closeTicketWithComment;
