@@ -156,7 +156,7 @@ function getTicketData() {
       { button: "btn-asignados", term: "Asignado al Técnico", status: "En proceso", action: "Asignado al Técnico" },
       { button: "btn-recibidos", term: "Recibido por el Técnico", status: "En proceso", action: "Recibido por el Técnico" },
       { button: "btn-por-asignar", term: "Enviado a taller|En Taller", status: "En proceso", action: "Enviado a taller|En Taller" },
-      { button: "btn-devuelto", term: "Entregado a Cliente", status: "Cerrado", action: "Entregado a Cliente" }
+      { button: "btn-devuelto", term: "Entregado a Cliente|Ticket Cerrado", status: "Cerrado", action: "Entregado a Cliente|Ticket Cerrado" }
     ];
 
     // Si hay un nroTicket, buscar el filtro que contenga ese ticket
@@ -418,7 +418,7 @@ function getTicketData() {
                       <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3q0-.405-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"/>
                   </svg>
               </button>
-              <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos Entregado a cliente">
+              <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto/cerrado a cliente">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
                       <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
                       <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
@@ -467,10 +467,10 @@ function getTicketData() {
             });
 
             $("#btn-devuelto").on("click", function () {
-              if (checkDataExists(dataTableInstance, "Entregado a Cliente")) {
-                showTicketStatusIndicator('Cerrado', 'Entregado a Cliente');
+              if (checkDataExists(dataTableInstance, "Entregado a Cliente|Ticket Cerrado")) {
+                showTicketStatusIndicator('Cerrado', 'Entregado a Cliente|Ticket Cerrado');
                 clearFilters(dataTableInstance);
-                dataTableInstance.column(5).search("Entregado a Cliente").draw();
+                dataTableInstance.column(5).search("Entregado a Cliente|Ticket Cerrado", true, false).draw();
                 dataTableInstance.column(6).visible(false);
                 setActiveButton("btn-devuelto");
                 applyNroTicketSearch(dataTableInstance);
@@ -1088,7 +1088,11 @@ function getTicketData() {
                   continuarFlujoEnviarTaller();
               };
 
-              // 5. Validación de Revisión de Domiciliación (MOVIDA abajo para dar prioridad al Anticipo)
+              // Si el ticket aplica Garantía (id_status_payment = 1 o 3), no requiere validaciones de anticipo
+              if (parseInt(id_document) === 1 || parseInt(id_document) === 3) {
+                  verificarDomiciliacionYEnviar();
+                  return;
+              }
 
               // 6. Validación rápida de Pago de Anticipo Pendiente
               if (parseInt(id_document) === 7) {
@@ -1349,7 +1353,7 @@ function getTicketData() {
                       <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                   </svg>
               </button>
-              <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
+              <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto/cerrado a cliente">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
                       <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
                       <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
@@ -1437,7 +1441,7 @@ function getTicketData() {
                     <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/><path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
                 </svg>
             </button>
-            <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto a cliente">
+            <button id="btn-devuelto" class="btn btn-secondary me-2" title="Pos devuelto/cerrado a cliente">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
                     <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>

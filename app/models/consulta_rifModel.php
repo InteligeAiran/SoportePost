@@ -6556,6 +6556,81 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
+    /**
+     * Cierre generico de ticket desde cualquier modulo.
+     * Funcion independiente del flujo de gestion_regions.
+     * Usa id_accion_ticket = 16 (Entregado) e id_status_ticket = 3 (Cerrado).
+     */
+    public function EntregarTicketGenerico($id_ticket, $id_user, $comment) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_comment = pg_escape_string($db_conn, $comment);
+
+            // 1. Actualizar tickets
+            $sql = "UPDATE tickets SET id_accion_ticket = 16, id_status_ticket = 3, date_delivered = NOW(), customer_delivery_comment = '" . $escaped_comment . "' WHERE id_ticket = " . (int)$id_ticket . ";";
+            $result = Model::getResult($sql, $this->db);
+            if (!$result) {
+                error_log("EntregarTicketGenerico: Error UPDATE tickets. " . pg_last_error($db_conn));
+                return false;
+            }
+
+            // 2. Actualizar fecha de fin en users_tickets
+            $sqldate = "UPDATE users_tickets SET date_end_ticket = NOW() WHERE id_ticket = " . (int)$id_ticket . ";";
+            Model::getResult($sqldate, $this->db);
+
+            // 3. Recopilar estados actuales para el historial
+            $id_new_status_lab = 0;
+            $status_lab_sql = "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_lab_result = pg_query($db_conn, $status_lab_sql);
+            if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+                $id_new_status_lab = (int)(pg_fetch_assoc($status_lab_result)['id_status_lab'] ?? 0);
+            }
+
+            $id_new_status_payment = null;
+            $status_payment_sql = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_payment_result = pg_query($db_conn, $status_payment_sql);
+            if ($status_payment_result && pg_num_rows($status_payment_result) > 0) {
+                $id_new_status_payment = pg_fetch_assoc($status_payment_result)['id_status_payment'] ?? null;
+            }
+
+            $new_status_domiciliacion = 'NULL';
+            $status_dom_sql = "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$id_ticket . ";";
+            $status_dom_result = pg_query($db_conn, $status_dom_sql);
+            if ($status_dom_result && pg_num_rows($status_dom_result) > 0) {
+                $dom_data = pg_fetch_assoc($status_dom_result);
+                $new_status_domiciliacion = $dom_data['id_status_domiciliacion'] !== null ? (int)$dom_data['id_status_domiciliacion'] : 'NULL';
+            }
+
+            $id_coordinador = 'NULL';
+            $coord_sql = "SELECT id_coordinador FROM users_tickets WHERE id_ticket = " . (int)$id_ticket . ";";
+            $coord_result = pg_query($db_conn, $coord_sql);
+            if ($coord_result && pg_num_rows($coord_result) > 0) {
+                $id_coordinador = (int)(pg_fetch_assoc($coord_result)['id_coordinador'] ?? 0);
+            }
+
+            // 4. Insertar historial (igual que EntregarTicket original)
+            $sqlHistory = sprintf(
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer);",
+                (int)$id_ticket,
+                (int)$id_user,
+                3,  // id_status_ticket = Cerrado
+                16, // id_accion_ticket = Entregado
+                (int)$id_new_status_lab,
+                (int)$id_new_status_payment,
+                $new_status_domiciliacion,
+                $id_coordinador
+            );
+            pg_query($db_conn, $sqlHistory);
+
+            return true;
+
+        } catch (Throwable $e) {
+            error_log("EntregarTicketGenerico: " . $e->getMessage());
+            return false;
+        }
+    }
+
+
 
 
     public function GetTicketReentry_lab($id_ticket){

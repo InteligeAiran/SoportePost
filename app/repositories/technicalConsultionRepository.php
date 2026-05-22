@@ -752,16 +752,22 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function EntregarTicketGenerico($id_ticket, $id_user, $comment){
+        $result = $this->model->EntregarTicketGenerico($id_ticket, $id_user, $comment);
+        return $result;
+    }
+
     public function GetTicketDataForDelivery($ticketId){
         $result = $this->model->GetTicketDataForDelivery($ticketId);
         if ($result) {
-
-             $ticket = [];
+            $tickets = [];
             for ($i = 0; $i < $result['numRows']; $i++) {
-                $ticket = pg_fetch_assoc($result['query'], $i);
-                $ticket[] = $ticket;
+                $row = pg_fetch_assoc($result['query'], $i);
+                if ($row) {
+                    $tickets[] = $row;
+                }
             }
-            return $ticket;
+            return $tickets;
         } else {
             return null;
         }

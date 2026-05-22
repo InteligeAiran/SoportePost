@@ -1,4 +1,3 @@
-
 <?php   //Vista del Controlador
    class View {
    public $expired_sessions;

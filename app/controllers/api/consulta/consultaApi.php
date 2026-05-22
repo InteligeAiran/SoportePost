@@ -269,6 +269,10 @@ class Consulta extends Controller
                 case 'entregar_ticket':
                     $this->handleEntregarTicket();
                     break;
+
+                case 'EntregarTicketGenerico':
+                    $this->handleEntregarTicketGenerico();
+                    break;
                 
                     case 'entregar_ticketDev':
                     $this->handleEntregarTicketDevolucion();
@@ -1476,7 +1480,7 @@ class Consulta extends Controller
 
     public function handleGetTicketData1()
     {
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : (isset($_GET['id_user']) ? $_GET['id_user'] : ''));
         $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData1($id_user);
 
@@ -1492,7 +1496,7 @@ class Consulta extends Controller
 
     public function handleGetTicketData()
     {
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : (isset($_GET['id_user']) ? $_GET['id_user'] : ''));
         $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketData($id_user);
 
@@ -1563,8 +1567,7 @@ class Consulta extends Controller
 
 
     public function handleGetTicketDataPagos(){
-          {
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : (isset($_GET['id_user']) ? $_GET['id_user'] : ''));
         $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataPagos($id_user);
 
@@ -1577,10 +1580,9 @@ class Consulta extends Controller
         }
         $this->response(['success' => false, 'message' => 'Debe Seleccionar a un Coordinador']);
     }
-    }
 
     public function handleGetTicketDataExoneracion(){
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : (isset($_GET['id_user']) ? $_GET['id_user'] : ''));
         $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataExoneracion($id_user);
 
@@ -1665,7 +1667,7 @@ class Consulta extends Controller
 
     public function handleGetTicketDataLab()
     {
-        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : '';
+        $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : (isset($_POST['id_user']) ? $_POST['id_user'] : (isset($_GET['id_user']) ? $_GET['id_user'] : ''));
         $repository = new TechnicalConsultionRepository(); // Inicializa el repositorio
         $result = $repository->GetTicketDataLab($id_user);
 
@@ -2140,6 +2142,33 @@ class Consulta extends Controller
             ], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
+        } 
+    }
+
+    public function handleEntregarTicketGenerico(){
+        $ticketId = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
+        $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
+        $comment = isset($_POST['comentario'])? $_POST['comentario'] : '';
+
+        if (!$ticketId || !$comment || !$id_user) {
+            $this->response(['success' => false,'message' => 'Hay un campo vacío.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+        $result = $repository->EntregarTicketGenerico($ticketId, $id_user, $comment);
+
+        if ($result) {
+            // Obtener los datos del ticket para el modal
+            $ticketData = $repository->GetTicketDataForDelivery($ticketId);
+            
+            $this->response([
+                'success' => true,
+                'message' => 'El ticket ha sido cerrado exitosamente.',
+                'ticket_data' => $ticketData
+            ], 200);
+        } else {
+            $this->response(['success' => false,'message' => 'Error al realizar la acción de cierre.'], 500);
         } 
     }
 
@@ -4471,5 +4500,3 @@ class Consulta extends Controller
         $this->response(['success' => true, 'message' => 'Solicitud actualizada (sustituida) correctamente.'], 200);
     }
 }
-?>
-
