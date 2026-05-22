@@ -1088,7 +1088,11 @@ function getTicketData() {
                   continuarFlujoEnviarTaller();
               };
 
-              // 5. Validación de Revisión de Domiciliación (MOVIDA abajo para dar prioridad al Anticipo)
+              // Si el ticket aplica Garantía (id_status_payment = 1 o 3), no requiere validaciones de anticipo
+              if (parseInt(id_document) === 1 || parseInt(id_document) === 3) {
+                  verificarDomiciliacionYEnviar();
+                  return;
+              }
 
               // 6. Validación rápida de Pago de Anticipo Pendiente
               if (parseInt(id_document) === 7) {
