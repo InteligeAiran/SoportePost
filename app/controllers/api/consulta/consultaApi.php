@@ -1637,8 +1637,8 @@ class Consulta extends Controller
             $emailRepository = new EmailRepository(); // ✅ INSTANCIAR REPOSITORIO CORRECTO
 
             // SEGURIDAD: Verificar estatus de pago/exoneración antes de proceder
-            $ticketData = $emailRepository->GetTicketDataById($id_ticket); // ✅ USAR MÉTODO EXISTENTE EN EMAILREPOSITORY
-            $id_status_payment = isset($ticketData[0]['id_status_payment']) ? (int)$ticketData[0]['id_status_payment'] : 0;
+            $ticket_status_payment = $repository->getStatusPayment($id_ticket);
+            $id_status_payment = isset($ticket_status_payment['id_status_payment']) ? (int)$ticket_status_payment['id_status_payment'] : 0;
             $allowedStatus = [1, 3, 4, 6];
 
             if (!in_array($id_status_payment, $allowedStatus)) {
