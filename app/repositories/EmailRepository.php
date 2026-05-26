@@ -168,6 +168,10 @@ class EmailRepository
         return $result ? $result['row'] : null;
     }
 
+    public function GetTechnicianDataByNro($nro_ticket){
+        return $this->model->GetTechnicianDataByNro($nro_ticket);
+    }
+
     public function GetEmailUser1gestionDataById($ticketid, $document_type){
         $result = $this->model->GetEmailUser1gestionDataById( $ticketid, $document_type);
         //var_dump($result);

@@ -1893,8 +1893,8 @@ function CloseTicket(ticketId) {
                                     allowEscapeKey: false,
                                     width: '700px'
                                 }).then(() => {
-                                    window.location.reload();
-                                });
+                                     enviarCorreoCierreInvoluntario(ticketData);
+                                 });
                             } else {
                                 window.location.reload();
                             }
@@ -2154,6 +2154,60 @@ function enviarCorreoTicketCerrado(ticketData) {
     const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
     
     const params = `id_coordinador=${encodeURIComponent(coordinador)}&id_user=${encodeURIComponent(id_user)}&nro_ticket=${encodeURIComponent(ticketNumber)}`;
+    xhrEmail.send(params);
+}
+
+function enviarCorreoCierreInvoluntario(ticketData) {
+    const xhrEmail = new XMLHttpRequest();
+    xhrEmail.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/email/send_involuntary_ticket`);
+    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            title: 'Enviando notificación...',
+            text: 'Por favor espere mientras se envía el correo.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+
+    xhrEmail.onload = function() {
+        if (xhrEmail.status === 200) {
+            try {
+                const responseEmail = JSON.parse(xhrEmail.responseText);
+                if (responseEmail.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Notificación Enviada",
+                        text: "Se ha enviado la notificación de cierre involuntario.",
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    console.error("❌ Error al enviar correo:", responseEmail.message);
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error("❌ Error al parsear respuesta del correo:", error);
+                window.location.reload();
+            }
+        } else {
+            console.error("❌ Error en solicitud de correo:", xhrEmail.status);
+            window.location.reload();
+        }
+    };
+
+    xhrEmail.onerror = function() {
+        console.error("❌ Error de red al enviar correo");
+        window.location.reload();
+    };
+
+    const ticketNumber = ticketData.nro_ticket || ticketData.Nr_ticket || 'N/A';
+    const params = `nro_ticket=${encodeURIComponent(ticketNumber)}`;
     xhrEmail.send(params);
 }
 
