@@ -159,11 +159,12 @@ class emailModel extends Model{
     public function GetDataTicketClosedByNro($nro_ticket){
         try{
             $escaped_nro_ticket = pg_escape_literal($this->db->getConnection(), $nro_ticket); 
-            $sql = "SELECT * FROM GetDataTicketClosedByNro(".$escaped_nro_ticket.");";
+            $sql = "SELECT * FROM GetDataTicketClosedBy_Nro(".$escaped_nro_ticket.");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error in GetDataTicketClosedByNro: " . $e->getMessage());
+            return null;
         }
     }
 
@@ -236,6 +237,28 @@ class emailModel extends Model{
             return $result;
         } catch (Throwable $e) {
             // Handle exception
+        }
+    }
+
+    public function GetTechnicianDataByNro($nro_ticket){
+        try{
+            $db_conn = $this->db->getConnection();
+            $escaped_nro = pg_escape_literal($db_conn, $nro_ticket);
+            $sql = "SELECT 
+                        usr.id_user,
+                        usr.email as user_email,
+                        CONCAT(usr.name, ' ', usr.surname) as full_name
+                    FROM tickets tik
+                    INNER JOIN users_tickets usrtik ON usrtik.id_ticket = tik.id_ticket
+                    INNER JOIN users usr ON usr.id_user = COALESCE(usrtik.id_tecnico_n2, usrtik.id_tecnico_n1)
+                    WHERE tik.nro_ticket = ".$escaped_nro."
+                    ORDER BY usrtik.id_user_ticket DESC
+                    LIMIT 1;";
+            $result = Model::getResult($sql, $this->db);
+            return $result ? $result['row'] : null;
+        } catch (Throwable $e) {
+            error_log("Error in GetTechnicianDataByNro: " . $e->getMessage());
+            return null;
         }
     }
 
