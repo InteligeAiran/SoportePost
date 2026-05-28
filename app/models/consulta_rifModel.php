@@ -1098,6 +1098,16 @@ class consulta_rifModel extends Model
     }
 
     private function determineStatusPayment($nro_ticket, $document_type_being_uploaded) {
+        // 0. Si la falla del ticket es libre de pago (9 = Actualización de Software, 12 = Sin Llaves/Dukpt Vacío), no requiere pago
+        $failure_sql = "SELECT tf.id_failure FROM tickets_failures tf INNER JOIN tickets t ON t.id_ticket = tf.id_ticket WHERE t.nro_ticket = '".$nro_ticket."' LIMIT 1";
+        $failure_result = Model::getResult($failure_sql, $this->db);
+        if ($failure_result && isset($failure_result['query']) && $failure_result['numRows'] > 0) {
+            $id_failure = (int)pg_fetch_result($failure_result['query'], 0, 'id_failure');
+            if ($id_failure === 9 || $id_failure === 12) {
+                return 16; // No necesita anticipo o exoneración
+            }
+        }
+
         // 1. Verificar estado actual para mantener aprobados si se sube Envio/Traslado
         $current_status_sql = "SELECT id_status_payment FROM tickets WHERE nro_ticket = '".$nro_ticket."'";
         $current_status_result = Model::getResult($current_status_sql, $this->db);

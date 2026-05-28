@@ -2395,7 +2395,10 @@ function UpdateGuarantees() {
   
   // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", manejar lógica especial
   if (isFallaSinPago) {
-    if (uploadNowRadio && uploadNowRadio.checked) {
+    if (isCaracasMiranda) {
+      // En Caracas/Miranda no requiere envío ni pago
+      idStatusPayment = 16; // No necesita anticipo o exoneración por el tipo de falla
+    } else if (uploadNowRadio && uploadNowRadio.checked) {
       const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
       
       if (tieneEnvio) {
@@ -3530,7 +3533,19 @@ function validateTicketCreation() {
     }
     
     // Verificar que al menos un checkbox esté marcado
-    if (!checkEnvio.checked && !checkExoneracion.checked && !checkAnticipo.checked) {
+    // EXCEPCIÓN: Si es una falla libre de pago y estamos en Caracas/Miranda, no se requiere ningún documento
+    const fallaSelect2 = document.getElementById("FallaSelect2");
+    const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
+    const isActualizacionSoftware = idFailure === 9;
+    const isSinLlavesDukpt = idFailure === 12;
+    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
+    
+    const checkEnvioContainer = document.getElementById("checkEnvioContainer");
+    const isCaracasMiranda = checkEnvioContainer && checkEnvioContainer.style.display === "none";
+
+    if (isFallaSinPago && isCaracasMiranda) {
+        // Bypassear validación ya que no requiere ningún documento
+    } else if (!checkEnvio.checked && !checkExoneracion.checked && !checkAnticipo.checked) {
         Swal.fire({
             title: "¡Notificación!",
             text: "Debe cargar los documentos pendientes.",
@@ -3596,12 +3611,6 @@ function validateTicketCreation() {
     // NOTA: La validación completa de Anticipo (con pago) se hace en continuarCreacionTicket()
     // Pero aquí validamos que si el botón está visible, el archivo debe estar cargado
     // EXCEPCIÓN: Si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12), NO se requiere anticipo
-    const fallaSelect2 = document.getElementById("FallaSelect2");
-    const idFailure = fallaSelect2 ? parseInt(fallaSelect2.value) : null;
-    const isActualizacionSoftware = idFailure === 9;
-    const isSinLlavesDukpt = idFailure === 12;
-    const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
-    
     if (!isFallaSinPago && isElementVisible(botonCargaAnticipo)) {
         const tieneArchivoAnticipo = inputAnticipo && inputAnticipo.files && inputAnticipo.files.length > 0;
         // También verificar el archivo preservado globalmente
@@ -8890,14 +8899,12 @@ function SendRazon() {
   tbody.innerHTML = "";
   
   xhr.onload = function () {
-    console.log("DEBUG: SearchRazonData status:", xhr.status); // LOG CRITICO
     if (xhr.status >= 200 && xhr.status < 300) {
         if (welcomeMessage) {
           welcomeMessage.style.visibility = "hidden";
           welcomeMessage.style.opacity = "0";
         }
       try {
-        console.log("DEBUG: SearchRazonData response text:", xhr.responseText); // LOG CRITICO
         const response = JSON.parse(xhr.responseText);
 
         if (response.success && response.RazonData && response.RazonData.length > 0) {
