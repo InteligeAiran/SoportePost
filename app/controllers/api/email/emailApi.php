@@ -651,9 +651,9 @@ class email extends Controller {
             $results['admin'] = false; // Inicializar
             // Correos específicos para domiciliación
             $emails_admin = [
-                'domiciliacion1.intelipunto@inteligensa.com',
-                'olga1.rojas@intelipunto.com',
-                'neishy1.tupano@inteligensa.com'
+                'domiciliacion.intelipunto@inteligensa.com',
+                'olga.rojas@intelipunto.com',
+                'neishy.tupano@inteligensa.com'
             ];
             $name_area_admin = 'Administración';
             
