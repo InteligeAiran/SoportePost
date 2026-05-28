@@ -759,8 +759,9 @@ function getTicketData() {
               }
 
               // 3. VALIDACIÓN ESPECIAL PARA id_failure = 9 (Actualización de Software) o id_failure = 12 (Sin Llaves/Dukpt Vacío)
+              // EXCEPCIÓN: Si es región exenta de envío (Caracas/Miranda), no requiere documento de envío
               if (isFallaSinPago) {
-                if (url_envio === "" || url_envio === null || url_envio === undefined) {
+                if (!isEstadoSinEnvio && (url_envio === "" || url_envio === null || url_envio === undefined)) {
                   Swal.fire({
                     icon: 'warning',
                     title: '¡Advertencia!',
@@ -1088,8 +1089,8 @@ function getTicketData() {
                   continuarFlujoEnviarTaller();
               };
 
-              // Si el ticket aplica Garantía (id_status_payment = 1 o 3), no requiere validaciones de anticipo
-              if (parseInt(id_document) === 1 || parseInt(id_document) === 3) {
+              // Si el ticket aplica Garantía (id_status_payment = 1 o 3) o Falla Libre de Pago (id_failure = 9 o 12), no requiere validaciones de anticipo
+              if (parseInt(id_document) === 1 || parseInt(id_document) === 3 || isFallaSinPago) {
                   verificarDomiciliacionYEnviar();
                   return;
               }
