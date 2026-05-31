@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soporte de Post-Venta - Login</title>
-    <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/login.css"/>
-    <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/mobile/mobile.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/desktop/desktop.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/login.css?v=<?php echo APP_VERSION; ?>"/>
+    <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/mobile/mobile.css?v=<?php echo APP_VERSION; ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP;?>app/plugins/css/login/desktop/desktop.css?v=<?php echo APP_VERSION; ?>" />
     <script>
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
@@ -91,7 +91,7 @@
   <?php
     if (isset($this->js)){
       foreach ($this->js as $js){
-        echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'"></script>'; 
+        echo '<script type="text/javascript" src="'.APP.'app/views/'.$js.'?v='.APP_VERSION.'"></script>'; 
       }
     }
   ?>

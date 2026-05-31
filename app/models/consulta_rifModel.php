@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 
 require_once __DIR__ . "/../../libs/Model.php";
 
@@ -7430,7 +7436,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         }
     }
 
-    public function SavePayment($serial_pos, $nro_ticket = null, $user_loader, $payment_date, $origen_bank, $destination_bank, $payment_method, $currency, $reference_amount, $amount_bs, $payment_reference, $depositor, $observations, $record_number, $loadpayment_date, $confirmation_number, $payment_status, $destino_rif_tipo = null, $destino_rif_numero = null, $destino_telefono = null, $destino_banco = null, $origen_rif_tipo = null, $origen_rif_numero = null, $origen_telefono = null, $origen_banco = null){
+    public function SavePayment($serial_pos, $nro_ticket, $user_loader, $payment_date, $origen_bank, $destination_bank, $payment_method, $currency, $reference_amount, $amount_bs, $payment_reference, $depositor, $observations, $record_number, $loadpayment_date, $confirmation_number, $payment_status, $destino_rif_tipo = null, $destino_rif_numero = null, $destino_telefono = null, $destino_banco = null, $origen_rif_tipo = null, $origen_rif_numero = null, $origen_telefono = null, $origen_banco = null){
 
         try {
             // Si hay nro_ticket, insertar directamente en payment_records

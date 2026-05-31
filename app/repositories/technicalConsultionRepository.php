@@ -1296,7 +1296,7 @@ class TechnicalConsultionRepository
      */
     public function SavePayment(
         $serial_pos,
-        $nro_ticket = null,
+        $nro_ticket,
         $user_loader, 
         $payment_date, 
         $origen_bank, 

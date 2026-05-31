@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
   class oficio extends FPDF{
 
     // ******************************************************************************
@@ -153,7 +159,7 @@
               switch ($this->arrDatos["id_tipo_solicitud"]) {
                 case 1:
                   if ($this->impNR == true) {
-                        $titulo = "INCLUSIÓN DE IMPORTADOR";
+                        $titulo = "INCLUSIï¿½N DE IMPORTADOR";
                   }else{
                         $titulo = "REGISTRO SANITARIO DE PRODUCTO";
                   }
@@ -161,13 +167,13 @@
                 case 2:
                   switch ($this->arrDatos["id_categoria_solicitud"]) {
                     case 5:
-                      $titulo = "AJUSTE DE GRADO ALCOHÓLICO";
+                      $titulo = "AJUSTE DE GRADO ALCOHï¿½LICO";
                     break;
                     case 6:
-                      $titulo = "CAMBIO DE DENOMINACIÓN DEL PRODUCTO";
+                      $titulo = "CAMBIO DE DENOMINACIï¿½N DEL PRODUCTO";
                     break;
                     case 7:
-                      $titulo = "CAMBIO DE FÓRMULA DE INGREDIENTES SECUNDARIOS O ADITIVOS";
+                      $titulo = "CAMBIO DE Fï¿½RMULA DE INGREDIENTES SECUNDARIOS O ADITIVOS";
                     break;
                     case 8:
                       $titulo = "CAMBIO DE FABRICANTE";
@@ -176,54 +182,54 @@
                       $titulo = "CAMBIO DE MARCA COMERCIAL";
                     break;
                     case 10:
-                      $titulo = "CAMBIO DE NUEVA PRESENTACIÓN DE CONTENIDO NETO";
+                      $titulo = "CAMBIO DE NUEVA PRESENTACIï¿½N DE CONTENIDO NETO";
                     break;
                     case 11:
-                      $titulo = "CAMBIO DE PRESENTACIÓN DE DISEÑO DE RÓTULO";
+                      $titulo = "CAMBIO DE PRESENTACIï¿½N DE DISEï¿½O DE Rï¿½TULO";
                     break;
                     case 12:
-                      $titulo = "CAMBIO DE RAZÓN SOCIAL DEL IMPORTADOR";
+                      $titulo = "CAMBIO DE RAZï¿½N SOCIAL DEL IMPORTADOR";
                     break;
                     case 13:
-                      $titulo = "CAMBIO DE RAZÓN SOCIAL DEL FABRICANTE";
+                      $titulo = "CAMBIO DE RAZï¿½N SOCIAL DEL FABRICANTE";
                     break;
                     case 14:
-                      $titulo = "CAMBIO DE RAZÓN SOCIAL DEL TÍTULAR DEL REGISTRO SANITARIO";
+                      $titulo = "CAMBIO DE RAZï¿½N SOCIAL DEL Tï¿½TULAR DEL REGISTRO SANITARIO";
                     break;
                     case 15:
-                      $titulo = "CAMBIO DEL TÍTULAR DEL REGISTRO SANITARIO";
+                      $titulo = "CAMBIO DEL Tï¿½TULAR DEL REGISTRO SANITARIO";
                     break;
                     case 17:
-                      $titulo = "CAMBIO DE LUGAR DE FABRICACIÓN";
+                      $titulo = "CAMBIO DE LUGAR DE FABRICACIï¿½N";
                     break;
                     case 19:
-                      $titulo = "INCLUSIÓN DE IMPORTADOR";
+                      $titulo = "INCLUSIï¿½N DE IMPORTADOR";
                     break;
                     case 20:
-                      $titulo = "INCLUSIÓN DE NUEVA PLANTA FABRICANTE";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PLANTA FABRICANTE";
                     break;
                     case 21:
-                      $titulo = "INCLUSIÓN DE NUEVA PLANTA ENVASADORA";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PLANTA ENVASADORA";
                     break;
                     case 22:
-                      $titulo = "INCLUSIÓN DE NUEVA PRESENTACIÓN DE CONTENIDO NETO";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PRESENTACIï¿½N DE CONTENIDO NETO";
                     break;
                     case 23:
-                      $titulo = "INCLUSIÓN DE NUEVA PRESENTACIÓN DE MATERIAL DE ENVASE";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PRESENTACIï¿½N DE MATERIAL DE ENVASE";
                     break;
                     case 24:
-                      $titulo = "INCLUSIÓN DE NUEVA PRESENTACIÓN EXCLUSIVA PARA EXPORTACIÓN";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PRESENTACIï¿½N EXCLUSIVA PARA EXPORTACIï¿½N";
                     break;
                     case 25:
-                      $titulo = "INCLUSIÓN DE NUEVA PRESENTACIÓN PROMOCIONAL";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PRESENTACIï¿½N PROMOCIONAL";
                     break;
                     case 40:
-                      $titulo = "INCLUSIÓN DE NUEVA PRESENTACIÓN PARA LICORES EN ZONA DE COMERCIALIZACIÓN";
+                      $titulo = "INCLUSIï¿½N DE NUEVA PRESENTACIï¿½N PARA LICORES EN ZONA DE COMERCIALIZACIï¿½N";
                     break;
                   }
                 break;
                 case 3:
-                   $titulo = "RENOVACIÓN DE REGISTRO SANITARIO DE PRODUCTO"; 
+                   $titulo = "RENOVACIï¿½N DE REGISTRO SANITARIO DE PRODUCTO"; 
                 break;
               }
               $tipoOrig = "";
@@ -243,7 +249,7 @@
                   }
                  break;
                  case 2: 
-                  $tipoOrig.= "BEBIDA ALCOHÓLICA "; 
+                  $tipoOrig.= "BEBIDA ALCOHï¿½LICA "; 
                   switch ($this->origen) {
                     case 1: 
                       $tipoOrig.= "NACIONAL "; 
@@ -276,7 +282,7 @@
            $this->SetFont('Arial','','11');
            $this->Ln(1);
            $this->cell(133);
-           $this->Cell(55,5,"Número de Registro Sanitario",1,'L','C');
+           $this->Cell(55,5,"Nï¿½mero de Registro Sanitario",1,'L','C');
            $this->SetFont('Arial','B','11');
            $this->Ln();
            $this->cell(133);
@@ -294,37 +300,37 @@
                   /*REGISTRO DE ALIMENTO NACIONAL
                     REGISTRO DE ALIMENTO IMPORTADO
                   */
-                  $marco= "El Servicio Autónomo de Controlaría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos según Gaceta Oficial N° 25.864 de fecha 16 de enero de 1959, Artículos del 30 al 38 y en las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial N° 35.921 de fecha 15 de marzo de 1996, Artículos del 12 al 25, AUTORIZA el Registro Sanitario del:";
+                  $marco= "El Servicio Autï¿½nomo de Controlarï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 25.864 de fecha 16 de enero de 1959, Artï¿½culos del 30 al 38 y en las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996, Artï¿½culos del 12 al 25, AUTORIZA el Registro Sanitario del:";
               break;
               case 'ii':
                    /*REGISTRO DE ALIMENTO  ARTESANAL
                   */
-                  $marco= "El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos según Gaceta Oficial N° 25.864 de fecha 16 de enero de 1959, Artículos del 30 al 38 y en la Providencia Administrativo N° 165-2017 de fecha 21 de junio de 2017, mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores(as) que Elaboran, Manipulan, Envasen, Distribuyan, Comercializan y Expendan Alimentos Artesanales, AUTORIZA  el Registro Sanitario del:
+                  $marco= "El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 25.864 de fecha 16 de enero de 1959, Artï¿½culos del 30 al 38 y en la Providencia Administrativo Nï¿½ 165-2017 de fecha 21 de junio de 2017, mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores(as) que Elaboran, Manipulan, Envasen, Distribuyan, Comercializan y Expendan Alimentos Artesanales, AUTORIZA  el Registro Sanitario del:
 ";
               break;
               case 'iii':
                    /*REGISTRO DE BEBIDA ALCOHOLICA NACIONAL
                     REGISTRO DE BEBIDA ALCOHOLICA IMPORTADO
                   */
-                  $marco= "El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Ley Orgánica  de Salud según  Gaceta Oficial N° 36.579 de fecha 11 de noviembre de 1998, Artículos  32 y 33, en el Reglamento General de Alimentos Gaceta Oficial Nº 25.864 de fecha 16 de enero de 1959, Artículos del 30 al 38, en las Normas Complementarias del Reglamento General de Alimentos Gaceta Oficial Nº 35.921 de fecha 15 de marzo de 1996, Artículos del 12 al 25 y en el Reglamento de la Ley de Impuesto sobre Alcohol y Especies Alcohólicas Gaceta Oficial N° 3.665 Extraordinario de fecha 05/12/1985, Artículo 8, AUTORIZA el Registro Sanitario del: ";
+                  $marco= "El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Ley Orgï¿½nica  de Salud segï¿½n  Gaceta Oficial Nï¿½ 36.579 de fecha 11 de noviembre de 1998, Artï¿½culos  32 y 33, en el Reglamento General de Alimentos Gaceta Oficial Nï¿½ 25.864 de fecha 16 de enero de 1959, Artï¿½culos del 30 al 38, en las Normas Complementarias del Reglamento General de Alimentos Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996, Artï¿½culos del 12 al 25 y en el Reglamento de la Ley de Impuesto sobre Alcohol y Especies Alcohï¿½licas Gaceta Oficial Nï¿½ 3.665 Extraordinario de fecha 05/12/1985, Artï¿½culo 8, AUTORIZA el Registro Sanitario del: ";
               break;
               case 'iiii':
                    /*REGISTRO DE BEBIDA ALCOHOLICA ARTESANAL
                   */
-                  $marco= "El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Ley Orgánica de Salud según  Gaceta Oficial N° 36.579 de fecha 11 de noviembre de 1998, Artículos 32 y 33, en el Reglamento General de Alimentos Gaceta Oficial Nº 25.864 de fecha 16 de enero de 1959, Artículos del 30 al 38, en las Normas Complementarias del Reglamento General de Alimentos Gaceta Oficial Nº 35.921 de fecha 15 de marzo de 1996, Artículos del 12 al 25, en el Reglamento de la Ley de Impuesto sobre Alcohol y Especies Alcohólicas Gaceta Oficial N° 3.665 Extraordinario de fecha 05/12/1985, Artículo 8, en el Decreto con Rango, Valor y Fuerza de Ley de Reforma de la Ley de Impuestos sobre Alcohol y Especies Alcohólicas. Decreto N° 5.618 del 03/10/2007, publicada en Gaceta Oficial Extraordinario N° 5.852 de fecha 05 de octubre de 2007, Artículo 3 y en la Providencia Administrativa N° 165-2017 de fecha 21 de junio de 2017,mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores/as que Elaboran, Manipulen, Envasen, Distribuyan, Comercialicen y Expendan Alimentos Artesanales, AUTORIZA el Registro Sanitario del:";
+                  $marco= "El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Ley Orgï¿½nica de Salud segï¿½n  Gaceta Oficial Nï¿½ 36.579 de fecha 11 de noviembre de 1998, Artï¿½culos 32 y 33, en el Reglamento General de Alimentos Gaceta Oficial Nï¿½ 25.864 de fecha 16 de enero de 1959, Artï¿½culos del 30 al 38, en las Normas Complementarias del Reglamento General de Alimentos Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996, Artï¿½culos del 12 al 25, en el Reglamento de la Ley de Impuesto sobre Alcohol y Especies Alcohï¿½licas Gaceta Oficial Nï¿½ 3.665 Extraordinario de fecha 05/12/1985, Artï¿½culo 8, en el Decreto con Rango, Valor y Fuerza de Ley de Reforma de la Ley de Impuestos sobre Alcohol y Especies Alcohï¿½licas. Decreto Nï¿½ 5.618 del 03/10/2007, publicada en Gaceta Oficial Extraordinario Nï¿½ 5.852 de fecha 05 de octubre de 2007, Artï¿½culo 3 y en la Providencia Administrativa Nï¿½ 165-2017 de fecha 21 de junio de 2017,mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores/as que Elaboran, Manipulen, Envasen, Distribuyan, Comercialicen y Expendan Alimentos Artesanales, AUTORIZA el Registro Sanitario del:";
              break;
               case 'renov_i':
-                  /*  RENOVACIÓN DE ALIMENTO NACIONAL
-                      RENOVACIÓN DE BEBIDA IMPORTADO
+                  /*  RENOVACIï¿½N DE ALIMENTO NACIONAL
+                      RENOVACIï¿½N DE BEBIDA IMPORTADO
                   */
-                  $marco= "El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial Nº 35.921 de fecha 15 de marzo de 1996, Artículo 22, AUTORIZA la Renovación del Registro Sanitario del:";
+                  $marco= "El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996, Artï¿½culo 22, AUTORIZA la Renovaciï¿½n del Registro Sanitario del:";
               break;
               case 'renov_ii':
                   /*  
-                  RENOVACIÓN DE ALIMENTO NACIONAL ARTESANAL
-                  RENOVACIÓN DE BEBIDA NACIONAL ARTESANAL
+                  RENOVACIï¿½N DE ALIMENTO NACIONAL ARTESANAL
+                  RENOVACIï¿½N DE BEBIDA NACIONAL ARTESANAL
                   */
-                  $marco= "El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Providencia Administrativa N° 165-2017 de fecha 21 de junio de 2017, mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores/as que Elaboran, Manipulen, Envasen, Distribuyan, Comercialicen y Expendan Alimentos Artesanales,AUTORIZA la Renovación del Registro Sanitario del:";
+                  $marco= "El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Providencia Administrativa Nï¿½ 165-2017 de fecha 21 de junio de 2017, mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores/as que Elaboran, Manipulen, Envasen, Distribuyan, Comercialicen y Expendan Alimentos Artesanales,AUTORIZA la Renovaciï¿½n del Registro Sanitario del:";
               break;
               case 'inclusion':
                   /*  INCLUSION
@@ -332,26 +338,26 @@
                   $marco= "";
                   switch ($this->elab) {
                     case 3:
-                          $marco.="El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Providencia Administrativa N° 165-2017 de fecha 21 de junio de 2017, mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores/as que Elaboran, Manipulen, Envasen, Distribuyan, Comercialicen y Expendan Alimentos Artesanales, ";
+                          $marco.="El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en la Providencia Administrativa Nï¿½ 165-2017 de fecha 21 de junio de 2017, mediante la cual se Establecen los Requisitos para las Solicitudes Realizadas por Todos Aquellos Productores/as que Elaboran, Manipulen, Envasen, Distribuyan, Comercialicen y Expendan Alimentos Artesanales, ";
                     break;
                     default:
-                          $marco.="El Servicio Autónomo de Contraloría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial Nº 35.921 de fecha 15 de marzo de 1996, Artículo 24 , ";
+                          $marco.="El Servicio Autï¿½nomo de Contralorï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996, Artï¿½culo 24 , ";
                     break;
                   } 
                   switch ($this->arrDatos["id_categoria_solicitud"]) {
                       case 2:
                       case 4:
                       case 19:
-                        $marco.="AUTORIZA la Inclusión del Importador solicitado del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n del Importador solicitado del Producto:";
                       break;
                       case 5:
-                        $marco.="AUTORIZA el Ajuste del Grado Alcohólico del Producto:";
+                        $marco.="AUTORIZA el Ajuste del Grado Alcohï¿½lico del Producto:";
                       break;
                       case 6:
-                        $marco.="AUTORIZA el Cambio de Denominación solicitado del:";
+                        $marco.="AUTORIZA el Cambio de Denominaciï¿½n solicitado del:";
                       break; 
                       case 7:
-                        $marco.="AUTORIZA el Cambio de Fórmula solicitado del:";
+                        $marco.="AUTORIZA el Cambio de Fï¿½rmula solicitado del:";
                       break; 
                       case 8:
                         $marco.="AUTORIZA el Cambio de Fabricante solicitado:";
@@ -360,46 +366,46 @@
                         $marco.="AUTORIZA el Cambio de Marca solicitado del Producto:";
                       break; 
                       case 10:
-                        $marco.="AUTORIZA el Cambio de Nueva Presentación de Contenido Neto solicitado del Producto:";
+                        $marco.="AUTORIZA el Cambio de Nueva Presentaciï¿½n de Contenido Neto solicitado del Producto:";
                       break;
                       case 11:
-                        $marco.="AUTORIZA el Cambio de Presentación de Diseño del Rótulo solicitado del:";
+                        $marco.="AUTORIZA el Cambio de Presentaciï¿½n de Diseï¿½o del Rï¿½tulo solicitado del:";
                       break;
                       case 12:
-                        $marco.="AUTORIZA el Cambio solicitado de Razón Social del Importador:";
+                        $marco.="AUTORIZA el Cambio solicitado de Razï¿½n Social del Importador:";
                       break;
                       case 13:
-                        $marco.="AUTORIZA el Cambio solicitado de Razón Social del Fabricante:";
+                        $marco.="AUTORIZA el Cambio solicitado de Razï¿½n Social del Fabricante:";
                       break;  
                       case 14:
-                        $marco.="AUTORIZA el Cambio solicitado de Razón Social del Titular del Registro Sanitario del Producto:";
+                        $marco.="AUTORIZA el Cambio solicitado de Razï¿½n Social del Titular del Registro Sanitario del Producto:";
                       break;
                       case 15:
                         $marco.="AUTORIZA el Cambio solicitado del Titular del Registro Sanitario:";
                       break;
                        case 17:
-                        $marco.="AUTORIZA el Cambio solicitado del lugar de fabricación del Registro Sanitario:";
+                        $marco.="AUTORIZA el Cambio solicitado del lugar de fabricaciï¿½n del Registro Sanitario:";
                       break;
                       case 20:
-                        $marco.="AUTORIZA la Inclusión de Nueva Planta Fabricante solicitada del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Nueva Planta Fabricante solicitada del Producto:";
                       break;
                       case 21:
-                        $marco.="AUTORIZA la Inclusión de Nueva Planta Envasadora solicitada del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Nueva Planta Envasadora solicitada del Producto:";
                       break; 
                       case 22:
-                        $marco.="AUTORIZA la Inclusión de Nueva Presentación de Contenido Neto solicitado del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Nueva Presentaciï¿½n de Contenido Neto solicitado del Producto:";
                       break;
                       case 23:
-                        $marco.="AUTORIZA la Inclusión de Nueva Presentación de Material de Envase solicitado del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Nueva Presentaciï¿½n de Material de Envase solicitado del Producto:";
                       break;   
                       case 24:
-                        $marco.="AUTORIZA la Inclusión de Presentación Exclusiva para Exportación solicitada del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Presentaciï¿½n Exclusiva para Exportaciï¿½n solicitada del Producto:";
                       break;   
                       case 25:
-                        $marco.="AUTORIZA la Inclusión de Presentación de Promocional solicitada del Producto:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Presentaciï¿½n de Promocional solicitada del Producto:";
                       break;
                       case 40:
-                        $marco.="AUTORIZA la Inclusión de Presentación para Licores en Zona de Comercialización:";
+                        $marco.="AUTORIZA la Inclusiï¿½n de Presentaciï¿½n para Licores en Zona de Comercializaciï¿½n:";
                       break;        
                   }
               break;
@@ -480,7 +486,7 @@
           return $tabla;
         }
         private function denom(){
-          $denom = $this->Row(array('DENOMINACIÓN',strtoupper(utf8_decode($this->arrDetProd['d_denomina']))));
+          $denom = $this->Row(array('DENOMINACIï¿½N',strtoupper(utf8_decode($this->arrDetProd['d_denomina']))));
           
           if(empty($this->arrDetProd['d_fantasia'])){
              
@@ -517,7 +523,7 @@
           }
         }
         private function lugarFab(){
-          $lugarFab = $this->Row(array('LUGAR DE FABRICACIÓN',utf8_decode($this->arrPlant)));
+          $lugarFab = $this->Row(array('LUGAR DE FABRICACIï¿½N',utf8_decode($this->arrPlant)));
           return $lugarFab;
         }
         private function envase(){
@@ -537,7 +543,7 @@
              $this->SetWidths(array(35,35,120));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('GRADO ANTERIOR','GRADO SOLICITADO','DENOMINACIÓN DESPUES DEL CAMBIO'));
+             $this->Row(array('GRADO ANTERIOR','GRADO SOLICITADO','DENOMINACIï¿½N DESPUES DEL CAMBIO'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array(utf8_decode($data['n_grado_anterior']),utf8_decode($data['n_grado_actual']),utf8_decode($data['d_denomina_actual'])));
         }
@@ -546,17 +552,17 @@
             $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(90,100));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C'));
              if ($data['d_tipo_denomina'] == 1) {
-                $this->Row(array('DENOMINACIÓN ANTERIOR','DENOMINACIÓN SOLICITADA'));
+                $this->Row(array('DENOMINACIï¿½N ANTERIOR','DENOMINACIï¿½N SOLICITADA'));
                 $this->SetAligns(array('J','J'));
                 $this->Row(array(utf8_decode($data['d_denomina_anterior']),utf8_decode($data['d_denomina_actual'])));
              }else
              if ($data['d_tipo_denomina'] == 2) { 
-                $this->Row(array('NOMBRE DE FANTASÍA ANTERIOR','NOMBRE DE FANTASÍA SOLICITADO'));
+                $this->Row(array('NOMBRE DE FANTASï¿½A ANTERIOR','NOMBRE DE FANTASï¿½A SOLICITADO'));
                 $this->SetAligns(array('J','J'));
                 if ($data['d_fantasia_anterior']=='') {
                   $fant = "NO POSEE";
@@ -566,10 +572,10 @@
                 $this->Row(array(utf8_decode($fant),utf8_decode($data['d_fantasia_actual'])));
              }else
              if ($data['d_tipo_denomina'] == 3) {
-                $this->Row(array('DENOMINACIÓN ANTERIOR','DENOMINACIÓN SOLICITADA'));
+                $this->Row(array('DENOMINACIï¿½N ANTERIOR','DENOMINACIï¿½N SOLICITADA'));
                 $this->SetAligns(array('J','J'));
                 $this->Row(array(utf8_decode($data['d_denomina_anterior']),utf8_decode($data['d_denomina_actual'])));
-                $this->Row(array('NOMBRE DE FANTASÍA ANTERIOR','NOMBRE DE FANTASÍA SOLICITADO'));
+                $this->Row(array('NOMBRE DE FANTASï¿½A ANTERIOR','NOMBRE DE FANTASï¿½A SOLICITADO'));
                 $this->SetAligns(array('J','J'));
                 if ($data['d_fantasia_anterior']=='') {
                   $fant = "NO POSEE";
@@ -584,11 +590,11 @@
             $this->Ln(2);
            //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(50,20,100,20));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C','C'));
-             $this->Row(array('INGREDIENTE O ADITIVO','TIPO','FUNCIÓN','CANTIDAD'));
+             $this->Row(array('INGREDIENTE O ADITIVO','TIPO','FUNCIï¿½N','CANTIDAD'));
              $this->SetFont('Arial','','9'); 
               for($j=0;$j<count($data);$j++){
                   if ($data[$j]["id_tipo_composicion"] == 2) {
@@ -664,7 +670,7 @@
              $this->SetWidths(array(30,80,80));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('RIF','RAZÓN SOCIAL ANTERIOR','RAZÓN SOCIAL ACTUAL'));
+             $this->Row(array('RIF','RAZï¿½N SOCIAL ANTERIOR','RAZï¿½N SOCIAL ACTUAL'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['id_empresa'],utf8_decode($data['razon_anterior']),utf8_decode($data['razon_actual'])));
 
@@ -679,9 +685,9 @@
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
              if ($data['tipo_empresa'] == 1) {
-              $this->Row(array('RIF','RAZÓN SOCIAL ANTERIOR','RAZÓN SOCIAL ACTUAL'));
+              $this->Row(array('RIF','RAZï¿½N SOCIAL ANTERIOR','RAZï¿½N SOCIAL ACTUAL'));
              }else{
-              $this->Row(array('ID','RAZÓN SOCIAL ANTERIOR','RAZÓN SOCIAL ACTUAL'));
+              $this->Row(array('ID','RAZï¿½N SOCIAL ANTERIOR','RAZï¿½N SOCIAL ACTUAL'));
              }
              $this->SetAligns(array('C','J','J'));
              $this->Row(array($data['id_empresa'],utf8_decode($data['razon_anterior']),utf8_decode($data['razon_actual'])));
@@ -696,9 +702,9 @@
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
              if ($data['tipo_empresa'] == 1) {
-              $this->Row(array('RIF','RAZÓN SOCIAL ANTERIOR','RAZÓN SOCIAL ACTUAL'));
+              $this->Row(array('RIF','RAZï¿½N SOCIAL ANTERIOR','RAZï¿½N SOCIAL ACTUAL'));
              }else{
-              $this->Row(array('ID','RAZÓN SOCIAL ANTERIOR','RAZÓN SOCIAL ACTUAL'));
+              $this->Row(array('ID','RAZï¿½N SOCIAL ANTERIOR','RAZï¿½N SOCIAL ACTUAL'));
              }
              $this->SetAligns(array('C','J','J'));
              $this->Row(array($data['id_empresa'],utf8_decode($data['razon_anterior']),utf8_decode($data['razon_actual'])));
@@ -742,7 +748,7 @@
              $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $this->SetWidths(array(50,140));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C'));
@@ -762,7 +768,7 @@
              $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              switch ($data['tipo']) {
                 case 1:
                   $this->SetWidths(array(50,140));
@@ -774,7 +780,7 @@
                   $this->SetWidths(array(50,140));
                   $this->SetFont('Arial','B','9');
                   $this->SetAligns(array('C','C'));
-                  $this->Row(array('PERMISO SANITARIO','UBICACIÓN DE LA PLANTA'));
+                  $this->Row(array('PERMISO SANITARIO','UBICACIï¿½N DE LA PLANTA'));
                   $this->SetAligns(array('C','J'));
                   $this->Row(array(utf8_decode($data["nro_permiso_sanitario"]),utf8_decode($data["d_direccion"])));
                 break;
@@ -788,7 +794,7 @@
                   $this->SetWidths(array(95,95));
                   $this->SetFont('Arial','B','9');
                   $this->SetAligns(array('C','C'));
-                  $this->Row(array('CIUDAD','PAÍS'));
+                  $this->Row(array('CIUDAD','PAï¿½S'));
                   $this->SetAligns(array('J','C'));
                   $this->Row(array(utf8_decode($data["d_ciudad"]),utf8_decode($data["d_pais"])));
                 break;
@@ -801,7 +807,7 @@
              $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $data['tipo'] = 1;
              switch ($data['tipo']) {
                 case 1:
@@ -814,7 +820,7 @@
                   $this->SetWidths(array(50,140));
                   $this->SetFont('Arial','B','9');
                   $this->SetAligns(array('C','C'));
-                  $this->Row(array('PERMISO SANITARIO','UBICACIÓN DE LA PLANTA'));
+                  $this->Row(array('PERMISO SANITARIO','UBICACIï¿½N DE LA PLANTA'));
                   $this->SetAligns(array('C','J'));
                   $this->Row(array(utf8_decode($data["nro_permiso_sanitario"]),utf8_decode($data["d_direccion"])));
                 break;
@@ -828,7 +834,7 @@
                   $this->SetWidths(array(95,95));
                   $this->SetFont('Arial','B','9');
                   $this->SetAligns(array('C','C'));
-                  $this->Row(array('CIUDAD','PAÍS'));
+                  $this->Row(array('CIUDAD','PAï¿½S'));
                   $this->SetAligns(array('J','C'));
                   $this->Row(array(utf8_decode($data["d_ciudad"]),utf8_decode($data["d_pais"])));
                 break;
@@ -840,7 +846,7 @@
              $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $this->SetWidths(array(130,60));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C'));
@@ -899,11 +905,11 @@
              $this->Ln(2);
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $this->SetWidths(array(45,145));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C'));
-             $this->Row(array('NRO. AUTORIZACIÓN','ENVASE'));
+             $this->Row(array('NRO. AUTORIZACIï¿½N','ENVASE'));
              $this->SetAligns(array('C','J'));
              $this->Row(array(utf8_decode($data['n_otorgado_higiene']),utf8_decode(strtoupper($data['d_material_contenedor']))));
 
@@ -913,11 +919,11 @@
              $this->Ln(2);
             //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $this->SetWidths(array(60,40,40,50));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C','C'));
-             $this->Row(array('DENOMINACIÓN PARA EXPORTACIÓN','CONT. NETO','UNIDAD MEDIDA','PAIS'));
+             $this->Row(array('DENOMINACIï¿½N PARA EXPORTACIï¿½N','CONT. NETO','UNIDAD MEDIDA','PAIS'));
              $this->SetAligns(array('J','C','C','C'));
              for($j=0;$j<count($data);$j++){
              $this->Row(array(utf8_decode($data[$j]['d_nombre_prod']),utf8_decode($data[$j]['n_contenido_neto']),utf8_decode($data[$j]['simbolo']),utf8_decode(strtoupper($data[$j]['d_pais']))));
@@ -928,11 +934,11 @@
             $this->Ln(2);
             //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $this->SetWidths(array(80,70,40));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('NOMBRE DE PROMOCIÓN','CONT. NETO','UNIDAD MEDIDA'));
+             $this->Row(array('NOMBRE DE PROMOCIï¿½N','CONT. NETO','UNIDAD MEDIDA'));
              $this->SetAligns(array('J','C','C'));
              for($j=0;$j<count($data);$j++){
              $this->Row(array(utf8_decode($data[$j]['d_nombre_promo']),utf8_decode($data[$j]['n_contenito_neto']),utf8_decode($data[$j]['simbolo'])));
@@ -959,11 +965,11 @@
              $this->Ln(2);
             //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LA INCLUSIÓN SOLICITADA',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LA INCLUSIï¿½N SOLICITADA',1,'C',false); 
              $this->SetWidths(array(60,130));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('L','C'));
-             $this->Row(array('ZONA DE COMERCIALIZACIÓN:',$data));
+             $this->Row(array('ZONA DE COMERCIALIZACIï¿½N:',$data));
              $this->SetAligns(array('J','J'));
               /*
              for($j=0;$j<count($data);$j++){
@@ -975,7 +981,7 @@
              $this->Ln(2);
             //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'DATOS DE LAS ZONAS DE COMERCIALIZACIÓN',1,'C',false); 
+             $this->MultiCell('190',6,'DATOS DE LAS ZONAS DE COMERCIALIZACIï¿½N',1,'C',false); 
              $this->SetWidths(array(48,142));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','J'));
@@ -995,17 +1001,17 @@
                   case 3:
                   case 4:
                     if ($this->impNR) {
-                      $aprob1= "El referido producto se encuentra autorizado bajo el Número de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autónomo cumple con notificarle que una vez verificada la documentación anexa, se pudo constatar que la misma se ajusta a la normativa sanitaria vigente, en consecuencia este Despacho le concede lo solicitado.";
-                      $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                      $aprob1= "El referido producto se encuentra autorizado bajo el Nï¿½mero de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autï¿½nomo cumple con notificarle que una vez verificada la documentaciï¿½n anexa, se pudo constatar que la misma se ajusta a la normativa sanitaria vigente, en consecuencia este Despacho le concede lo solicitado.";
+                      $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                     }else{
-                      $aprob1= "El referido producto se encuentra autorizado bajo el Número de Registro indicado al comienzo de este documento, por lo que su Libre Venta y Consumo, está permitida en todo el Territorio de la República Bolivariana de Venezuela, sometiéndose a las regulaciones relativas a Vigilancia y Control, Publicidad, Promoción y demás prescripciones establecidas en la normativa vigente para este tipo de producto.";
-                      $aprob2= "Este registro tendrá una vigencia de ".$arrAprob['total']." a partir de la fecha de emisión de este documento. Por consiguiente, a su vencimiento deberá renovarse de acuerdo a lo establecido en el artículo 22 de las referidas Normas Complementarias.";
-                      $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                      $aprob1= "El referido producto se encuentra autorizado bajo el Nï¿½mero de Registro indicado al comienzo de este documento, por lo que su Libre Venta y Consumo, estï¿½ permitida en todo el Territorio de la Repï¿½blica Bolivariana de Venezuela, sometiï¿½ndose a las regulaciones relativas a Vigilancia y Control, Publicidad, Promociï¿½n y demï¿½s prescripciones establecidas en la normativa vigente para este tipo de producto.";
+                      $aprob2= "Este registro tendrï¿½ una vigencia de ".$arrAprob['total']." a partir de la fecha de emisiï¿½n de este documento. Por consiguiente, a su vencimiento deberï¿½ renovarse de acuerdo a lo establecido en el artï¿½culo 22 de las referidas Normas Complementarias.";
+                      $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                     }
                   break;
                   case 19:
-                    $aprob1= "El referido producto se encuentra autorizado bajo el Número de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autónomo cumple con notificarle que una vez verificada la documentación anexa, se pudo constatar que la misma se ajusta a la normativa sanitaria vigente, en consecuencia este Despacho le concede lo solicitado.";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                    $aprob1= "El referido producto se encuentra autorizado bajo el Nï¿½mero de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autï¿½nomo cumple con notificarle que una vez verificada la documentaciï¿½n anexa, se pudo constatar que la misma se ajusta a la normativa sanitaria vigente, en consecuencia este Despacho le concede lo solicitado.";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   break;
                   case 5:
                   case 6:
@@ -1021,23 +1027,23 @@
                   case 17:
                   case 20:
                   case 21:
-                  $aprob1= "El referido producto se encuentra autorizado bajo el Número de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autónomo cumple con notificarle que una vez verificada la documentación anexa, se pudo constatar que la misma se ajusta a la normativa sanitaria vigente, en consecuencia este Despacho le concede lo solicitado.";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                  $aprob1= "El referido producto se encuentra autorizado bajo el Nï¿½mero de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autï¿½nomo cumple con notificarle que una vez verificada la documentaciï¿½n anexa, se pudo constatar que la misma se ajusta a la normativa sanitaria vigente, en consecuencia este Despacho le concede lo solicitado.";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   case 22:
                   case 23:
                   case 24:
                   case 25:
-                    $aprob1= "El referido producto se encuentra autorizado bajo el Número de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autónomo se reserva el derecho de realizar inspecciones y/o solicitar cualquier documentación que considere pertinente a los fines de verificar la información suministrada.";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                    $aprob1= "El referido producto se encuentra autorizado bajo el Nï¿½mero de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autï¿½nomo se reserva el derecho de realizar inspecciones y/o solicitar cualquier documentaciï¿½n que considere pertinente a los fines de verificar la informaciï¿½n suministrada.";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   break;
                   case 32:
                   case 33:
                   case 34:
                   case 35:
                   case 40:
-                    $aprob1= "El referido producto se encuentra autorizado bajo el Número de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autónomo se da por notificado y se reserva el derecho de realizar inspecciones y/o solicitar cualquier documentación que considere pertinente a los fines de verificar la información suministrada.";
-                    $aprob2= "Esta Autorización tendrá una vigencia de ".$arrAprob['total']." a partir de la fecha de emisión de este documento. Por consiguiente, a su vencimiento deberá renovarse nuevamente de acuerdo a lo establecido en el Artículo 22 de las referidas Normas Complementarias ";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                    $aprob1= "El referido producto se encuentra autorizado bajo el Nï¿½mero de Registro indicado al comienzo de este documento. Asimismo, este Servicio Autï¿½nomo se da por notificado y se reserva el derecho de realizar inspecciones y/o solicitar cualquier documentaciï¿½n que considere pertinente a los fines de verificar la informaciï¿½n suministrada.";
+                    $aprob2= "Esta Autorizaciï¿½n tendrï¿½ una vigencia de ".$arrAprob['total']." a partir de la fecha de emisiï¿½n de este documento. Por consiguiente, a su vencimiento deberï¿½ renovarse nuevamente de acuerdo a lo establecido en el Artï¿½culo 22 de las referidas Normas Complementarias ";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   break;
                   //NUEVO ENVASE EMPAQUE
                   case 41;
@@ -1048,9 +1054,9 @@
                   case 50;
                   case 51;
                   case 52;
-                    $aprob1= "De igual forma se le participa que dicha autorización está sujeta a las revisiones de este Despacho estime oportuno realizar de acuerdo a los avances de la Ciencia y Tecnología en resguardo de la salud pública.";
-                    $aprob2= "Esta autorización tiene una vigencia de cinco (5) años contados a partir de la presente fecha.";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                    $aprob1= "De igual forma se le participa que dicha autorizaciï¿½n estï¿½ sujeta a las revisiones de este Despacho estime oportuno realizar de acuerdo a los avances de la Ciencia y Tecnologï¿½a en resguardo de la salud pï¿½blica.";
+                    $aprob2= "Esta autorizaciï¿½n tiene una vigencia de cinco (5) aï¿½os contados a partir de la presente fecha.";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   break;
                   //RENOVACION ENVASE EMPAQUE
                     case 45:
@@ -1063,9 +1069,9 @@
                     case 56:
                     case 57:
                     case 58:
-                    $aprob1= "De igual forma se le participa que dicha autorización está sujeta a las revisiones de este Despacho estime oportuno realizar de acuerdo a los avances de la Ciencia y Tecnología en resguardo de la salud pública.";
-                    $aprob2= "Esta autorización tiene una vigencia de cinco (5) años contados a partir de la presente fecha.";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                    $aprob1= "De igual forma se le participa que dicha autorizaciï¿½n estï¿½ sujeta a las revisiones de este Despacho estime oportuno realizar de acuerdo a los avances de la Ciencia y Tecnologï¿½a en resguardo de la salud pï¿½blica.";
+                    $aprob2= "Esta autorizaciï¿½n tiene una vigencia de cinco (5) aï¿½os contados a partir de la presente fecha.";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   break;
                 }   
               break;
@@ -1131,7 +1137,7 @@
             $this->Ln(8);
             $this->SetFont('Arial','','6');
            // $this->MultiCell('190','6',$this->firma,'0','J',false);
-            ///$firmado = 'Este documento está Firmado Digitalmente por el Director(a) General del Servicio Autónomo de Contraloría Sanitaria: , bajo los estándares de seguridad del SACS. Para verificar la validéz de este registro puede ingresar a la página Web http://www.sacs.gob.ve, sección "CONSULTAS" y seleccionar "Alimentos y Bebidas Alcohólicas".';
+            ///$firmado = 'Este documento estï¿½ Firmado Digitalmente por el Director(a) General del Servicio Autï¿½nomo de Contralorï¿½a Sanitaria: , bajo los estï¿½ndares de seguridad del SACS. Para verificar la validï¿½z de este registro puede ingresar a la pï¿½gina Web http://www.sacs.gob.ve, secciï¿½n "CONSULTAS" y seleccionar "Alimentos y Bebidas Alcohï¿½licas".';
             $this->MultiCell('190','6',$firmado,'0','L',false);
            }
         }
@@ -1142,7 +1148,7 @@
 
         function writeRespon($sol){
             $this->SetFont('Arial','','6');
-            $this->MultiCell('190','6',"N° Solicitud: ".$sol,'0','L',false);
+            $this->MultiCell('190','6',"Nï¿½ Solicitud: ".$sol,'0','L',false);
         }
 
       //***RESPONSABLE**************************************************************
@@ -1155,8 +1161,8 @@
             $numLinFoo=(int)$this->GetY();
             ///$this->Line(14,$numLinFoo,190,$numLinFoo);
             $mensaje ='"Juntos por cada latido"';  
-            $servicio ='Servicio Autónomo de Contraloría Sanitaria.';
-            $direccion ='Dirección de Inocuidad de Alimentos y Bebidas.';
+            $servicio ='Servicio Autï¿½nomo de Contralorï¿½a Sanitaria.';
+            $direccion ='Direcciï¿½n de Inocuidad de Alimentos y Bebidas.';
             $this->Ln(3);
             $this->SetFont('Times','','12');
             $this->MultiCell('190','4',$mensaje,'0','C',false);
@@ -1197,16 +1203,16 @@
 
 
                     case 45:
-                    $titulo = "RENOVACIÓN DE ENVASE, EMPAQUE O ARTICULO NACIONAL";
+                    $titulo = "RENOVACIï¿½N DE ENVASE, EMPAQUE O ARTICULO NACIONAL";
                     break;
                     case 46;
-                    $titulo = "RENOVACIÓN DE MATERIA PRIMA NACIONAL";
+                    $titulo = "RENOVACIï¿½N DE MATERIA PRIMA NACIONAL";
                     break;
                     case 47;
-                    $titulo = "RENOVACIÓN DE DETERGENTE O DESINFECTANTE NACIONAL";
+                    $titulo = "RENOVACIï¿½N DE DETERGENTE O DESINFECTANTE NACIONAL";
                     break;
                     case 48;
-                    $titulo = "RENOVACIÓN DE EQUIPOS DE FABRICACION DE ALIMENTO NACIONAL";
+                    $titulo = "RENOVACIï¿½N DE EQUIPOS DE FABRICACION DE ALIMENTO NACIONAL";
                     break;
 
 
@@ -1226,25 +1232,25 @@
                     //RENOVACIONES
 
                     case 53:
-                    $titulo = "RENOVACIÓN DE ENVASE, EMPAQUE O ARTICULO IMPORTADA";
+                    $titulo = "RENOVACIï¿½N DE ENVASE, EMPAQUE O ARTICULO IMPORTADA";
                     break;
                     case 54;
-                    $titulo = "RENOVACIÓN DE MATERIA PRIMA IMPORTADA";
+                    $titulo = "RENOVACIï¿½N DE MATERIA PRIMA IMPORTADA";
                     break;
                     case 55;
-                    $titulo = "RENOVACIÓN DE DETERGENTE O DESINFECTANTE IMPORTADA";
+                    $titulo = "RENOVACIï¿½N DE DETERGENTE O DESINFECTANTE IMPORTADA";
                     break;
                     case 56;
-                    $titulo = "RENOVACIÓN DE EQUIPOS DE FABRICACION DE ALIMENTO IMPORTADA";
+                    $titulo = "RENOVACIï¿½N DE EQUIPOS DE FABRICACION DE ALIMENTO IMPORTADA";
                     break;
 
                     //CAMBIOS
 
                     case 57;
-                    $titulo = "CAMBIOS DE DENOMINACIÓN DE MATERIAS PRIMAS, ENVASES Y/O EMPAQUES";
+                    $titulo = "CAMBIOS DE DENOMINACIï¿½N DE MATERIAS PRIMAS, ENVASES Y/O EMPAQUES";
                     break;                    
                     case 58;
-                    $titulo = "CAMBIO DE RAZÓN SOCIAL EN EL REGISTRO DE MATERIAS PRIMAS, EMPAQUES Y/O ENVASES";
+                    $titulo = "CAMBIO DE RAZï¿½N SOCIAL EN EL REGISTRO DE MATERIAS PRIMAS, EMPAQUES Y/O ENVASES";
                     break;
                   }
 
@@ -1261,7 +1267,7 @@
            $this->SetFont('Arial','','11');
            $this->Ln(1);
            $this->cell(133);
-           $this->Cell(55,5,"Número de Registro Sanitario",1,'L','C');
+           $this->Cell(55,5,"Nï¿½mero de Registro Sanitario",1,'L','C');
            $this->SetFont('Arial','B','11');
            $this->Ln();
            $this->cell(133);
@@ -1323,7 +1329,7 @@
         }
 
         private function compo($compo){
-          $denom = $this->Row(array('COMPOSICIÓN',strtoupper(utf8_decode($compo))));
+          $denom = $this->Row(array('COMPOSICIï¿½N',strtoupper(utf8_decode($compo))));
           return $clase;
         }
 
@@ -1353,7 +1359,7 @@
           return $denom;
         }
         private function deno_comer($arrDetProd){
-          $denom = $this->Row(array('DENOMINACIÓN COMERCIAL',strtoupper(utf8_decode($arrDetProd["d_denomina"]))));
+          $denom = $this->Row(array('DENOMINACIï¿½N COMERCIAL',strtoupper(utf8_decode($arrDetProd["d_denomina"]))));
           return $clase;
         }
         private function fabrnte1($Datos){
@@ -1361,7 +1367,7 @@
           return $fabrnte;
         }
         private function lugarFab1($Datos){
-          $lugarFab = $this->Row(array('LUGAR DE FABRICACIÓN',utf8_decode($Datos['d_ciudad'].'- '.$Datos['d_estado'])));
+          $lugarFab = $this->Row(array('LUGAR DE FABRICACIï¿½N',utf8_decode($Datos['d_ciudad'].'- '.$Datos['d_estado'])));
           return $lugarFab;
         }
         private function ElaboEnv($Empresa){
@@ -1373,7 +1379,7 @@
           return $fabrnte;
         }
         private function lugarFab2($Datos){
-          $lugarFab = $this->Row(array('LUGAR DE FABRICACIÓN',utf8_decode(strtoupper($Datos['d_pais']).' - '.$Datos['d_ciudad'])));
+          $lugarFab = $this->Row(array('LUGAR DE FABRICACIï¿½N',utf8_decode(strtoupper($Datos['d_pais']).' - '.$Datos['d_ciudad'])));
           return $lugarFab;
         }
         private function usos($arrDetProd){
@@ -1390,11 +1396,11 @@
             $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(90,100));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C'));
-             $this->Row(array('DENOMINACIÓN ANTERIOR','DENOMINACIÓN SOLICITADA'));
+             $this->Row(array('DENOMINACIï¿½N ANTERIOR','DENOMINACIï¿½N SOLICITADA'));
              $this->SetAligns(array('J','J'));
              $this->Row(array(utf8_decode($data['d_denomina_anterior']),utf8_decode($data['d_denomina_actual'])));
 
@@ -1404,7 +1410,7 @@
             $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(22,84,84));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
@@ -1418,7 +1424,7 @@
             $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(22,84,84));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C','C'));
@@ -1435,7 +1441,7 @@
          case 45:
          case 49:
          case 53:
-        $marco= "El Servicio Autónomo de Controlaría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos Resolución N° SG-081 de fecha 11/03/1996. Según Gaceta Oficial N° 25.864 de fecha 16 de enero de 1959, Y las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial N° 35.921 de fecha 15 de marzo de 1996:";
+        $marco= "El Servicio Autï¿½nomo de Controlarï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos Resoluciï¿½n Nï¿½ SG-081 de fecha 11/03/1996. Segï¿½n Gaceta Oficial Nï¿½ 25.864 de fecha 16 de enero de 1959, Y las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996:";
           //  Marco legal i (1)
           $this->SetFont('Arial','','10');
           $this->Ln(8);
@@ -1445,7 +1451,7 @@
          case 46:
          case 50: 
          case 54:
-         $marco= "El Servicio Autónomo de Controlaría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos Resolución N° SG-081 de fecha 11/03/1996. Según Gaceta Oficial N° 25.864 decreto N° 525-12 de fecha 16 de enero de 1959, Y las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial N° 35.921 de fecha 15 de marzo de 1996:";
+         $marco= "El Servicio Autï¿½nomo de Controlarï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos Resoluciï¿½n Nï¿½ SG-081 de fecha 11/03/1996. Segï¿½n Gaceta Oficial Nï¿½ 25.864 decreto Nï¿½ 525-12 de fecha 16 de enero de 1959, Y las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996:";
           //  Marco legal i (1)
           $this->SetFont('Arial','','10');
           $this->Ln(8);
@@ -1455,7 +1461,7 @@
          case 47:
          case 51:
          case 55:
-         $marco= "El Servicio Autónomo de Controlaría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos. Normas Buenas prácticas Resolución N° SG-457-96 de fecha 11/03/1996. Según Gaceta Oficial N° 25.864 decreto N° 525-12 de fecha 16 de enero de 1959, Y las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial N° 36.081 de fecha 07 de noviembre de 1996, Normas Sanitarias para el registro y control de producto de Aseo, Desinfección, Mantenimiento y Ambientadores de Usos Doméstico e Industriales Resolución N° 258 gaceta oficial N° 37.973 del 06 de Julio de 2004:";
+         $marco= "El Servicio Autï¿½nomo de Controlarï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos. Normas Buenas prï¿½cticas Resoluciï¿½n Nï¿½ SG-457-96 de fecha 11/03/1996. Segï¿½n Gaceta Oficial Nï¿½ 25.864 decreto Nï¿½ 525-12 de fecha 16 de enero de 1959, Y las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 36.081 de fecha 07 de noviembre de 1996, Normas Sanitarias para el registro y control de producto de Aseo, Desinfecciï¿½n, Mantenimiento y Ambientadores de Usos Domï¿½stico e Industriales Resoluciï¿½n Nï¿½ 258 gaceta oficial Nï¿½ 37.973 del 06 de Julio de 2004:";
           //  Marco legal i (1)
           $this->SetFont('Arial','','10');
           $this->Ln(8);
@@ -1467,7 +1473,7 @@
          case 56:
          case 57:
          case 58:
-         $marco= "El Servicio Autónomo de Controlaría Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos Resolución N° SG-081 de fecha 11/03/1996. Según Gaceta Oficial N° 35.921 de fecha 15 de marzo de 1996, Y las Normas Complementarias del Reglamento General de Alimentos según Gaceta Oficial N° 36.081 de fecha 07 de noviembre de 1996:";
+         $marco= "El Servicio Autï¿½nomo de Controlarï¿½a Sanitaria (SACS), ente adscrito al Ministerio del Poder Popular para la Salud, de conformidad con lo establecido en el Reglamento General de Alimentos Resoluciï¿½n Nï¿½ SG-081 de fecha 11/03/1996. Segï¿½n Gaceta Oficial Nï¿½ 35.921 de fecha 15 de marzo de 1996, Y las Normas Complementarias del Reglamento General de Alimentos segï¿½n Gaceta Oficial Nï¿½ 36.081 de fecha 07 de noviembre de 1996:";
           //  Marco legal i (1)
           $this->SetFont('Arial','','10');
           $this->Ln(8);
@@ -1490,9 +1496,9 @@
                   case 50;
                   case 51;
                   case 52;
-                    $aprob1= "De igual forma se le participa que dicha autorización está sujeta a las revisiones de este Despacho estime oportuno realizar de acuerdo a los avances de la Ciencia y Tecnología en reguardo de la salud pública.";
-                    $aprob2= "Esta Autorización tendrá una vigencia de ".$arrAprob['total']." a partir de la fecha de emisión de este documento. Por consiguiente, a su vencimiento deberá renovarse nuevamente de acuerdo a lo establecido en el Artículo 22 de las referidas Normas Complementarias ";
-                    $aprob3= "Autorización que se expide a petición de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del año ".$arrAprob['ano'];
+                    $aprob1= "De igual forma se le participa que dicha autorizaciï¿½n estï¿½ sujeta a las revisiones de este Despacho estime oportuno realizar de acuerdo a los avances de la Ciencia y Tecnologï¿½a en reguardo de la salud pï¿½blica.";
+                    $aprob2= "Esta Autorizaciï¿½n tendrï¿½ una vigencia de ".$arrAprob['total']." a partir de la fecha de emisiï¿½n de este documento. Por consiguiente, a su vencimiento deberï¿½ renovarse nuevamente de acuerdo a lo establecido en el Artï¿½culo 22 de las referidas Normas Complementarias ";
+                    $aprob3= "Autorizaciï¿½n que se expide a peticiï¿½n de la parte interesada, en la ciudad Caracas a los ".$arrAprob['dia']." dias del mes de ".$arrAprob['mes']." del aï¿½o ".$arrAprob['ano'];
                   break;
 
                 }   

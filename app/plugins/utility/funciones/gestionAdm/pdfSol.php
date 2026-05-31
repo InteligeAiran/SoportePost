@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
   /*
     Clase para generar los permisos Sanitarios
     y las Actas de Inspeccion 
@@ -151,9 +157,9 @@ function image_firma($urlFirma,$numLinFirma){
       $this->Line(24,$numLinFoo,190,$numLinFoo);
       //***
       //***Texto 14,15,16  pie de pagina 
-      $txt_14 ='Centro Simón Bolívar, Edificio Sur, Ministerio del Poder Popular para la Salud, piso 3, oficina 313,';
-      $txt_15 ='Servicio Autónomo de Contraloría Sanitaria - Dirección de Higiene de los Alimentos';
-      $txt_16 ='Teléfono 4080477 Telefax 4080505 Página web: http://sacs.mpps.gob.ve'; 
+      $txt_14 ='Centro Simï¿½n Bolï¿½var, Edificio Sur, Ministerio del Poder Popular para la Salud, piso 3, oficina 313,';
+      $txt_15 ='Servicio Autï¿½nomo de Contralorï¿½a Sanitaria - Direcciï¿½n de Higiene de los Alimentos';
+      $txt_16 ='Telï¿½fono 4080477 Telefax 4080505 Pï¿½gina web: http://sacs.mpps.gob.ve'; 
       $this->SetFont('Arial','','6');
       $this->MultiCell('170','4',$txt_14,'0','C',false);              
       $this->SetFont('Arial','','6');
@@ -161,7 +167,7 @@ function image_firma($urlFirma,$numLinFirma){
       $this->SetFont('Arial','','6');               
       $this->MultiCell('170','4',$txt_16,'0','C',false);
      }
-   //Emisión de Permisos   
+   //Emisiï¿½n de Permisos   
    function writeSol($arrDatos){
         $fecha=fechaBD();
       //Defino el Formato
@@ -172,7 +178,7 @@ function image_firma($urlFirma,$numLinFirma){
         $this->SetFont('Arial','','12');
            $encab =	$arrDatos["contraloria"];
            $tit_1 ='PERMISO SANITARIO DE FUNCIONAMIENTO PARA ESTABLECIMIENTOS '.$arrDatos["idTag"];
-           //$tit_2 = 'PSNº '.$arrDatos["permiso"];
+           //$tit_2 = 'PSNï¿½ '.$arrDatos["permiso"];
            $this->Ln(20);
            $this->MultiCell('170','6',$encab,'0','C',false);
            $this->MultiCell('170','6',$tit_1,'0','C',false);
@@ -183,10 +189,10 @@ function image_firma($urlFirma,$numLinFirma){
           $this->SetAligns(array('L','L'));
           $this->Row(array('Fecha de Solicitud:',$arrDatos['fecha'])); 
           $this->Row(array('Nro Solicitud:',$arrDatos['nroSol'])); 
-          $this->Row(array('Tipo de Trámite:',$arrDatos['idTag'])); 
-          $this->Row(array('Área:',$arrDatos['area'])); 
+          $this->Row(array('Tipo de Trï¿½mite:',$arrDatos['idTag'])); 
+          $this->Row(array('ï¿½rea:',$arrDatos['area'])); 
           $this->Row(array('Tipo de Solicitud:',$arrDatos['tipoSol'])); 
-          $this->Row(array('Categoría:',$arrDatos['categoria'])); 
+          $this->Row(array('Categorï¿½a:',$arrDatos['categoria'])); 
           $this->Row(array('Nro. Permiso:',$arrDatos['permiso'])); 
     }
 
@@ -201,10 +207,10 @@ function image_firma($urlFirma,$numLinFirma){
           $this->Row(array('Estado:',$arrDatos['estado'])); 
           $this->Row(array('Municipio:',$arrDatos['municipio'])); 
           $this->Row(array('Parroquia:',$arrDatos['parroquia'])); 
-          $this->Row(array('Ubicación:',$arrDatos['direccion'])); 
+          $this->Row(array('Ubicaciï¿½n:',$arrDatos['direccion'])); 
           $this->Row(array('Punto Referencia:',$arrDatos['puntoRef'])); 
-          $this->Row(array('Teléfono Principal:',$arrDatos['telefono1'])); 
-          $this->Row(array('Teléfono Secundario:',$arrDatos['telefono2'])); 
+          $this->Row(array('Telï¿½fono Principal:',$arrDatos['telefono1'])); 
+          $this->Row(array('Telï¿½fono Secundario:',$arrDatos['telefono2'])); 
           $this->Row(array('Rubro(s):',$arrDatos['rubro'])); 
            $this->Row(array('Desc. Rubro(s):',$arrDatos['descrubro'])); 
      } 
@@ -218,16 +224,16 @@ function image_firma($urlFirma,$numLinFirma){
           $valNac = $arrDatos["valNac"];
           if($valNac == 1 || $valNac == 2){
             $this->Row(array('Nacionalidad:',$arrDatos['nacional'])); 
-            $this->Row(array('Cédula:',$arrDatos['cedula'])); 
+            $this->Row(array('Cï¿½dula:',$arrDatos['cedula'])); 
             $this->Row(array('Nombre(s):',$arrDatos['nombres'])); 
             $this->Row(array('Apellido(s):',$arrDatos['apellidos'])); 
-            $this->Row(array('Teléfono Principal:',$arrDatos['tel_fijo'])); 
-            $this->Row(array('Correo Electrónico:',$arrDatos['correo']));
+            $this->Row(array('Telï¿½fono Principal:',$arrDatos['tel_fijo'])); 
+            $this->Row(array('Correo Electrï¿½nico:',$arrDatos['correo']));
           }else{
             $this->Row(array('Rif:',$arrDatos['cedula'])); 
-            $this->Row(array('Razón Social:',$arrDatos['nombres'])); 
-            $this->Row(array('Teléfono Principal:',$arrDatos['tel_fijo'])); 
-            $this->Row(array('Correo Electrónico:',$arrDatos['correo']));
+            $this->Row(array('Razï¿½n Social:',$arrDatos['nombres'])); 
+            $this->Row(array('Telï¿½fono Principal:',$arrDatos['tel_fijo'])); 
+            $this->Row(array('Correo Electrï¿½nico:',$arrDatos['correo']));
           } 
      }     
 
@@ -235,7 +241,7 @@ function image_firma($urlFirma,$numLinFirma){
     function writeVehiculo($arrDatos){
         //Datos del Vehiculo 
           $this->Image(URL.'app/public/images/head_reporte.jpg',4,8,202,20);
-          $this->MultiCell('170',6,'DATOS DEL VEHÍCULO',1,'C',false); 
+          $this->MultiCell('170',6,'DATOS DEL VEHï¿½CULO',1,'C',false); 
           $this->SetWidths(array(40,130));
           $this->SetAligns(array('L','L'));
           $this->Row(array('Estado:',$arrDatos['estado'])); 
@@ -247,9 +253,9 @@ function image_firma($urlFirma,$numLinFirma){
           $this->Row(array('Modelo:',$arrDatos['modelo'])); 
           $this->Row(array('Capacidad:',$arrDatos['capacidad'])); 
           $this->Row(array('Serial de Motor:',$arrDatos['motor'])); 
-          $this->Row(array('Serial Carrocería:',$arrDatos['carroceria'])); 
+          $this->Row(array('Serial Carrocerï¿½a:',$arrDatos['carroceria'])); 
           $this->Row(array('Sistema de Enfriamiento:',$arrDatos['sistema'])); 
-          $this->Row(array('Descripción Sist.:',$arrDatos['descEnfria'])); 
+          $this->Row(array('Descripciï¿½n Sist.:',$arrDatos['descEnfria'])); 
           $this->Row(array('Rubro(s):',$arrDatos['rubro'])); 
      }  
 

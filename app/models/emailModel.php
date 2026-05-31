@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 require_once __DIR__ . "/../../libs/Model.php";
 
 class emailModel extends Model{
@@ -17,17 +23,19 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function GetRegionUser($id_user){
         try{
-            $sql = "SELECT * FROM sp_verregionusers(".$id_user.")";
+            $sql = "SELECT * FROM sp_verregionusers(".((int)$id_user).")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -39,17 +47,19 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
     
     public function GetEmailCoordById($id_ticket){
         try{
-            $sql = "SELECT * FROM get_coordinador_info(".$id_ticket.")";
+            $sql = "SELECT * FROM get_coordinador_info(".((int)$id_ticket).")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -59,27 +69,30 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function GetCoordinacion($id_ticket){
         try{
-            $sql = "SELECT * FROM get_department_name(".$id_ticket.")";
+            $sql = "SELECT * FROM get_department_name(".((int)$id_ticket).")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function GetTicketId($nro_ticket){
         try{
-            $sql = "SELECT * FROM get_ticket_id('".$nro_ticket."')";
+            $sql = "SELECT * FROM get_ticket_id(".pg_escape_literal($this->db->getConnection(), $nro_ticket).")";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -92,27 +105,30 @@ class emailModel extends Model{
             $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function UpdateStatusTo1($email){
         try{
-            $sql = "UPDATE users SET id_statususr = 1 WHERE email = '".$email."';";
+            $sql = "UPDATE users SET id_statususr = 1 WHERE email = ".pg_escape_literal($this->db->getConnection(), $email).";";
             $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
     
     public function UpdateTimePass($email){
         try{
-            $sql = "UPDATE users SET trying_failedpassw = 0 WHERE email = '".$email."';";
+            $sql = "UPDATE users SET trying_failedpassw = 0 WHERE email = ".pg_escape_literal($this->db->getConnection(), $email).";";
             $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }        
     
@@ -122,7 +138,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -132,7 +149,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -142,7 +160,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -152,7 +171,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -193,7 +213,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
     
@@ -204,17 +225,19 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function GetTicketNivel($serial, $id_level_failure){
         try{
-            $sql = "SELECT * FROM id_level_failure('".$serial."', ".$id_level_failure.");";
+            $sql = "SELECT * FROM id_level_failure(".pg_escape_literal($this->db->getConnection(), $serial).", ".((int)$id_level_failure).");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -226,17 +249,19 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function GetEmailUserDataById($id_user){
         try{
-            $sql = "SELECT * FROM get_email_user_by_id(".$id_user.");";
+            $sql = "SELECT * FROM get_email_user_by_id(".((int)$id_user).");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -264,11 +289,12 @@ class emailModel extends Model{
 
     public function GetEmailUser1gestionDataById($ticketid, $document_type){
         try{
-            $sql = "SELECT * FROM get_email_user_gestion_by_id(".$ticketid.", '".$document_type."');";
+            $sql = "SELECT * FROM get_email_user_gestion_by_id(".((int)$ticketid).", ".pg_escape_literal($this->db->getConnection(), $document_type).");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -290,21 +316,23 @@ class emailModel extends Model{
 
     public function GetDocumentoRechazado($ticketnro){
         try{
-            $sql = "SELECT * FROM get_ticket_reject_attachments('".$ticketnro."');";
+            $sql = "SELECT * FROM get_ticket_reject_attachments(".pg_escape_literal($this->db->getConnection(), $ticketnro).");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
     public function resultUserreject($id_user){
         try{
-            $sql = "SELECT * FROM get_user_role_info(".$id_user.");";
+            $sql = "SELECT * FROM get_user_role_info(".((int)$id_user).");";
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
     
@@ -314,7 +342,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -324,7 +353,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 
@@ -334,7 +364,8 @@ class emailModel extends Model{
             $result = Model::getResult($sql, $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en " . __METHOD__ . ": " . $e->getMessage());
+            return null;
         }
     }
 

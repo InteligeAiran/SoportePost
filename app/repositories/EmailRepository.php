@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/emailModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 use emailModel; // Asegúrate de que tu modelo de usuario exista
@@ -46,7 +52,7 @@ class EmailRepository
     public function GetEmailUserData($email){
         // Lógica para obtener datos de usuario
         $result = $this->model->GetEmailUser($email);
-        return $result ? $result['row']['nombre_completo'] : null;
+        return ($result && is_array($result['row'])) ? $result['row']['nombre_completo'] : null;
     }
 
     public function GetEmailCoorData(){

@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
   class PlanInocuidad extends FPDF{
 
     // ******************************************************************************
@@ -119,7 +125,7 @@
             $this->SetFont('Arial','','10');
             $this->SetAligns(array('C','C','C','C'));
             $this->SetFont('Arial','B','10');
-            $this->Row(array('Tipo Solicitud','N° de Registro','Fecha Solicitud','N° Solicitud'));
+            $this->Row(array('Tipo Solicitud','Nï¿½ de Registro','Fecha Solicitud','Nï¿½ Solicitud'));
             $this->SetFont('Arial','','9');
             $this->Row(array($arrDat['d_tipo_solicitud'],$arrDat['nroReg'],$arrDat['f_solicitud'],$arrDat['nroSol']));
 
@@ -133,7 +139,7 @@
            $this->SetWidths(array(100,30,60));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('C','C','C'));
-           $this->Row(array('Razón Social de la Empresa','Actividad','Rif/Id'));  
+           $this->Row(array('Razï¿½n Social de la Empresa','Actividad','Rif/Id'));  
            $this->SetFont('Arial','','10');
            $this->SetAligns(array('L','C','C'));
            //Recorrer para Extraer Data
@@ -157,11 +163,11 @@
            public function writeProducto($arrProd){
            
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'DATOS DE IDENTIFICACIÓN DEL PRODUCTO',1,'L',false); 
+           $this->MultiCell('190',6,'DATOS DE IDENTIFICACIï¿½N DEL PRODUCTO',1,'L',false); 
            $this->SetWidths(array(70,60,60));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('L','L','C'));
-           $this->Row(array('Denominación','Nombre de Fantasía','Marca'));  
+           $this->Row(array('Denominaciï¿½n','Nombre de Fantasï¿½a','Marca'));  
            $this->SetFont('Arial','','10');
            $this->SetAligns(array('L','L','L'));
            $this->Row(array(utf8_decode($arrProd['d_denomina']),utf8_decode($arrProd['d_fantasia']),utf8_decode($arrProd['d_marca'])));      
@@ -176,7 +182,7 @@
                $this->SetWidths(array(70,30,30,60));
                $this->SetFont('Arial','B','10');
                $this->SetAligns(array('C','C','C','C'));
-               $this->Row(array('Descripción','N° Autorización','Fecha','Uso del Envase y/o Empaque'));
+               $this->Row(array('Descripciï¿½n','Nï¿½ Autorizaciï¿½n','Fecha','Uso del Envase y/o Empaque'));
                $this->SetFont('Arial','','10');
                foreach($arrEnvase as $item){
                  foreach($item as $key => $value){
@@ -195,11 +201,11 @@
 
          //Presentacion y Contenido Neto
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'PRESENTACIÓN Y CONTENIDO NETO',1,'L',false); 
+           $this->MultiCell('190',6,'PRESENTACIï¿½N Y CONTENIDO NETO',1,'L',false); 
            $this->SetWidths(array(30,90,40,30));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('C','L','C','C'));
-           $this->Row(array('N° AUT.','Forma del Envase','Contenido Neto','Unidad de Medida'));
+           $this->Row(array('Nï¿½ AUT.','Forma del Envase','Contenido Neto','Unidad de Medida'));
            $this->SetFont('Arial','','10'); 
            foreach($arrCont as $item){
                  foreach($item as $key=>$value){
@@ -214,11 +220,11 @@
 
         //Datos de la Composicion del Producto 
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'DATOS DE LA COMPOSICIÓN DEL PRODUCTO',1,'L',false); 
+           $this->MultiCell('190',6,'DATOS DE LA COMPOSICIï¿½N DEL PRODUCTO',1,'L',false); 
            $this->SetWidths(array(40,40,80,30));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('C','C','C','C'));
-           $this->Row(array('Ingrediente o Aditivo','Tipo','Función','Cantidad'));
+           $this->Row(array('Ingrediente o Aditivo','Tipo','Funciï¿½n','Cantidad'));
            //$this->MultiCell('190',6,$arrCont,1,'L',false); 
            $this->SetFont('Arial','','10'); 
            foreach($arrCont as $item){
@@ -239,11 +245,11 @@
 
         //Datos de la Composicion del Producto 
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'DATOS DE LA CONSERVACIÓN Y DURACIÓN DEL PRODUCTO',1,'L',false); 
+           $this->MultiCell('190',6,'DATOS DE LA CONSERVACIï¿½N Y DURACIï¿½N DEL PRODUCTO',1,'L',false); 
            $this->SetWidths(array(110,30,50));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('L','C','C'));
-           $this->Row(array('Condiciones de la Conservación','Cantidad','Tiempo(días,meses,años)'));
+           $this->Row(array('Condiciones de la Conservaciï¿½n','Cantidad','Tiempo(dï¿½as,meses,aï¿½os)'));
            //$this->MultiCell('190',6,$arrCont,1,'L',false); 
            $this->SetFont('Arial','','10');
 
@@ -260,11 +266,11 @@
 
         //Datos de la Composicion del Producto 
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'IDENTIFICACIÓN DEL LOTE DE PRODUCCIÓN',1,'L',false); 
+           $this->MultiCell('190',6,'IDENTIFICACIï¿½N DEL LOTE DE PRODUCCIï¿½N',1,'L',false); 
            $this->SetWidths(array(80,110));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('L','L'));
-           $this->Row(array('Código del Lote','Descripción del Lote'));
+           $this->Row(array('Cï¿½digo del Lote','Descripciï¿½n del Lote'));
            //$this->MultiCell('190',6,$arrCont,1,'L',false); 
            $this->SetFont('Arial','','10');
             
@@ -281,7 +287,7 @@
 
         //Datos de la Composicion del Producto 
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'OBSERVACIÓN DEL SOLICITANTE',1,'L',false); 
+           $this->MultiCell('190',6,'OBSERVACIï¿½N DEL SOLICITANTE',1,'L',false); 
            $this->SetFont('Arial','','10');
            $this->MultiCell('190',6,utf8_decode($observa),1,'L',false); 
             
@@ -293,11 +299,11 @@
         //Datos de la Composicion del Producto
           //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL SOLICITANTE',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL SOLICITANTE',1,'C',false); 
              $this->SetWidths(array(20,55,50,35,30));
              $this->SetFont('Arial','','10');
              $this->SetAligns(array('C','C','C','C','C'));
-             $this->Row(array('Cedula','Nombre y Apellido','Correo Electrónico','Teléfono','Firma Solicitante'));
+             $this->Row(array('Cedula','Nombre y Apellido','Correo Electrï¿½nico','Telï¿½fono','Firma Solicitante'));
              $this->SetAligns(array('C','J','J','C','C'));
              $this->Row(array($data['cedula'],utf8_decode($data['d_nombre'].''.$data['d_apellido']),$data['email'],$data['telefono'],''));
          //Cuadro de Firma
@@ -327,11 +333,11 @@
 
            //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -342,17 +348,17 @@
         public function writeCmbDeno($data){
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(90,100));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C'));
              if ($data['d_tipo_denomina'] == 1) {
-                $this->Row(array('Denominación Anterior','Denominación Solicitada'));
+                $this->Row(array('Denominaciï¿½n Anterior','Denominaciï¿½n Solicitada'));
                 $this->SetAligns(array('J','J'));
                 $this->Row(array(utf8_decode($data['d_denomina_anterior']),utf8_decode($data['d_denomina_actual'])));
              }else
              if ($data['d_tipo_denomina'] == 2) { 
-                $this->Row(array('nombre de fantasía anterior','nombre de fantasía solicitado'));
+                $this->Row(array('nombre de fantasï¿½a anterior','nombre de fantasï¿½a solicitado'));
                 $this->SetAligns(array('J','J'));
                 if ($data['d_fantasia_anterior']=='') {
                   $fant = "NO POSEE";
@@ -362,10 +368,10 @@
                 $this->Row(array(utf8_decode($fant),utf8_decode($data['d_fantasia_actual'])));
              }else
              if ($data['d_tipo_denomina'] == 3) {
-                $this->Row(array('Denominación Anterior','Denominación Solicitada'));
+                $this->Row(array('Denominaciï¿½n Anterior','Denominaciï¿½n Solicitada'));
                 $this->SetAligns(array('J','J'));
                 $this->Row(array(utf8_decode($data['d_denomina_anterior']),utf8_decode($data['d_denomina_actual'])));
-                $this->Row(array('nombre de fantasía anterior','nombre de fantasía solicitado'));
+                $this->Row(array('nombre de fantasï¿½a anterior','nombre de fantasï¿½a solicitado'));
                 $this->SetAligns(array('J','J'));
                 if ($data['d_fantasia_anterior']=='') {
                   $fant = "NO POSEE";
@@ -381,11 +387,11 @@
 
            //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(40,40,80,30));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C','C'));
-             $this->Row(array('Ingrediente o Aditivo','Tipo','Función','Cantidad'));
+             $this->Row(array('Ingrediente o Aditivo','Tipo','Funciï¿½n','Cantidad'));
            //$this->MultiCell('190',6,$arrCont,1,'L',false); 
              $this->SetFont('Arial','','10'); 
               for($j=0;$j<count($data);$j++){
@@ -405,7 +411,7 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(30,65,30,65));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C','C'));
@@ -420,7 +426,7 @@
 
            //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(90,100));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C'));
@@ -436,7 +442,7 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(45,45,50,50));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C','C'));
@@ -452,7 +458,7 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(190));
              $this->SetFont('Arial','','10');
              $this->SetAligns(array('L'));
@@ -467,11 +473,11 @@
 
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -483,11 +489,11 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(30,80,80));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Rif/Id','Razón Social Anterior','Razón Social Actual'));
+             $this->Row(array('Rif/Id','Razï¿½n Social Anterior','Razï¿½n Social Actual'));
              $this->SetAligns(array('C','J','J'));
              $this->Row(array($data['id_empresa'],utf8_decode($data['razon_anterior']),utf8_decode($data['razon_actual'])));
 
@@ -499,11 +505,11 @@
       
            //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(30,80,80));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Rif/Id','Razón Social Anterior','Razón Social Actual'));
+             $this->Row(array('Rif/Id','Razï¿½n Social Anterior','Razï¿½n Social Actual'));
              $this->SetAligns(array('C','J','J'));
              $this->Row(array($data['id_empresa'],utf8_decode($data['razon_anterior']),utf8_decode($data['razon_actual'])));
 
@@ -515,7 +521,7 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(30,65,30,65));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C','C'));
@@ -530,11 +536,11 @@
 
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -545,11 +551,11 @@
 
                 //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -560,11 +566,11 @@
 
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -575,11 +581,11 @@
  
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(40,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C'));
-             $this->Row(array('Rif','Razón Social del Importador'));
+             $this->Row(array('Rif','Razï¿½n Social del Importador'));
              $this->SetAligns(array('C','J'));
              $this->Row(array($data['rif'],$data['razon_importa']));
          
@@ -590,7 +596,7 @@
              $this->Ln(2);
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','9');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              switch ($data['tipo']) {
                 case 1:
                   $this->SetWidths(array(50,140));
@@ -602,7 +608,7 @@
                   $this->SetWidths(array(50,140));
                   $this->SetFont('Arial','B','9');
                   $this->SetAligns(array('C','C'));
-                  $this->Row(array('PERMISO SANITARIO','UBICACIÓN DE LA PLANTA'));
+                  $this->Row(array('PERMISO SANITARIO','UBICACIï¿½N DE LA PLANTA'));
                   $this->SetAligns(array('C','J'));
                   $this->Row(array(utf8_decode($data["nro_permiso_sanitario"]),utf8_decode($data["d_direccion"])));
                 break;
@@ -616,7 +622,7 @@
                   $this->SetWidths(array(95,95));
                   $this->SetFont('Arial','B','9');
                   $this->SetAligns(array('C','C'));
-                  $this->Row(array('CIUDAD','PAÍS'));
+                  $this->Row(array('CIUDAD','PAï¿½S'));
                   $this->SetAligns(array('J','C'));
                   $this->Row(array(utf8_decode($data["d_ciudad"]),utf8_decode($data["d_pais"])));
                 break;
@@ -628,11 +634,11 @@
         
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -643,7 +649,7 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(90,50,50));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
@@ -660,11 +666,11 @@
         public function writeIncMat($data){ 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(45,145));
              $this->SetFont('Arial','B','9');
              $this->SetAligns(array('C','C'));
-             $this->Row(array('NRO. AUTORIZACIÓN','ENVASE'));
+             $this->Row(array('NRO. AUTORIZACIï¿½N','ENVASE'));
              $this->SetAligns(array('C','J'));
              $this->Row(array(utf8_decode($data['n_otorgado_higiene']),utf8_decode(strtoupper($data['d_material_contenedor']))));
 
@@ -674,11 +680,11 @@
 
             //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -688,11 +694,11 @@
 
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -702,11 +708,11 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -716,11 +722,11 @@
 
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -730,11 +736,11 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -744,11 +750,11 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -758,11 +764,11 @@
           
            //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -773,11 +779,11 @@
       
              //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -788,11 +794,11 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -802,11 +808,11 @@
 
               //Datos de la Composicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'L',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'L',false); 
              $this->SetWidths(array(20,20,150));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C','C'));
-             $this->Row(array('Grado Anterior','Grado Solicitado','Denominación después del Cambio'));
+             $this->Row(array('Grado Anterior','Grado Solicitado','Denominaciï¿½n despuï¿½s del Cambio'));
              $this->SetAligns(array('C','C','J'));
              $this->Row(array($data['n_grado_anterior'],$data['n_grado_actual'],utf8_decode($data['d_denomina_actual'])));
 
@@ -816,11 +822,11 @@
      //NUEVO CODIGO PARA ENVASE Y EMPAQUE
           public function writeProductoEE($arrProd){
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'DATOS DE IDENTIFICACIÓN DEL PRODUCTO',1,'L',false); 
+           $this->MultiCell('190',6,'DATOS DE IDENTIFICACIï¿½N DEL PRODUCTO',1,'L',false); 
            $this->SetWidths(array(63,63,64));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('C','C','C'));
-           $this->Row(array('Producto','Denominación','Uso'));
+           $this->Row(array('Producto','Denominaciï¿½n','Uso'));
            $this->SetFont('Arial','','10');
            $this->SetAligns(array('L','L','L'));
            $this->Row(array(utf8_decode($arrProd['d_producto']),utf8_decode($arrProd['d_denomina']),utf8_decode($arrProd['d_uso']))); 
@@ -833,7 +839,7 @@
                $this->SetWidths(array(72,45,73));
                $this->SetFont('Arial','B','10');
                $this->SetAligns(array('C','C','C'));
-               $this->Row(array('Descripción de la Materia','Nro.de Oficio Autorizado','Razón Social'));
+               $this->Row(array('Descripciï¿½n de la Materia','Nro.de Oficio Autorizado','Razï¿½n Social'));
                $this->SetFont('Arial','','10');
                foreach($datEnvase as $item){
                  foreach($item as $key => $value){
@@ -846,7 +852,7 @@
             public function writeContenidoEE($arrCont){
 
            $this->SetFont('Arial','B','10');
-           $this->MultiCell('190',6,'PRESENTACIÓN Y CONTENIDO NETO',1,'L',false); 
+           $this->MultiCell('190',6,'PRESENTACIï¿½N Y CONTENIDO NETO',1,'L',false); 
            $this->SetWidths(array(95,35,60));
            $this->SetFont('Arial','B','10');
            $this->SetAligns(array('C','C','C','L'));
@@ -862,11 +868,11 @@
              }
            public function writeEquipoF($datEq){
                $this->SetFont('Arial','B','10');
-               $this->MultiCell('190',6,'DATOS DEL EQUIPO PARA LA FABRICACIÓN DE ALIMENTOS',1,'L',false); 
+               $this->MultiCell('190',6,'DATOS DEL EQUIPO PARA LA FABRICACIï¿½N DE ALIMENTOS',1,'L',false); 
                $this->SetWidths(array(95,95));
                $this->SetFont('Arial','B','10');
                $this->SetAligns(array('C','C'));
-               $this->Row(array('Descripción','Uso del Equipo de Fabricación'));
+               $this->Row(array('Descripciï¿½n','Uso del Equipo de Fabricaciï¿½n'));
                $this->SetFont('Arial','','10');
                foreach($datEq as $item){
                // echo var_dump($item);
@@ -881,22 +887,22 @@
             public function writeCambioDenoEE($data){
            //Datos de laComposicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(95,95));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C'));
-             $this->Row(array('Denominación Anterior','Denominación Actual'));
+             $this->Row(array('Denominaciï¿½n Anterior','Denominaciï¿½n Actual'));
              $this->SetAligns(array('C','J','C','J'));
              $this->Row(array(utf8_decode($data['d_denomina_anterior']),utf8_decode($data['d_denomina_actual'])));
         }
         public function writeCambioRazoEE($data){
            //Datos de laComposicion del Producto 
              $this->SetFont('Arial','B','10');
-             $this->MultiCell('190',6,'INFORMACIÓN DEL CAMBIO SOLICITADO',1,'C',false); 
+             $this->MultiCell('190',6,'INFORMACIï¿½N DEL CAMBIO SOLICITADO',1,'C',false); 
              $this->SetWidths(array(95,95));
              $this->SetFont('Arial','B','10');
              $this->SetAligns(array('C','C'));
-             $this->Row(array('Razón Social Anterior','Razón Social Actual'));
+             $this->Row(array('Razï¿½n Social Anterior','Razï¿½n Social Actual'));
              $this->SetAligns(array('C','J','C','J'));
              $this->Row(array(utf8_decode($data['d_empresa_anterior']),utf8_decode($data['d_empresa_actual'])));
         }
@@ -910,8 +916,8 @@
             $numLinFoo=(int)$this->GetY();
             $this->Line(14,$numLinFoo,190,$numLinFoo);
             $mensaje ='Vigilando la Salud de Todas y Todos.';
-            $servicio ='Servicio Autónomo de Contraloría Sanitaria.';
-            $direccion ='Dirección de Inocuidad de Alimentos y Bebidas.';
+            $servicio ='Servicio Autï¿½nomo de Contralorï¿½a Sanitaria.';
+            $direccion ='Direcciï¿½n de Inocuidad de Alimentos y Bebidas.';
             $this->Ln(3);
             $this->SetFont('Arial','','9');
             $this->MultiCell('190','4',$mensaje,'0','C',false);
@@ -920,8 +926,8 @@
             $this->SetFont('Arial','','9');
             $this->MultiCell('190','4',$direccion,'0','C',false);
             $this->Ln(1);
-            $ubic ='Centro Simón Bolívar, Edificio Sur, Ministerio del Poder Popular para la Salud, piso 3, oficina 313. El Silencio, Caracas-Venezuela.';
-            $telf ='Telf: (0212) 4080474 Fax (0212) 4080505 Página web: http://sacs.mpps.gob.ve.';
+            $ubic ='Centro Simï¿½n Bolï¿½var, Edificio Sur, Ministerio del Poder Popular para la Salud, piso 3, oficina 313. El Silencio, Caracas-Venezuela.';
+            $telf ='Telf: (0212) 4080474 Fax (0212) 4080505 Pï¿½gina web: http://sacs.mpps.gob.ve.';
             $this->SetFont('Arial','','6');
             $this->MultiCell('190','4',$ubic,'0','C',false);
             $this->SetFont('Arial','','6');

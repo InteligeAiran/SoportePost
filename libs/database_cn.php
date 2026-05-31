@@ -1,136 +1,290 @@
 <?php
-   class DatabaseCon {
-    
-    //Datos de Conexion
-      private $bd_hostname;
-      private $mvc_port;
-      private $bd_usuario;
-      private $bd_clave;
-      private $database;
-      private $conexion;
-      private $pgquery;
-      private $fetch;
-      private static $instancia;
-    //Constructor
-      private function __construct($bd_hostname,$mvc_port,$bd_usuario,$bd_clave,$database ){
-        //Defino las Variables de Conexion a la bd
-          $this->bd_hostname       = $bd_hostname; 
-          //Servidor
-          $this->mvc_port          = $mvc_port;             //Puerto de Conexion
-          $this->bd_usuario        = $bd_usuario;          //Usuario para establecer la conexion
-          $this->bd_clave          = $bd_clave;        //Clave de acceso a la BD
-          $this->database          = $database;
+/**
+ * SoportePost - Sistema de Gestión de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raíz del proyecto
+ */
 
-        //Se establece la conexion con con la base de datos desde
-          $this->connect();
-          //var_dump( $this->connect());
-      }
-          //var_dump( $this->connect());
-      
-      private function __clone(){}
+class DatabaseCon
+{
+    private string $bd_hostname;
+    private string $mvc_port;
+    private string $bd_usuario;
+    private string $bd_clave;
+    private string $database;
+    private mixed  $conexion  = null;
+    private mixed  $pgquery   = null;
+    private mixed  $fetch     = null;
 
-      public static function getInstance($bd_hostname, $mvc_port, $bd_usuario, $bd_clave, $database) { // Recibe los parámetros
-          if (!(self::$instancia instanceof self)) {
-              self::$instancia = new self($bd_hostname, $mvc_port, $bd_usuario, $bd_clave, $database); // Pasa los parámetros al constructor
-          }
-          return self::$instancia;
-      }
+    private static ?self $instancia = null;
 
-        function connect(){
+    // -------------------------------------------------------------------------
+    // Constructor y Singleton
+    // -------------------------------------------------------------------------
 
-        $this->conexion = @pg_pconnect("host=".$this->bd_hostname." port=".$this->mvc_port." dbname=".$this->database." user=".$this->bd_usuario." password=".$this->bd_clave);
+    private function __construct(
+        string $bd_hostname,
+        string $mvc_port,
+        string $bd_usuario,
+        string $bd_clave,
+        string $database
+    ) {
+        $this->bd_hostname = $bd_hostname;
+        $this->mvc_port    = $mvc_port;
+        $this->bd_usuario  = $bd_usuario;
+        $this->bd_clave    = $bd_clave;
+        $this->database    = $database;
 
-          if(!$this->conexion){
-             die("No Se Pudo Establecer la Conexion");
-          }
+        $this->connect();
+    }
 
-       }
+    private function __clone() {}
 
-        public function pgquery($sql){
-        $this->pgquery =@pg_query($this->conexion,$sql);
+    public static function getInstance(
+        string $bd_hostname,
+        string $mvc_port,
+        string $bd_usuario,
+        string $bd_clave,
+        string $database
+    ): self {
+        if (!(self::$instancia instanceof self)) {
+            self::$instancia = new self($bd_hostname, $mvc_port, $bd_usuario, $bd_clave, $database);
+        }
+        return self::$instancia;
+    }
 
-        if(!$this->pgquery){
-          return false;
-        } else{
-          return $this->pgquery;
+    // -------------------------------------------------------------------------
+    // Conexión
+    // -------------------------------------------------------------------------
+
+    private function connect(): void
+    {
+        $connString = sprintf(
+            "host=%s port=%s dbname=%s user=%s password=%s",
+            $this->bd_hostname,
+            $this->mvc_port,
+            $this->database,
+            $this->bd_usuario,
+            $this->bd_clave
+        );
+
+        // pg_pconnect puede emitir warnings — los capturamos limpiamente
+        set_error_handler(function (int $errno, string $errstr): bool {
+            throw new RuntimeException("Error de conexión PostgreSQL: {$errstr}", $errno);
+        });
+
+        try {
+            $this->conexion = pg_pconnect($connString);
+        } catch (RuntimeException $e) {
+            restore_error_handler();
+            error_log('[SoportePost] DB Connect Error: ' . $e->getMessage());
+            die(
+                "<h2 style='font-family:sans-serif;color:#c0392b;'>Error de Base de Datos</h2>" .
+                "<p style='font-family:sans-serif;'>No se pudo establecer la conexión. " .
+                "Verifique la configuración en el archivo .env</p>"
+            );
         }
 
-      }
+        restore_error_handler();
 
-      public function pgquery1($sql) {
-        $query = @pg_query($this->conexion, $sql);
-    
-        if (!$query) {
-            return false;
-        }
-    
-        if (strpos(strtoupper($sql), 'RETURNING') !== false) {
-            return $query; // Retorna el recurso de consulta para pg_fetch_result
-        } else {
-            return true; // Retorna true para otras consultas
+        if (!$this->conexion) {
+            $error = pg_last_error();
+            error_log('[SoportePost] DB Connect Failed: ' . $error);
+            die(
+                "<h2 style='font-family:sans-serif;color:#c0392b;'>Error de Base de Datos</h2>" .
+                "<p style='font-family:sans-serif;'>No se pudo conectar a la base de datos.</p>"
+            );
         }
     }
 
-     public function pgfetch($query){
+    // -------------------------------------------------------------------------
+    // Queries
+    // -------------------------------------------------------------------------
 
-         $this->fetch = @pg_fetch_assoc($query);
-         $numrows     = @pg_num_rows($query);
-         if($numrows > 0){
-            return $this->fetch;
-         }else{
-            return false;
-         }
+    /**
+     * Ejecuta una query SQL y retorna el resultado o false si falla.
+     */
+    public function pgquery(string $sql): mixed
+    {
+        $result = pg_query($this->conexion, $sql);
 
-      }
-
-      public function pgfetchAll($query) {
-        $results = [];
-        while ($row = @pg_fetch_assoc($query)) {
-            $results[] = $row;
-        }
-        return $results;
-    }
-
-      public function pgNumrows($query)
-      {
-        $numrows     = @pg_num_rows($query);
-        return $numrows;
-      }
-
-      public function prepare($name, $sql) {
-        $result = @pg_prepare($this->conexion, $name, $sql);
-        if (!$result) {
-            error_log("Error preparing statement: " . pg_last_error($this->conexion));
+        if ($result === false) {
+            error_log('[SoportePost] Query Error: ' . pg_last_error($this->conexion));
             return false;
         }
-        return true;
-    }
-    
-    public function execute($name, $params) {
-        $result = @pg_execute($this->conexion, $name, $params);
-        if (!$result) {
-            error_log("Error executing statement: " . pg_last_error($this->conexion));
-            return false;
-        }
+
         return $result;
     }
 
-    // Método público para acceder a la conexión privada
-    public function getConnection() {
-      return $this->conexion;
+    /**
+     * Ejecuta una query SQL. Retorna el recurso si usa RETURNING, true si no.
+     */
+    public function pgquery1(string $sql): mixed
+    {
+        $result = pg_query($this->conexion, $sql);
+
+        if ($result === false) {
+            error_log('[SoportePost] Query1 Error: ' . pg_last_error($this->conexion));
+            return false;
+        }
+
+        if (str_contains(strtoupper($sql), 'RETURNING')) {
+            return $result;
+        }
+
+        return true;
     }
 
-    // Método para cerrar la conexión
-    public function closeConnection() {
+    // -------------------------------------------------------------------------
+    // Fetch
+    // -------------------------------------------------------------------------
+
+    /**
+     * Retorna la primera fila de un resultado, o false si está vacío.
+     */
+    public function pgfetch(mixed $query): mixed
+    {
+        if (!$query) {
+            return false;
+        }
+
+        $numrows = pg_num_rows($query);
+
+        if ($numrows > 0) {
+            return pg_fetch_assoc($query);
+        }
+
+        return false;
+    }
+
+    /**
+     * Retorna todas las filas de un resultado como array.
+     */
+    public function pgfetchAll(mixed $query): array
+    {
+        if (!$query) {
+            return [];
+        }
+
+        $results = [];
+        while ($row = pg_fetch_assoc($query)) {
+            $results[] = $row;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Retorna el número de filas de un resultado.
+     */
+    public function pgNumrows(mixed $query): int
+    {
+        if (!$query) {
+            return 0;
+        }
+        return pg_num_rows($query);
+    }
+
+    // -------------------------------------------------------------------------
+    // Queries Preparadas
+    // -------------------------------------------------------------------------
+
+    /**
+     * Prepara una query con parámetros (previene SQL Injection).
+     */
+    public function prepare(string $name, string $sql): bool
+    {
+        $result = pg_prepare($this->conexion, $name, $sql);
+
+        if ($result === false) {
+            error_log('[SoportePost] Prepare Error: ' . pg_last_error($this->conexion));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Ejecuta una query preparada con sus parámetros.
+     */
+    public function execute(string $name, array $params): mixed
+    {
+        $result = pg_execute($this->conexion, $name, $params);
+
+        if ($result === false) {
+            error_log('[SoportePost] Execute Error: ' . pg_last_error($this->conexion));
+            return false;
+        }
+
+        return $result;
+    }
+
+    /**
+     * ✅ Query segura con parámetros — USAR ESTA para datos del usuario.
+     * Previene SQL Injection combinando prepare() + execute() en un solo paso.
+     *
+     * Uso:
+     *   $result = $db->pgqueryParams(
+     *       "SELECT * FROM usuarios WHERE usuario = $1 AND clave = $2",
+     *       [$usuario, $clave]
+     *   );
+     *   $row = $db->pgfetch($result);
+     *
+     * @param string $sql    Query con marcadores $1, $2, $3...
+     * @param array  $params Array de valores a sustituir en orden
+     * @return mixed         Resultado de la query o false si falla
+     */
+    public function pgqueryParams(string $sql, array $params): mixed
+    {
+        $result = pg_query_params($this->conexion, $sql, $params);
+
+        if ($result === false) {
+            error_log('[SoportePost] pgqueryParams Error: ' . pg_last_error($this->conexion));
+            return false;
+        }
+
+        return $result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Imágenes
+    // -------------------------------------------------------------------------
+
+    public static function getResultImg(string $sql, self $db): array
+    {
+        try {
+            $result = $db->pgquery($sql);
+            if ($result) {
+                return ['row' => $db->pgfetch($result)];
+            }
+            return ['error' => pg_last_error($db->getConnection())];
+        } catch (\Throwable $e) {
+            error_log('[SoportePost] GetResultImg Error: ' . $e->getMessage());
+            return ['error' => $e->getMessage()];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Conexión
+    // -------------------------------------------------------------------------
+
+    public function getConnection(): mixed
+    {
+        return $this->conexion;
+    }
+
+    public function closeConnection(): void
+    {
         if ($this->conexion) {
-            @pg_close($this->conexion);
+            pg_close($this->conexion);
             $this->conexion = null;
         }
     }
 
-    // Destructor
-    public function __destruct() {
-      $this->closeConnection();
+    public function __destruct()
+    {
+        $this->closeConnection();
     }
-  }
+}
 ?>

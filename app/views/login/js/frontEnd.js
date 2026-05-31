@@ -518,7 +518,7 @@ function processQueue() {
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     mostrarCargando(); // Muestra el "cargando"
-    xhr.timeout = 5000; // Timeout de 5 segundos
+    xhr.timeout = 20000; // Timeout de 20 segundos
 
     xhr.onload = function() {
         ocultarCargando(); // Oculta el "cargando"
