@@ -1,15 +1,15 @@
-<?php
+﻿<?php
 /**
  * SoportePost - Sistema de Gestion de Tickets
  * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
- * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @copyright 2026 Inteligensa. Todos los derechos reservados.
  * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
  */
 /*
  * ============================================================
  *  SoportePost - Sistema de Gestión de Tickets
  *  Desarrollado por: Airan Bracamonte
- *  © 2026 - Todos los derechos reservados
+ *  © 2026 Inteligensa - Todos los derechos reservados
  * ============================================================
  *
  * Archivo Inicial para el MVC
