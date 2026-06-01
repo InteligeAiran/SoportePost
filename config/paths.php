@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * SoportePost - Sistema de Gestion de Tickets
  * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
