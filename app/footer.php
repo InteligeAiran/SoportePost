@@ -365,3 +365,4 @@
         }, sessionLifetime * 1000);
     }
 </script>
+<script src="<?php echo APP; ?>js/app.min.js"></script>

@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 namespace App\Controllers\Api\reportes; // Define el namespace
 
 require_once __DIR__ . '/../../../../libs/Controller.php';
@@ -13,9 +19,9 @@ require_once __DIR__ . '/../../../Services/EmailServices.php';
 
 require_once __DIR__ . '/../../../../config/paths.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
+
+
 
 use App\Repositories\ReportRepository;
 use App\Repositories\UserRepository;

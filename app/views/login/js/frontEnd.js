@@ -234,12 +234,49 @@ function SendForm() {
         } else if (xhr.status === 403) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Cuenta bloqueada',
-                    text: response.message,
-                    color: 'black'
-                });
+                if (response.status_type === 'blocked') {
+                    Swal.fire({
+                        title: '<span style="color: #003594; font-weight: 700; font-size: 1.4em;">⚠️ ¡Cuenta Bloqueada!</span>',
+                        html: '<div style="color: #333; font-size: 1.05em; line-height: 1.5; margin: 15px 0;">' + response.message + '</div>',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: '🔑 Recuperar Contraseña',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#003594',
+                        cancelButtonColor: '#dc3545',
+                        background: '#ffffff',
+                        customClass: {
+                            popup: 'premium-swal-popup'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Abrir modal de recuperar contraseña automáticamente
+                            const recoverLink = document.getElementById("link");
+                            if (recoverLink) {
+                                recoverLink.click();
+                            }
+                        }
+                    });
+                } else if (response.status_type === 'inactive') {
+                    Swal.fire({
+                        title: '<span style="color: #d33; font-weight: 700; font-size: 1.4em;">🚫 ¡Cuenta Inactiva!</span>',
+                        html: '<div style="color: #333; font-size: 1.05em; line-height: 1.5; margin: 15px 0;">' + response.message + '</div>',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#003594',
+                        background: '#ffffff',
+                        customClass: {
+                            popup: 'premium-swal-popup'
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Cuenta bloqueada',
+                        text: response.message,
+                        color: 'black'
+                    });
+                }
             } catch (error) {
                 Swal.fire({
                     icon: 'error',
@@ -282,7 +319,10 @@ async function checkUser() {
     if (input.value === '') {
         mensajeDivt.innerHTML = 'Campo vacío';
         mensajeDivt.classList.add('error');
-
+        const recoverLink = document.getElementById("link");
+        if (recoverLink) {
+            recoverLink.style.display = "block";
+        }
         return;
     }
 
@@ -323,10 +363,24 @@ async function checkUser() {
           mensajeDivt.style.color = data.color;
         }
 
+        // Ocultar el enlace de recuperación si el usuario tiene estatus 4 (Inactivo)
+        const recoverLink = document.getElementById("link");
+        if (recoverLink) {
+            if (data.success && parseInt(data.status) === 4) {
+                recoverLink.style.display = "none";
+            } else {
+                recoverLink.style.display = "block";
+            }
+        }
+
     } catch (error) {
         console.error('Error en la petición:', error);
         mensajeDiv.innerHTML = 'Error de conexión con el servidor.';
         mensajeDivt.classList.add('error');
+        const recoverLink = document.getElementById("link");
+        if (recoverLink) {
+            recoverLink.style.display = "block";
+        }
     }
 }
 
@@ -518,7 +572,7 @@ function processQueue() {
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     
     mostrarCargando(); // Muestra el "cargando"
-    xhr.timeout = 5000; // Timeout de 5 segundos
+    xhr.timeout = 20000; // Timeout de 20 segundos
 
     xhr.onload = function() {
         ocultarCargando(); // Oculta el "cargando"

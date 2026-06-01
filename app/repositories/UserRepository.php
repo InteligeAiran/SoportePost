@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 namespace App\Repositories; // Usar namespaces para organizar tus clases
 require_once __DIR__. '/../models/userModel.php'; // Asegúrate de que el modelo de usuario esté incluido
 
@@ -178,13 +184,19 @@ class UserRepository
         return $result;
     }
 
+    public function UpdateStatusTo3($username){
+        // Lógica para actualizar el status a 3 lo cual es STATUS: Bloqueado por intentos fallidos
+        $result = $this->model->UpdateStatusTo3($username);
+        return $result;
+    }
+
     public function GetSession($id_user_from_controller, $session_id){ // Renombro el parámetro para mayor claridad
-    // Lógica para obtener una sesión por su ID
-    // Ahora pasamos el $id_user_from_controller que ya recibimos
-    $result = $this->model->GetSession($id_user_from_controller, $session_id);
-    //var_dump($result); // Para depuración
-    return $result ? $result['numRows'] : 0; // Asegúrate de retornar 0 si no hay resultados, no null.
-}
+        // Lógica para obtener una sesión por su ID
+        // Ahora pasamos el $id_user_from_controller que ya recibimos
+        $result = $this->model->GetSession($id_user_from_controller, $session_id);
+        //var_dump($result); // Para depuración
+        return $result ? $result['numRows'] : 0; // Asegúrate de retornar 0 si no hay resultados, no null.
+    }
 
     public function InsertSession($session_id, $start_date, $user_agent, $ip_address, $active, $expiry_time){
         // Lógica para insertar una sesión

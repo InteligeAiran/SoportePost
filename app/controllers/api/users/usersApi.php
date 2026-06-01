@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 namespace App\Controllers\Api\users; // Define el namespace
 
 require_once __DIR__ . '/../../../../libs/Controller.php';
@@ -220,8 +226,8 @@ class users extends Controller {
         if ($attempts <= 3) {
             $this->response(['success' => false, 'message' => 'Contraseña incorrecta. Intentos restantes: ' . (3 - $attempts)], 401);
         } else {
-            $repository->UpdateStatusTo4($username);
-            $this->response(['success' => false, 'message' => 'Usuario bloqueado por intentos fallidos'], 403);
+            $repository->UpdateStatusTo3($username); // Estado 3: Bloqueado
+            $this->response(['success' => false, 'message' => 'Tu cuenta ha sido bloqueada por seguridad debido a múltiples intentos fallidos de inicio de sesión.', 'status_type' => 'blocked'], 403);
         }
         return; // Detener la ejecución
     }
@@ -232,8 +238,12 @@ class users extends Controller {
     $userData = $repository->GetUserData($username, $password);
 
     // 6. Verificar el estado del usuario
-    if ($userData['status'] == 3 || $userData['status'] == 4) { // Usuario inactivo o bloqueado
-        $this->response(['success' => false, 'message' => 'Usuario inactivo o bloqueado'], 401);
+    if ((int)$userData['status'] === 3) { // Bloqueado
+        $this->response(['success' => false, 'message' => 'Tu cuenta se encuentra bloqueada. Por favor, restablece tu contraseña para recuperar el acceso.', 'status_type' => 'blocked'], 403);
+        return; // Detener la ejecución
+    }
+    if ((int)$userData['status'] === 4) { // Inactivo
+        $this->response(['success' => false, 'message' => 'Tu cuenta se encuentra inactiva. Comunícate con el administrador para activar tu cuenta.', 'status_type' => 'inactive'], 403);
         return; // Detener la ejecución
     }
 
@@ -380,7 +390,21 @@ class users extends Controller {
         if($username != '') {
             $result = $repository->GetUsernameUser($username);
             if ($result > 0) {
-                $this->response(['success' => true, 'message' => 'Usuario Verificado', 'color'   => 'green']);
+                // Obtener el estado del usuario directamente
+                $escaped_username = pg_escape_literal($this->db->getConnection(), $username);
+                $sql = "SELECT id_statususr FROM users WHERE username = " . $escaped_username . " LIMIT 1";
+                $statusResult = $this->db->pgquery($sql);
+                $statusVal = null;
+                if ($statusResult && pg_num_rows($statusResult) > 0) {
+                    $row = pg_fetch_assoc($statusResult);
+                    $statusVal = (int)$row['id_statususr'];
+                }
+                $this->response([
+                    'success' => true, 
+                    'message' => 'Usuario Verificado', 
+                    'color'   => 'green',
+                    'status'  => $statusVal
+                ]);
             }else{
                 $this->response(['success' => false, 'message' => 'Usuario No Existe', 'color'=> 'red']);
             }

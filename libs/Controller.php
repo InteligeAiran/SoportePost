@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestión de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raíz del proyecto
+ */
 
 class Controller {
   public $model;

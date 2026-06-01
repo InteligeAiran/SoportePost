@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 require('../fpdf.php');
 
 class PDF extends FPDF
@@ -12,7 +18,7 @@ function PDF($orientation='P',$unit='mm',$format='A4')
 {
 	//Llama al constructor de la clase padre
 	$this->FPDF($orientation,$unit,$format);
-	//Iniciación de variables
+	//Iniciaciï¿½n de variables
 	$this->B=0;
 	$this->I=0;
 	$this->U=0;
@@ -21,7 +27,7 @@ function PDF($orientation='P',$unit='mm',$format='A4')
 
 function WriteHTML($html)
 {
-	//Intérprete de HTML
+	//Intï¿½rprete de HTML
 	$html=str_replace("\n",' ',$html);
 	$a=preg_split('/<(.*)>/U',$html,-1,PREG_SPLIT_DELIM_CAPTURE);
 	foreach($a as $i=>$e)
@@ -100,20 +106,20 @@ function PutLink($URL,$txt)
 }
 }
 
-$html='Ahora puede imprimir fácilmente texto mezclando diferentes estilos: <b>negrita</b>, <i>itálica</i>,
-<u>subrayado</u>, o ¡ <b><i><u>todos a la vez</u></i></b>!<br><br>También puede incluir enlaces en el
+$html='Ahora puede imprimir fï¿½cilmente texto mezclando diferentes estilos: <b>negrita</b>, <i>itï¿½lica</i>,
+<u>subrayado</u>, o ï¿½ <b><i><u>todos a la vez</u></i></b>!<br><br>Tambiï¿½n puede incluir enlaces en el
 texto, como <a href="http://www.fpdf.org">www.fpdf.org</a>, o en una imagen: pulse en el logotipo.';
 
 $pdf=new PDF();
-//Primera página
+//Primera pï¿½gina
 $pdf->AddPage();
 $pdf->SetFont('Arial','',20);
-$pdf->Write(5,'Para saber qué hay de nuevo en este tutorial, pulse ');
+$pdf->Write(5,'Para saber quï¿½ hay de nuevo en este tutorial, pulse ');
 $pdf->SetFont('','U');
 $link=$pdf->AddLink();
-$pdf->Write(5,'aquí',$link);
+$pdf->Write(5,'aquï¿½',$link);
 $pdf->SetFont('');
-//Segunda página
+//Segunda pï¿½gina
 $pdf->AddPage();
 $pdf->SetLink($link);
 $pdf->Image('logo.png',10,12,30,0,'','http://www.fpdf.org');

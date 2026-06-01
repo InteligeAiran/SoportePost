@@ -1,3 +1,15 @@
-libs\database.php
+# Configuración de entorno (NUNCA subir al repo)
+.env
+
+# Archivo de base de datos (credenciales)
 libs/database.php
+libs\database.php
 /libs
+
+# Logs
+logs/
+*.log
+
+# Temporales
+tmp/
+scratch/

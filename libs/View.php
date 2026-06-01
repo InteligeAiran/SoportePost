@@ -1,6 +1,9 @@
 <?php   //Vista del Controlador
-   class View {
-   public $expired_sessions;
+#[\AllowDynamicProperties]
+class View {
+    public $js;
+    public $css;
+    public $expired_sessions;
     public $message;
     public $redirect;
     public $usuario_id;

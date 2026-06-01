@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 namespace App\Controllers\Api\email; // Define el namespace
 
 require_once __DIR__ . '/../../../../libs/Controller.php';
@@ -7,14 +13,8 @@ require_once __DIR__ . '/../../../../libs/View.php';
 require_once __DIR__ . '/../../../../libs/database.php';
 require_once __DIR__ . '/../../../repositories/EmailRepository.php';
 require_once __DIR__ . '/../../../Services/EmailServices.php';
-require_once __DIR__ . '/../../../views/login/PHPMailer/PHPMailer.php';
-require_once __DIR__ . '/../../../views/login/PHPMailer/Exception.php'; 
-require_once __DIR__ . '/../../../views/login/PHPMailer/SMTP.php'; 
 require_once __DIR__ . '/../../../../config/paths.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -159,7 +159,7 @@ class email extends Controller {
         if($email != '') {
             $result  = $repository->GetEmailUserData($email);
             $nombre = $result;
-            if ($result > 0) {
+            if ($result !== null) {
                 // Generar código
                 $longitud = 6;
                 $caracteres = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';

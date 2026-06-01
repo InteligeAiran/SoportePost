@@ -1,4 +1,10 @@
 <?php
+/**
+ * SoportePost - Sistema de Gestion de Tickets
+ * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
+ * @copyright 2026 Airan Bracamonte. Todos los derechos reservados.
+ * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
+ */
 require_once __DIR__ . "/../../libs/Model.php";
 require_once __DIR__ . "/../../libs/session.php";
 
@@ -183,38 +189,31 @@ class userModel extends Model{
     }    
     public function GetUserData($username, $password){
         try{
-            $escaped_username = pg_escape_literal($this->db->getConnection(), $username); // Assuming '$this->db' is now a valid PgSql\Connection
-            $escaped_password = pg_escape_literal($this->db->getConnection(), $password);
-            $sql = "SELECT * from get_user_by_credentials(".$escaped_username.", ".$escaped_password.");";
-            $result = Model::getResult($sql, $this->db);
+            $sql = "SELECT * from get_user_by_credentials($1, $2);";
+            $result = Model::getResultParams($sql, [$username, $password], $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en GetUserData: " . $e->getMessage());
         } 
     }
 
     public function GetUsernameUser($username){
         try{
-            $escaped_username = pg_escape_literal($this->db->getConnection(), $username); 
-            $sql = "SELECT * FROM check_username_exists(".$escaped_username.");";
-            $result = Model::getResult($sql, $this->db);
+            $sql = "SELECT * FROM check_username_exists($1);";
+            $result = Model::getResultParams($sql, [$username], $this->db);
             return $result;
-          // Depuración: imprime la consulta SQL y el resultado
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en GetUsernameUser: " . $e->getMessage());
         }
     }
 
     public function GetPasswordUser($username, $password){  
         try {
-            $escaped_username = pg_escape_literal($this->db->getConnection(), $username); 
-            $escaped_password = pg_escape_literal($this->db->getConnection(), $password); 
-            $sql = "SELECT * FROM check_password_exists(".$escaped_username.", ".$escaped_password.");";
-            //var_dump($sql);
-            $result = Model::getResult($sql, $this->db);
+            $sql = "SELECT * FROM check_password_exists($1, $2);";
+            $result = Model::getResultParams($sql, [$username, $password], $this->db);
             return $result;
         } catch (Throwable $e) {
-            // Handle exception
+            error_log("Error en GetPasswordUser: " . $e->getMessage());
         }
     }
 
@@ -242,6 +241,16 @@ class userModel extends Model{
     public function UpdateStatusTo4($username){
         try{
             $sql = "UPDATE users SET id_statususr = 4 WHERE username = '".$username."';";
+            $result = $this->db->pgquery($sql);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
+    public function UpdateStatusTo3($username){
+        try{
+            $sql = "UPDATE users SET id_statususr = 3 WHERE username = '".$username."';";
             $result = $this->db->pgquery($sql);
             return $result;
         } catch (Throwable $e) {
