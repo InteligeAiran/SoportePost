@@ -248,6 +248,16 @@ class userModel extends Model{
         }
     }
 
+    public function UpdateStatusTo3($username){
+        try{
+            $sql = "UPDATE users SET id_statususr = 3 WHERE username = '".$username."';";
+            $result = $this->db->pgquery($sql);
+            return $result;
+        } catch (Throwable $e) {
+            // Handle exception
+        }
+    }
+
 
     public function UpdateStatusTo0($username){
         try{

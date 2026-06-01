@@ -184,13 +184,19 @@ class UserRepository
         return $result;
     }
 
+    public function UpdateStatusTo3($username){
+        // Lógica para actualizar el status a 3 lo cual es STATUS: Bloqueado por intentos fallidos
+        $result = $this->model->UpdateStatusTo3($username);
+        return $result;
+    }
+
     public function GetSession($id_user_from_controller, $session_id){ // Renombro el parámetro para mayor claridad
-    // Lógica para obtener una sesión por su ID
-    // Ahora pasamos el $id_user_from_controller que ya recibimos
-    $result = $this->model->GetSession($id_user_from_controller, $session_id);
-    //var_dump($result); // Para depuración
-    return $result ? $result['numRows'] : 0; // Asegúrate de retornar 0 si no hay resultados, no null.
-}
+        // Lógica para obtener una sesión por su ID
+        // Ahora pasamos el $id_user_from_controller que ya recibimos
+        $result = $this->model->GetSession($id_user_from_controller, $session_id);
+        //var_dump($result); // Para depuración
+        return $result ? $result['numRows'] : 0; // Asegúrate de retornar 0 si no hay resultados, no null.
+    }
 
     public function InsertSession($session_id, $start_date, $user_agent, $ip_address, $active, $expiry_time){
         // Lógica para insertar una sesión
