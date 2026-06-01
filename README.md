@@ -93,6 +93,7 @@ Abre el archivo `.env` y rellena los datos según tu entorno:
 
 ## 📄 Licencia
 
-Copyright © 2026 **Airan Bracamonte** <airanbracamonte01@gmail.com>.
+Copyright © 2026 **Inteligensa**.
 
-Todos los derechos reservados. Este software y su código fuente son propiedad exclusiva de Airan Bracamonte. Queda prohibida la reproducción, distribución, modificación o uso del mismo sin autorización expresa y por escrito del autor.
+Todos los derechos reservados. Este software y su código fuente son propiedad exclusiva de Inteligensa. Queda prohibida la reproducción, distribución, modificación o uso del mismo sin autorización expresa y por escrito de la empresa.
+
