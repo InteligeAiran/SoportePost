@@ -1645,7 +1645,7 @@ class Consulta extends Controller
             // SEGURIDAD: Verificar estatus de pago/exoneración antes de proceder
             $ticket_status_payment = $repository->getStatusPayment($id_ticket);
             $id_status_payment = isset($ticket_status_payment['id_status_payment']) ? (int)$ticket_status_payment['id_status_payment'] : 0;
-            $allowedStatus = [1, 3, 4, 6];
+            $allowedStatus = [1, 3, 4, 6, 16];
 
             if (!in_array($id_status_payment, $allowedStatus)) {
                 // SEGUNDA OPORTUNIDAD: ¿Hay aprobación individual específica?
