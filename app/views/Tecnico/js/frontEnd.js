@@ -153,7 +153,7 @@ function getTicketData() {
   // Función para buscar el primer botón con datos o el filtro que contiene nroTicket
   function findFirstButtonWithData(api) {
     const searchTerms = [
-      { button: "btn-asignados", term: "Asignado al Técnico", status: "En proceso", action: "Asignado al Técnico" },
+      { button: "btn-asignados", term: "Asignado al Técnico|Asignado a la Coordinación", status: "En proceso", action: "Asignado al Técnico|Asignado a la Coordinación" },
       { button: "btn-recibidos", term: "Recibido por el Técnico", status: "En proceso", action: "Recibido por el Técnico" },
       { button: "btn-por-asignar", term: "Enviado a taller|En Taller", status: "En proceso", action: "Enviado a taller|En Taller" },
       { button: "btn-devuelto", term: "Entregado a Cliente|Ticket Cerrado", status: "Cerrado", action: "Entregado a Cliente|Ticket Cerrado" }
@@ -277,9 +277,11 @@ function getTicketData() {
           const isEstadoSinEnvio = ticket.nombre_estado_cliente && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(ticket.nombre_estado_cliente);
           const shouldHideActionsForGarantia = isGarantia && isEstadoSinEnvio;
 
+          const isAsignadoCoordinacion = ticket.name_accion_ticket === "Asignado a la Coordinación";
+
           if (
             (ticket.id_status_payment == 13 || ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4 || ticket.id_status_payment == 1 || ticket.id_status_payment == 3) &&
-            (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true) &&
+            (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true || isAsignadoCoordinacion) &&
             !shouldHideActionsForGarantia
           ) {
             actionButtonsHTML += `
@@ -428,10 +430,10 @@ function getTicketData() {
 
             // Event listeners para los botones
             $("#btn-asignados").on("click", function () {
-              if (checkDataExists(dataTableInstance, "Asignado al Técnico")) {
-                showTicketStatusIndicator('En proceso', 'Asignado al Técnico');
+              if (checkDataExists(dataTableInstance, "Asignado al Técnico|Asignado a la Coordinación")) {
+                showTicketStatusIndicator('En proceso', 'Asignado al Técnico|Asignado a la Coordinación');
                 clearFilters(dataTableInstance);
-                dataTableInstance.column(5).search("Asignado al Técnico").draw();
+                dataTableInstance.column(5).search("Asignado al Técnico|Asignado a la Coordinación", true, false).draw();
                 dataTableInstance.column(6).visible(true);
                 setActiveButton("btn-asignados");
                 applyNroTicketSearch(dataTableInstance);
