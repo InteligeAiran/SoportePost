@@ -505,12 +505,10 @@ function getTicketDataCoordinator() {
 
             // BOTON AGREGAR PAGO COMPLETO PRESUPUESTO
             // MODIFICACION: Validacion anterior comentada para permitir pagos multiples/sin presupuesto explícito
-            /*
             const idStatusPayment = data.id_status_payment ? parseInt(data.id_status_payment) : null;
-            if ((data.presupuesto === 'Si' || data.presupuesto === 'Sí') && idStatusPayment !== 1 && idStatusPayment !== 3) {
-            */
-            // Se muestra SIEMPRE (Comportamiento solicitado: "lo haré visible SIEMPRE")
-            if (true) { 
+            const isGarantiaOrFree = idStatusPayment === 1 || idStatusPayment === 3 || idStatusPayment === 16 || 
+                                     (data.name_failure && (data.name_failure.trim() === 'Actualización de Software' || data.name_failure.trim() === 'Sin Llaves /Dukpt Vacío'));
+            if (!isGarantiaOrFree) {
               actionButtonsHtml += `
                   <button type="button" id="btnPaymentBudget" class="btn generate-presupuesto-btn" 
                     data-ticket-id="${data.id_ticket}" 

@@ -5861,23 +5861,37 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 }
             }
             
-            
-            // Si no hay pagos registrados, usar el comportamiento por defecto (status 6)
-            if ($total_count == 0) {
-                $id_new_status_payment_val = 6;
+            // 2.5 Obtener el estatus de pago actual para ver si es Garantía o Falla Libre de Pago
+            $sql_current = "SELECT id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket . " LIMIT 1;";
+            $res_current = pg_query($db_conn, $sql_current);
+            $current_id_status_payment = null;
+            if ($res_current && pg_num_rows($res_current) > 0) {
+                $current_id_status_payment = (int)pg_fetch_result($res_current, 0, 'id_status_payment');
+            }
+            if ($res_current) {
+                pg_free_result($res_current);
+            }
+
+            if (in_array($current_id_status_payment, [1, 3, 16])) {
+                $id_new_status_payment_val = $current_id_status_payment;
             } else {
-                // Determinar el nuevo estado del ticket basado en los pagos
-                if ($approved_count == $total_count) {
-                    // Todos los pagos están aprobados
-                    $id_new_status_payment_val = 6; // Pago Anticipo Aprobado
-                } else if ($rejected_count == $total_count) {
-                    // Todos los pagos están rechazados
-                    $id_new_status_payment_val = 13; // Documento de Anticipo Rechazado
-                } else {
-                    // Hay pagos con estados mixtos o pendientes
-                    // El botón ya está deshabilitado en el frontend, pero por seguridad
-                    // usamos el status aprobado por defecto
+                // Si no hay pagos registrados, usar el comportamiento por defecto (status 6)
+                if ($total_count == 0) {
                     $id_new_status_payment_val = 6;
+                } else {
+                    // Determinar el nuevo estado del ticket basado en los pagos
+                    if ($approved_count == $total_count) {
+                        // Todos los pagos están aprobados
+                        $id_new_status_payment_val = 6; // Pago Anticipo Aprobado
+                    } else if ($rejected_count == $total_count) {
+                        // Todos los pagos están rechazados
+                        $id_new_status_payment_val = 13; // Documento de Anticipo Rechazado
+                    } else {
+                        // Hay pagos con estados mixtos o pendientes
+                        // El botón ya está deshabilitado en el frontend, pero por seguridad
+                        // usamos el status aprobado por defecto
+                        $id_new_status_payment_val = 6;
+                    }
                 }
             }
 

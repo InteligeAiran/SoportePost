@@ -4230,6 +4230,29 @@ class Consulta extends Controller
             return;
         }
 
+        // 0. Si la falla del ticket es libre de pago (9 = Actualización de Software, 12 = Sin Llaves/Dukpt Vacío), no requiere validación
+        $failure_sql = "SELECT tf.id_failure FROM tickets_failures tf INNER JOIN tickets t ON t.id_ticket = tf.id_ticket WHERE t.nro_ticket = '" . pg_escape_string($this->db->getConnection(), $nro_ticket) . "' LIMIT 1";
+        $failure_result = $this->db->pgquery($failure_sql);
+        $id_failure = null;
+        if ($failure_result && pg_num_rows($failure_result) > 0) {
+            $id_failure = (int)pg_fetch_result($failure_result, 0, 'id_failure');
+        }
+        if ($failure_result) {
+            pg_free_result($failure_result);
+        }
+
+        if ($id_failure === 9 || $id_failure === 12) {
+            error_log("Allowing opening: Falla libre de pago (9/12) found.");
+            $this->response([
+                'success' => true, 
+                'can_open' => true, 
+                'is_exonerated_100' => true,
+                'data' => null,
+                'exonerations' => []
+            ], 200);
+            return;
+        }
+
         $repository = new TechnicalConsultionRepository();
         
         // 1. Buscame si ese nro_ticket tiene una exoneración activa
