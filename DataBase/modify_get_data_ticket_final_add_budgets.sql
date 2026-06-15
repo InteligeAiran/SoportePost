@@ -51,7 +51,8 @@ CREATE OR REPLACE FUNCTION public.getdataticketfinal(
         id_budget integer,
         has_budget boolean,
         id_status_ticket integer,
-        pdf_path_presupuesto character varying
+        pdf_path_presupuesto character varying,
+        id_failure integer
     ) 
     LANGUAGE 'plpgsql'
     COST 100
@@ -184,7 +185,8 @@ BEGIN
         bg.id_budget,
         CASE WHEN bg.id_budget IS NOT NULL THEN true ELSE false END as has_budget,
         tik.id_status_ticket,
-        bg.pdf_path as pdf_path_presupuesto
+        bg.pdf_path as pdf_path_presupuesto,
+        fail.id_failure
     FROM
         tickets tik
     INNER JOIN status_tickets sttik ON sttik.id_status_ticket = tik.id_status_ticket

@@ -1321,9 +1321,9 @@ function getTicketDataFinaljs() {
 
                       // Identificar fallas especiales (id_failure = 9: Actualización de Software, id_failure = 12: Sin LLaves/Dukpt Vacío)
                       const idFailure = row.id_failure ? parseInt(row.id_failure) : (row.idFailure ? parseInt(row.idFailure) : null);
-                      const isFallaSinPago = (idFailure === 9 || idFailure === 12);
-                      const isActualizacionSoftware = (idFailure === 9);
-                      const isSinLlavesDukpt = (idFailure === 12);
+                      const isActualizacionSoftware = (idFailure === 9 || (row.name_failure && row.name_failure.trim() === 'Actualización de Software'));
+                      const isSinLlavesDukpt = (idFailure === 12 || (row.name_failure && row.name_failure.trim() === 'Sin Llaves /Dukpt Vacío'));
+                      const isFallaSinPago = (idFailure === 9 || idFailure === 12 || isActualizacionSoftware || isSinLlavesDukpt);
 
                       // Identificar si es región central
                       const isCentralRegion = (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas");
@@ -2411,7 +2411,7 @@ function getTicketDataFinaljs() {
                     const isGarantiaInst = rawGarantiaInst === 'true' || rawGarantiaInst === 't';
                     const isGarantiaRein = rawGarantiaRein === 'true' || rawGarantiaRein === 't';
                     
-                    const isFallaSinPago = (idFailure == 9 || idFailure == 12);
+                    const isFallaSinPago = (idFailure == 9 || idFailure == 12 || $(this).attr("data-is-actualizacion-software") === 'true');
                     const isGarantia = (idStatusPayment == 1 || idStatusPayment == 3 || isGarantiaInst || isGarantiaRein);
                     const isIrreparable = (rawStatusLab === "Gestión Comercial (Irreparable)");
                     

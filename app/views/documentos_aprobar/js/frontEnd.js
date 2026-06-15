@@ -7538,15 +7538,17 @@ function showPaymentsDetail(nroTicket, payments, serialPos = 'Sin posición', id
             // NUEVA LÓGICA: Un pago se considera "revisado" si ya no está en estatus Pendiente.
             // Los iconos de advertencia (reloj) aparecen cuando el estatus no es 6 (Aprobado) 
             // ni uno de los de rechazo (12, 13, 14).
-            const allReviewed = paymentsObj.length > 0 && paymentsObj.every(p => {
+            const isGarantiaOrFallaLibre = [1, 3, 16].includes(parseInt(idStatusPayment));
+            
+            const allReviewed = isGarantiaOrFallaLibre ? true : (paymentsObj.length > 0 && paymentsObj.every(p => {
                 const isApproved = p.payment_status == 6;
                 const isRejected = p.payment_status == 12 || p.payment_status == 13 || p.payment_status == 14;
                 return isApproved || isRejected;
-            });
+            }));
 
             // Se habilita solo si se ha pagado el total del presupuesto con pagos APROBADOS
             // y TODOS los registros han sido revisados (sin iconos de advertencia).
-            const isFullyPaid = totalBudget > 0 && totalPaid >= totalBudget;
+            const isFullyPaid = isGarantiaOrFallaLibre ? true : (totalBudget > 0 && totalPaid >= totalBudget);
             
             btnFinalizar.disabled = !(allReviewed && isFullyPaid);
             btnFinalizar.setAttribute('data-nro-ticket', nroTicket);
