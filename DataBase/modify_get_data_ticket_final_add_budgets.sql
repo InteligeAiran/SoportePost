@@ -46,7 +46,6 @@ CREATE OR REPLACE FUNCTION public.getdataticketfinal(
         document_type character varying, 
         original_filename text, 
         comment_devolution text, 
-        confirmrosal boolean,
         -- NUEVOS CAMPOS AGREGADOS:
         id_budget integer,
         has_budget boolean,

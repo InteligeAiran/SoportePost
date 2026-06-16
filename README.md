@@ -88,6 +88,37 @@ Abre el archivo `.env` y rellena los datos según tu entorno:
     *   Los controladores nunca hacen consultas crudas de SQL. En su lugar, delegan la lógica a los repositorios (ej. `EmailRepository`), manteniendo la base de código limpia y fácil de mantener.
 4.  **PHPMailer mediante Composer**:
     *   Aprovecha el cargador automático de clases (`vendor/autoload.php`), eliminando las dependencias manuales antiguas y facilitando la actualización de paquetes.
+5.  **Protección CSRF Global**:
+    *   Toda petición HTTP de cambio de estado (POST, PUT, DELETE, PATCH) en el backend es validada usando tokens CSRF únicos por sesión.
+    *   Un interceptor global en el frontend intercepta automáticamente `XMLHttpRequest`, `window.fetch` y peticiones AJAX de jQuery para adjuntar la cabecera `X-CSRF-TOKEN` sin alterar el código JS existente.
+6.  **Limitación de Tasa (API Rate Limiting)**:
+    *   Protección contra ataques de fuerza bruta y denegación de servicio (DoS) en endpoints sensibles y de propósito general en la API, implementada a nivel de controlador mediante almacenamiento de registros temporales ligeros en formato JSON por IP y ruta.
+
+---
+
+## 🔒 Seguridad (CSRF & Rate Limiting)
+
+Para garantizar la seguridad de los recursos y la integridad de las operaciones del sistema, se han integrado dos capas protectoras clave en el motor base:
+
+### 🛡️ Protección CSRF (Cross-Site Request Forgery)
+*   **Generación**: Al inicializarse el controlador base ([Controller.php](file:///c:/xampp/htdocs/SoportePost/libs/Controller.php)), se inicia la sesión de PHP (si no está activa) y se genera un token criptográfico seguro único en `$_SESSION['csrf_token']`.
+*   **Inyección en Frontend**: En la clase de renderizado ([View.php](file:///c:/xampp/htdocs/SoportePost/libs/View.php)), antes de cargar cualquier plantilla HTML, se inyecta un interceptor JavaScript global que captura e inyecta la cabecera `X-CSRF-TOKEN` de forma transparente en todas las peticiones `fetch()`, `XMLHttpRequest` y AJAX de `jQuery`.
+*   **Validación**: Todas las peticiones con métodos de modificación (`POST`, `PUT`, `DELETE`, `PATCH`) se validan contra el token de la sesión. Si el token falta o es incorrecto, el servidor responde inmediatamente con un código **`403 Forbidden`** y bloquea la operación.
+*   **Excepciones**: Las rutas de cara al público/inicio de sesión (`api/users/access`, `api/users/checkUser`, `api/users/getEmailByUsername`, y `api/users/logout`) están exentas para no interrumpir el flujo de inicio de sesión o recuperación de contraseñas.
+
+### ⏱️ Limitación de Tasa (API Rate Limiting)
+El sistema controla la frecuencia de las solicitudes realizadas a las APIs para evitar el abuso, escaneos automáticos de fuerza bruta y sobrecargas de peticiones:
+*   **Puntos de Enlace Protegidos**: Aplica a cualquier ruta que empiece con `api/` (ej. `/api/users/access`, `/api/tickets/create`, etc.).
+*   **Políticas de Límites (Ventana Móvil de 60 segundos)**:
+    *   **Acceso e Inicio de Sesión (`api/users/access`)**: Máximo **10 peticiones por minuto** por dirección IP.
+    *   **Subida de Archivos** (cualquier ruta de API que contenga `upload`): Máximo **10 peticiones por minuto** por dirección IP.
+    *   **APIs Generales**: Máximo **100 peticiones por minuto** por dirección IP.
+*   **Resolución de IP Segura**: Soporta de forma nativa redes locales y balanceadores de carga / proxys inversos leyendo las cabeceras `HTTP_CLIENT_IP`, `HTTP_X_FORWARDED_FOR` y cayendo a `REMOTE_ADDR` como último recurso.
+*   **Almacenamiento Local Eficiente**: Diseñado para entornos XAMPP y servidores tradicionales sin dependencias externas (como Redis o bases de datos adicionales). Utiliza archivos JSON locales temporales cifrados por MD5 (`tmp/rate_limit/{md5(IP_Ruta)}.json`) que expiran solos dinámicamente.
+*   **Respuestas y Cabeceras**: Cuando un cliente supera el límite establecido, el servidor responde inmediatamente con:
+    *   Código de estado HTTP **`429 Too Many Requests`**.
+    *   Cabecera **`Retry-After`** con los segundos restantes que debe esperar el cliente para volver a intentar.
+    *   Respuesta en formato JSON: `{"success": false, "error": "Too many requests. Please try again later.", "retry_after": X}`.
 
 ---
 
