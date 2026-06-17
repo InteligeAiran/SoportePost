@@ -1488,7 +1488,7 @@ function getTicketDataFinaljs() {
                                             },
                                             willClose: () => {
                                                 // Cuando el primer modal se cierra, mostramos el segundo modal con detalles
-                                                const ticketData = response.ticket_data;
+                                                const ticketData = Array.isArray(response.ticket_data) ? response.ticket_data[0] : response.ticket_data;
 
                                                 if (ticketData) {
                                                     // NUEVO: Mostrar comentario según el tipo de ticket

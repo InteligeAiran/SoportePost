@@ -474,14 +474,15 @@ function formatTicketDetailsPanel(d) {
   const initialImageAlt = "Cargando imagen del dispositivo...";
 
   // Determina el mensaje de garantía
-  let garantiaMessage = '';
-  if (d.garantia_instalacion !== null && d.garantia_instalacion !== '' && d.garantia_instalacion !== false && d.garantia_instalacion !== 'f') {
+  let garantiaMessage = 'No aplica Garantía';
+  const idStatusPayment = d.id_status_payment ? parseInt(d.id_status_payment) : null;
+  
+  if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't' || d.garantia_instalacion === 1 || d.garantia_instalacion === '1') {
     garantiaMessage = 'Aplica Garantía de Instalación';
-  } else if (d.garantia_reingreso !== null && d.garantia_reingreso !== '' && d.garantia_reingreso !== false && d.garantia_reingreso !== 'f') {
+  } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't' || d.garantia_reingreso === 3 || d.garantia_reingreso === '3') {
     garantiaMessage = 'Aplica Garantía por Reingreso';
-  } else {
-    garantiaMessage = 'No aplica Garantía'; // O simplemente dejarlo vacío si no hay garantía
   }
+
 
   return `
         <div class="container-fluid">

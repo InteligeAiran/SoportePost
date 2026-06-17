@@ -29,11 +29,12 @@ function formatTicketDetailsPanel(d) {
   let garantiaMessage = 'No aplica Garantía';
   const idStatusPayment = d.id_status_payment ? parseInt(d.id_status_payment) : null;
   
-  if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't') {
+  if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't' || d.garantia_instalacion === 'true' || d.garantia_instalacion === 1 || d.garantia_instalacion === '1') {
     garantiaMessage = 'Aplica Garantía de Instalación';
-  } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't') {
+  } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't' || d.garantia_reingreso === 'true' || d.garantia_reingreso === 3 || d.garantia_reingreso === '3') {
     garantiaMessage = 'Aplica Garantía por Reingreso';
   }
+
 
   if (isAdminReq) {
       garantiaMessage = "No aplica (Solicitud Adm.)";
