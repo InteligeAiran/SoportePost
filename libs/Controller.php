@@ -136,7 +136,9 @@ class Controller {
         'api/users/access',
         'api/users/checkuser',
         'api/users/getemailbyusername',
-        'api/users/logout'
+        'api/users/logout',
+        'api/email/resetpassword',
+        'api/email/checkemail'
       ];
       
       if (in_array($route, $exemptions)) {
