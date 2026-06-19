@@ -9,7 +9,7 @@ let currentTicketIdForImage = null;
 let currentTicketNroForImage = null;
 let DocumentType = null;
 
-let currentTicketOldTechnicianId = null; 
+let currentTicketOldTechnicianId = null;
 let EnvioInput = null;
 let ExoInput = null;
 let PagoInput = null;
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const viewDocumentModalInstance = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
   const modalRechazoInstance = new bootstrap.Modal(document.getElementById('modalRechazo'));
   const botonCerrarmotivo = document.getElementById('CerrarModalMotivoRechazo');
-  const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), {keyboard: false});
+  const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modalConfirmacionRechazo'), { keyboard: false });
   const modalConfirmacionRechazoBtn = document.getElementById('modalConfirmacionRechazoBtn');
 
   // Obtener el botón de rechazo del DOM
@@ -42,13 +42,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  if(modalConfirmacionRechazoBtn){
+  if (modalConfirmacionRechazoBtn) {
     modalConfirmacionRechazoBtn.addEventListener('click', function () {
       confirmarRechazoModal.hide();
     });
   }
 
-  document.getElementById("confirmarRechazoBtn").addEventListener("click", function() {
+  document.getElementById("confirmarRechazoBtn").addEventListener("click", function () {
     // Opcional: Obtén el texto del motivo seleccionado para mostrarlo en el modal
     const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
     const motivoSeleccionadoTexto = motivoRechazoSelect.options[motivoRechazoSelect.selectedIndex].text;
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }*/
 
   // Evento click para el botón "Confirmar Rechazo"
-  $("#confirmarRechazoBtn").off("click").on("click", function() {
+  $("#confirmarRechazoBtn").off("click").on("click", function () {
     const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 
     if (!motivoRechazoSelect.value) {
@@ -193,121 +193,121 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Evento para el botón "Asignar" del modal de selección de técnico
   // Evento para el botón "Asignar" del modal de selección de técnico
-assignTechnicianBtn.addEventListener("click", async function () {
-  const newTechnicianId = technicianSelect.value;
-  const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent;
+  assignTechnicianBtn.addEventListener("click", async function () {
+    const newTechnicianId = technicianSelect.value;
+    const newTechnicianName = technicianSelect.options[technicianSelect.selectedIndex].textContent;
 
-  if (newTechnicianId) {
-    // Deshabilitar botón para evitar múltiples clics
-    assignTechnicianBtn.disabled = true;
-    assignTechnicianBtn.textContent = "Asignando...";
+    if (newTechnicianId) {
+      // Deshabilitar botón para evitar múltiples clics
+      assignTechnicianBtn.disabled = true;
+      assignTechnicianBtn.textContent = "Asignando...";
 
-    try {
-      const success = await reassignTicket(currentTicketId, newTechnicianId);
+      try {
+        const success = await reassignTicket(currentTicketId, newTechnicianId);
 
-      if (success) {
-        const emailSuccess = await sendReassignmentEmails(
-          currentTicketId,
-          currentTicketOldTechnicianId,
-          newTechnicianId
-        );
-        Swal.fire({
-          icon: "success",
-          title: "¡Reasignación Exitosa!",
-          html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
-          confirmButtonText: "Ok",
-          color: "black",
-          confirmButtonColor: "#003594",
-        }).then(() => {
-          location.reload();
-        });
-      } else {
+        if (success) {
+          const emailSuccess = await sendReassignmentEmails(
+            currentTicketId,
+            currentTicketOldTechnicianId,
+            newTechnicianId
+          );
+          Swal.fire({
+            icon: "success",
+            title: "¡Reasignación Exitosa!",
+            html: `El Ticket <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${currentTicketNro}</span> ha sido reasignado con éxito a <span style="border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${newTechnicianName}</span>.`,
+            confirmButtonText: "Ok",
+            color: "black",
+            confirmButtonColor: "#003594",
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`,
+            confirmButtonText: "Aceptar",
+            color: "black",
+            confirmButtonColor: "#003594",
+          });
+        }
+      } catch (error) {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: `Error al reasignar el ticket ${currentTicketNro}. Por favor, intente de nuevo.`,
+          text: `Ocurrió un error al reasignar el ticket ${currentTicketNro}: ${error.message}`,
           confirmButtonText: "Aceptar",
           color: "black",
           confirmButtonColor: "#003594",
         });
+      } finally {
+        selectTechnicianModalInstance.hide();
+        assignTechnicianBtn.disabled = false;
+        assignTechnicianBtn.textContent = "Asignar";
       }
-    } catch (error) {
+    } else {
       Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: `Ocurrió un error al reasignar el ticket ${currentTicketNro}: ${error.message}`,
+        title: "Notificación!",
+        text: "Debe seleccionar un técnico para reasignar el ticket.",
+        icon: "warning",
         confirmButtonText: "Aceptar",
         color: "black",
         confirmButtonColor: "#003594",
       });
-    } finally {
-      selectTechnicianModalInstance.hide();
-      assignTechnicianBtn.disabled = false;
-      assignTechnicianBtn.textContent = "Asignar";
     }
-  } else {
-    Swal.fire({
-      title: "Notificación!",
-      text: "Debe seleccionar un técnico para reasignar el ticket.",
-      icon: "warning",
-      confirmButtonText: "Aceptar",
-      color: "black",
-      confirmButtonColor: "#003594",
-    });
-  }
-});
+  });
 
-// Función para enviar correos de reasignación (convertida a async/await)
-async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId) {
-  try {
+  // Función para enviar correos de reasignación (convertida a async/await)
+  async function sendReassignmentEmails(ticketId, oldTechnicianId, newTechnicianId) {
+    try {
 
-    const xhrEmail = new XMLHttpRequest();
-    const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_reassignment_email`;
-    const params = `action=send_reassignment_email&ticket_id=${encodeURIComponent(
-      ticketId
-    )}&old_technician_id=${encodeURIComponent(
-      oldTechnicianId
-    )}&new_technician_id=${encodeURIComponent(newTechnicianId)}`;
+      const xhrEmail = new XMLHttpRequest();
+      const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_reassignment_email`;
+      const params = `action=send_reassignment_email&ticket_id=${encodeURIComponent(
+        ticketId
+      )}&old_technician_id=${encodeURIComponent(
+        oldTechnicianId
+      )}&new_technician_id=${encodeURIComponent(newTechnicianId)}`;
 
-    xhrEmail.open("POST", url);
-    xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhrEmail.open("POST", url);
+      xhrEmail.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    // Convertir xhrEmail a Promise para usar await
-    const response = await new Promise((resolve, reject) => {
-      xhrEmail.onload = function () {
-        if (xhrEmail.status === 200) {
-          try {
-            const responseEmail = JSON.parse(xhrEmail.responseText);
-            resolve(responseEmail);
-          } catch (error) {
-            reject(error);
+      // Convertir xhrEmail a Promise para usar await
+      const response = await new Promise((resolve, reject) => {
+        xhrEmail.onload = function () {
+          if (xhrEmail.status === 200) {
+            try {
+              const responseEmail = JSON.parse(xhrEmail.responseText);
+              resolve(responseEmail);
+            } catch (error) {
+              reject(error);
+            }
+          } else {
+            console.error("DEBUG: Error en la solicitud HTTP:", {
+              status: xhrEmail.status,
+              statusText: xhrEmail.statusText,
+              responseText: xhrEmail.responseText,
+            });
+            reject(new Error(`HTTP error! status: ${xhrEmail.status}`));
           }
-        } else {
-          console.error("DEBUG: Error en la solicitud HTTP:", {
-            status: xhrEmail.status,
-            statusText: xhrEmail.statusText,
-            responseText: xhrEmail.responseText,
-          });
-          reject(new Error(`HTTP error! status: ${xhrEmail.status}`));
-        }
-      };
+        };
 
-      xhrEmail.onerror = function () {
-        reject(new Error("Error de red"));
-      };
+        xhrEmail.onerror = function () {
+          reject(new Error("Error de red"));
+        };
 
-      xhrEmail.send(params);
-    });
+        xhrEmail.send(params);
+      });
 
-    if (response.success) {
-      return true;
-    } else {
+      if (response.success) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
       return false;
     }
-  } catch (error) {
-    return false;
   }
-}
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -492,26 +492,26 @@ function getTicketDataCoordinator() {
             ]);
           });
 
-        const rowCountForOverlay = dataForDataTable.length;
-        if (rowCountForOverlay > 0 && typeof showLoadingOverlay === "function") {
-          const tableJQ = $("#tabla-ticket");
-          showLoadingOverlay(`Renderizando ${rowCountForOverlay} tickets...`);
-          const handleDraw = () => {
-            tableJQ.off("draw.dt", handleDraw);
-            if (typeof hideLoadingOverlay === "function") {
-              hideLoadingOverlay();
-            }
-          };
-          tableJQ.on("draw.dt", handleDraw);
-          setTimeout(() => {
-            tableJQ.off("draw.dt", handleDraw);
-            if (typeof hideLoadingOverlay === "function") {
-              hideLoadingOverlay();
-            }
-          }, Math.min(8000, Math.max(1500, rowCountForOverlay * 6)));
-        } else if (typeof hideLoadingOverlay === "function") {
-          hideLoadingOverlay();
-        }
+          const rowCountForOverlay = dataForDataTable.length;
+          if (rowCountForOverlay > 0 && typeof showLoadingOverlay === "function") {
+            const tableJQ = $("#tabla-ticket");
+            showLoadingOverlay(`Renderizando ${rowCountForOverlay} tickets...`);
+            const handleDraw = () => {
+              tableJQ.off("draw.dt", handleDraw);
+              if (typeof hideLoadingOverlay === "function") {
+                hideLoadingOverlay();
+              }
+            };
+            tableJQ.on("draw.dt", handleDraw);
+            setTimeout(() => {
+              tableJQ.off("draw.dt", handleDraw);
+              if (typeof hideLoadingOverlay === "function") {
+                hideLoadingOverlay();
+              }
+            }, Math.min(8000, Math.max(1500, rowCountForOverlay * 6)));
+          } else if (typeof hideLoadingOverlay === "function") {
+            hideLoadingOverlay();
+          }
 
           // Inicialización de DataTables
           const dataTableInstance = $("#tabla-ticket").DataTable({
@@ -809,37 +809,37 @@ function getTicketDataCoordinator() {
             .on("click", "tr", function (e) {
               // Verificar si el clic fue en un botón, enlace o input
               const clickedElement = $(e.target);
-              const isButton = clickedElement.is('button') || 
-                              clickedElement.closest('button').length > 0 ||
-                              clickedElement.is('a') || 
-                              clickedElement.closest('a').length > 0 ||
-                              clickedElement.is('input') || 
-                              clickedElement.closest('input').length > 0 ||
-                              clickedElement.hasClass('truncated-cell') ||
-                              clickedElement.hasClass('expanded-cell');
-              
+              const isButton = clickedElement.is('button') ||
+                clickedElement.closest('button').length > 0 ||
+                clickedElement.is('a') ||
+                clickedElement.closest('a').length > 0 ||
+                clickedElement.is('input') ||
+                clickedElement.closest('input').length > 0 ||
+                clickedElement.hasClass('truncated-cell') ||
+                clickedElement.hasClass('expanded-cell');
+
               // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
               if (isButton) {
-                  return; // No hacer nada, dejar que el botón maneje su propio evento
+                return; // No hacer nada, dejar que el botón maneje su propio evento
               }
-              
+
               // Solo ocultar overlay si el clic fue directamente en la fila
               // 1. Matamos cualquier otro handler (por si acaso)
               e.stopPropagation();
-              
+
               // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
               $('#loadingOverlay').removeClass('show').hide();
-              
+
               // 3. Si el script usa opacity o visibility, también lo matamos
               $('#loadingOverlay').css({
-                  'display': 'none',
-                  'opacity': '0',
-                  'visibility': 'hidden'
+                'display': 'none',
+                'opacity': '0',
+                'visibility': 'hidden'
               });
-              
+
               // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
               setTimeout(() => {
-                  $('#loadingOverlay').hide();
+                $('#loadingOverlay').hide();
               }, 50);
 
               const tr = $(this);
@@ -1665,23 +1665,23 @@ modalComponentesEl.addEventListener('show.bs.modal', function () {
 
 // Función para actualizar los colores de la fila según el estado del checkbox
 function actualizarColoresFila(checkbox) {
-    const row = checkbox.closest('tr');
-    if (!row) return;
-    
-    const isChecked = checkbox.checked;
-    const initialState = checkbox.getAttribute('data-initial-checked') === 'true';
-    
-    // Remover todas las clases de color
-    row.classList.remove('table-info', 'table-secondary', 'opacity-75');
-    
-    if (isChecked) {
-        // Si está marcado, mostrar en azul
-        row.classList.add('table-info');
-    } else if (initialState) {
-        // Si estaba marcado inicialmente y ahora está desmarcado, mostrar opaco
-        row.classList.add('table-secondary', 'opacity-75');
-    }
-    // Si no estaba marcado inicialmente y sigue sin marcar, no agregar clase (estado normal)
+  const row = checkbox.closest('tr');
+  if (!row) return;
+
+  const isChecked = checkbox.checked;
+  const initialState = checkbox.getAttribute('data-initial-checked') === 'true';
+
+  // Remover todas las clases de color
+  row.classList.remove('table-info', 'table-secondary', 'opacity-75');
+
+  if (isChecked) {
+    // Si está marcado, mostrar en azul
+    row.classList.add('table-info');
+  } else if (initialState) {
+    // Si estaba marcado inicialmente y ahora está desmarcado, mostrar opaco
+    row.classList.add('table-secondary', 'opacity-75');
+  }
+  // Si no estaba marcado inicialmente y sigue sin marcar, no agregar clase (estado normal)
 }
 
 // Función para actualizar el contador de componentes seleccionados
@@ -1711,7 +1711,7 @@ function limpiarSeleccion() {
     cb.checked = false;
     actualizarColoresFila(cb);
   });
-    
+
   document.getElementById('selectAllComponents').checked = false;
   actualizarContador();
 }
@@ -1725,119 +1725,119 @@ function limpiarSeleccion() {
  * * NOTA: Asume que 'ENDPOINT_BASE', 'APP_PATH', 'Swal', 'modalComponentes' están definidos globalmente.
  */
 function guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos) {
-    const id_user = document.getElementById('id_user').value;
-    const modulo = "Gestión Coordinación";
-    
-    // 1. Validaciones y Limpieza de datos
-    const ticketIdClean = String(ticketId).trim().replace(/['"]/g, '');
-    const ticketIdNum = parseInt(ticketIdClean);
-    const serialPosClean = serialPos ? serialPos.trim() : '';
-    const idUserClean = id_user ? id_user.trim() : '';
+  const id_user = document.getElementById('id_user').value;
+  const modulo = "Gestión Coordinación";
 
-    if (isNaN(ticketIdNum) || ticketIdNum <= 0) {
-        Swal.fire({
-            title: 'Error de Datos',
-            text: 'El ID del ticket no es válido.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-        });
-        return;
-    }
-    
-    if (!serialPosClean) {
-        Swal.fire({
-            title: 'Error de Datos',
-            text: 'El serial del POS es requerido.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-        });
-        return;
-    }
-    
-    if (!idUserClean) {
-        Swal.fire({
-            title: 'Error de Usuario',
-            text: 'El ID de usuario es requerido.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-        });
-        return;
-    }
-    
-    // Preparar objeto con componentes marcados y desmarcados
-    const componentsData = {
-        selected: selectedComponents || [],
-        deselected: deselectedComponents || []
-    };
-    
-    // 2. Configuración de la petición AJAX
-    const xhr = new XMLHttpRequest();
-    // Uso correcto de template literals para la URL
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  // 1. Validaciones y Limpieza de datos
+  const ticketIdClean = String(ticketId).trim().replace(/['"]/g, '');
+  const ticketIdNum = parseInt(ticketIdClean);
+  const serialPosClean = serialPos ? serialPos.trim() : '';
+  const idUserClean = id_user ? id_user.trim() : '';
 
-    // 3. Manejo de la respuesta
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                
-                if (response.success) {
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        // Uso correcto de template literals para el HTML
-                        html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPosClean}</span> han sido guardados correctamente.`,
-                        icon: 'success',
-                        confirmButtonText: 'Aceptar',
-                        color: 'black',
-                        confirmButtonColor: '#003594',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        keydownListenerCapture: true
-                    }).then(() => {
-                        modalComponentes.hide();
-                        window.location.reload(); 
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Error',
-                        text: response.message || 'Error al guardar los componentes.',
-                        icon: 'error',
-                        confirmButtonText: 'Aceptar'
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'Error al procesar la respuesta del servidor.',
-                    icon: 'error',
-                    confirmButtonText: 'Aceptar'
-                });
-            }
+  if (isNaN(ticketIdNum) || ticketIdNum <= 0) {
+    Swal.fire({
+      title: 'Error de Datos',
+      text: 'El ID del ticket no es válido.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    });
+    return;
+  }
+
+  if (!serialPosClean) {
+    Swal.fire({
+      title: 'Error de Datos',
+      text: 'El serial del POS es requerido.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    });
+    return;
+  }
+
+  if (!idUserClean) {
+    Swal.fire({
+      title: 'Error de Usuario',
+      text: 'El ID de usuario es requerido.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    });
+    return;
+  }
+
+  // Preparar objeto con componentes marcados y desmarcados
+  const componentsData = {
+    selected: selectedComponents || [],
+    deselected: deselectedComponents || []
+  };
+
+  // 2. Configuración de la petición AJAX
+  const xhr = new XMLHttpRequest();
+  // Uso correcto de template literals para la URL
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/reportes/SaveComponents`);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+  // 3. Manejo de la respuesta
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success) {
+          Swal.fire({
+            title: '¡Éxito!',
+            // Uso correcto de template literals para el HTML
+            html: `Los Periféricos del Pos <span style=" padding: 0.2rem 0.5rem; border-radius: 0.3rem; background-color: #e0f7fa; color: #007bff;">${serialPosClean}</span> han sido guardados correctamente.`,
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+            color: 'black',
+            confirmButtonColor: '#003594',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            keydownListenerCapture: true
+          }).then(() => {
+            modalComponentes.hide();
+            window.location.reload();
+          });
         } else {
-            // Uso correcto de template literals
-            Swal.fire({
-                title: 'Error del Servidor',
-                text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
-                icon: 'error',
-                confirmButtonText: 'Aceptar'
-            });
-        }
-    };
-
-    xhr.onerror = function() {
-        Swal.fire({
-            title: 'Error de Red',
-            text: 'No se pudo conectar con el servidor.',
+          Swal.fire({
+            title: 'Error',
+            text: response.message || 'Error al guardar los componentes.',
             icon: 'error',
             confirmButtonText: 'Aceptar'
+          });
+        }
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al procesar la respuesta del servidor.',
+          icon: 'error',
+          confirmButtonText: 'Aceptar'
         });
-    };
-    
-    // 4. Preparación de los datos a enviar y envío
-    const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
-    
-    xhr.send(dataToSend);
+      }
+    } else {
+      // Uso correcto de template literals
+      Swal.fire({
+        title: 'Error del Servidor',
+        text: `Error al comunicarse con el servidor. Código: ${xhr.status}`,
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+      });
+    }
+  };
+
+  xhr.onerror = function () {
+    Swal.fire({
+      title: 'Error de Red',
+      text: 'No se pudo conectar con el servidor.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    });
+  };
+
+  // 4. Preparación de los datos a enviar y envío
+  const dataToSend = `action=SaveComponents&ticketId=${ticketIdNum}&serialPos=${encodeURIComponent(serialPosClean)}&selectedComponents=${encodeURIComponent(JSON.stringify(componentsData))}&id_user=${encodeURIComponent(idUserClean)}&modulo=${encodeURIComponent(modulo)}`;
+
+  xhr.send(dataToSend);
 }
 
 // Función para obtener el ticket ID (ajusta según tu estructura)
@@ -1863,67 +1863,67 @@ function obtenerRegionName() {
  * @param {string} serialPos - Número de serie del POS.
  */
 function showSelectComponentsModal(ticketId, regionName, serialPos) {
-    // 1. Validación de ticketId
-    const ticketIdNum = parseInt(ticketId);
+  // 1. Validación de ticketId
+  const ticketIdNum = parseInt(ticketId);
 
-    if (!ticketId || isNaN(ticketIdNum) || ticketIdNum <= 0) {
-        Swal.fire({
-            title: 'Error',
-            text: 'El ID del ticket no es válido o está vacío.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar',
-            color: 'black',
-            confirmButtonColor: '#003594',
-        });
-        return;
-    }
-    
-    const xhr = new XMLHttpRequest();
+  if (!ticketId || isNaN(ticketIdNum) || ticketIdNum <= 0) {
+    Swal.fire({
+      title: 'Error',
+      text: 'El ID del ticket no es válido o está vacío.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+      color: 'black',
+      confirmButtonColor: '#003594',
+    });
+    return;
+  }
 
-    // 2. Mostrar estado de carga (Uso correcto de template literals)
-    tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
-    
-    // Uso correcto de template literals para la URL y Data
-    const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
-    const dataToSendString = `action=GetComponents&ticketId=${ticketIdNum}`; // Usamos la variable numérica validada
-    
-    // 3. Configuración y envío de la petición AJAX
-    xhr.open('POST', apiUrl, true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  const xhr = new XMLHttpRequest();
 
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-                const response = JSON.parse(xhr.responseText);
+  // 2. Mostrar estado de carga (Uso correcto de template literals)
+  tbodyComponentes.innerHTML = `<tr><td colspan="2" class="text-center text-muted">Cargando componentes...</td></tr>`;
 
-                if (response.success && response.components) {
-                    const components = response.components;
-                    let componentsHtml = '';
-                    
-                    if (components.length > 0) {
-                        const initialState = {};
-                        
-                        components.forEach(comp => {
-                            // Limpieza de valores booleanos de PostgreSQL ('t'/'f')
-                            const addValue = comp.add === true || comp.add === 't';
-                            const deselectedValue = comp.add === false || comp.add === 'f';
-                            
-                            // Lógica de estado inicial (true = marcado, false/null = no marcado)
-                            const isChecked = addValue;
-                            
-                            // Determinar clase CSS según el estado de la base de datos
-                            let rowClass = '';
-                            if (isChecked) {
-                                rowClass = 'table-info'; // Azul para marcado (add = true)
-                            } else if (deselectedValue) {
-                                rowClass = 'table-secondary opacity-75'; // Opaco para desmarcado (add = false)
-                            }
-                            // Si 'add' es null o 'falsy', no se agrega clase (estado normal)
-                            
-                            // Guardar estado inicial para la comparación de cambios
-                            initialState[comp.id_component] = isChecked;
-                            
-                            componentsHtml += `
+  // Uso correcto de template literals para la URL y Data
+  const apiUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetComponents`;
+  const dataToSendString = `action=GetComponents&ticketId=${ticketIdNum}`; // Usamos la variable numérica validada
+
+  // 3. Configuración y envío de la petición AJAX
+  xhr.open('POST', apiUrl, true);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+
+        if (response.success && response.components) {
+          const components = response.components;
+          let componentsHtml = '';
+
+          if (components.length > 0) {
+            const initialState = {};
+
+            components.forEach(comp => {
+              // Limpieza de valores booleanos de PostgreSQL ('t'/'f')
+              const addValue = comp.add === true || comp.add === 't';
+              const deselectedValue = comp.add === false || comp.add === 'f';
+
+              // Lógica de estado inicial (true = marcado, false/null = no marcado)
+              const isChecked = addValue;
+
+              // Determinar clase CSS según el estado de la base de datos
+              let rowClass = '';
+              if (isChecked) {
+                rowClass = 'table-info'; // Azul para marcado (add = true)
+              } else if (deselectedValue) {
+                rowClass = 'table-secondary opacity-75'; // Opaco para desmarcado (add = false)
+              }
+              // Si 'add' es null o 'falsy', no se agrega clase (estado normal)
+
+              // Guardar estado inicial para la comparación de cambios
+              initialState[comp.id_component] = isChecked;
+
+              componentsHtml += `
                                 <tr class="${rowClass}" data-component-id="${comp.id_component}" data-initial-state="${isChecked}">
                                     <td>
                                         <input type="checkbox" class="form-check-input component-checkbox" 
@@ -1934,48 +1934,48 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
                                     <td>${comp.name_component}</td>
                                 </tr>
                             `;
-                        });
-                        
-                        // Guardar estado inicial en el tbody para comparar cambios al guardar
-                        tbodyComponentes.setAttribute('data-initial-state', JSON.stringify(initialState));
-                        
-                        document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
-                        document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+            });
 
-                    } else {
-                        componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
-                    }
-                    
-                    tbodyComponentes.innerHTML = componentsHtml;
-                    
-                    // Título del Modal (Uso correcto de template literals)
-                    document.getElementById('modalComponentesLabel').innerHTML = `
+            // Guardar estado inicial en el tbody para comparar cambios al guardar
+            tbodyComponentes.setAttribute('data-initial-state', JSON.stringify(initialState));
+
+            document.getElementById('btnGuardarComponentes').dataset.ticketId = ticketId;
+            document.getElementById('btnGuardarComponentes').dataset.serialPos = serialPos;
+
+          } else {
+            componentsHtml = `<tr><td colspan="2" class="text-center text-muted">No se encontraron componentes.</td></tr>`;
+          }
+
+          tbodyComponentes.innerHTML = componentsHtml;
+
+          // Título del Modal (Uso correcto de template literals)
+          document.getElementById('modalComponentesLabel').innerHTML = `
                         <i class="bi bi-box-seam-fill me-2"></i>Lista de Periféricos del Dispositivo <span class="badge bg-secondary">${serialPos}</span>
                     `;
 
-                    // Mostrar el modal
-                    modalComponentes.show();
+          // Mostrar el modal
+          modalComponentes.show();
 
-                    // Actualizar contador
-                    actualizarContador();
+          // Actualizar contador
+          actualizarContador();
 
-                } else {
-                    Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
-            }
         } else {
-            // Manejo de error del servidor (Uso correcto de template literals)
-            Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+          Swal.fire('Error', response.message || 'No se pudieron obtener los componentes.', 'error');
         }
-    };
+      } catch (e) {
+        Swal.fire('Error de Procesamiento', 'Hubo un problema al procesar la respuesta del servidor.', 'error');
+      }
+    } else {
+      // Manejo de error del servidor (Uso correcto de template literals)
+      Swal.fire('Error del Servidor', `No se pudo comunicar con el servidor. Código: ${xhr.status}`, 'error');
+    }
+  };
 
-    xhr.onerror = function() {
-        Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
-    };  
-    
-    xhr.send(dataToSendString);
+  xhr.onerror = function () {
+    Swal.fire('Error de red', 'No se pudo conectar con el servidor para obtener los componentes.', 'error');
+  };
+
+  xhr.send(dataToSendString);
 }
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
@@ -1984,152 +1984,152 @@ function showSelectComponentsModal(ticketId, regionName, serialPos) {
 
 // Espera a que el DOM esté completamente cargado para asegurarse de que los elementos existen
 document.addEventListener('DOMContentLoaded', function () {
-    // Definición de variables clave (debe estar en el scope donde se usan)
-    // Se asume que 'tbodyComponentes' y 'modalComponentes' están definidas
-    // Si no están definidas globalmente, deben definirse aquí:
-    /*
-    const tbodyComponentes = document.getElementById('tbodyComponentes');
-    const modalComponentesEl = document.getElementById('modalComponentes');
-    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
-    */
+  // Definición de variables clave (debe estar en el scope donde se usan)
+  // Se asume que 'tbodyComponentes' y 'modalComponentes' están definidas
+  // Si no están definidas globalmente, deben definirse aquí:
+  /*
+  const tbodyComponentes = document.getElementById('tbodyComponentes');
+  const modalComponentesEl = document.getElementById('modalComponentes');
+  const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+  */
 
-    // Asumiendo que 'modalComponentesEl' y 'modalComponentes' existen/son accesibles
-    const modalComponentesEl = document.getElementById('modalComponentes');
-    const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
-    const tbodyComponentes = document.getElementById('tbodyComponentes');
+  // Asumiendo que 'modalComponentesEl' y 'modalComponentes' existen/son accesibles
+  const modalComponentesEl = document.getElementById('modalComponentes');
+  const modalComponentes = new bootstrap.Modal(modalComponentesEl, { keyboard: false });
+  const tbodyComponentes = document.getElementById('tbodyComponentes');
 
 
-    // Escucha el evento click en el documento y usa delegación.
-    document.addEventListener('click', function (e) {
-        
-        // 1. Botón para abrir el modal ('hiperbinComponents')
-        if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
-            const botonClicado = e.target.closest('#hiperbinComponents');
-            if (botonClicado) {
-                // Nota: La función 'abrirModalComponentes' no está definida aquí, 
-                // se reemplazó por showSelectComponentsModal, pero mantendré el nombre original
-                // si la función existe en otra parte, o la reemplazo con la lógica de carga:
-                
-                // Opción 1: Reemplazar con la lógica de carga si la data está en el botón
-                // const ticketId = botonClicado.dataset.ticketId;
-                // const serialPos = botonClicado.dataset.serialPos;
-                // showSelectComponentsModal(ticketId, obtenerRegionName(), serialPos); 
-                
-                // Opción 2: Si 'abrirModalComponentes' es el punto de entrada
-                abrirModalComponentes(botonClicado); // Asumiendo que esta función existe.
-            }
+  // Escucha el evento click en el documento y usa delegación.
+  document.addEventListener('click', function (e) {
+
+    // 1. Botón para abrir el modal ('hiperbinComponents')
+    if (e.target && e.target.id === 'hiperbinComponents' || e.target.closest('#hiperbinComponents')) {
+      const botonClicado = e.target.closest('#hiperbinComponents');
+      if (botonClicado) {
+        // Nota: La función 'abrirModalComponentes' no está definida aquí, 
+        // se reemplazó por showSelectComponentsModal, pero mantendré el nombre original
+        // si la función existe en otra parte, o la reemplazo con la lógica de carga:
+
+        // Opción 1: Reemplazar con la lógica de carga si la data está en el botón
+        // const ticketId = botonClicado.dataset.ticketId;
+        // const serialPos = botonClicado.dataset.serialPos;
+        // showSelectComponentsModal(ticketId, obtenerRegionName(), serialPos); 
+
+        // Opción 2: Si 'abrirModalComponentes' es el punto de entrada
+        abrirModalComponentes(botonClicado); // Asumiendo que esta función existe.
+      }
+    }
+
+    // 2. Botón "Limpiar Selección"
+    if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
+      limpiarSeleccion();
+    }
+
+    // 3. Botón "Guardar Componentes"
+    if (e.target && e.target.id === 'btnGuardarComponentes') {
+      const ticketId = e.target.dataset.ticketId;
+      const serialPos = e.target.dataset.serialPos;
+
+      // Obtener todos los checkboxes y determinar cambios
+      const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"].component-checkbox');
+      const selectedComponents = [];
+      const deselectedComponents = [];
+
+      // Obtener estado inicial guardado
+      const initialStateJson = tbodyComponentes.getAttribute('data-initial-state');
+      const initialState = initialStateJson ? JSON.parse(initialStateJson) : {};
+
+      allCheckboxes.forEach(checkbox => {
+        const compId = parseInt(checkbox.value);
+        const isCurrentlyChecked = checkbox.checked;
+        const wasInitiallyChecked = initialState[compId] === true;
+
+        // Lógica de envío: Solo enviar componentes que CAMBIARON de estado
+        // Esto evita duplicaciones y procesamiento innecesario
+
+        // 1. Componentes que cambiaron de desmarcado a marcado (nuevos)
+        if (isCurrentlyChecked && !wasInitiallyChecked) {
+          selectedComponents.push(compId);
         }
 
-        // 2. Botón "Limpiar Selección"
-        if (e.target && e.target.closest('.btn-outline-secondary.btn-sm') && e.target.closest('.modal-body')) {
-            limpiarSeleccion();
+        // 2. Componentes que cambiaron de marcado a desmarcado
+        // Solo enviar a desmarcar si estaba originalmente marcado (TRUE)
+        if (!isCurrentlyChecked && wasInitiallyChecked) {
+          deselectedComponents.push(compId);
         }
+        // Si el estado no cambió (marcado sigue marcado, o desmarcado sigue desmarcado),
+        // no se envía al backend para evitar procesamiento innecesario
+      });
 
-        // 3. Botón "Guardar Componentes"
-        if (e.target && e.target.id === 'btnGuardarComponentes') {
-            const ticketId = e.target.dataset.ticketId;
-            const serialPos = e.target.dataset.serialPos;
+      // Enviar cambios (puede haber solo marcados, solo desmarcados, o ambos)
+      guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos);
+    }
 
-            // Obtener todos los checkboxes y determinar cambios
-            const allCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"].component-checkbox');
-            const selectedComponents = [];
-            const deselectedComponents = [];
-            
-            // Obtener estado inicial guardado
-            const initialStateJson = tbodyComponentes.getAttribute('data-initial-state');
-            const initialState = initialStateJson ? JSON.parse(initialStateJson) : {};
-            
-            allCheckboxes.forEach(checkbox => {
-                const compId = parseInt(checkbox.value);
-                const isCurrentlyChecked = checkbox.checked;
-                const wasInitiallyChecked = initialState[compId] === true;
-                
-                // Lógica de envío: Solo enviar componentes que CAMBIARON de estado
-                // Esto evita duplicaciones y procesamiento innecesario
-                
-                // 1. Componentes que cambiaron de desmarcado a marcado (nuevos)
-                if (isCurrentlyChecked && !wasInitiallyChecked) {
-                    selectedComponents.push(compId);
-                } 
-                
-                // 2. Componentes que cambiaron de marcado a desmarcado
-                // Solo enviar a desmarcar si estaba originalmente marcado (TRUE)
-                if (!isCurrentlyChecked && wasInitiallyChecked) {
-                    deselectedComponents.push(compId);
-                } 
-                // Si el estado no cambió (marcado sigue marcado, o desmarcado sigue desmarcado),
-                // no se envía al backend para evitar procesamiento innecesario
-            });
-            
-            // Enviar cambios (puede haber solo marcados, solo desmarcados, o ambos)
-            guardarComponentesSeleccionados(ticketId, selectedComponents, deselectedComponents, serialPos);
-        }
+    // 4. Botón de cerrar el modal
+    if (e.target && e.target.id === 'BotonCerrarModal') {
+      modalComponentes.hide();
+    }
 
-        // 4. Botón de cerrar el modal
-        if (e.target && e.target.id === 'BotonCerrarModal') {
-            modalComponentes.hide();
-        }
+    // 5. Checkbox "Seleccionar Todos"
+    if (e.target && e.target.id === 'selectAllComponents') {
+      const isChecked = e.target.checked;
+      const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
 
-        // 5. Checkbox "Seleccionar Todos"
-        if (e.target && e.target.id === 'selectAllComponents') {
-            const isChecked = e.target.checked;
-            const enabledCheckboxes = tbodyComponentes.querySelectorAll('input[type="checkbox"]:not([disabled])');
-            
-            enabledCheckboxes.forEach(checkbox => {
-                checkbox.checked = isChecked;
-                // Aplicar el color de fila después de cambiar el estado
-                actualizarColoresFila(checkbox);
-            });
-            
-            actualizarContador();
-        }
+      enabledCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+        // Aplicar el color de fila después de cambiar el estado
+        actualizarColoresFila(checkbox);
+      });
 
-        // 6. Checkboxes individuales de componentes
-        if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
-            actualizarContador();
-            actualizarColoresFila(e.target);
-        }
-    });
+      actualizarContador();
+    }
+
+    // 6. Checkboxes individuales de componentes
+    if (e.target && e.target.type === 'checkbox' && e.target.closest('#tbodyComponentes')) {
+      actualizarContador();
+      actualizarColoresFila(e.target);
+    }
+  });
 });
 
 function abrirModalComponentes(boton) {
-    const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
-    
-    // Obtener los valores de los atributos data
-    // Intentar obtener de diferentes formas por compatibilidad
-    const ticketId = boton.dataset.idTicket || boton.getAttribute('data-id-ticket') || boton.getAttribute('data-idTicket');
-    const serialPos = boton.dataset.serialPos || boton.getAttribute('data-serial-pos') || boton.getAttribute('data-serialPos');
+  const modalCerrarComponnets = document.getElementById('BotonCerrarModal');
 
-    // Validar ticketId
-    if (!ticketId || ticketId === 'undefined' || ticketId === 'null' || ticketId === '' || ticketId === '0') {
-        console.error('Error: ticketId no válido', { ticketId, boton: boton });
-        Swal.fire({
-            title: 'Atención',
-            text: 'No se pudo obtener el ID del ticket. Por favor, verifique que el ticket esté seleccionado correctamente.',
-            icon: 'warning',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594',
-        });
-        return;
-    }
+  // Obtener los valores de los atributos data
+  // Intentar obtener de diferentes formas por compatibilidad
+  const ticketId = boton.dataset.idTicket || boton.getAttribute('data-id-ticket') || boton.getAttribute('data-idTicket');
+  const serialPos = boton.dataset.serialPos || boton.getAttribute('data-serial-pos') || boton.getAttribute('data-serialPos');
 
-    // Validar serialPos (puede ser opcional pero es mejor tenerlo)
-    if (!serialPos || serialPos === 'undefined' || serialPos === 'null') {
-        console.warn('Advertencia: serialPos no disponible', { serialPos, ticketId });
-        // No bloqueamos la ejecución si serialPos está vacío, pero lo notificamos
-    }
+  // Validar ticketId
+  if (!ticketId || ticketId === 'undefined' || ticketId === 'null' || ticketId === '' || ticketId === '0') {
+    console.error('Error: ticketId no válido', { ticketId, boton: boton });
+    Swal.fire({
+      title: 'Atención',
+      text: 'No se pudo obtener el ID del ticket. Por favor, verifique que el ticket esté seleccionado correctamente.',
+      icon: 'warning',
+      confirmButtonText: 'Ok',
+      color: 'black',
+      confirmButtonColor: '#003594',
+    });
+    return;
+  }
 
-    const regionName = obtenerRegionName();
+  // Validar serialPos (puede ser opcional pero es mejor tenerlo)
+  if (!serialPos || serialPos === 'undefined' || serialPos === 'null') {
+    console.warn('Advertencia: serialPos no disponible', { serialPos, ticketId });
+    // No bloqueamos la ejecución si serialPos está vacío, pero lo notificamos
+  }
 
-    if(modalCerrarComponnets){
-      modalCerrarComponnets.addEventListener('click', function() {
-        modalComponentes.hide();
-      });
-    }
-    
-    // Llamar a la función con el ticketId validado
-    showSelectComponentsModal(ticketId, regionName, serialPos || '');
+  const regionName = obtenerRegionName();
+
+  if (modalCerrarComponnets) {
+    modalCerrarComponnets.addEventListener('click', function () {
+      modalComponentes.hide();
+    });
+  }
+
+  // Llamar a la función con el ticketId validado
+  showSelectComponentsModal(ticketId, regionName, serialPos || '');
 }
 
 // Función auxiliar para determinar el tipo de documento
@@ -2290,119 +2290,119 @@ const confirmarRechazoModal = new bootstrap.Modal(document.getElementById('modal
 
 // Evento para el botón de confirmar la acción de rechazo dentro del modal
 document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', function () {
-    const ticketId = currentTicketIdForImage; // Usamos el ID del ticket actual
-    const nroticket = currentTicketNroForImage; // Usamos el número de ticket actual
-    const motivoId = motivoRechazoSelect.value; // Obtenemos el ID del motivo seleccionado
-    const id_user = document.getElementById('id_user').value; // Obtenemos el ID del usuario
-    const documentType = DocumentType; // Aquí usamos la variable global
+  const ticketId = currentTicketIdForImage; // Usamos el ID del ticket actual
+  const nroticket = currentTicketNroForImage; // Usamos el número de ticket actual
+  const motivoId = motivoRechazoSelect.value; // Obtenemos el ID del motivo seleccionado
+  const id_user = document.getElementById('id_user').value; // Obtenemos el ID del usuario
+  const documentType = DocumentType; // Aquí usamos la variable global
 
 
-    // Opcional: Cerrar el modal de confirmación mientras se procesa la solicitud
-    confirmarRechazoModal.hide();
+  // Opcional: Cerrar el modal de confirmación mientras se procesa la solicitud
+  confirmarRechazoModal.hide();
 
-    // Verificación final para asegurar que tenemos los datos necesarios
-    if (!ticketId || !motivoId || !nroticket || !id_user || !documentType) {
-        Swal.fire({
+  // Verificación final para asegurar que tenemos los datos necesarios
+  if (!ticketId || !motivoId || !nroticket || !id_user || !documentType) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Datos incompletos para el rechazo.',
+      confirmButtonColor: '#003594'
+    });
+    return;
+  }
+
+  const xhr = new XMLHttpRequest();
+  const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
+  xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          (function sendRejectionEmails() {
+            try {
+              const xhrEmail = new XMLHttpRequest();
+              xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
+              xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+              xhrEmail.onload = function () {
+                if (xhrEmail.status === 200) {
+                  try {
+                    const responseEmail = JSON.parse(xhrEmail.responseText);
+                    if (responseEmail.success) {
+                    } else {
+                      console.error('Error correo rechazo:', responseEmail.message);
+                    }
+                  } catch (e) {
+                    console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
+                  }
+                } else {
+                  console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
+                }
+              };
+
+              xhrEmail.onerror = function () {
+                console.error('Error de red al enviar correo de rechazo');
+              };
+              // Parámetros necesarios para PHP
+              const params = `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`
+
+              xhrEmail.send(params);
+            } catch (err) {
+              console.error('Fallo al disparar correo rechazo:', err);
+            }
+          })();
+          Swal.fire({
+            icon: 'success',
+            title: '¡Rechazado!',
+            text: response.message,
+            confirmButtonColor: '#003594',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            keydownListenerCapture: true,
+            color: 'black'
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'Datos incompletos para el rechazo.',
+            text: response.message,
             confirmButtonColor: '#003594'
-        });
-        return;
-    }
-
-    const xhr = new XMLHttpRequest();
-    const datos = `action=rechazarDocumento&ticketId=${encodeURIComponent(ticketId)}&motivoId=${encodeURIComponent(motivoId)}&nroTicket=${encodeURIComponent(nroticket)}&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`; // Ajusta los datos a tu script de backend
-    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/consulta/rechazarDocumento`); // Ajusta la URL a tu script de backend
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                     (function sendRejectionEmails() {
-                    try {
-                      const xhrEmail = new XMLHttpRequest();
-                      xhrEmail.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/email/send_reject_document`);
-                      xhrEmail.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-                      xhrEmail.onload = function () {
-                        if (xhrEmail.status === 200) {
-                          try {
-                            const responseEmail = JSON.parse(xhrEmail.responseText);
-                            if (responseEmail.success) {
-                            } else {
-                              console.error('Error correo rechazo:', responseEmail.message);
-                            }
-                          } catch (e) {
-                            console.error('Error parseando respuesta correo rechazo:', e, xhrEmail.responseText);
-                          }
-                        } else {
-                          console.error('Error HTTP correo rechazo:', xhrEmail.status, xhrEmail.responseText);
-                        }
-                      };
-
-                      xhrEmail.onerror = function () {
-                        console.error('Error de red al enviar correo de rechazo');
-                      };
-                      // Parámetros necesarios para PHP
-                      const params =  `action=send_reject_document&id_user=${encodeURIComponent(id_user)}&documentType=${encodeURIComponent(documentType)}`
-
-                      xhrEmail.send(params);
-                    } catch (err) {
-                      console.error('Fallo al disparar correo rechazo:', err);
-                    }
-                  })();
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Rechazado!',
-                        text: response.message,
-                        confirmButtonColor: '#003594',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        keydownListenerCapture: true,
-                        color: 'black'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message,
-                        confirmButtonColor: '#003594'
-                    });
-                }
-            } catch (error) {
-                console.error("Error parsing JSON:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Respuesta del servidor no válida.',
-                    confirmButtonColor: '#003594'
-                });
-            }
-        } else {
-            console.error("Error:", xhr.status, xhr.statusText);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error de conexión',
-                text: 'Hubo un problema al conectar con el servidor.',
-                confirmButtonColor: '#003594'
-            });
+          });
         }
-    };
-
-
-    xhr.onerror = function () {
-        console.error("Error de red");
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
         Swal.fire({
-            icon: 'error',
-            title: 'Error de red',
-            text: 'Verifique su conexión a internet.',
-            confirmButtonColor: '#003594'
+          icon: 'error',
+          title: 'Error',
+          text: 'Respuesta del servidor no válida.',
+          confirmButtonColor: '#003594'
         });
-    };
-    xhr.send(datos);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'Hubo un problema al conectar con el servidor.',
+        confirmButtonColor: '#003594'
+      });
+    }
+  };
+
+
+  xhr.onerror = function () {
+    console.error("Error de red");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de red',
+      text: 'Verifique su conexión a internet.',
+      confirmButtonColor: '#003594'
+    });
+  };
+  xhr.send(datos);
 });
