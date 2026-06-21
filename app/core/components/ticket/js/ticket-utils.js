@@ -1,5 +1,7 @@
 function formatTicketDetailsPanel(d) {
   // d es el objeto `data` completo del ticket o de la solicitud administrativa
+  const currentPath = window.location.pathname.toLowerCase();
+  const isAllowedPeripherals = currentPath.includes('tecnico') || currentPath.includes('asignar_tecnico');
 
   const initialImageUrl = "assets/img/loading-placeholder.png";
   const initialImageAlt = "Cargando imagen del dispositivo...";
@@ -217,7 +219,7 @@ function formatTicketDetailsPanel(d) {
                                 Cerrar Ticket
                             </button>
                         </div>
-                        <div class="col-sm-6 mb-2" style="display: ${(isTicketClosed || isAdminReq || d.name_accion_ticket === 'En espera de confirmar recibido en Región') ? 'none' : 'block'};">
+                        <div class="col-sm-6 mb-2" style="display: ${(isAllowedPeripherals && !(isTicketClosed || isAdminReq || d.name_accion_ticket === 'En espera de confirmar recibido en Región')) ? 'block' : 'none'};">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || d.id || ""}" data-serial-pos = "${d.serial_pos || ""}">
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>

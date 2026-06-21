@@ -1,78 +1,78 @@
 function getTicketDataGestionComercial() {
-  const id_user = document.getElementById("userId").value;
-  let activeFilter = 'btn-por-asignar'; // Variable para rastrear el filtro activo
+    const id_user = document.getElementById("userId").value;
+    let activeFilter = 'btn-por-asignar'; // Variable para rastrear el filtro activo
 
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataGestionComercial`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTicketDataGestionComercial`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
+    const tbody = document.getElementById("tabla-ticket").getElementsByTagName("tbody")[0];
 
-  // Read nro_ticket from URL query parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const nroTicket = urlParams.get('nro_ticket');
+    // Read nro_ticket from URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const nroTicket = urlParams.get('nro_ticket');
 
-  // Destruye DataTables si ya está inicializado
-  if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
-    $("#tabla-ticket").DataTable().destroy();
-    tbody.innerHTML = "";
-  }
+    // Destruye DataTables si ya está inicializado
+    if ($.fn.DataTable.isDataTable("#tabla-ticket")) {
+        $("#tabla-ticket").DataTable().destroy();
+        tbody.innerHTML = "";
+    }
 
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const TicketData = response.ticket_data;
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const TicketData = response.ticket_data;
 
-          // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente) según el filtro inicial
-          if (TicketData && TicketData.length > 0) {
-            const firstTicket = TicketData[0];
-            const statusId = activeFilter === 'btn-por-asignar' ? firstTicket.id_status_lab : firstTicket.id_status_domiciliacion;
-            showTicketStatusIndicator(firstTicket.id_status_ticket, statusId);
-          } else {
-            hideTicketStatusIndicator();
-          }
+                    // MOSTRAR EL ESTADO DEL PRIMER TICKET (o el más reciente) según el filtro inicial
+                    if (TicketData && TicketData.length > 0) {
+                        const firstTicket = TicketData[0];
+                        const statusId = activeFilter === 'btn-por-asignar' ? firstTicket.id_status_lab : firstTicket.id_status_domiciliacion;
+                        showTicketStatusIndicator(firstTicket.id_status_ticket, statusId);
+                    } else {
+                        hideTicketStatusIndicator();
+                    }
 
-          const modalElement = document.getElementById("staticBackdrop");
-          if (modalElement) {
-            modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
-              backdrop: "static",
-              keyboard: false,
-            });
+                    const modalElement = document.getElementById("staticBackdrop");
+                    if (modalElement) {
+                        modalInstanceCoordinator = new bootstrap.Modal(modalElement, {
+                            backdrop: "static",
+                            keyboard: false,
+                        });
 
-            const closebutton = document.getElementById("close-button");
-            const closeIcon = document.getElementById("Close-icon");
-            const SelectReg = document.getElementById("idSelectionTec");
-            const InputReg = document.getElementById("InputRegion");
+                        const closebutton = document.getElementById("close-button");
+                        const closeIcon = document.getElementById("Close-icon");
+                        const SelectReg = document.getElementById("idSelectionTec");
+                        const InputReg = document.getElementById("InputRegion");
 
-            if (closebutton && SelectReg && modalInstanceCoordinator) {
-              closebutton.addEventListener("click", function () {
-                modalInstanceCoordinator.hide();
-                InputReg.value = "";
-              });
-            }
+                        if (closebutton && SelectReg && modalInstanceCoordinator) {
+                            closebutton.addEventListener("click", function () {
+                                modalInstanceCoordinator.hide();
+                                InputReg.value = "";
+                            });
+                        }
 
-            if (closeIcon && SelectReg && modalInstanceCoordinator) {
-              closeIcon.addEventListener("click", function () {
-                modalInstanceCoordinator.hide();
-                InputReg.value = "";
-              });
-            }
-          } else {
-            console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
-          }
+                        if (closeIcon && SelectReg && modalInstanceCoordinator) {
+                            closeIcon.addEventListener("click", function () {
+                                modalInstanceCoordinator.hide();
+                                InputReg.value = "";
+                            });
+                        }
+                    } else {
+                        console.error("El elemento 'staticBackdrop' (modal de asignación) no fue encontrado en el DOM.");
+                    }
 
-          const detailsPanel = document.getElementById("ticket-details-panel");
-          detailsPanel.innerHTML = "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
+                    const detailsPanel = document.getElementById("ticket-details-panel");
+                    detailsPanel.innerHTML = "<p>Selecciona un ticket de la tabla para ver sus detalles aquí.</p>";
 
-          const dataForDataTable = [];
+                    const dataForDataTable = [];
 
-          TicketData.forEach((data) => {
-            let actionButtonsHtml = "";
-            currentTicketNroForImage = data.nro_ticket;
+                    TicketData.forEach((data) => {
+                        let actionButtonsHtml = "";
+                        currentTicketNroForImage = data.nro_ticket;
 
-            actionButtonsHtml += `
+                        actionButtonsHtml += `
               <button id="botonMostarImage" class="btn btn-sm btn-view-image" data-bs-toggle="modal" data-bs-target="#selectSolicitudModal" data-ticket-id="${data.id_ticket}" data-nro-ticket="${data.nro_ticket}" data-envio="${data.envio}" data-exoneracion="${data.exoneracion}" data-pago="${data.pago}" data-rechazado="${data.rechazado}" title="Visualizar Documentos">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-plus-fill" viewBox="0 0 16 16">
                     <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M8.5 7v1.5H10a.5.5 0 0 1 0 1H8.5V11a.5.5 0 0 1-1 0V9.5H6a.5.5 0 0 1 0-1h1.5V7a.5.5 0 0 1 1 0"/>
@@ -80,81 +80,81 @@ function getTicketDataGestionComercial() {
               </button>
             `;
 
-            dataForDataTable.push([
-              data.id_ticket,
-              data.nro_ticket,
-              data.rif,
-              data.serial_pos,
-              data.razonsocial_cliente,
-              data.name_accion_ticket,
-              data.name_status_lab,
-              data.name_status_domiciliacion,
-              data.full_name_tecnico_n2_actual,
-              actionButtonsHtml,
-              data.id_status_lab,
-              data.id_status_domiciliacion
-            ]);
-          });
+                        dataForDataTable.push([
+                            data.id_ticket,
+                            data.nro_ticket,
+                            data.rif,
+                            data.serial_pos,
+                            data.razonsocial_cliente,
+                            data.name_accion_ticket,
+                            data.name_status_lab,
+                            data.name_status_domiciliacion,
+                            data.full_name_tecnico_n2_actual,
+                            actionButtonsHtml,
+                            data.id_status_lab,
+                            data.id_status_domiciliacion
+                        ]);
+                    });
 
-          const dataTableInstance = $("#tabla-ticket").DataTable({
-            data: dataForDataTable,
-            scrollX: "200px",
-            responsive: false,
-            pagingType: "simple_numbers",
-            lengthMenu: [[5, 10], ["5", "10"]],
-            autoWidth: true,
-            autoheight: true,
-            columns: [
-              {
-                title: "N°",
-                orderable: false,
-                searchable: false,
-                render: function (data, type, row, meta) {
-                  return meta.row + meta.settings._iDisplayStart + 1;
-                },
-              },
-              { title: "Nro Ticket" },
-              { title: "Rif" },
-              { title: "Serial POS" },
-              {
-                title: "Razón Social",
-                render: function (data, type, row) {
-                  if (type === "display") {
-                    return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
-                  }
-                  return data;
-                },
-              },
-              { title: "Acción Ticket" },
-              { title: "Estatus Taller" },
-              { title: "Estatus Domiciliación" },
-              { title: "Técnico Asignado", visible: false },
-              { title: "Acciones", orderable: false },
-              { title: "ID Estatus Taller", visible: false },
-              { title: "ID Estatus Domiciliación", visible: false }
-            ],
-            language: {
-              lengthMenu: "Mostrar _MENU_ Registros",
-              emptyTable: "No hay datos disponibles en la tabla",
-              zeroRecords: "No se encontraron resultados para la búsqueda",
-              info: "_TOTAL_ Registros",
-              infoEmpty: "No hay datos disponibles",
-              infoFiltered: " de _MAX_ Disponibles",
-              search: "Buscar:",
-              loadingRecords: "Cargando...",
-              processing: "Procesando...",
-              paginate: {
-                first: "Primero",
-                last: "Último",
-                next: "Siguiente",
-                previous: "Anterior",
-              },
-            },
-            dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
-            initComplete: function (settings, json) {
-              const api = this.api();
+                    const dataTableInstance = $("#tabla-ticket").DataTable({
+                        data: dataForDataTable,
+                        scrollX: "200px",
+                        responsive: false,
+                        pagingType: "simple_numbers",
+                        lengthMenu: [[5, 10], ["5", "10"]],
+                        autoWidth: true,
+                        autoheight: true,
+                        columns: [
+                            {
+                                title: "N°",
+                                orderable: false,
+                                searchable: false,
+                                render: function (data, type, row, meta) {
+                                    return meta.row + meta.settings._iDisplayStart + 1;
+                                },
+                            },
+                            { title: "Nro Ticket" },
+                            { title: "Rif" },
+                            { title: "Serial POS" },
+                            {
+                                title: "Razón Social",
+                                render: function (data, type, row) {
+                                    if (type === "display") {
+                                        return `<span class="truncated-cell" data-full-text="${data}">${data}</span>`;
+                                    }
+                                    return data;
+                                },
+                            },
+                            { title: "Acción Ticket" },
+                            { title: "Estatus Taller" },
+                            { title: "Estatus Domiciliación" },
+                            { title: "Técnico Asignado", visible: false },
+                            { title: "Acciones", orderable: false },
+                            { title: "ID Estatus Taller", visible: false },
+                            { title: "ID Estatus Domiciliación", visible: false }
+                        ],
+                        language: {
+                            lengthMenu: "Mostrar _MENU_ Registros",
+                            emptyTable: "No hay datos disponibles en la tabla",
+                            zeroRecords: "No se encontraron resultados para la búsqueda",
+                            info: "_TOTAL_ Registros",
+                            infoEmpty: "No hay datos disponibles",
+                            infoFiltered: " de _MAX_ Disponibles",
+                            search: "Buscar:",
+                            loadingRecords: "Cargando...",
+                            processing: "Procesando...",
+                            paginate: {
+                                first: "Primero",
+                                last: "Último",
+                                next: "Siguiente",
+                                previous: "Anterior",
+                            },
+                        },
+                        dom: '<"top d-flex justify-content-between align-items-center"l<"dt-buttons-container">f>rt<"bottom"ip><"clear">',
+                        initComplete: function (settings, json) {
+                            const api = this.api();
 
-              const buttonsHtml = `
+                            const buttonsHtml = `
                 <button id="btn-por-asignar" class="btn btn-primary me-2" title="Gestión Comercial Taller">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-plus-fill" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M2 15.5V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.74.439L8 13.069l-5.26 2.87A.5.5 0 0 1 2 15.5m6.5-11a.5.5 0 0 0-1 0V6H6a.5.5 0 0 0 0 1h1.5v1.5a.5.5 0 0 0 1 0V7H10a.5.5 0 0 0 0-1H8.5z"/>
@@ -167,72 +167,72 @@ function getTicketDataGestionComercial() {
                   </svg>
                 </button>
               `;
-              $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
+                            $(".dt-buttons-container").addClass("d-flex").html(buttonsHtml);
 
-              function setActiveButton(activeButtonId) {
-                $("#btn-por-asignar, #btn-recibidos")
-                  .removeClass("btn-primary").addClass("btn-secondary");
-                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
-                activeFilter = activeButtonId;
-                $("#tabla-ticket tbody tr").removeClass("table-active");
-              }
+                            function setActiveButton(activeButtonId) {
+                                $("#btn-por-asignar, #btn-recibidos")
+                                    .removeClass("btn-primary").addClass("btn-secondary");
+                                $(`#${activeButtonId}`).removeClass("btn-secondary").addClass("btn-primary");
+                                activeFilter = activeButtonId;
+                                $("#tabla-ticket tbody tr").removeClass("table-active");
+                            }
 
-              function checkDataExists(searchTerm, columnIndex) {
-                api.columns().search('').draw(false);
-                api.column(columnIndex).search(searchTerm, true, false).draw();
-                const rowCount = api.rows({ filter: 'applied' }).count();
-                return rowCount > 0;
-              }
+                            function checkDataExists(searchTerm, columnIndex) {
+                                api.columns().search('').draw(false);
+                                api.column(columnIndex).search(searchTerm, true, false).draw();
+                                const rowCount = api.rows({ filter: 'applied' }).count();
+                                return rowCount > 0;
+                            }
 
-              function findFirstButtonWithData() {
-                const searchTerms = [
-                  { button: "btn-por-asignar", term: "^(7|4)$", status: 1, action: [7, 4], column: 10 },
-                  { button: "btn-recibidos", term: "^3$", status: 1, action: 3, column: 11 }
-                ];
+                            function findFirstButtonWithData() {
+                                const searchTerms = [
+                                    { button: "btn-por-asignar", term: "^(7|4)$", status: 1, action: [7, 4], column: 10 },
+                                    { button: "btn-recibidos", term: "^3$", status: 1, action: 3, column: 11 }
+                                ];
 
-                for (const { button, term, status, action, column } of searchTerms) {
-                  if (checkDataExists(term, column)) {
-                    api.columns().search('').draw(false);
-                    api.column(column).search(term, true, false).draw();
-                    setActiveButton(button);
-                    const firstTicket = TicketData[0];
-                    const statusId = button === 'btn-por-asignar' ? firstTicket.id_status_lab : firstTicket.id_status_domiciliacion;
-                    showTicketStatusIndicator(firstTicket.id_status_ticket, statusId);
-                    if (nroTicket) {
-                      api.search(nroTicket).draw(false);
-                      api.rows().every(function () {
-                        const rowData = this.data();
-                        if (rowData[1] === nroTicket) {
-                          $(this.node()).addClass('table-active');
-                          this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          const selectedTicket = TicketData.find(t => t.nro_ticket === nroTicket);
-                          if (selectedTicket) {
-                            onTicketSelect(selectedTicket);
-                          }
-                        } else {
-                          $(this.node()).removeClass('table-active');
-                        }
-                      });
-                      if (api.rows({ filter: 'applied' }).count() === 0) {
-                        Swal.fire({
-                          icon: 'warning',
-                          title: 'Ticket no encontrado',
-                          text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
-                          confirmButtonText: 'Ok',
-                          color: 'black',
-                          confirmButtonColor: '#003594'
-                        });
-                        api.search('').draw(false);
-                      }
-                    }
-                    return true;
-                  }
-                }
+                                for (const { button, term, status, action, column } of searchTerms) {
+                                    if (checkDataExists(term, column)) {
+                                        api.columns().search('').draw(false);
+                                        api.column(column).search(term, true, false).draw();
+                                        setActiveButton(button);
+                                        const firstTicket = TicketData[0];
+                                        const statusId = button === 'btn-por-asignar' ? firstTicket.id_status_lab : firstTicket.id_status_domiciliacion;
+                                        showTicketStatusIndicator(firstTicket.id_status_ticket, statusId);
+                                        if (nroTicket) {
+                                            api.search(nroTicket).draw(false);
+                                            api.rows().every(function () {
+                                                const rowData = this.data();
+                                                if (rowData[1] === nroTicket) {
+                                                    $(this.node()).addClass('table-active');
+                                                    this.node().scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                    const selectedTicket = TicketData.find(t => t.nro_ticket === nroTicket);
+                                                    if (selectedTicket) {
+                                                        onTicketSelect(selectedTicket);
+                                                    }
+                                                } else {
+                                                    $(this.node()).removeClass('table-active');
+                                                }
+                                            });
+                                            if (api.rows({ filter: 'applied' }).count() === 0) {
+                                                Swal.fire({
+                                                    icon: 'warning',
+                                                    title: 'Ticket no encontrado',
+                                                    text: `El ticket ${nroTicket} no se encuentra en este filtro.`,
+                                                    confirmButtonText: 'Ok',
+                                                    color: 'black',
+                                                    confirmButtonColor: '#003594'
+                                                });
+                                                api.search('').draw(false);
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                }
 
-                api.columns().search('').draw(false);
-                setActiveButton("btn-por-asignar");
-                showTicketStatusIndicator(3, null);
-                tbody.innerHTML = `
+                                api.columns().search('').draw(false);
+                                setActiveButton("btn-por-asignar");
+                                showTicketStatusIndicator(3, null);
+                                tbody.innerHTML = `
                   <tr>
                     <td colspan="14" class="text-center text-muted py-5">
                       <div class="d-flex flex-column align-items-center">
@@ -244,140 +244,140 @@ function getTicketDataGestionComercial() {
                       </div>
                     </td>
                   </tr>`;
-                return false;
-              }
+                                return false;
+                            }
 
-              findFirstButtonWithData();
+                            findFirstButtonWithData();
 
-              $("#btn-por-asignar").on("click", function () {
-                const searchTerm = "^(7|4)$";
-                if (checkDataExists(searchTerm, 10)) {
-                  api.columns().search('').draw(false);
-                  api.column(10).search(searchTerm, true, false).draw();
-                  setActiveButton("btn-por-asignar");
-                  if (TicketData.length > 0) {
-                    const firstTicket = TicketData[0];
-                    showTicketStatusIndicator(firstTicket.id_status_ticket, firstTicket.id_status_lab);
-                  }
-                  if (nroTicket) api.search(nroTicket).draw(false);
+                            $("#btn-por-asignar").on("click", function () {
+                                const searchTerm = "^(7|4)$";
+                                if (checkDataExists(searchTerm, 10)) {
+                                    api.columns().search('').draw(false);
+                                    api.column(10).search(searchTerm, true, false).draw();
+                                    setActiveButton("btn-por-asignar");
+                                    if (TicketData.length > 0) {
+                                        const firstTicket = TicketData[0];
+                                        showTicketStatusIndicator(firstTicket.id_status_ticket, firstTicket.id_status_lab);
+                                    }
+                                    if (nroTicket) api.search(nroTicket).draw(false);
+                                } else {
+                                    findFirstButtonWithData();
+                                }
+                            });
+
+                            $("#btn-recibidos").on("click", function () {
+                                const searchTerm = "^3$";
+                                if (checkDataExists(searchTerm, 11)) {
+                                    api.columns().search('').draw(false);
+                                    api.column(11).search(searchTerm, true, false).draw();
+                                    setActiveButton("btn-recibidos");
+                                    if (TicketData.length > 0) {
+                                        const firstTicket = TicketData[0];
+                                        showTicketStatusIndicator(firstTicket.id_status_ticket, firstTicket.id_status_domiciliacion);
+                                    }
+                                    if (nroTicket) api.search(nroTicket).draw(false);
+                                } else {
+                                    findFirstButtonWithData();
+                                }
+                            });
+                        },
+                    });
+
+                    $("#tabla-ticket").resizableColumns();
+
+                    $("#tabla-ticket tbody")
+                        .off("click", "tr")
+                        .on("click", "tr", function (e) {
+                            // Verificar si el clic fue en un botón, enlace o input
+                            const clickedElement = $(e.target);
+                            const isButton = clickedElement.is('button') ||
+                                clickedElement.closest('button').length > 0 ||
+                                clickedElement.is('a') ||
+                                clickedElement.closest('a').length > 0 ||
+                                clickedElement.is('input') ||
+                                clickedElement.closest('input').length > 0 ||
+                                clickedElement.hasClass('truncated-cell') ||
+                                clickedElement.hasClass('expanded-cell');
+
+                            // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
+                            if (isButton) {
+                                return; // No hacer nada, dejar que el botón maneje su propio evento
+                            }
+
+                            // Solo ocultar overlay si el clic fue directamente en la fila
+                            // 1. Matamos cualquier otro handler (por si acaso)
+                            e.stopPropagation();
+
+                            // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
+                            $('#loadingOverlay').removeClass('show').hide();
+
+                            // 3. Si el script usa opacity o visibility, también lo matamos
+                            $('#loadingOverlay').css({
+                                'display': 'none',
+                                'opacity': '0',
+                                'visibility': 'hidden'
+                            });
+
+                            // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
+                            setTimeout(() => {
+                                $('#loadingOverlay').hide();
+                            }, 50);
+
+                            const tr = $(this);
+                            const rowData = dataTableInstance.row(tr).data();
+                            if (!rowData) return;
+                            $("#tabla-ticket tbody tr").removeClass("table-active");
+                            tr.addClass("table-active");
+                            const ticketId = rowData[0];
+                            const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
+                            if (selectedTicketDetails) {
+                                detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
+                                loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
+                                if (selectedTicketDetails.serial_pos) {
+                                    downloadImageModal(selectedTicketDetails.serial_pos);
+                                } else {
+                                    const imgElement = document.getElementById("device-ticket-image");
+                                    if (imgElement) {
+                                        imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
+                                        imgElement.alt = "Serial no disponible";
+                                    }
+                                }
+                                const statusId = activeFilter === 'btn-por-asignar' ? selectedTicketDetails.id_status_lab : selectedTicketDetails.id_status_domiciliacion;
+                                showTicketStatusIndicator(selectedTicketDetails.id_status_ticket, statusId);
+                            } else {
+                                detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+                                hideTicketStatusIndicator();
+                            }
+                        });
+
+                    // Evento para el botón botonMostarImage
+                    $("#tabla-ticket tbody").off("click", ".btn-view-image").on("click", ".btn-view-image", function (e) {
+                        e.stopPropagation();
+                        const ticketId = $(this).data("ticket-id");
+                        const nroTicket = $(this).data("nro-ticket");
+                        const envio = $(this).data("envio");
+                        const exoneracion = $(this).data("exoneracion");
+                        const pago = $(this).data("pago");
+                        const rechazado = $(this).data("rechazado");
+
+                        // Configurar el modal con los datos del ticket
+                        const modal = new bootstrap.Modal(document.getElementById('selectSolicitudModal'));
+                        document.getElementById('selectSolicitudModalLabel').textContent = `Selecciona solicitud para Ticket #${nroTicket}`;
+                        modal.show();
+                    });
                 } else {
-                  findFirstButtonWithData();
+                    hideTicketStatusIndicator();
+                    tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
+                    console.error("Error:", response.message);
                 }
-              });
-
-              $("#btn-recibidos").on("click", function () {
-                const searchTerm = "^3$";
-                if (checkDataExists(searchTerm, 11)) {
-                  api.columns().search('').draw(false);
-                  api.column(11).search(searchTerm, true, false).draw();
-                  setActiveButton("btn-recibidos");
-                  if (TicketData.length > 0) {
-                    const firstTicket = TicketData[0];
-                    showTicketStatusIndicator(firstTicket.id_status_ticket, firstTicket.id_status_domiciliacion);
-                  }
-                  if (nroTicket) api.search(nroTicket).draw(false);
-                } else {
-                  findFirstButtonWithData();
-                }
-              });
-            },
-          });
-
-          $("#tabla-ticket").resizableColumns();
-
-          $("#tabla-ticket tbody")
-            .off("click", "tr")
-            .on("click", "tr", function (e) {
-              // Verificar si el clic fue en un botón, enlace o input
-              const clickedElement = $(e.target);
-              const isButton = clickedElement.is('button') || 
-                              clickedElement.closest('button').length > 0 ||
-                              clickedElement.is('a') || 
-                              clickedElement.closest('a').length > 0 ||
-                              clickedElement.is('input') || 
-                              clickedElement.closest('input').length > 0 ||
-                              clickedElement.hasClass('truncated-cell') ||
-                              clickedElement.hasClass('expanded-cell');
-              
-              // Si el clic fue en un botón/enlace, permitir que el evento continúe normalmente
-              if (isButton) {
-                  return; // No hacer nada, dejar que el botón maneje su propio evento
-              }
-              
-              // Solo ocultar overlay si el clic fue directamente en la fila
-              // 1. Matamos cualquier otro handler (por si acaso)
-              e.stopPropagation();
-              
-              // 2. FORZAMOS que el overlay esté oculto, aunque otro script lo muestre
-              $('#loadingOverlay').removeClass('show').hide();
-              
-              // 3. Si el script usa opacity o visibility, también lo matamos
-              $('#loadingOverlay').css({
-                  'display': 'none',
-                  'opacity': '0',
-                  'visibility': 'hidden'
-              });
-              
-              // Pequeño timeout por si el otro script lo muestra después (raro, pero pasa)
-              setTimeout(() => {
-                  $('#loadingOverlay').hide();
-              }, 50);
-                
-              const tr = $(this);
-              const rowData = dataTableInstance.row(tr).data();
-              if (!rowData) return;
-              $("#tabla-ticket tbody tr").removeClass("table-active");
-              tr.addClass("table-active");
-              const ticketId = rowData[0];
-              const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
-              if (selectedTicketDetails) {
-                detailsPanel.innerHTML = formatTicketDetailsPanel(selectedTicketDetails);
-                loadTicketHistory(ticketId, selectedTicketDetails.nro_ticket, selectedTicketDetails.serial_pos || '');
-                if (selectedTicketDetails.serial_pos) {
-                  downloadImageModal(selectedTicketDetails.serial_pos);
-                } else {
-                  const imgElement = document.getElementById("device-ticket-image");
-                  if (imgElement) {
-                    imgElement.src = '/public/img/consulta_rif/POS/mantainment.png';
-                    imgElement.alt = "Serial no disponible";
-                  }
-                }
-                const statusId = activeFilter === 'btn-por-asignar' ? selectedTicketDetails.id_status_lab : selectedTicketDetails.id_status_domiciliacion;
-                showTicketStatusIndicator(selectedTicketDetails.id_status_ticket, statusId);
-              } else {
-                detailsPanel.innerHTML = "<p>No se encontraron detalles para este ticket.</p>";
+            } catch (error) {
                 hideTicketStatusIndicator();
-              }
-            });
-
-          // Evento para el botón botonMostarImage
-          $("#tabla-ticket tbody").off("click", ".btn-view-image").on("click", ".btn-view-image", function (e) {
-            e.stopPropagation();
-            const ticketId = $(this).data("ticket-id");
-            const nroTicket = $(this).data("nro-ticket");
-            const envio = $(this).data("envio");
-            const exoneracion = $(this).data("exoneracion");
-            const pago = $(this).data("pago");
-            const rechazado = $(this).data("rechazado");
-
-            // Configurar el modal con los datos del ticket
-            const modal = new bootstrap.Modal(document.getElementById('selectSolicitudModal'));
-            document.getElementById('selectSolicitudModalLabel').textContent = `Selecciona solicitud para Ticket #${nroTicket}`;
-            modal.show();
-          });
-        } else {
-          hideTicketStatusIndicator();
-          tbody.innerHTML = '<tr><td>Error al cargar</td></tr>';
-          console.error("Error:", response.message);
-        }
-      } catch (error) {
-        hideTicketStatusIndicator();
-        tbody.innerHTML = '<tr><td>Error al procesar la respuesta</td></tr>';
-        console.error("Error parsing JSON:", error);
-      }
-    } else if (xhr.status === 404) {
-      hideTicketStatusIndicator();
-      tbody.innerHTML = `
+                tbody.innerHTML = '<tr><td>Error al procesar la respuesta</td></tr>';
+                console.error("Error parsing JSON:", error);
+            }
+        } else if (xhr.status === 404) {
+            hideTicketStatusIndicator();
+            tbody.innerHTML = `
         <tr>
           <td colspan="14" class="text-center text-muted py-5">
             <div class="d-flex flex-column align-items-center">
@@ -389,65 +389,65 @@ function getTicketDataGestionComercial() {
             </div>
           </td>
         </tr>`;
-    } else {
-      tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
-      console.error("Error:", xhr.status, xhr.statusText);
-    }
-  };
+        } else {
+            tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
+            console.error("Error:", xhr.status, xhr.statusText);
+        }
+    };
 
-  xhr.onerror = function () {
-    hideTicketStatusIndicator();
-    tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
-    console.error("Error de red");
-  };
-  const datos = `action=GetTicketDataGestionComercial&id_user=${encodeURIComponent(id_user)}`;
-  xhr.send(datos);
+    xhr.onerror = function () {
+        hideTicketStatusIndicator();
+        tbody.innerHTML = '<tr><td>Error de conexión</td></tr>';
+        console.error("Error de red");
+    };
+    const datos = `action=GetTicketDataGestionComercial&id_user=${encodeURIComponent(id_user)}`;
+    xhr.send(datos);
 }
 
 // Función para determinar el estado visual del ticket basada en IDs
 function getTicketStatusVisual(statusTicketId, statusSpecificId) {
-  let statusClass = '';
-  let statusText = '';
-  let statusIcon = '';
+    let statusClass = '';
+    let statusText = '';
+    let statusIcon = '';
 
-  // Usar statusTicketId como base principal
-  if (statusTicketId === "1") {
-    statusClass = 'status-open';
-    statusText = 'ABIERTO';
-    statusIcon = '🟢';
-  } else if (statusTicketId === "2") {
-    statusClass = 'status-process';
-    statusText = 'EN PROCESO';
-    statusIcon = '🟡';
-  } else if (statusTicketId === "3") {
-    statusClass = 'status-closed';
-    statusText = 'CERRADO';
-    statusIcon = '🔴';
-  } else {
-    statusClass = 'status-open'; // Fallback por defecto
-    statusText = 'ABIERTO';
-    statusIcon = '🟢';
-  }
+    // Usar statusTicketId como base principal
+    if (statusTicketId === "1") {
+        statusClass = 'status-open';
+        statusText = 'ABIERTO';
+        statusIcon = '🟢';
+    } else if (statusTicketId === "2") {
+        statusClass = 'status-process';
+        statusText = 'EN PROCESO';
+        statusIcon = '🟡';
+    } else if (statusTicketId === "3") {
+        statusClass = 'status-closed';
+        statusText = 'CERRADO';
+        statusIcon = '🔴';
+    } else {
+        statusClass = 'status-open'; // Fallback por defecto
+        statusText = 'ABIERTO';
+        statusIcon = '🟢';
+    }
 
-  // Sobrescribir solo si statusSpecificId indica un estado específico (4, 7, 3)
-  if (statusSpecificId !== null && statusSpecificId !== undefined && [4, 7, 3].includes(statusSpecificId)) {
-    statusClass = 'status-open';
-    statusText = 'ABIERTO';
-    statusIcon = '🟢';
-  }
-  return { statusClass, statusText, statusIcon };
+    // Sobrescribir solo si statusSpecificId indica un estado específico (4, 7, 3)
+    if (statusSpecificId !== null && statusSpecificId !== undefined && [4, 7, 3].includes(statusSpecificId)) {
+        statusClass = 'status-open';
+        statusText = 'ABIERTO';
+        statusIcon = '🟢';
+    }
+    return { statusClass, statusText, statusIcon };
 }
 
 function showTicketStatusIndicator(statusTicketId, statusSpecificId) {
-  const container = document.getElementById('ticket-status-indicator-container');
-  if (!container) {
-    console.error('Contenedor ticket-status-indicator-container no encontrado');
-    return;
-  }
-  
-  const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicketId, statusSpecificId);
-  
-  container.innerHTML = `
+    const container = document.getElementById('ticket-status-indicator-container');
+    if (!container) {
+        console.error('Contenedor ticket-status-indicator-container no encontrado');
+        return;
+    }
+
+    const { statusClass, statusText, statusIcon } = getTicketStatusVisual(statusTicketId, statusSpecificId);
+
+    container.innerHTML = `
     <div class="ticket-status-indicator ${statusClass}">
       <div class="status-content">
         <span class="status-icon">${statusIcon}</span>
@@ -455,36 +455,38 @@ function showTicketStatusIndicator(statusTicketId, statusSpecificId) {
       </div>
     </div>
   `;
-  container.style.display = 'block'; // Asegura que el contenedor sea visible
+    container.style.display = 'block'; // Asegura que el contenedor sea visible
 }
 
 function hideTicketStatusIndicator() {
-  const container = document.getElementById('ticket-status-indicator-container');
-  if (container) {
-    container.innerHTML = '';
-    container.style.display = 'none'; // Oculta el contenedor si no hay datos
-  }
+    const container = document.getElementById('ticket-status-indicator-container');
+    if (container) {
+        container.innerHTML = '';
+        container.style.display = 'none'; // Oculta el contenedor si no hay datos
+    }
 }
 
 function formatTicketDetailsPanel(d) {
-  // d es el objeto `data` completo del ticket
-  // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
+    // d es el objeto `data` completo del ticket
+    // Ahora, 'd' también incluirá d.garantia_instalacion y d.garantia_reingreso
+    const currentPath = window.location.pathname.toLowerCase();
+    const isAllowedPeripherals = currentPath.includes('tecnico') || currentPath.includes('asignar_tecnico');
 
-  const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
-  const initialImageAlt = "Cargando imagen del dispositivo...";
+    const initialImageUrl = "assets/img/loading-placeholder.png"; // Asegúrate de tener esta imagen
+    const initialImageAlt = "Cargando imagen del dispositivo...";
 
-  // Determina el mensaje de garantía
-  let garantiaMessage = 'No aplica Garantía';
-  const idStatusPayment = d.id_status_payment ? parseInt(d.id_status_payment) : null;
-  
-  if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't' || d.garantia_instalacion === 1 || d.garantia_instalacion === '1') {
-    garantiaMessage = 'Aplica Garantía de Instalación';
-  } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't' || d.garantia_reingreso === 3 || d.garantia_reingreso === '3') {
-    garantiaMessage = 'Aplica Garantía por Reingreso';
-  }
+    // Determina el mensaje de garantía
+    let garantiaMessage = 'No aplica Garantía';
+    const idStatusPayment = d.id_status_payment ? parseInt(d.id_status_payment) : null;
+
+    if (idStatusPayment === 1 || d.garantia_instalacion === true || d.garantia_instalacion === 't' || d.garantia_instalacion === 1 || d.garantia_instalacion === '1') {
+        garantiaMessage = 'Aplica Garantía de Instalación';
+    } else if (idStatusPayment === 3 || d.garantia_reingreso === true || d.garantia_reingreso === 't' || d.garantia_reingreso === 3 || d.garantia_reingreso === '3') {
+        garantiaMessage = 'Aplica Garantía por Reingreso';
+    }
 
 
-  return `
+    return `
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
                 <div class="col-md-3 text-center">
@@ -536,7 +538,7 @@ function formatTicketDetailsPanel(d) {
                               <br><strong><div>Falla Reportada:</div></strong>
                              <span class="falla-reportada-texto">${d.name_failure}</span>
                         </div>
-                        <div class="col-sm-6 mb-2">
+                        <div class="col-sm-6 mb-2" style="display: ${isAllowedPeripherals ? 'block' : 'none'};">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || ""}" data-serial-pos = "${d.serial_pos || ""}">
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
@@ -652,7 +654,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
             id_ticket: ticketId,
         },
         dataType: "json",
-        success: function(response) {
+        success: function (response) {
             if (response.success && response.history && response.history.length > 0) {
                 let historyHtml = `
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -750,7 +752,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const getChange = (itemVal, prevVal) => (cleanString(itemVal) !== cleanString(prevVal));
 
                     const isCreation = cleanString(item.name_accion_ticket) === 'Ticket Creado';
-                    const creationBadge = isCreation && item.fecha_de_cambio ? 
+                    const creationBadge = isCreation && item.fecha_de_cambio ?
                         `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: help; background-color: #17a2b8 !important; color: white !important;" title="Fecha de creación">${item.fecha_de_cambio}</span>` : '';
 
                     const accionChanged = getChange(item.name_accion_ticket, prevItem.name_accion_ticket);
@@ -760,7 +762,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     const statusLabChanged = getChange(item.name_status_lab, prevItem.name_status_lab);
                     const statusDomChanged = getChange(item.name_status_domiciliacion, prevItem.name_status_domiciliacion);
                     const statusPaymentChanged = getChange(item.name_status_payment, prevItem.name_status_payment);
-                    
+
                     // Calcular tiempos para Domiciliación
                     let durationFromPreviousText = '';
                     let durationFromCreationText = '';
@@ -772,7 +774,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 durationFromPreviousText = elapsedFromPrevious.text;
                             }
                         }
-                        
+
                         // Tiempo 2: Desde la creación del ticket
                         let ticketCreationDate = null;
                         const lastHistoryItem = response.history[response.history.length - 1];
@@ -788,7 +790,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 }
                             }
                         }
-                        
+
                         if (ticketCreationDate) {
                             const duration = calculateTimeElapsed(ticketCreationDate, item.fecha_de_cambio);
                             if (duration) {
@@ -796,13 +798,13 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             }
                         }
                     }
-                    
+
                     // Calcular tiempos para Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
                     let durationLabFromPreviousText = '';
                     let durationLabFromTallerText = '';
                     const currentAccionForLab = cleanString(item.name_accion_ticket);
                     const isEnElRosalForLab = currentAccionForLab && currentAccionForLab.toLowerCase().includes('en el rosal') && !currentAccionForLab.toLowerCase().includes('en espera de confirmar recibido');
-                    
+
                     if (isEnElRosalForLab) {
                         // Tiempo 1: Desde la gestión anterior (TG)
                         if (prevItem && prevItem.fecha_de_cambio) {
@@ -811,7 +813,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 durationLabFromPreviousText = elapsedFromPrevious.text;
                             }
                         }
-                        
+
                         // Tiempo 2: Sumar todos los tiempos de las gestiones marcadas en naranja (En Taller)
                         // Las gestiones naranjas son aquellas con estatus "En proceso de Reparación" o "Reparado"
                         // El historial está ordenado de más reciente (index 0) a más antiguo (último índice)
@@ -819,15 +821,15 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                         for (let i = index + 1; i < response.history.length; i++) {
                             const histItem = response.history[i];
                             const prevHistItem = response.history[i - 1] || null; // La gestión más reciente que esta
-                            
+
                             if (histItem && histItem.fecha_de_cambio && prevHistItem && prevHistItem.fecha_de_cambio) {
                                 const histStatusLab = cleanString(histItem.name_status_lab);
-                                const isReparacionStatus = histStatusLab && 
-                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') || 
-                                     histStatusLab.toLowerCase().includes('reparado'));
-                                const isRecibidoEnTaller = histStatusLab && 
+                                const isReparacionStatus = histStatusLab &&
+                                    (histStatusLab.toLowerCase().includes('en proceso de reparación') ||
+                                        histStatusLab.toLowerCase().includes('reparado'));
+                                const isRecibidoEnTaller = histStatusLab &&
                                     histStatusLab.toLowerCase().includes('recibido en taller');
-                                
+
                                 // Si es una gestión naranja (taller con reparación), sumar su tiempo
                                 // El tiempo es desde esta gestión hasta la siguiente más reciente
                                 if (isReparacionStatus && !isRecibidoEnTaller) {
@@ -838,7 +840,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                                 }
                             }
                         }
-                        
+
                         // Convertir el total de minutos a formato legible
                         if (totalTallerMinutes > 0) {
                             const totalHours = Math.floor(totalTallerMinutes / 60);
@@ -848,7 +850,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             const totalWeeks = Math.floor(totalDays / 7);
                             const remainingDaysAfterWeeks = totalDays % 7;
                             const totalMonths = Math.floor(totalDays / 30.44);
-                            
+
                             if (totalMonths > 0) {
                                 const remainingDaysAfterMonths = Math.floor(totalDays % 30.44);
                                 durationLabFromTallerText = `${totalMonths}M ${remainingDaysAfterMonths}D`;
@@ -863,7 +865,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             }
                         }
                     }
-                    
+
                     // Prioridad: Si la acción es "En el Rosal" (terminó la estadía en taller), mostrar TG y TT; si no, mostrar TG y TR si hay cambio de Domiciliación; si no, tiempo normal
                     if (isEnElRosalForLab && (durationLabFromPreviousText || durationLabFromTallerText)) {
                         let tgTtText = '';
@@ -913,11 +915,11 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                             timeBadge = `<span class="badge position-absolute" style="top: 8px; right: 8px; font-size: 0.75rem; z-index: 10; cursor: pointer; background-color: ${backgroundColor} !important; color: white !important; white-space: nowrap; overflow: visible;" title="Click para ver agenda" onclick="showElapsedLegend(event)">${timeElapsed.text}</span>`;
                         }
                     }
-                    
+
                     // Calcular duración del estatus de Taller (solo cuando la acción es "En el Rosal" - terminó la estadía en taller)
                     // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde "Recibido en Taller"
                     // Nota: durationLabFromPreviousText y durationLabFromTallerText ya se calcularon arriba para el badge (solo cuando es "En el Rosal")
-                    
+
                     // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
                     // Mostrar dos tiempos en columnas separadas: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
                     // Nota: durationFromPreviousText y durationFromCreationText ya se calcularon arriba para el badge
@@ -944,17 +946,17 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                     // Cambiar color del header si hay cambios en Estatus Taller o Domiciliación
                     let headerStyle = isLatest ? "background-color: #ffc107;" : "background-color: #5d9cec;";
                     let textColor = isLatest ? "color: #343a40;" : "color: #ffffff;";
-                    
+
                     // Si hay cambio en Estatus Taller, solo cambiar color en gestiones anteriores (no en la actual)
                     // La gestión actual ya es amarilla por defecto
                     // Solo aplicar color naranja cuando el estatus es "En proceso de Reparación" o "Reparado", no "Recibido en Taller"
                     const currentStatusLabForColor = cleanString(item.name_status_lab);
-                    const isReparacionStatus = currentStatusLabForColor && 
-                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') || 
-                         currentStatusLabForColor.toLowerCase().includes('reparado'));
-                    const isRecibidoEnTaller = currentStatusLabForColor && 
+                    const isReparacionStatus = currentStatusLabForColor &&
+                        (currentStatusLabForColor.toLowerCase().includes('en proceso de reparación') ||
+                            currentStatusLabForColor.toLowerCase().includes('reparado'));
+                    const isRecibidoEnTaller = currentStatusLabForColor &&
                         currentStatusLabForColor.toLowerCase().includes('recibido en taller');
-                    
+
                     if (statusLabChanged && !isLatest && isReparacionStatus && !isRecibidoEnTaller) {
                         headerStyle = "background-color: #fd7e14;"; // Naranja para cambios de Taller en gestiones anteriores
                         textColor = "color: #ffffff;";
@@ -1134,7 +1136,7 @@ function loadTicketHistory(ticketId, currentTicketNroForImage, serialPos = '') {
                 historyPanel.html('<p class="text-center text-muted">No hay historial disponible para este ticket.</p>');
             }
         },
-        error: function(jqXHR, textStatus, errorThrown) {
+        error: function (jqXHR, textStatus, errorThrown) {
             console.error("Error completo de AJAX:", { jqXHR, textStatus, errorThrown });
             let errorMessage = '<p class="text-center text-danger">Error al cargar el historial.</p>';
             if (jqXHR.status === 0) {
@@ -1244,7 +1246,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         const previous = history[index + 1] || null;
         const elapsed = previous ? calculateTimeElapsed(previous.fecha_de_cambio, item.fecha_de_cambio) : null;
         const elapsedText = elapsed ? elapsed.text : 'N/A';
-        
+
         // Calcular duración del estatus de Taller
         // Calcular duración del estatus de Taller
         // Solo mostrar duración cuando la acción es "En el Rosal" (terminó la estadía en el taller)
@@ -1252,16 +1254,16 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
         let statusLabDuration = '';
         const currentAccion = cleanString(item.name_accion_ticket);
         const currentStatusLab = cleanString(item.name_status_lab);
-        
+
         // Solo calcular y mostrar duración cuando la acción es exactamente "En el Rosal" (no "En espera de confirmar recibido en el Rosal")
-        if (currentAccion && currentAccion.toLowerCase().includes('en el rosal') && 
+        if (currentAccion && currentAccion.toLowerCase().includes('en el rosal') &&
             !currentAccion.toLowerCase().includes('en espera de confirmar recibido')) {
             // Buscar la fecha cuando entró al taller (primer "Recibido en Taller")
             let fechaEntradaTaller = null;
-            
+
             // El historial está ordenado de más reciente a más antiguo (índice 0 = más reciente)
             // Buscar desde el índice actual hacia adelante (más antiguo) para encontrar cuando entró al taller
-                    for (let i = index + 1; i < history.length; i++) {
+            for (let i = index + 1; i < history.length; i++) {
                 const histItem = history[i];
                 if (histItem && histItem.fecha_de_cambio) {
                     const statusLab = cleanString(histItem.name_status_lab);
@@ -1271,7 +1273,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     }
                 }
             }
-            
+
             // Si no encontramos "Recibido en Taller", buscar desde el final del historial
             if (!fechaEntradaTaller) {
                 for (let i = history.length - 1; i > index; i--) {
@@ -1280,12 +1282,12 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         const statusLab = cleanString(histItem.name_status_lab);
                         if (statusLab && statusLab.toLowerCase().includes('recibido en taller')) {
                             fechaEntradaTaller = histItem.fecha_de_cambio;
-                                break;
-                            }
+                            break;
                         }
                     }
+                }
             }
-            
+
             // Buscar el último estatus de taller antes de "En el Rosal"
             let fechaSalidaTaller = null;
             // Buscar desde el índice actual hacia atrás (más reciente) para encontrar el último estatus de taller
@@ -1295,19 +1297,19 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                     const statusLab = cleanString(histItem.name_status_lab);
                     const accion = cleanString(histItem.name_accion_ticket);
                     // Si encontramos un estatus de taller y no es "En el Rosal", usar esa fecha
-                    if (statusLab && statusLab !== '' && statusLab !== 'N/A' && 
+                    if (statusLab && statusLab !== '' && statusLab !== 'N/A' &&
                         !accion.toLowerCase().includes('en el rosal')) {
                         fechaSalidaTaller = histItem.fecha_de_cambio;
                         break;
                     }
                 }
             }
-            
+
             // Si no encontramos fecha de salida, usar la fecha del item actual
             if (!fechaSalidaTaller) {
                 fechaSalidaTaller = item.fecha_de_cambio;
             }
-            
+
             // Calcular la duración desde "Recibido en Taller" hasta el estatus actual
             if (fechaEntradaTaller && fechaSalidaTaller) {
                 const duration = calculateTimeElapsed(fechaEntradaTaller, fechaSalidaTaller);
@@ -1316,7 +1318,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                 }
             }
         }
-        
+
         // Calcular duración del estatus de Domiciliación (solo cuando hay cambio)
         // Mostrar dos tiempos: 1) tiempo desde la gestión anterior, 2) tiempo total desde la creación del ticket
         let statusDomDuration = '';
@@ -1331,7 +1333,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         durationFromPrevious = elapsedFromPrevious.text;
                     }
                 }
-                
+
                 // Tiempo 2: Desde la creación del ticket
                 let ticketCreationDate = null;
                 const lastHistoryItem = history[history.length - 1];
@@ -1343,11 +1345,11 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         const histItem = history[i];
                         if (histItem && cleanString(histItem.name_accion_ticket) === 'Ticket Creado' && histItem.fecha_de_cambio) {
                             ticketCreationDate = histItem.fecha_de_cambio;
-                                break;
-                            }
+                            break;
                         }
                     }
-                
+                }
+
                 let durationFromCreation = '';
                 if (ticketCreationDate) {
                     // Calcular duración desde la creación del ticket hasta el cambio actual
@@ -1356,7 +1358,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         durationFromCreation = duration.text;
                     }
                 }
-                
+
                 // Construir el texto con ambos tiempos
                 if (durationFromPrevious && durationFromCreation) {
                     statusDomDuration = ` <span style="color: #6c757d; font-size: 0.75em;">(<strong>Tiempo en este cambio:</strong> ${durationFromPrevious} | <strong>Tiempo total:</strong> ${durationFromCreation})</span>`;
@@ -1389,12 +1391,12 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Técnico Asignado (N2)</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.full_name_tecnico_n2_history) || 'No Asignado'}</td></tr>
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_lab) || 'N/A'}</td></tr>
                         ${(() => {
-                            const currentAccion = cleanString(item.name_accion_ticket);
-                            const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
-                            return isEnElRosal && durationLabFromTallerText ? `
+                const currentAccion = cleanString(item.name_accion_ticket);
+                const isEnElRosal = currentAccion && currentAccion.toLowerCase().includes('en el rosal') && !currentAccion.toLowerCase().includes('en espera de confirmar recibido');
+                return isEnElRosal && durationLabFromTallerText ? `
                                 <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Total Duración en Taller</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${durationLabFromTallerText}</td></tr>
                             ` : '';
-                        })()}
+            })()}
                         <tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Estatus Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;">${cleanString(item.name_status_domiciliacion) || 'N/A'}</td></tr>
                         ${previous && getChange(item.name_status_domiciliacion, previous.name_status_domiciliacion) && cleanString(item.name_status_domiciliacion) ? `
                             ${durationFromCreationText ? `<tr><td style="padding:4px; border-bottom:1px solid #eee;"><strong>Tiempo Duración Revisión Domiciliación</strong></td><td style="padding:4px; border-bottom:1px solid #eee;"><strong>${durationFromCreationText}</strong></td></tr>` : ''}
@@ -1878,7 +1880,7 @@ function printHistory(ticketId, historyEncoded, currentTicketNroForImage, serial
 }
 
 function showElapsedLegend(e) {
-    try { if (e && e.stopPropagation) e.stopPropagation(); } catch (_) {}
+    try { if (e && e.stopPropagation) e.stopPropagation(); } catch (_) { }
     const legendHtml = `
         <div style="font-size: 0.95rem; text-align: left;">
             <div class="d-flex align-items-center mb-2"><span class="badge" style="background-color:#28a745; color:#fff; min-width:64px;">Verde</span><span class="ml-2">Menos de 1 hora</span></div>
@@ -1899,80 +1901,80 @@ function showElapsedLegend(e) {
     });
 }
 function downloadImageModal(serial) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
-  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetPhotoDashboard`);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  xhr.onload = function () {
-    if (xhr.status >= 200 && xhr.status < 300) {
-      try {
-        const response = JSON.parse(xhr.responseText);
-        if (response.success) {
-          const srcImagen = response.rutaImagen;
-          const claseImagen = response.claseImagen; // Obtener la clase CSS
-          const imgElement = document.getElementById("device-ticket-image");
-            if (imgElement) {
-            imgElement.src = srcImagen;
-            imgElement.className = claseImagen; // Aplicar la clase CSS
-          } else {
-            console.error("No se encontró el elemento img en el modal.");
-          }
-          if (imgElement) {
-            imgElement.src = rutaImagen;
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    const srcImagen = response.rutaImagen;
+                    const claseImagen = response.claseImagen; // Obtener la clase CSS
+                    const imgElement = document.getElementById("device-ticket-image");
+                    if (imgElement) {
+                        imgElement.src = srcImagen;
+                        imgElement.className = claseImagen; // Aplicar la clase CSS
+                    } else {
+                        console.error("No se encontró el elemento img en el modal.");
+                    }
+                    if (imgElement) {
+                        imgElement.src = rutaImagen;
                         imgElement.className = claseImagen; // Aplicar la clase CSS
 
-          } else {
-            console.error("No se encontró el elemento img en el modal.");
-          }
+                    } else {
+                        console.error("No se encontró el elemento img en el modal.");
+                    }
+                } else {
+                    console.error("Error al obtener la imagen:", response.message);
+                }
+            } catch (error) {
+                console.error("Error parsing JSON:", error);
+            }
         } else {
-          console.error("Error al obtener la imagen:", response.message);
+            console.error("Error:", xhr.status, xhr.statusText);
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
-    } else {
-      console.error("Error:", xhr.status, xhr.statusText);
-    }
-  };
+    };
 
-  xhr.onerror = function () {
-    console.error("Error de red");
-  };
+    xhr.onerror = function () {
+        console.error("Error de red");
+    };
 
-  const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
-  xhr.send(datos);
+    const datos = `action=GetPhotoDashboard&serial=${encodeURIComponent(serial)}`;
+    xhr.send(datos);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     getTicketDataGestionComercial();
 
     const confirmarSolicitudBtn = document.getElementById('confirmarSolicitud');
-  if (confirmarSolicitudBtn) {
-    confirmarSolicitudBtn.addEventListener('click', function () {
-      const selectedSolicitud = document.querySelector('input[name="solicitudType"]:checked');
-      if (selectedSolicitud) {
-        const solicitudType = selectedSolicitud.value;
-        const modal = bootstrap.Modal.getInstance(document.getElementById('selectSolicitudModal'));
-        modal.hide();
-        Swal.fire({
-          icon: 'success',
-          title: 'Solicitud seleccionada',
-          text: `Has seleccionado: ${solicitudType === 'sustituir' ? 'Sustituir POS' : solicitudType === 'desafiliar' ? 'Desafiliación POS' : 'Préstamo POS'}`,
-          confirmButtonText: 'Ok',
-          color: 'black',
-          confirmButtonColor: '#003594'
+    if (confirmarSolicitudBtn) {
+        confirmarSolicitudBtn.addEventListener('click', function () {
+            const selectedSolicitud = document.querySelector('input[name="solicitudType"]:checked');
+            if (selectedSolicitud) {
+                const solicitudType = selectedSolicitud.value;
+                const modal = bootstrap.Modal.getInstance(document.getElementById('selectSolicitudModal'));
+                modal.hide();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Solicitud seleccionada',
+                    text: `Has seleccionado: ${solicitudType === 'sustituir' ? 'Sustituir POS' : solicitudType === 'desafiliar' ? 'Desafiliación POS' : 'Préstamo POS'}`,
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+                // Aquí puedes añadir lógica adicional, como enviar la selección a un servidor
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selección requerida',
+                    text: 'Por favor, selecciona una opción.',
+                    confirmButtonText: 'Ok',
+                    color: 'black',
+                    confirmButtonColor: '#003594'
+                });
+            }
         });
-        // Aquí puedes añadir lógica adicional, como enviar la selección a un servidor
-      } else {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Selección requerida',
-          text: 'Por favor, selecciona una opción.',
-          confirmButtonText: 'Ok',
-          color: 'black',
-          confirmButtonColor: '#003594'
-        });
-      }
-    });
-  }
+    }
 });
