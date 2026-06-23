@@ -1262,9 +1262,7 @@ class Consulta extends Controller
             if ($id_status_payment_actual == 5 && $exoneracionOk) {
                 // Correos específicos para exoneración
                 $emails_admin = [
-                    'domiciliacion.intelipunto@inteligensa.com',
-                    'olga.rojas@intelipunto.com',
-                    'neishy.tupano@inteligensa.com'
+                    'olga.rojas@intelipunto.com'
                 ];
                 $name_admin = 'Administración';
                 
@@ -4169,6 +4167,65 @@ class Consulta extends Controller
                     ], 500);
                     return;
                 }
+            }
+
+            try {
+                $emailRepository = new \App\Repositories\EmailRepository();
+                $ticketData = $emailRepository->getdataticket_by_nroticket($nro_ticket);
+                if ($ticketData) {
+                    $cargado_por = 'Sistema';
+                    if ($id_user) {
+                        $uData = $emailRepository->GetEmailUserDataById($id_user);
+                        if ($uData && !empty($uData['full_name'])) {
+                            $cargado_por = $uData['full_name'];
+                        }
+                    }
+
+                    $emails_admin = [
+                        'olga.rojas@intelipunto.com'
+                    ];
+
+                    $embeddedImages = [];
+                    if (defined('FIRMA_CORREO')) {
+                        $embeddedImages['imagen_adjunta'] = FIRMA_CORREO;
+                    }
+
+                    require_once __DIR__ . '/../email/emailApi.php';
+                    $emailApi = new \App\Controllers\Api\email\email();
+
+                    $subject_admin = '📋 REGISTRO DE EXONERACIÓN DIRECTA - Ticket #' . $nro_ticket;
+                    foreach ($emails_admin as $email_admin) {
+                        $body_admin = $emailApi->getAdminEmailBodyForDirectExoneracion(
+                            'Administración',
+                            $ticketData['full_name_tecnico'] ?? 'N/A',
+                            $nro_ticket,
+                            $ticketData['rif'] ?? 'N/A',
+                            $ticketData['razonsocial'] ?? 'N/A',
+                            $serial_pos,
+                            $ticketData['id_level_failure'] ?? 'N/A',
+                            $ticketData['name_failure'] ?? 'N/A',
+                            date('Y-m-d H:i'),
+                            $ticketData['name_accion_ticket'] ?? 'N/A',
+                            $ticketData['name_status_ticket'] ?? 'N/A',
+                            $ticketData['name_status_payment'] ?? 'N/A',
+                            $ticketData['name_status_domiciliacion'] ?? 'N/A',
+                            $tipo_exoneracion,
+                            $porcentaje,
+                            $nro_exoneracion,
+                            $cargado_por
+                        );
+                        $email_sent = $this->emailService->sendEmail($email_admin, $subject_admin, $body_admin, [], $embeddedImages);
+                        if ($email_sent) {
+                            error_log("Correo de exoneracion directa enviado a: " . $email_admin);
+                        } else {
+                            error_log("Error al enviar correo de exoneracion directa a " . $email_admin . ": " . $this->emailService->getLastError());
+                        }
+                    }
+                } else {
+                    error_log("No se pudo obtener datos del ticket para enviar correo en SaveExoneracionDirect");
+                }
+            } catch (\Exception $e) {
+                error_log("Error al enviar correo en SaveExoneracionDirect: " . $e->getMessage());
             }
 
             $this->response([

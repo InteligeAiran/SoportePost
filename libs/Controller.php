@@ -128,10 +128,8 @@ class Controller {
       $url = rtrim($url, '/');
       $urlSegments = explode('/', $url);
       
-      // Construir la ruta en minúsculas (ej. api/users/access)
-      $route = implode('/', array_map('strtolower', $urlSegments));
-      
       // Excluir endpoints públicos o de login que no requieren token CSRF previo
+      $route = implode('/', array_map('strtolower', $urlSegments));
       $exemptions = [
         'api/users/access',
         'api/users/checkuser',
@@ -143,6 +141,18 @@ class Controller {
       
       if (in_array($route, $exemptions)) {
         return true;
+      }
+
+      // Si la acción (último segmento del URL) empieza por get, search, validate o check,
+      // se exime de la validación CSRF por tratarse de operaciones de lectura de datos.
+      $action = end($urlSegments);
+      if ($action) {
+        $actionLower = strtolower($action);
+        foreach (['get', 'search', 'validate', 'check'] as $prefix) {
+          if (strpos($actionLower, $prefix) === 0) {
+            return true;
+          }
+        }
       }
       
       // Buscar el token enviado en la cabecera HTTP o en los campos del cuerpo POST

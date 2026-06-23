@@ -5512,6 +5512,354 @@ HTML;
 HTML;
 }
 
+    public function getAdminEmailBodyForDirectExoneracion(
+        $nombre_area_admin,
+        $nombre_tecnico_ticket,
+        $ticketnro,
+        $clientRif,
+        $clientName,
+        $ticketserial,
+        $ticketNivelFalla,
+        $name_failure,
+        $ticketfinished,
+        $ticketaccion,
+        $ticketstatus,
+        $ticketpaymnet,
+        $ticketdomiciliacion,
+        $exoneracion_tipo,
+        $exoneracion_porcentaje,
+        $exoneracion_nro,
+        $cargado_por
+    ) {
+        $nivelValue = htmlspecialchars($ticketNivelFalla);
+        if (preg_match('/Nivel\s*(\d+)/i', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        } elseif (preg_match('/(\d+)/', $nivelValue, $matches)) {
+            $nivelValue = $matches[1];
+        }
+
+        $map = [
+            'ticket' => htmlspecialchars($ticketnro),
+            'rif' => htmlspecialchars($clientRif),
+            'razon' => htmlspecialchars($clientName),
+            'serial' => htmlspecialchars($ticketserial),
+            'falla' => htmlspecialchars($name_failure),
+            'nivel' => $nivelValue,
+            'fecha' => htmlspecialchars($ticketfinished),
+            'accion' => htmlspecialchars($ticketaccion),
+            'status' => htmlspecialchars($ticketstatus),
+            'pago' => htmlspecialchars($ticketpaymnet),
+            'domi' => htmlspecialchars($ticketdomiciliacion),
+            'area' => htmlspecialchars($nombre_area_admin),
+            'tecnico' => htmlspecialchars($nombre_tecnico_ticket),
+            'exo_tipo' => htmlspecialchars($exoneracion_tipo),
+            'exo_porcentaje' => htmlspecialchars($exoneracion_porcentaje),
+            'exo_nro' => htmlspecialchars($exoneracion_nro),
+            'cargado_por' => htmlspecialchars($cargado_por)
+        ];
+        $currentYear = date("Y");
+
+        $logoHtml = '';
+        if (defined('FIRMA_CORREO')) {
+            $logoHtml = '<div class="logo-container"><img src="cid:imagen_adjunta" alt="Logo InteliSoft" class="logo"></div>';
+        }
+
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificación Administrativa - Registro de Exoneración</title>
+    <style>
+body {
+    margin: 0;
+    padding: 30px 0;
+    background: #f8f9fa;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+.card {
+    background: #ffffff;
+    max-width: 650px;
+    margin: 0 auto;
+    border-radius: 24px;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.12);
+    overflow: hidden;
+}
+.header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: #ffffff;
+    padding: 30px;
+    text-align: center;
+}
+.header h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: 0.5px;
+}
+.header p {
+    margin: 6px 0 0;
+    font-size: 15px;
+    opacity: 0.85;
+}
+.body {
+    padding: 30px 34px 24px;
+}
+.hello {
+    text-align: center;
+    font-size: 17px;
+    color: #0f172a;
+    margin-bottom: 22px;
+}
+.hello span {
+    color: #4f46e5;
+    font-weight: 700;
+}
+.hero-badge {
+    background: #eef2ff;
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    border-radius: 18px;
+    padding: 14px 18px;
+    text-align: center;
+    font-size: 14px;
+    color: #4f46e5;
+    margin-bottom: 28px;
+}
+.detail {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #edf2f7;
+}
+.detail:last-child {
+    border-bottom: none;
+}
+.icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 14px;
+    background: #eef2ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 14px;
+    font-size: 22px;
+}
+.label {
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 3px;
+}
+.value {
+    font-size: 16px;
+    color: #0f172a;
+    font-weight: 600;
+}
+.value-serial {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 15px;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 8px;
+    color: #0f172a;
+}
+.status-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0 6px;
+    width: 100%;
+}
+.status-pill {
+    flex: 1 1 calc(33.333% - 8px);
+    min-width: 180px;
+    max-width: 100%;
+    background: #f5f3ff;
+    border-radius: 18px;
+    padding: 13px 18px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(124, 58, 237, 0.2);
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+.status-pill strong {
+    color: #7c3aed;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    margin-right: 8%;
+}
+.status-pill span {
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 11px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
+    hyphens: auto;
+}
+.attention-box {
+    background: #f5f3ff;
+    border: 2px solid #ddd6fe;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 25px;
+    text-align: center;
+}
+.attention-box p {
+    margin: 0;
+    font-size: 1.1em;
+    color: #7c3aed;
+    font-weight: 600;
+    line-height: 1.5;
+}
+.logo-container {
+    text-align: center;
+    margin: 30px 0 20px;
+}
+.logo {
+    max-width: 50%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    margin-top: -25%;
+}
+.footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #94a3b8;
+    background: #f8fafc;
+    margin-top: -17%;
+}
+@media(max-width:580px){
+    .body{padding:24px 20px;}
+    .detail{flex-direction:column; align-items:flex-start;}
+    .icon{margin-bottom:10px;}
+    .status-row{flex-direction:column;}
+    .status-pill{
+        flex:1 1 100%;
+        min-width:100%;
+        max-width:100%;
+    }
+    .hero-badge{font-size:13px;}
+}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <h1>Notificación de Exoneración</h1>
+            <p>Registro de Exoneración Directa</p>
+        </div>
+        <div class="body">
+            <div class="hello">Hola, <span>Área de {$map['area']}</span></div>
+            <div class="hero-badge">
+                Se ha registrado directamente una nueva exoneración para el ticket.
+            </div>
+            <div class="detail">
+                <div class="icon">🎫</div>
+                <div>
+                    <div class="label">Número de Ticket</div>
+                    <div class="value">#{$map['ticket']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">👤</div>
+                <div>
+                    <div class="label">Técnico Gestor Ticket</div>
+                    <div class="value">{$map['tecnico']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">✍️</div>
+                <div>
+                    <div class="label">Cargado Por</div>
+                    <div class="value">{$map['cargado_por']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">🏷️</div>
+                <div>
+                    <div class="label">Detalles de Exoneración</div>
+                    <div class="value">
+                        {$map['exo_tipo']} ({$map['exo_porcentaje']}%) - Exoneración Nro: {$map['exo_nro']}
+                    </div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">🏢</div>
+                <div>
+                    <div class="label">RIF / Razón Social</div>
+                    <div class="value">{$map['rif']} &mdash; {$map['razon']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">🔧</div>
+                <div>
+                    <div class="label">Serial del Dispositivo</div>
+                    <div class="value value-serial">{$map['serial']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">🚨</div>
+                <div>
+                    <div class="label">Nivel / Falla Reportada</div>
+                    <div class="value">Nivel {$map['nivel']} &nbsp;|&nbsp; {$map['falla']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">📅</div>
+                <div>
+                    <div class="label">Fecha de Registro</div>
+                    <div class="value">{$map['fecha']}</div>
+                </div>
+            </div>
+            <div class="detail">
+                <div class="icon">📝</div>
+                <div>
+                    <div class="label">Acción del Ticket</div>
+                    <div class="value">{$map['accion']}</div>
+                </div>
+            </div>
+
+            <div class="status-row">
+                <div class="status-pill">
+                    <strong>Estatus del Ticket</strong>
+                    <span>{$map['status']}</span>
+                </div>
+                <div class="status-pill">
+                    <strong>Estatus de Pago</strong>
+                    <span>{$map['pago']}</span>
+                </div>
+                <div class="status-pill">
+                    <strong>Estatus Domiciliación</strong>
+                    <span>{$map['domi']}</span>
+                </div>
+            </div>
+
+            <div class="attention-box">
+                <p>Por favor, ingrese al sistema para validar los detalles de esta exoneración.</p>
+            </div>
+
+            {$logoHtml}
+        </div>
+        <div class="footer">
+            <p><strong>Sistema de Gestión de Tickets - InteliSoft</strong></p>
+            <p>Este es un correo automático. Por favor, no responda a este mensaje.</p>
+            <p>&copy; {$currentYear} InteliSoft. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
     public function handleSendApprovalEmail() {
         $id_ticket = $_POST['nro_ticket'] ?? '';
         $document_type = $_POST['document_type'] ?? 'Documento';
