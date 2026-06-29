@@ -3467,7 +3467,7 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
             WHERE
 
-                tsl.repuesto_date < CURRENT_DATE --- INTERVAL '15 days' -- ¡CORRECCIÓN AQUÍ!
+                tsl.repuesto_date < CURRENT_DATE - INTERVAL '15 days'
 
                 AND tsl.confirmreceive = TRUE
 
@@ -5982,6 +5982,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
      * Aprueba la exoneración de un ticket, moviendo id_status_payment a 6
      */
     public function AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion = null, $is_final_approval = false, $nro_exoneracion = null) {
+        // Log parameters
+        error_log("AprobarExoneracionTicket Model - nro_ticket: $nro_ticket, id_user: $id_user, id_exoneracion: " . var_export($id_exoneracion, true) . ", is_final_approval: " . var_export($is_final_approval, true) . ", nro_exoneracion: " . var_export($nro_exoneracion, true));
+
         $db_conn = $this->db->getConnection();
         
         try {
@@ -6028,12 +6031,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $pendingExo = pg_fetch_result($resCheck, 0, 'pending');
 
                 if ($pendingExo == 0) {
-                    $sql_update = "UPDATE tickets SET id_status_payment = 4 WHERE id_ticket = " . (int)$id_ticket;
-                    $result = pg_query($db_conn, $sql_update);
-                    
-                    if (!$result) {
-                        $this->db->pgquery("ROLLBACK");
-                        return ["success" => false, "message" => "Error al actualizar el estatus del ticket: " . pg_last_error($db_conn)];
+                $sql_update = "UPDATE tickets SET id_status_payment = 4 WHERE id_ticket = " . (int)$id_ticket;
+                $result = pg_query($db_conn, $sql_update);
+                
+                if (!$result) {
+                    $this->db->pgquery("ROLLBACK");
+                    return ["success" => false, "message" => "Error al actualizar el estatus del ticket: " . pg_last_error($db_conn)];
                     }
                 }
             }
@@ -6079,9 +6082,9 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $id_current_status_payment = pg_fetch_result($status_payment_current_result, 0, 'id_status_payment') !== null ? (int)pg_fetch_result($status_payment_current_result, 0, 'id_status_payment') : 'NULL';
             }
 
-            // 7. Insertar Historial (Usamos el estatus de pago actual del ticket)
+            // 7. Insertar Historial (Usamos el estatus de pago actual del ticket y pasamos el ID de la exoneración como 9no parámetro)
             $sql_history = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
                 (int)$id_ticket,
                 (int)$id_user,
                 $id_status_ticket,
@@ -6089,7 +6092,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
                 $id_status_lab,
                 $id_current_status_payment,
                 $new_status_domiciliacion,
-                $id_coordinador
+                $id_coordinador,
+                $id_exoneracion !== null ? (int)$id_exoneracion : 'NULL'
             );
 
             pg_query($db_conn, $sql_history);
