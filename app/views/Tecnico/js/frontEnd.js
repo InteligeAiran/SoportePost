@@ -1572,141 +1572,34 @@ function getTicketData() {
 
     let modalButtonsHTML = '';
 
-    if (pdfZoomUrl && imgExoneracionUrl) {
-        // Solo envío y exoneración
-        modalButtonsHTML = `
+    // 1. Ver Documento de Envio (si ya existe)
+    if (pdfZoomUrl && pdfZoomUrl.trim() !== '') {
+        modalButtonsHTML += `
             <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Envio
             </button>
+        `;
+    }
+
+    // 2. Ver Documento de Exoneración (si ya existe)
+    if (imgExoneracionUrl && imgExoneracionUrl.trim() !== '') {
+        modalButtonsHTML += `
             <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Exoneración
             </button>
         `;
-    } else if (pdfZoomUrl && pdfPagoUrl) {
-        // Solo envío y pago
-        modalButtonsHTML = `
-            <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                Ver Documento de Envio
-            </button>
+    }
+
+    // 3. Ver Documento de Pago (si ya existe)
+    if (pdfPagoUrl && pdfPagoUrl.trim() !== '') {
+        modalButtonsHTML += `
             <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
                 Ver Documento de Pago
             </button>
         `;
-    } else if (pdfZoomUrl) {
-        // Solo envío disponible
-        if (debeOcultarEnvio) {
-            // Estados sin envío - NO mostrar botón de envío
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-            if (!isFallaSinPago) {
-                modalButtonsHTML = `
-
-                    /* 
-                    OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
-                    <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
-                        data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                        data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                        data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
-                        Cargar Documento de Pago
-                    </button>
-                    */
-                `;
-            }
-        } else {
-            // Estados con envío - mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="VerEnvio" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="zoom" data-file-url="${pdfZoomUrl}" data-file-name="${ZoomFile_name}" data-nro-ticket="${nro_ticket}">
-                    Ver Documento de Envio
-                </button>`;
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-            if (!isFallaSinPago) {
-                 // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
-            }
-        }
-    } else if (imgExoneracionUrl) {
-        // Solo exoneración disponible (sin envío)
-        if (debeOcultarEnvio) {
-            // Estados sin envío - NO mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                    Ver Documento de Exoneración
-                </button>
-            `;
-        } else {
-            // Estados con envío - mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="VerExo" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="exoneracion" data-file-url="${imgExoneracionUrl}" data-file-name="${ExoneracionFile_name}" data-nro-ticket="${nro_ticket}">
-                    Ver Documento de Exoneración
-                </button>
-                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-            `;
-        }
-    } else if (pdfPagoUrl) {
-        // Solo pago disponible (sin envío)
-        // IMPORTANTE: Si hay pago pero NO hay envío, SIEMPRE mostrar el botón de envío
-        // porque el envío es obligatorio (excepto en estados sin envío)
-        if (debeOcultarEnvio) {
-            // Estados sin envío - NO mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                    Ver Documento de Pago
-                </button>
-            `;
-        } else {
-            // Estados con envío - SIEMPRE mostrar botón de envío si falta el documento
-            // El envío es obligatorio, independientemente del status
-            modalButtonsHTML = `
-                <button id="VerPago" class="btn btn-secondary btn-block btn-view-document mb-2" data-ticket-id="${ticketId}" data-document-type="pago" data-file-url="${pdfPagoUrl}" data-file-name="${PagoFile_name}" data-nro-ticket="${nro_ticket}">
-                    Ver Documento de Pago
-                </button>
-                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>
-            `;
-        }
-    } else {
-        // Ningún documento disponible
-        if (debeOcultarEnvio) {
-            // Estados sin envío - NO mostrar botón de envío
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-            if (!isFallaSinPago) {
-                modalButtonsHTML = `
-
-                    /* 
-                    OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
-                    <button id="PagoBoton" class="btn btn-success btn-block btn-pago-pdf" 
-                        data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                        data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                        data-status-payment="${statusPayment}" data-document-type="Anticipo" data-estado-cliente="${estado_cliente}" data-razon-social="${razonSocial}" data-rif="${rif}" data-estatus-pos="${estatusPos}">
-                        Cargar Documento de Pago
-                    </button>
-                    */
-                `;
-            }
-        } else {
-            // Estados con envío - mostrar botón de envío
-            modalButtonsHTML = `
-                <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" 
-                    data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
-                    data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
-                    data-status-payment="${statusPayment}" data-document-type="Envio">
-                    Cargar Documento de Envio
-                </button>`;
-            // NO mostrar Exoneración y Anticipo si es "Actualización de Software" (id_failure = 9) o "Sin Llaves/Dukpt Vacío" (id_failure = 12)
-            if (!isFallaSinPago) {
-                // OCULTADO POR SOLICITUD - La carga de pagos la realizará Administración
-            }
-        }
     }
 
-    // Agregar botón de Ver Documento de Convenio Firmado si existe
+    // 4. Ver Documento de Convenio Firmado (si ya existe)
     if (pdfConvenioUrl && pdfConvenioUrl.trim() !== '') {
         modalButtonsHTML += `
             <button id="VerConvenio" class="btn btn-secondary btn-block btn-view-document mb-2" 
@@ -1720,9 +1613,25 @@ function getTicketData() {
         `;
     }
 
-    // Botón especial para pago rechazado (Estatus 13 o documento marcado como rechazado)
-    if (statusPayment == 13 || hasRejectedDocument) {
-        // OCULTADO POR SOLICITUD - La corrección de pagos la realizará Administración
+    // 5. Cargar Documento de Envio (si NO existe y NO es un estado sin envío)
+    if ((!pdfZoomUrl || pdfZoomUrl.trim() === '') && !debeOcultarEnvio) {
+        modalButtonsHTML += `
+            <button id="EnvioBoton" class="btn btn-info btn-block btn-zoom-pdf mb-2" 
+                data-id-ticket="${ticketId}" data-ticket-id="${ticketId}" 
+                data-nro-ticket="${nro_ticket}" data-serial-pos="${serialPos}"
+                data-status-payment="${statusPayment}" data-document-type="Envio">
+                Cargar Documento de Envio
+            </button>
+        `;
+    }
+
+    // Si no hay ningún botón disponible para mostrar, mostramos un mensaje amigable
+    if (modalButtonsHTML === '') {
+        modalButtonsHTML = `
+            <div class="alert alert-info text-center mb-0" style="font-size: 0.95rem; color: #0c5460; background-color: #d1ecf1; border-color: #bee5eb; padding: 15px; border-radius: 8px;">
+                <i class="fas fa-info-circle me-1"></i> No se requiere acción de documentos para este ticket.
+            </div>
+        `;
     }
 
     buttonsContainer.html(modalButtonsHTML);
