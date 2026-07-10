@@ -747,6 +747,14 @@ class TechnicalConsultionRepository
         return null; // Si no se encuentra o hay un error
     }
 
+    public function getStateNameById($id_state) {
+        $result = $this->model->GetStateNameById($id_state);
+        if ($result && $result['numRows'] > 0 && isset($result['row']['d_estado'])) {
+            return $result['row']['d_estado'];
+        }
+        return null;
+    }
+
     public function EntregarTicket($id_ticket, $id_user, $comment){
         $result = $this->model->EntregarTicket($id_ticket, $id_user, $comment);
         return $result;
