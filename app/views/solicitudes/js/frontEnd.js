@@ -7270,3 +7270,185 @@ document.addEventListener('click', function (e) {
     // El atributo data-bs-dismiss="modal" en el HTML también ayudará.
   }
 });
+
+function getTechnicianData(ticketIdToFetch) {
+  if (typeof ticketIdToFetch === "object" && ticketIdToFetch !== null) {
+    if (ticketIdToFetch.type && ticketIdToFetch.target) {
+      console.error(
+        "ERROR CRÍTICO: Se intentó pasar un objeto Event a getTechnicianData. Esto no debería ocurrir."
+      );
+      alert(
+        "Error interno: No se pudo procesar el ID del ticket. Contacte a soporte."
+      );
+      return Promise.reject(
+        new Error("Invalid ticket ID: received an event object.")
+      );
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const API_URL_GET_TECHNICIANS = `${ENDPOINT_BASE}${APP_PATH}api/users/GetTechniciansAndCurrentTicketTechnician`;
+
+    xhr.open("POST", API_URL_GET_TECHNICIANS);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          const inputNtecnico = document.getElementById("currentTechnicianDisplay");
+          const inputFecha = document.getElementById("currentAssignmentDateDisplay");
+          const inputRegion = document.getElementById("currentRegion");
+          const technicianSelect = document.getElementById("technicianSelect");
+
+          if (response.success) {
+            inputTecnicoActual = response.technicians.full_tecnicoassig1 || "No Asignado";
+            currentTicketOldTechnicianId = response.technicians.id_tecnico;
+
+            if (inputNtecnico) {
+              inputNtecnico.innerHTML = inputTecnicoActual;
+            }
+
+            inputFecha.innerHTML = response.technicians.fecha_asignacion || "N/A";
+            inputRegion.innerHTML = response.technicians.name_region || "N/A";
+
+          } else {
+            inputTecnicoActual = "No Asignado";
+            if (inputNtecnico) {
+              inputNtecnico.innerHTML = "No Asignado";
+            }
+            inputFecha.innerHTML = "N/A";
+            inputRegion.innerHTML = "N/A";
+            if (technicianSelect) {
+              technicianSelect.value = "";
+            }
+            console.error("Error en la respuesta de la API:", response.message);
+          }
+          resolve(response);
+        } catch (error) {
+          console.error("Error parsing JSON para obtener técnicos:", error);
+          reject(error);
+        }
+      } else {
+        console.error(
+          "Error en la solicitud para obtener técnicos:",
+          xhr.status,
+          xhr.statusText
+        );
+        reject(new Error(`HTTP error! status: ${xhr.status}`));
+      }
+    };
+
+    xhr.onerror = function () {
+      console.error("Error de red al intentar obtener técnicos.");
+      reject(new Error("Error de red"));
+    };
+
+    const dataToSend = `action=GetTechniciansAndCurrentTicketTechnician&ticket_id=${ticketIdToFetch}`;
+    xhr.send(dataToSend);
+  });
+}
+
+async function reassignTicket(ticketId, newTechnicianId) {
+  try {
+    const xhr = new XMLHttpRequest();
+    const id_user = document.getElementById("id_user").value;
+    const comment = document.getElementById("reassignObservation").value;
+    const API_URL_REASSIGN = `${ENDPOINT_BASE}${APP_PATH}api/users/ReassignTicket`;
+
+    xhr.open("POST", API_URL_REASSIGN);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    const dataToSend = `action=ReassignTicket&ticket_id=${ticketId}&new_technician_id=${newTechnicianId}&id_user=${id_user}&comment=${comment}`;
+
+    const response = await new Promise((resolve, reject) => {
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response.success);
+          } catch (error) {
+            console.error("Error parsing JSON para reasignar ticket:", error);
+            reject(error);
+          }
+        } else {
+          console.error(
+            "Error en la solicitud para reasignar ticket:",
+            xhr.status,
+            xhr.statusText
+          );
+          reject(new Error(`HTTP error! status: ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = function () {
+        console.error("Error de red al intentar reasignar ticket.");
+        reject(new Error("Error de red"));
+      };
+
+      xhr.send(dataToSend);
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+function getTecnico21(tecnicoActualParaFiltrar) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetTecnico2`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          const select2 = document.getElementById("technicianSelect");
+
+          select2.innerHTML = '<option value="">Seleccione</option>';
+
+          if (
+            Array.isArray(response.tecnicos) &&
+            response.tecnicos.length > 0
+          ) {
+            response.tecnicos.forEach((tecnico) => {
+              if (tecnico.full_name !== tecnicoActualParaFiltrar) {
+                const option2 = document.createElement("option");
+                option2.value = tecnico.id_user;
+                option2.textContent = tecnico.full_name;
+                select2.appendChild(option2);
+              }
+            });
+
+            select2.addEventListener("change", function () {
+              const selectedTecnicoId = this.value;
+              if (selectedTecnicoId) {
+                GetRegionUser(selectedTecnicoId);
+              } else {
+                document.getElementById("InputRegionUser2").value = "";
+              }
+            });
+
+          } else {
+            const option = document.createElement("option");
+            option.value = "";
+            option.textContent = "No hay Técnicos Disponibles";
+            select2.appendChild(option);
+          }
+        } else {
+          console.error("Error al obtener los técnicos:", response.message);
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } else {
+      console.error("Error:", xhr.status, xhr.statusText);
+    }
+  };
+
+  const datos = `action=GetTecnico2`;
+  xhr.send(datos);
+}
