@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * SoportePost - Sistema de Gestion de Tickets
  * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
@@ -275,6 +275,26 @@ class consulta_rifModel extends Model
         try {
 
             $sql = "SELECT id_region, name_region FROM GetStateRegionById(" . $id_estado . ");";
+
+            $result = Model::getResult($sql, $this->db);
+
+            return $result;
+
+        } catch (Throwable $e) {
+
+            // Handle exception
+
+        }
+
+    }
+
+    public function GetStateNameById($id_estado)
+
+    {
+
+        try {
+
+            $sql = "SELECT d_estado FROM estado WHERE id_estado = " . (int)$id_estado . ";";
 
             $result = Model::getResult($sql, $this->db);
 

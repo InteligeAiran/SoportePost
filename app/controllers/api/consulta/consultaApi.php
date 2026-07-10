@@ -2106,11 +2106,13 @@ class Consulta extends Controller
             
             // 2. Obtener la id_region usando el id_estado
             $id_region = $repository->getRegionFromStateId($estadoId); // Pasa $estadoId directamente
+            $nombre_estado = $repository->getStateNameById($estadoId);
 
             if ($id_region !== null) {
                 $this->response([
                     'success' => true,
-                    'id_region' => $id_region
+                    'id_region' => $id_region,
+                    'nombre_estado' => $nombre_estado
                 ], 200);
             } else {
                 // No se encontró la región para el estado
