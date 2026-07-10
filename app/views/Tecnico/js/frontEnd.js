@@ -274,7 +274,7 @@ function getTicketData() {
             ticket.confirmtecn === true;
 
           const isGarantia = ticket.id_status_payment == 1 || ticket.id_status_payment == 3;
-          const isEstadoSinEnvio = ticket.nombre_estado_cliente && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(ticket.nombre_estado_cliente);
+          const isEstadoSinEnvio = ticket.nombre_estado_cliente && ['Caracas', 'Distrito Capital'].includes(ticket.nombre_estado_cliente);
           const shouldHideActionsForGarantia = isGarantia && isEstadoSinEnvio;
 
           const isAsignadoCoordinacion = ticket.name_accion_ticket === "Asignado a la Coordinación";
@@ -713,7 +713,7 @@ function getTicketData() {
               const isSinLlavesDukpt = idFailure === 12;
               const isFallaSinPago = isActualizacionSoftware || isSinLlavesDukpt;
               let showButton = false;
-              const isEstadoSinEnvio = currentEstado && ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'].includes(currentEstado);
+              const isEstadoSinEnvio = currentEstado && ['Caracas', 'Distrito Capital'].includes(currentEstado);
 
               // 1. Validación específica para Convenio Firmado (id_status_domiciliacion = 4)
               if (id_domiciliacion == 4 && (url_convenio === "" || url_convenio === null || url_convenio === undefined)) {
@@ -1567,7 +1567,7 @@ function getTicketData() {
     modalTitle.text(nro_ticket);
 
     // Estados donde NO se debe mostrar el botón de envío
-    const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
+    const estadosSinEnvio = ['Caracas', 'Distrito Capital'];
     const debeOcultarEnvio = estadosSinEnvio.includes(estado_cliente);
 
     let modalButtonsHTML = '';
@@ -1803,7 +1803,7 @@ $(document).on('click', '#printHtmlTemplateBtn', function () {
 
 // Función para determinar el estatus según el tipo de documento y estado del cliente
 function getStatusForDocument(documentType, estadoCliente) {
-    const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
+    const estadosSinEnvio = ['Caracas', 'Distrito Capital'];
     const debeOcultarEnvio = estadosSinEnvio.includes(estadoCliente);
     
     if (debeOcultarEnvio) {

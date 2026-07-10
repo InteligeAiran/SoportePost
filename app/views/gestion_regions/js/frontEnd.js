@@ -1973,7 +1973,7 @@ function CloseTicket(ticketId) {
     modalTitle.text(nro_ticket);
 
     // Estados donde NO se debe mostrar el botón de envío
-    const estadosSinEnvio = ['Caracas', 'Miranda', 'Vargas', 'Distrito Capital'];
+    const estadosSinEnvio = ['Caracas', 'Distrito Capital'];
     const debeOcultarEnvio = estadosSinEnvio.includes(estado_cliente);
 
     let modalButtonsHTML = '';
