@@ -1435,8 +1435,8 @@ class TechnicalConsultionRepository
         return $this->model->GetExonerationDataByTicket($nro_ticket);
     }
 
-    public function AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion = null, $is_final_approval = false) {
-        return $this->model->AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion, $is_final_approval);
+    public function AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion = null, $is_final_approval = false, $nro_exoneracion = null) {
+        return $this->model->AprobarExoneracionTicket($nro_ticket, $id_user, $id_exoneracion, $is_final_approval, $nro_exoneracion);
     }
 
     public function CheckManualApprovalStatus($id_ticket, $id_status_payment)

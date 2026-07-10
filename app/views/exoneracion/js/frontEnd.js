@@ -532,6 +532,7 @@ function getTicketDataCoordinator() {
                   data-estatus-pos="${data.estatus_inteliservices || ''}"
                   data-has-presupuesto="${data.presupuesto || 'No'}"
                   data-ticket-tiene-pago="${ticketTienePago}"
+                  data-status-payment="${data.id_status_payment || 0}"
                   title="Registrar Exoneración" 
                   style="background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="white" class="bi bi-receipt-cutoff" viewBox="0 0 16 16" style="display: inline-block;">
@@ -1445,6 +1446,155 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
         const btnExoReg = event.target.closest("#btnExonerationRegistration");
         if (btnExoReg) {
             event.preventDefault();
+            
+            // VALIDACIÓN: Si el ticket ya tiene estatus general 4, no permitir registrar exoneraciones
+            const statusPayment = parseInt(btnExoReg.getAttribute("data-status-payment")) || 0;
+            if (statusPayment === 4) {
+                // Inyectar estilos dinámicos para evitar problemas de caché con CSS
+                if (!document.getElementById('warning-blocked-swal-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'warning-blocked-swal-styles';
+                    style.innerHTML = `
+                        .swal2-popup.warning-blocked-swal-popup {
+                            background: #ffffff !important;
+                            border-radius: 24px !important;
+                            padding: 40px 30px 35px 30px !important;
+                            max-width: 460px !important;
+                            border: 1px solid rgba(0, 0, 0, 0.08) !important;
+                            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1) !important;
+                            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+                        }
+                        .premium-warning-icon-container {
+                            display: flex;
+                            justify-content: center;
+                            margin-bottom: 20px;
+                        }
+                        .premium-warning-icon-bg {
+                            width: 64px;
+                            height: 64px;
+                            background: #fffbeb;
+                            border: 1px solid #fde68a;
+                            border-radius: 20px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: 0 8px 16px rgba(245, 158, 11, 0.1);
+                            animation: iconFloatCustom 3s ease-in-out infinite;
+                        }
+                        @keyframes iconFloatCustom {
+                            0%, 100% { transform: translateY(0); }
+                            50% { transform: translateY(-4px); }
+                        }
+                        .premium-warning-icon-svg {
+                            width: 32px;
+                            height: 32px;
+                            color: #d97706;
+                        }
+                        .swal2-popup.warning-blocked-swal-popup .swal2-title {
+                            color: #1e293b !important;
+                            font-size: 1.6rem !important;
+                            font-weight: 700 !important;
+                            margin: 0 0 16px 0 !important;
+                            padding: 0 !important;
+                            letter-spacing: -0.02em !important;
+                        }
+                        .warning-blocked-container {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                        }
+                        .warning-blocked-badge {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 6px;
+                            background: rgba(14, 165, 233, 0.1);
+                            color: #0284c7;
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            padding: 6px 14px;
+                            border-radius: 100px;
+                            margin-bottom: 16px;
+                            border: 1px solid rgba(14, 165, 233, 0.2);
+                        }
+                        .warning-blocked-badge svg {
+                            color: #0284c7;
+                        }
+                        .warning-blocked-text {
+                            color: #64748b !important;
+                            font-size: 0.95rem !important;
+                            line-height: 1.6 !important;
+                            margin: 0 0 24px 0 !important;
+                            text-align: center !important;
+                            font-weight: 450 !important;
+                        }
+                        .warning-blocked-highlight {
+                            color: #0f172a;
+                            font-weight: 600;
+                        }
+                        .swal2-popup.warning-blocked-swal-popup .swal2-confirm {
+                            background: #003594 !important;
+                            color: #ffffff !important;
+                            font-size: 0.95rem !important;
+                            font-weight: 600 !important;
+                            padding: 12px 0 !important;
+                            width: 100% !important;
+                            border-radius: 14px !important;
+                            border: 1px solid #002870 !important;
+                            box-shadow: 0 4px 12px rgba(0, 53, 148, 0.15) !important;
+                            transition: all 0.2s ease !important;
+                            cursor: pointer !important;
+                        }
+                        .swal2-popup.warning-blocked-swal-popup .swal2-confirm:hover {
+                            background: #002c7a !important;
+                            box-shadow: 0 6px 20px rgba(0, 53, 148, 0.25) !important;
+                            transform: translateY(-1px);
+                        }
+                        .swal2-popup.warning-blocked-swal-popup .swal2-confirm:active {
+                            transform: translateY(0);
+                        }
+                        .swal2-popup.warning-blocked-swal-popup .swal2-actions {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            width: 100% !important;
+                            justify-content: center !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                Swal.fire({
+                    title: 'Acción Bloqueada',
+                    html: `
+                        <div class="premium-warning-icon-container">
+                            <div class="premium-warning-icon-bg">
+                                <svg class="premium-warning-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="32" height="32">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="warning-blocked-container">
+                            <div class="warning-blocked-badge">
+                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="vertical-align: middle; margin-right: 4px;">
+                                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                                </svg>
+                                Estatus 4 - Exonerado
+                            </div>
+                            <p class="warning-blocked-text">
+                                Este ticket ya cuenta con una <span class="warning-blocked-highlight">exoneración aprobada (estatus 4)</span>, por lo que no se permite registrar nuevas exoneraciones.
+                            </p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Entendido',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'warning-blocked-swal-popup',
+                        confirmButton: 'swal2-confirm'
+                    },
+                    backdrop: 'rgba(15, 23, 42, 0.4)'
+                });
+                return;
+            }
+
             const ticketId = btnExoReg.getAttribute("data-ticket-id");
             const idClienteSQL = btnExoReg.getAttribute("data-id-cliente-sql");
             const nroTicket = btnExoReg.getAttribute("data-nro-ticket");
@@ -2698,25 +2848,36 @@ function openModalRegistroExoneracion(nroTicket, ticketId, serialPos, idIntelipu
         }
     });
 
-    // 5. LÓGICA DE BLOQUEO: Si ya tiene pago, inhabilitar "Anticipo"
+    // 5. Guardar variable global para uso en loadExonerationHistory
+    window.currentTicketTienePago = ticketTienePago;
+
+    // Resetear botones y seleccionar Anticipo por defecto inicialmente
+    const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
+    const btnPagoTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
+    
     if (ticketTienePago) {
-        const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
         if (btnAnticipo) {
             btnAnticipo.classList.add('disabled');
             btnAnticipo.disabled = true;
             btnAnticipo.innerHTML = '<i class="bi bi-lock-fill"></i> Anticipo pagado';
+        }
+        if (btnPagoTaller) {
+            btnPagoTaller.classList.add('active');
+            btnPagoTaller.classList.remove('disabled');
+            btnPagoTaller.disabled = false;
             
-            // Forzar selección de "Pago taller"
-            const btnPagoTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
-            if (btnPagoTaller) {
-                btnPagoTaller.click(); // Disparar el click para activar Pago Taller
-            }
+            const typeInput = document.getElementById('exo_tipo_seleccionado');
+            if (typeInput) typeInput.value = 'Pago taller';
+            updateExoCodeByType('Pago taller', idIntelipunto);
+            adjustExoSliderByType('Pago taller');
         }
     } else {
-        // Estado normal: Seleccionar Anticipo por defecto
-        const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
         if (btnAnticipo) {
             btnAnticipo.classList.add('active');
+            btnAnticipo.classList.remove('disabled');
+            btnAnticipo.disabled = false;
+            btnAnticipo.innerHTML = '<i class="bi bi-cash"></i> Anticipo';
+            
             const typeInput = document.getElementById('exo_tipo_seleccionado');
             if (typeInput) typeInput.value = 'Anticipo';
             updateExoCodeByType('Anticipo', idIntelipunto);
@@ -3263,6 +3424,12 @@ function confirmAndSaveExoneration() {
                             const dropZone = document.getElementById('exo_fileDropZone');
                             if (fileStatus) fileStatus.classList.add('d-none');
                             if (dropZone) dropZone.classList.remove('d-none');
+                            const uploadContainer = document.querySelector('.exo-upload-container');
+                            if (uploadContainer) {
+                                uploadContainer.style.background = '#ffffff';
+                                uploadContainer.style.border = 'none';
+                                uploadContainer.style.padding = '0';
+                            }
                         } else {
                             Swal.fire({
                                 icon: 'error',
@@ -5855,6 +6022,7 @@ function loadExonerationHistory(nroTicket) {
                     // Analizar tipos existentes para deshabilitar botones y mostrar info limit
                     let hasAnticipo = false;
                     let hasTaller = false;
+                    let has100Taller = false;
                     let hasWorkshop = data.has_workshop_history || false;
                     let rejectionCount = 0;
                     let dataAnticipo = null;
@@ -5877,6 +6045,9 @@ function loadExonerationHistory(nroTicket) {
                             if (exo.tipo_exoneracion === 'Pago taller' && !isRejected) {
                                 hasTaller = true;
                                 dataTaller = exo;
+                                if (parseFloat(exo.porcentaje) >= 100) {
+                                    has100Taller = true;
+                                }
                             }
 
                              const date = new Date(exo.fecha_creacion).toLocaleDateString('es-VE');
@@ -5939,23 +6110,43 @@ function loadExonerationHistory(nroTicket) {
                     // Actualizar estado de los botones de tipo (Gris si ya existe)
                     const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
                     const btnTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
+                    const ticketTienePago = window.currentTicketTienePago || false;
                     
                     if (btnAnticipo) {
-                        if (hasAnticipo || hasWorkshop) {
+                        if (hasAnticipo || hasWorkshop || has100Taller || ticketTienePago) {
                             btnAnticipo.classList.add('disabled');
                             btnAnticipo.classList.remove('active'); // Remover active si estaba
+                            btnAnticipo.disabled = true;
+                            btnAnticipo.style.pointerEvents = 'none';
                             btnAnticipo.style.opacity = '0.5';
                             btnAnticipo.style.background = '#e9ecef';
                             btnAnticipo.style.color = '#adb5bd';
                             btnAnticipo.style.borderColor = '#dee2e6';
-                            btnAnticipo.title = hasWorkshop ? "No se permite exoneración de Anticipo porque el ticket ya pasó por taller" : "Ya existe una exoneración de este tipo";
+                            
+                            let titleText = "Ya existe una exoneración de este tipo";
+                            if (hasWorkshop) {
+                                titleText = "No se permite exoneración de Anticipo porque el ticket ya pasó por taller";
+                            } else if (has100Taller) {
+                                titleText = "Bloqueado por exoneración de Taller al 100%";
+                            } else if (ticketTienePago) {
+                                titleText = "El anticipo ya fue pagado";
+                            }
+                            btnAnticipo.title = titleText;
+                            if (ticketTienePago) {
+                                btnAnticipo.innerHTML = '<i class="bi bi-lock-fill"></i> Anticipo pagado';
+                            } else if (has100Taller) {
+                                btnAnticipo.innerHTML = '<i class="bi bi-lock-fill"></i> Anticipo bloq. (100% Taller)';
+                            }
                         } else {
                             btnAnticipo.classList.remove('disabled');
+                            btnAnticipo.disabled = false;
+                            btnAnticipo.style.pointerEvents = 'auto';
                             btnAnticipo.style.opacity = '1';
                             btnAnticipo.style.background = ''; // Volver al estilo original
                             btnAnticipo.style.color = '';
                             btnAnticipo.style.borderColor = '';
                             btnAnticipo.title = "Exoneración de Anticipo";
+                            btnAnticipo.innerHTML = '<i class="bi bi-cash"></i> Anticipo';
                         }
                     }
                     
@@ -5963,6 +6154,8 @@ function loadExonerationHistory(nroTicket) {
                         if (hasTaller) {
                             btnTaller.classList.add('disabled');
                             btnTaller.classList.remove('active');
+                            btnTaller.disabled = true;
+                            btnTaller.style.pointerEvents = 'none';
                             btnTaller.style.opacity = '0.5';
                             btnTaller.style.background = '#e9ecef';
                             btnTaller.style.color = '#adb5bd';
@@ -5970,12 +6163,44 @@ function loadExonerationHistory(nroTicket) {
                             btnTaller.title = "Ya existe una exoneración de este tipo";
                         } else {
                             btnTaller.classList.remove('disabled');
+                            btnTaller.disabled = false;
+                            btnTaller.style.pointerEvents = 'auto';
                             btnTaller.style.opacity = '1';
                             btnTaller.style.background = '';
                             btnTaller.style.color = '';
                             btnTaller.style.borderColor = '';
                             btnTaller.title = "Exoneración de Taller";
                         }
+                    }
+
+                    // Auto-seleccionar el botón que quede habilitado si es necesario
+                    const isAnticipoDisabled = hasAnticipo || hasWorkshop || has100Taller || ticketTienePago;
+                    const isTallerDisabled = hasTaller;
+
+                    if (isAnticipoDisabled && !isTallerDisabled) {
+                        // Solo taller está habilitado -> Asegurar selección de Taller
+                        if (btnTaller && !btnTaller.classList.contains('active')) {
+                            btnTaller.classList.add('active');
+                            const typeInput = document.getElementById('exo_tipo_seleccionado');
+                            if (typeInput) typeInput.value = 'Pago taller';
+                            updateExoCodeByType('Pago taller', idClienteSQL);
+                            adjustExoSliderByType('Pago taller');
+                        }
+                    } else if (!isAnticipoDisabled && isTallerDisabled) {
+                        // Solo anticipo está habilitado -> Asegurar selección de Anticipo
+                        if (btnAnticipo && !btnAnticipo.classList.contains('active')) {
+                            btnAnticipo.classList.add('active');
+                            const typeInput = document.getElementById('exo_tipo_seleccionado');
+                            if (typeInput) typeInput.value = 'Anticipo';
+                            updateExoCodeByType('Anticipo', idClienteSQL);
+                            adjustExoSliderByType('Anticipo');
+                        }
+                    } else if (isAnticipoDisabled && isTallerDisabled) {
+                        // Ambos están deshabilitados -> Ninguno activo
+                        if (btnAnticipo) btnAnticipo.classList.remove('active');
+                        if (btnTaller) btnTaller.classList.remove('active');
+                        const typeInput = document.getElementById('exo_tipo_seleccionado');
+                        if (typeInput) typeInput.value = '';
                     }
 
                     // LÓGICA DE LÍMITE Y BLOQUE INFORMATIVO
@@ -5985,13 +6210,17 @@ function loadExonerationHistory(nroTicket) {
                     const hasReachedAttemptLimit = rejectionCount >= 2;
                     const hasBothTypes = hasAnticipo && hasTaller;
 
-                    if (hasReachedAttemptLimit || hasBothTypes) {
+                    if (hasReachedAttemptLimit || hasBothTypes || has100Taller) {
                         // BLOQUEO TOTAL
                         if (btnGuardar) {
                             btnGuardar.disabled = true;
                             btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
                             btnGuardar.style.boxShadow = 'none';
-                            btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Límite Alcanzado`;
+                            if (has100Taller) {
+                                btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Taller Exonerado 100%`;
+                            } else {
+                                btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Límite Alcanzado`;
+                            }
                         }
                         
                         // Inyectar bloque informativo premium
@@ -6017,6 +6246,12 @@ function loadExonerationHistory(nroTicket) {
                                 icon = "fa-exclamation-triangle";
                                 accentColor = "#da1b60"; // Rosa fuerte/Rojo
                                 glowColor = "rgba(218, 27, 96, 0.4)";
+                            } else if (has100Taller) {
+                                title = "TALLER EXONERADO AL 100%";
+                                message = "Este ticket ya tiene registrada una exoneración de Pago taller al 100%, por lo que no requiere registrar un Anticipo.";
+                                icon = "fa-check-circle";
+                                accentColor = "#10b981"; // Verde
+                                glowColor = "rgba(16, 185, 129, 0.4)";
                             }
 
                             // Build the details list based on active docs
@@ -6059,6 +6294,27 @@ function loadExonerationHistory(nroTicket) {
                                             </div>
                                         </div>
                                     </div>`;
+                            } else if (has100Taller && dataTaller) {
+                                const dateTal = new Date(dataTaller.fecha_creacion).toLocaleDateString('es-VE');
+                                detailsHtml = `
+                                    <div class="row g-3 mt-1 justify-content-center">
+                                        <div class="col-md-8">
+                                            <div class="p-3" style="background: white; border-radius: 12px; border: 1px solid #e1e7f0; border-left: 5px solid #10b981; box-shadow: 0 4px 10px rgba(0,0,0,0.02); height: 100%;">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div style="font-size: 0.65rem; font-weight: 850; color: #3b50a3; letter-spacing: 0.8px; text-transform: uppercase;">PAGO TALLER</div>
+                                                    <div style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f8fafc; padding: 2px 8px; border-radius: 6px; border: 1px solid #f1f5f9;">${Math.round(dataTaller.porcentaje)}%</div>
+                                                </div>
+                                                <div style="font-size: 0.95rem; color: #1e293b; font-weight: 700; margin-bottom: 1px;">${dateTal}</div>
+                                                <div style="font-size: 0.8rem; color: #475569; margin-bottom: 8px; font-family: monospace; font-weight: 600;">${dataTaller.nro_exoneracion}</div>
+                                                <div class="d-flex align-items-center justify-content-between mt-2 pt-2 border-top">
+                                                    <div style="font-size: 0.85rem;">${getStatusText(dataTaller.id_status_payment)}</div>
+                                                    <div style="font-size: 0.7rem; color: #94a3b8; text-align: right;">
+                                                        <i class="fas fa-user-circle me-1"></i>${dataTaller.user_name} ${dataTaller.user_surname}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
                             }
 
                             infoContainer.innerHTML = `
@@ -6077,7 +6333,7 @@ function loadExonerationHistory(nroTicket) {
                                     </div>
 
                                     <div class="d-flex align-items-center mb-3">
-                                        <div class="limit-icon-container" style="background: #7389f4; color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(115, 137, 244, 0.3);">
+                                        <div class="limit-icon-pulse limit-icon-container" style="background: #7389f4; color: white; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(115, 137, 244, 0.3);">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="white" viewBox="0 0 16 16">
                                                 <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
                                             </svg>
@@ -6120,9 +6376,9 @@ function loadExonerationHistory(nroTicket) {
                     }
 
                     // Si uno ya existe, intentar seleccionar el otro automáticamente
-                    if (hasAnticipo && !hasTaller && btnTaller) {
+                    if (hasAnticipo && !hasTaller && btnTaller && !btnTaller.classList.contains('disabled')) {
                         btnTaller.click();
-                    } else if (hasTaller && !hasAnticipo && btnAnticipo) {
+                    } else if (hasTaller && !hasAnticipo && btnAnticipo && !btnAnticipo.classList.contains('disabled')) {
                         btnAnticipo.click();
                     }
 

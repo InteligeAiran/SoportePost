@@ -310,7 +310,7 @@ function handleTicketApprovalFromImage() {
 
 // Función para enviar la solicitud de aprobación
 function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', datePassed = '', amountPassed = '', id_exoneracion = null, isFinalApproval = false, nro_exoneracion = null, tipo_exoneracion = '', porcentaje = '') {
-    console.log('--- ENTRANDO A approveTicket ---', {nro_ticket, documentType, id_ticket, id_exoneracion});
+    console.log('--- ENTRANDO A approveTicket ---', {nro_ticket, documentType, id_ticket, refPassed, datePassed, amountPassed, id_exoneracion, isFinalApproval, nro_exoneracion, tipo_exoneracion, porcentaje});
     
     // Capturar datos verificados/corregidos antes de cualquier proceso
     let verifiedReference = refPassed;
@@ -512,34 +512,30 @@ function approveTicket(nro_ticket, documentType, id_ticket, refPassed = '', date
     };
     
     // Enviar los datos
-    let data = `action=approve-document&nro_ticket=${encodeURIComponent(nro_ticket)}&document_type=${encodeURIComponent(documentType)}&id_user=${encodeURIComponent(id_user)}&id_ticket=${encodeURIComponent(id_ticket)}`;
-    
-    if (typeof currentIdPaymentRecord !== 'undefined' && currentIdPaymentRecord !== null) {
-        data += `&id_payment_record=${encodeURIComponent(currentIdPaymentRecord)}`;
-    }
+    let dataToSend = postData;
     
     // Agregar datos verificados si es un tipo de pago y hay valores
     if (documentType === 'Anticipo' || documentType === 'pago' || documentType === 'Pago' || documentType === 'comprobante_pago') {
         if (verifiedReference) {
-            data += `&nro_payment_reference_verified=${encodeURIComponent(verifiedReference)}`;
+            dataToSend += `&nro_payment_reference_verified=${encodeURIComponent(verifiedReference)}`;
         }
         if (verifiedDate) {
-            data += `&payment_date_verified=${encodeURIComponent(verifiedDate)}`;
+            dataToSend += `&payment_date_verified=${encodeURIComponent(verifiedDate)}`;
         }
         if (verifiedAmount) {
-            data += `&amount_verified=${encodeURIComponent(verifiedAmount)}`;
+            dataToSend += `&amount_verified=${encodeURIComponent(verifiedAmount)}`;
         }
-        console.log('Datos a enviar:', data);
+        console.log('Datos a enviar:', dataToSend);
     }
     
-    xhr.send(data);
+    xhr.send(dataToSend);
 }
 
 function getTicketAprovalDocument() {
     const id_user = document.getElementById("userId").value;
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/tickets-pending-document-approval`);
+    xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/reportes/get-tickets-pending-document-approval`);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     const detailsPanel = document.getElementById("ticket-details-panel");
@@ -740,6 +736,7 @@ function getTicketAprovalDocument() {
                                                     data-rif="${row.rif || ''}"
                                                     data-razon-social="${row.razonsocial_cliente || ''}"
                                                     data-serial-pos="${serial_pos || ''}"
+                                                    data-id-status-payment="${idStatusPayment}"
                                                     title="Detalle de Exoneración">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                                     <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
@@ -1441,7 +1438,7 @@ function getTicketAprovalDocument() {
             viewDocumentsBtn.style.display = "none";
         }
     };
-    const datos = `action=tickets-pending-document-approval&id_user=${encodeURIComponent(id_user)}`;
+    const datos = `action=get-tickets-pending-document-approval&id_user=${encodeURIComponent(id_user)}`;
     xhr.send(datos);
 }
 
@@ -6989,7 +6986,28 @@ async function savePayment() {
             const exoData = await exoResponse.json();
 
             if (exoData.success && exoData.data) {
-                const porcentaje = parseInt(exoData.data.porcentaje);
+                let porcentaje = 0;
+                let tipoExoData = 'Anticipo';
+                
+                const isDocTypeAnticipo = (docTypeForStatus || '').toLowerCase().trim() === 'anticipo';
+                if (isDocTypeAnticipo) {
+                    if (exoData.data.anticipo_data) {
+                        porcentaje = parseInt(exoData.data.anticipo_data.porcentaje) || 0;
+                        tipoExoData = exoData.data.anticipo_data.tipo_exoneracion || 'Anticipo';
+                    } else if (exoData.data.tipo_exoneracion && exoData.data.tipo_exoneracion.toLowerCase().includes('anticipo')) {
+                        porcentaje = parseInt(exoData.data.porcentaje) || 0;
+                        tipoExoData = exoData.data.tipo_exoneracion;
+                    }
+                } else {
+                    if (exoData.data.workshop_data) {
+                        porcentaje = parseInt(exoData.data.workshop_data.porcentaje) || 0;
+                        tipoExoData = exoData.data.workshop_data.tipo_exoneracion || 'Pago taller';
+                    } else if (exoData.data.tipo_exoneracion && !exoData.data.tipo_exoneracion.toLowerCase().includes('anticipo')) {
+                        porcentaje = parseInt(exoData.data.porcentaje) || 0;
+                        tipoExoData = exoData.data.tipo_exoneracion;
+                    }
+                }
+
                 if (porcentaje > 0 && porcentaje < 100) {
                     const checkPaymentUrl = ENDPOINT_BASE + APP_PATH + `api/consulta/GetTotalPaidByTicket`;
                     const params = new URLSearchParams();
@@ -7004,10 +7022,9 @@ async function savePayment() {
                     const payData = await payResponse.json();
 
                     let totalPaidAnterior = parseFloat(payData.total_paid) || 0;
-                    let tipoExoData = exoData.data.tipo_exoneracion || 'Anticipo';
                     
                     let montoBase = 30; // Monto base estándar para Anticipo
-                    if (tipoExoData === 'Presupuesto') {
+                    if (tipoExoData !== 'Anticipo') {
                         // totalBudget ya viene en la respuesta de GetTotalPaidByTicket actualizada
                         montoBase = parseFloat(payData.total_budget) || 0;
                     }
@@ -8156,8 +8173,19 @@ function handleViewExonerationInfo() {
     const rif = btn.data('rif');
     const razonSocial = btn.data('razon-social');
     const serialPos = btn.data('serial-pos');
+    const idStatusPayment = parseInt(btn.data('id-status-payment')) || 0;
 
     if (!nro_ticket) return;
+
+    // Ocultar botón de Aprobar Exoneración si el estatus general es 4 (Exoneración Aprobada)
+    const btnAprobar = document.getElementById('btnAprobarExoneracion');
+    if (btnAprobar) {
+        if (idStatusPayment === 4) {
+            btnAprobar.style.display = 'none';
+        } else {
+            btnAprobar.style.display = '';
+        }
+    }
 
     // Guardar para uso posterior
     currentSelectedTicket = nro_ticket;
@@ -8349,24 +8377,53 @@ function handleAprobarExoneracion() {
         return;
     }
 
-    Swal.fire({
-        title: 'Confirmar Aprobación Final',
-        html: `
+    let swalTitle = 'Confirmar Aprobación Final';
+    let swalHtml = `
+        <div class="text-start px-3">
+            <p style="font-size: 1.1rem; color: #4a5568; line-height: 1.6; margin-bottom: 1.25rem;">
+                ¿Está seguro que desea finalizar la revisión y aprobar la exoneración del ticket 
+                <strong style="color: #2d3748; background: #ebf8ff; padding: 0.2rem 0.5rem; border-radius: 0.4rem;">Nro ${nro_ticket}</strong>?
+            </p>
+            <div style="font-size: 0.95rem; color: #718096; border-left: 4px solid #28a745; padding: 0.5rem 0 0.5rem 1rem; background: #f0fff4; border-radius: 0 0.5rem 0.5rem 0;">
+                <i class="fas fa-info-circle me-1" style="color: #2f855a;"></i> Esta acción actualizará el estatus general del ticket a <strong>Aprobado</strong>.
+            </div>
+        </div>
+    `;
+    let confirmBtnText = '<i class="fas fa-check-double me-1"></i> Finalizar';
+    let cancelBtnText = 'Cancelar';
+
+    const activeExonerations = Array.isArray(currentExonerations) 
+        ? currentExonerations.filter(exo => parseInt(exo.id_status_payment) !== 12) 
+        : [];
+    
+    if (activeExonerations.length === 1) {
+        swalTitle = '¿Seguro que deseas aprobar?';
+        swalHtml = `
             <div class="text-start px-3">
                 <p style="font-size: 1.1rem; color: #4a5568; line-height: 1.6; margin-bottom: 1.25rem;">
                     ¿Está seguro que desea finalizar la revisión y aprobar la exoneración del ticket 
                     <strong style="color: #2d3748; background: #ebf8ff; padding: 0.2rem 0.5rem; border-radius: 0.4rem;">Nro ${nro_ticket}</strong>?
                 </p>
+                <div style="font-size: 0.95rem; color: #d97706; border-left: 4px solid #ff9800; padding: 0.5rem 0 0.5rem 1rem; background: #fffbeb; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.25rem; font-weight: 500;">
+                    <i class="fas fa-exclamation-triangle me-1" style="color: #d97706;"></i> Asegúrate de que no se le sumen más exoneraciones al cliente.
+                </div>
                 <div style="font-size: 0.95rem; color: #718096; border-left: 4px solid #28a745; padding: 0.5rem 0 0.5rem 1rem; background: #f0fff4; border-radius: 0 0.5rem 0.5rem 0;">
                     <i class="fas fa-info-circle me-1" style="color: #2f855a;"></i> Esta acción actualizará el estatus general del ticket a <strong>Aprobado</strong>.
                 </div>
             </div>
-        `,
+        `;
+        confirmBtnText = '<i class="fas fa-check-double me-1"></i> Sí, Exonerar';
+        cancelBtnText = 'No exonerar';
+    }
+
+    Swal.fire({
+        title: swalTitle,
+        html: swalHtml,
         icon: 'question',
         iconColor: '#3182ce',
         showCancelButton: true,
-        confirmButtonText: '<i class="fas fa-check-double me-1"></i> Finalizar',
-        cancelButtonText: 'Cancelar',
+        confirmButtonText: confirmBtnText,
+        cancelButtonText: cancelBtnText,
         buttonsStyling: false,
         customClass: {
             popup: 'premium-swal-popup',

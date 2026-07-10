@@ -3023,6 +3023,9 @@ class Consulta extends Controller
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nroTicket = $_POST['nro_ticket'] ?? null;
             $id_user = $_POST['id_user'] ?? null;
+            
+            // Log for debugging
+            error_log("handleAprobarExoneracionTicket - POST: " . json_encode($_POST));
 
             if ($nroTicket && $id_user) {
                 $id_exoneracion = $_POST['id_exoneracion'] ?? $_POST['id_payment_record'] ?? null;
@@ -4088,6 +4091,17 @@ class Consulta extends Controller
                 'success' => false, 
                 'message' => 'Todos los campos son obligatorios para el guardado directo.'
             ], 400);
+            return;
+        }
+
+        // VALIDACIÓN: No permitir registrar exoneraciones si el ticket ya tiene estatus general 4 (Exoneración Aprobada)
+        $ticketResults = $repository->GetTicketByNro($nro_ticket);
+        $ticketInfo = (is_array($ticketResults) && isset($ticketResults[0])) ? $ticketResults[0] : null;
+        if ($ticketInfo && isset($ticketInfo['id_status_payment']) && (int)$ticketInfo['id_status_payment'] === 4) {
+            $this->response([
+                'success' => false, 
+                'message' => 'No se pueden registrar más exoneraciones porque este ticket ya cuenta con una exoneración aprobada (estatus 4).'
+            ], 403);
             return;
         }
 

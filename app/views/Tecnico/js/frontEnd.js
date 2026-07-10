@@ -1111,6 +1111,67 @@ function getTicketData() {
               fetch(checkExoUrl)
                   .then(response => response.json())
                   .then(data => {
+                      let has100WorkshopApproved = false;
+                      let hasPendingExoneration = false;
+                      let pendingExoType = '';
+                      
+                      if (data.success && data.data) {
+                          const exonerations = data.data.all_exonerations || [];
+                          exonerations.forEach(exo => {
+                              const tipoLower = (exo.tipo_exoneracion || '').toLowerCase();
+                              const statusId = parseInt(exo.id_status_payment);
+                              
+                              // Si hay alguna exoneración pendiente de revisión (5 o 7) y no está rechazada (12)
+                              if ((statusId === 5 || statusId === 7) && statusId !== 12) {
+                                  hasPendingExoneration = true;
+                                  pendingExoType = exo.tipo_exoneracion || 'Exoneración';
+                              }
+                              
+                              if (tipoLower.includes('taller')) {
+                                  const pct = parseFloat(exo.porcentaje) || 0;
+                                  if (pct >= 100 && statusId !== 12) {
+                                      if (statusId === 4) {
+                                          has100WorkshopApproved = true;
+                                      }
+                                  }
+                              }
+                          });
+                      }
+
+                      // A. Si hay cualquier exoneración PENDIENTE (de taller, de anticipo, etc.), bloqueamos con aviso explícito
+                      if (hasPendingExoneration) {
+                          Swal.fire({
+                              icon: 'warning',
+                              iconColor: '#ff9800',
+                              title: '<span style="color: #003594; font-size: 1.5em; font-weight: 700;">Exoneración Pendiente</span>',
+                              html: `
+                                  <div style="text-align: left; padding: 10px 0;">
+                                      <p style="color: #495057; font-size: 1.1em; margin-bottom: 15px; line-height: 1.6;">
+                                          El ticket tiene una <strong>exoneración de ${pendingExoType} pendiente por revisión</strong>.
+                                      </p>
+                                      <div style="background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                                          <p style="color: #856404; margin: 0; font-size: 1em; line-height: 1.6;">
+                                              <strong>⚠️ Nota:</strong><br>
+                                              Una vez que la administración apruebe o rechace la exoneración, podrás enviar el equipo al taller.
+                                          </p>
+                                      </div>
+                                  </div>
+                              `,
+                              confirmButtonText: 'Entendido',
+                              confirmButtonColor: '#003594',
+                              color: 'black',
+                              width: '600px',
+                              padding: '2em'
+                          });
+                          return;
+                      }
+
+                      // B. Si hay una exoneración de Taller al 100% APROBADA, omitimos validaciones de anticipo y enviamos
+                      if (has100WorkshopApproved) {
+                          verificarDomiciliacionYEnviar();
+                          return;
+                      }
+
                       let idStatusExoneracion = 0;
                       let porcentaje = 0;
                       let tipoExoneracion = '';
@@ -5293,6 +5354,9 @@ $(document).on('shown.bs.modal', '#modalAgregarDatosPago', function() {
  */
 
 function openModalRegistroExoneracion(nroTicket, ticketId, serialPos, idIntelipunto = '') {
+    // Guardar variable global para uso en loadExonerationHistory
+    window.currentTicketTienePago = false;
+
     const modalElement = document.getElementById('modalRegistroExoneracion');
     if (!modalElement) {
         console.error("Error: No se encontró el elemento modalRegistroExoneracion");
@@ -5411,6 +5475,8 @@ function loadExonerationHistory(nroTicket) {
                     currentExonerationHistory = data.history;
                     let hasAnticipo = false;
                     let hasTaller = false;
+                    let has100Taller = false;
+                    let hasWorkshop = data.has_workshop_history || false;
                     let rejectionCount = 0;
                     let dataAnticipo = null;
                     let dataTaller = null;
@@ -5430,6 +5496,9 @@ function loadExonerationHistory(nroTicket) {
                             if (exo.tipo_exoneracion === 'Pago taller' && !isRejected) {
                                 hasTaller = true;
                                 dataTaller = exo;
+                                if (parseFloat(exo.porcentaje) >= 100) {
+                                    has100Taller = true;
+                                }
                             }
 
                              const date = new Date(exo.fecha_creacion).toLocaleDateString('es-VE');
@@ -5487,22 +5556,43 @@ function loadExonerationHistory(nroTicket) {
 
                     const btnAnticipo = document.querySelector('.exoneration-type-btn[data-type="Anticipo"]');
                     const btnTaller = document.querySelector('.exoneration-type-btn[data-type="Pago taller"]');
+                    const ticketTienePago = window.currentTicketTienePago || false;
                     
                     if (btnAnticipo) {
-                        if (hasAnticipo) {
+                        if (hasAnticipo || hasWorkshop || has100Taller || ticketTienePago) {
                             btnAnticipo.classList.add('disabled');
-                            btnAnticipo.classList.remove('active');
+                            btnAnticipo.classList.remove('active'); // Remover active si estaba
+                            btnAnticipo.disabled = true;
+                            btnAnticipo.style.pointerEvents = 'none';
                             btnAnticipo.style.opacity = '0.5';
                             btnAnticipo.style.background = '#e9ecef';
                             btnAnticipo.style.color = '#adb5bd';
                             btnAnticipo.style.borderColor = '#dee2e6';
-                            btnAnticipo.title = "Ya existe una exoneración de este tipo";
+                            
+                            let titleText = "Ya existe una exoneración de este tipo";
+                            if (hasWorkshop) {
+                                titleText = "No se permite exoneración de Anticipo porque el ticket ya pasó por taller";
+                            } else if (has100Taller) {
+                                titleText = "Bloqueado por exoneración de Taller al 100%";
+                            } else if (ticketTienePago) {
+                                titleText = "El anticipo ya fue pagado";
+                            }
+                            btnAnticipo.title = titleText;
+                            if (ticketTienePago) {
+                                btnAnticipo.innerHTML = '<i class="bi bi-lock-fill"></i> Anticipo pagado';
+                            } else if (has100Taller) {
+                                btnAnticipo.innerHTML = '<i class="bi bi-lock-fill"></i> Anticipo bloq. (100% Taller)';
+                            }
                         } else {
                             btnAnticipo.classList.remove('disabled');
+                            btnAnticipo.disabled = false;
+                            btnAnticipo.style.pointerEvents = 'auto';
                             btnAnticipo.style.opacity = '1';
-                            btnAnticipo.style.background = ''; 
+                            btnAnticipo.style.background = ''; // Volver al estilo original
                             btnAnticipo.style.color = '';
                             btnAnticipo.style.borderColor = '';
+                            btnAnticipo.title = "Exoneración de Anticipo";
+                            btnAnticipo.innerHTML = '<i class="bi bi-cash"></i> Anticipo';
                         }
                     }
                     
@@ -5510,6 +5600,8 @@ function loadExonerationHistory(nroTicket) {
                         if (hasTaller) {
                             btnTaller.classList.add('disabled');
                             btnTaller.classList.remove('active');
+                            btnTaller.disabled = true;
+                            btnTaller.style.pointerEvents = 'none';
                             btnTaller.style.opacity = '0.5';
                             btnTaller.style.background = '#e9ecef';
                             btnTaller.style.color = '#adb5bd';
@@ -5517,24 +5609,65 @@ function loadExonerationHistory(nroTicket) {
                             btnTaller.title = "Ya existe una exoneración de este tipo";
                         } else {
                             btnTaller.classList.remove('disabled');
+                            btnTaller.disabled = false;
+                            btnTaller.style.pointerEvents = 'auto';
                             btnTaller.style.opacity = '1';
                             btnTaller.style.background = '';
                             btnTaller.style.color = '';
                             btnTaller.style.borderColor = '';
+                            btnTaller.title = "Exoneración de Taller";
                         }
+                    }
+
+                    // Auto-seleccionar el botón que quede habilitado si es necesario
+                    const isAnticipoDisabled = hasAnticipo || hasWorkshop || has100Taller || ticketTienePago;
+                    const isTallerDisabled = hasTaller;
+
+                    if (isAnticipoDisabled && !isTallerDisabled) {
+                        // Solo taller está habilitado -> Asegurar selección de Taller
+                        if (btnTaller && !btnTaller.classList.contains('active')) {
+                            btnTaller.classList.add('active');
+                            const typeInput = document.getElementById('exo_tipo_seleccionado');
+                            if (typeInput) typeInput.value = 'Pago taller';
+                            updateExoCodeByType('Pago taller', idClienteSQL);
+                            adjustExoSliderByType('Pago taller');
+                        }
+                    } else if (!isAnticipoDisabled && isTallerDisabled) {
+                        // Solo anticipo está habilitado -> Asegurar selección de Anticipo
+                        if (btnAnticipo && !btnAnticipo.classList.contains('active')) {
+                            btnAnticipo.classList.add('active');
+                            const typeInput = document.getElementById('exo_tipo_seleccionado');
+                            if (typeInput) typeInput.value = 'Anticipo';
+                            updateExoCodeByType('Anticipo', idClienteSQL);
+                            adjustExoSliderByType('Anticipo');
+                        }
+                    } else if (isAnticipoDisabled && isTallerDisabled) {
+                        // Ambos están deshabilitados -> Ninguno activo
+                        if (btnAnticipo) btnAnticipo.classList.remove('active');
+                        if (btnTaller) btnTaller.classList.remove('active');
+                        const typeInput = document.getElementById('exo_tipo_seleccionado');
+                        if (typeInput) typeInput.value = '';
                     }
 
                     const btnGuardar = document.querySelector('#modalRegistroExoneracion #btnSincronizarExoneracion');
                     const infoContainer = document.getElementById('exo_limit_info_container');
 
-                    if (rejectionCount >= 2 || (hasAnticipo && hasTaller)) {
+                    if (rejectionCount >= 2 || (hasAnticipo && hasTaller) || has100Taller) {
                         if (btnGuardar) {
                             btnGuardar.disabled = true;
                             btnGuardar.style.background = 'linear-gradient(135deg, #94a3b8 0%, #64748b 100%)';
-                            btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Límite Alcanzado`;
+                            if (has100Taller) {
+                                btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Taller Exonerado 100%`;
+                            } else {
+                                btnGuardar.innerHTML = `<i class="fas fa-lock me-2"></i>Límite Alcanzado`;
+                            }
                         }
                         if (infoContainer) {
-                             infoContainer.innerHTML = `<div class="alert alert-warning">Límite de exoneraciones alcanzado para este ticket.</div>`;
+                             if (has100Taller) {
+                                 infoContainer.innerHTML = `<div class="alert alert-warning">El ticket ya cuenta con una exoneración de taller al 100%.</div>`;
+                             } else {
+                                 infoContainer.innerHTML = `<div class="alert alert-warning">Límite de exoneraciones alcanzado para este ticket.</div>`;
+                             }
                         }
                     } else {
                         if (btnGuardar) {
@@ -5543,6 +5676,13 @@ function loadExonerationHistory(nroTicket) {
                             btnGuardar.innerHTML = `Guardar Exoneración`;
                         }
                         if (infoContainer) infoContainer.innerHTML = '';
+                    }
+
+                    // Si uno ya existe, intentar seleccionar el otro automáticamente
+                    if (hasAnticipo && !hasTaller && btnTaller && !btnTaller.classList.contains('disabled')) {
+                        btnTaller.click();
+                    } else if (hasTaller && !hasAnticipo && btnAnticipo && !btnAnticipo.classList.contains('disabled')) {
+                        btnAnticipo.click();
                     }
 
                 }
@@ -5789,6 +5929,12 @@ function confirmAndSaveExoneration() {
                             const dropZone = document.getElementById('exo_fileDropZone');
                             if (fileStatus) fileStatus.classList.add('d-none');
                             if (dropZone) dropZone.classList.remove('d-none');
+                            const uploadContainer = document.querySelector('.exo-upload-container');
+                            if (uploadContainer) {
+                                uploadContainer.style.background = '#ffffff';
+                                uploadContainer.style.border = 'none';
+                                uploadContainer.style.padding = '0';
+                            }
                         } else {
 
                             Swal.fire({ icon: 'error', title: 'Error', text: data.message });

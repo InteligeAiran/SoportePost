@@ -219,6 +219,7 @@ class reportes extends Controller
                     break;
 
                 case 'tickets-pending-document-approval':
+                case 'get-tickets-pending-document-approval':
                     $this->ticketsPendingDocumentApproval();
                     break;
 
@@ -2256,7 +2257,8 @@ class reportes extends Controller
             if ($document_type === 'Exoneracion' && $id_status_payment_actual == 5) {
                 // Correos específicos para exoneración
                 $emails_admin = [
-                    'olga.rojas@intelipunto.com'
+                    /*'olga.rojas@intelipunto.com'*/
+                    'airanbracamonte01@gmail.com'
                 ];
                 $name_admin = 'Administración';
 
