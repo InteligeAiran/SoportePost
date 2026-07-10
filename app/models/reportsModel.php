@@ -588,7 +588,7 @@ private function determineStatusPaymentAfterUpload($nro_ticket, $document_type_b
             $nombre_estado = pg_fetch_result($estado_result['query'], 0, 'nombre_estado');
             
             // Si el estado es Miranda, Caracas, Distrito Capital o Vargas
-            if (in_array($nombre_estado, ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'])) {
+            if (in_array($nombre_estado, ['Caracas', 'Distrito Capital'])) {
                 // Si se carga Exoneracion, va a estado 5 (Exoneracion Pendiente por Aprobar)
                 if ($document_type_being_uploaded === 'Exoneracion') {
                     return 5; // Exoneracion Pendiente por Aprobar
@@ -1022,7 +1022,7 @@ private function determineStatusPayment($nro_ticket, $document_type_being_upload
             $nombre_estado = pg_fetch_result($estado_result['query'], 0, 'nombre_estado');
             
             // Si el estado es Miranda, Caracas, Distrito Capital o Vargas
-            if (in_array($nombre_estado, ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'])) {
+            if (in_array($nombre_estado, ['Caracas', 'Distrito Capital'])) {
                 // Si se carga Exoneracion, va a estado 5 (Exoneracion Pendiente por Aprobar)
                 if ($document_type_being_uploaded === 'Exoneracion') {
                     return 5; // Exoneracion Pendiente por Aprobar

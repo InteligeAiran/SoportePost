@@ -1326,7 +1326,7 @@ function getTicketDataFinaljs() {
                       const isFallaSinPago = (idFailure === 9 || idFailure === 12 || isActualizacionSoftware || isSinLlavesDukpt);
 
                       // Identificar si es región central
-                      const isCentralRegion = (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas");
+                      const isCentralRegion = (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Distrito Capital");
                       
                       const hasEnvioDestinoDocument = row.document_types_available && row.document_types_available.includes('Envio_Destino');
                       const isDocumentMissing = !hasEnvioDestinoDocument || hasEnvioDestinoDocument === null || hasEnvioDestinoDocument === '';
@@ -1355,7 +1355,7 @@ function getTicketDataFinaljs() {
                                           </button>`;
                       }
                       // Prioridad 2: Validar si el ticket es de Caracas o Miranda y está Reparado
-                      else if ((currentStatusLab === "Reparado") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas")) {
+                      else if ((currentStatusLab === "Reparado") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Distrito Capital")) {
                           actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-btn" title = "Entregar al Cliente"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"
@@ -1365,7 +1365,7 @@ function getTicketDataFinaljs() {
                                                 <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708"/>
                                               </svg>
                                           </button>`;
-                      }else if((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Miranda" || nombre_estado_cliente === "Distrito Capital" || nombre_estado_cliente === "Vargas") && (name_accion_ticket == "En espera de Confirmar Devolución")){
+                      }else if((currentStatusLab === "Reparado" || currentStatusLab === "") && (nombre_estado_cliente === "Caracas" || nombre_estado_cliente === "Distrito Capital") && (name_accion_ticket == "En espera de Confirmar Devolución")){
                          actionButton = `<button type="button" class="btn btn-primary btn-sm deliver-ticket-bt" title = "Entregar al Cliente"
                                               data-id-ticket="${idTicket}"
                                               data-serial-pos="${serialPos}"

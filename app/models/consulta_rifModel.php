@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * SoportePost - Sistema de Gestion de Tickets
  * @author    Airan Bracamonte <airanbracamonte01@gmail.com>
@@ -1160,7 +1160,7 @@ class consulta_rifModel extends Model
 
         if ($estado_result && isset($estado_result['query']) && $estado_result['numRows'] > 0) {
             $nombre_estado = pg_fetch_result($estado_result['query'], 0, 'nombre_estado');
-            if (in_array($nombre_estado, ['Miranda', 'Caracas', 'Distrito Capital', 'Vargas'])) {
+            if (in_array($nombre_estado, ['Caracas', 'Distrito Capital'])) {
                 if ($document_type_being_uploaded === 'Exoneracion') return 5;
                 if ($document_type_being_uploaded === 'Anticipo') return 7;
             }

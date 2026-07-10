@@ -2387,7 +2387,7 @@ function UpdateGuarantees() {
   const checkExoneracion = document.getElementById("checkExoneracion");
   const checkAnticipo = document.getElementById("checkAnticipo");
 
-  // NUEVO: Verificar si es Caracas, Miranda, Vargas o Distrito Capital (región 1)
+  // NUEVO: Verificar si es Caracas o Distrito Capital (región central sin envío)
   const checkEnvioContainer = document.getElementById("checkEnvioContainer");
   const isCaracasMiranda = checkEnvioContainer && checkEnvioContainer.style.display === "none";
 
@@ -2396,7 +2396,7 @@ function UpdateGuarantees() {
   // Si es "Actualización de Software" o "Sin Llaves/Dukpt Vacío", manejar lógica especial
   if (isFallaSinPago) {
     if (isCaracasMiranda) {
-      // En Caracas/Miranda no requiere envío ni pago
+      // En Caracas/Distrito Capital no requiere envío ni pago
       idStatusPayment = 16; // No necesita anticipo o exoneración por el tipo de falla
     } else if (uploadNowRadio && uploadNowRadio.checked) {
       const tieneEnvio = checkEnvio && checkEnvio.checked && archivoEnvio;
@@ -2560,40 +2560,40 @@ function VerificarSucursales(rif) {
 
     xhrSucursales.onload = function () {
         if (xhrSucursales.status === 200) {
-            const responseSucursales = JSON.parse(xhrSucursales.responseText);
             try {
+                const responseSucursales = JSON.parse(xhrSucursales.responseText);
                 if (responseSucursales.success) {
-                    const idRegion = responseSucursales.id_region;
-                    const idRegionNumero = parseInt(idRegion, 10);
+                    const nombreEstado = responseSucursales.nombre_estado || '';
+                    const isEstadoSinEnvio = ['Caracas', 'Distrito Capital'].includes(nombreEstado);
 
                     // Referencia al div que contiene el botón de carga de PDF
                     const botonCargaPDFEnvDiv = document.getElementById("botonCargaPDFEnv");
 
-                    const checkEnvioContainer = document.getElementById("checkEnvioContainer"); // Usando el ID sugerido
+                    const checkEnvioContainer = document.getElementById("checkEnvioContainer");
                     const checkExoneracionContainer = document.getElementById("checkExoneracionContainer");
                     const checkAnticipoContainer = document.getElementById("checkAnticipoContainer");
 
-                    if (idRegionNumero === 1) { // Si es Caracas
+                    if (isEstadoSinEnvio) { // Si es Caracas o Distrito Capital
                         if (botonCargaPDFEnvDiv) {
                             botonCargaPDFEnvDiv.style.display = "none";
                         }
                         if (checkEnvioContainer) {
                             checkEnvioContainer.style.display = "none";
                             checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de exoneración
-                            // checkAnticipoContainer.style.display = "block"; // Original
                             checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         }
-                      }else{
-                        // checkAnticipoContainer.style.display = "block"; // Original
-                        checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
-                        checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de ex
-                        checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
-                      }
-                } else {
+                    } else {
+                        if (botonCargaPDFEnvDiv) {
+                            botonCargaPDFEnvDiv.style.display = "block";
+                        }
+                        if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
+                        if (checkExoneracionContainer) checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de exoneración
+                        if (checkEnvioContainer) checkEnvioContainer.style.display = "block"; // Mostrar el checkbox de envío
+                    }
                 }
             } catch (error) {
+                console.error(error);
             }
-        } else {
         }
     };
 
