@@ -8371,7 +8371,7 @@ function SendSerial() {
               data: "serial_pos",
               title: "Serial POS",
               render: function (data, type, row) {
-                return `<a href="#" class="serial-link">${data}</a>`;
+                return `<a href="#" class="serial-link" data-id-cliente="${row.id_cliente || ''}">${data}</a>`;
               },
             },
             {data: "desc_pos", title: "Estatus del Equipo"},
@@ -8789,10 +8789,11 @@ function SendSerial() {
           $(newTable).on("click", "a.serial-link", function (e) {
             e.preventDefault();
             const rowData = $(newTable).DataTable().row($(this).parents("tr")).data();
+            const idClienteLink = $(this).data("id-cliente") || rowData.id_cliente;
             const modalSerial = document.getElementById("ModalSerial");
             window.modalSerialInstance = new bootstrap.Modal(modalSerial);
             window.modalSerialInstance.show();
-            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, rowData.id_cliente, rowData.cod_adm, rowData.banco);
+            fetchSerialData(rowData.serial_pos, rowData.rif, rowData.razonsocial, idClienteLink, rowData.cod_adm, rowData.banco);
           });
         } else {
           // Si no hay datos, mostrar un mensaje y la imagen de bienvenida
