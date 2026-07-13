@@ -9637,7 +9637,7 @@ function fetchSerialData(serial, rif, razonsocial, id_client, cod_adm, banco) {
   xhr.onerror = function () {
   };
 
-  const datos = `action=SearchSerial&serial=${encodeURIComponent(serial)}`;
+  const datos = `action=SearchSerial&serial=${encodeURIComponent(serial)}&id_cliente=${encodeURIComponent(id_client || '')}`;
   xhr.send(datos);
 }
 

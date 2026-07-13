@@ -108,19 +108,21 @@ class consulta_rifModel extends Model
 
 
 
-    public function SearchSerial($serial)
+    public function SearchSerial($serial, $id_cliente = null)
 
     {
 
         try {
 
-            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial); // Assuming '$this->db' is now a valid PgSql\Connection
+            $escaped_serial = pg_escape_literal($this->db->getConnection(), $serial);
 
-            $sql = "SELECT * FROM SearchSerial(" . $escaped_serial . ")";
+            if ($id_cliente !== null && $id_cliente !== '') {
+                $sql = "SELECT * FROM SearchSerial(" . $escaped_serial . ", " . (int)$id_cliente . ")";
+            } else {
+                $sql = "SELECT * FROM SearchSerial(" . $escaped_serial . ")";
+            }
 
             $result = Model::getResult($sql, $this->db);
-
-            // Close the connection if needed
 
             return $result;
 

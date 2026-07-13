@@ -584,10 +584,10 @@ class Consulta extends Controller
     public function handleSearchSerial()
     {
         $serial = isset($_POST['serial']) ? $_POST['serial'] : '';
-        $repository = new TechnicalConsultionRepository(); // Inicializa el LoginRepository aquí
+        $id_cliente = isset($_POST['id_cliente']) ? $_POST['id_cliente'] : null;
+        $repository = new TechnicalConsultionRepository();
 
-        $result = $repository->SearchSerial($serial);
-        //var_dump($result);
+        $result = $repository->SearchSerial($serial, $id_cliente);
 
         if (!empty($result)) {
             $this->response(['success' => true, 'serial' => $result], 200);

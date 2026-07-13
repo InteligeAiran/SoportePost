@@ -93,9 +93,9 @@ class TechnicalConsultionRepository
         }
     }
 
-    public function SearchSerial($serial){
+    public function SearchSerial($serial, $id_cliente = null){
         // Lógica para obtener todos los usuarios
-        $result = $this->model->SearchSerial($serial);
+        $result = $this->model->SearchSerial($serial, $id_cliente);
         if ($result) {
             //var_dump($result);  
             $serial = [];
