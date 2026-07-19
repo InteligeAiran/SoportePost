@@ -2584,7 +2584,13 @@ function VerificarSucursales(rif) {
                         }
                     } else {
                         if (botonCargaPDFEnvDiv) {
-                            botonCargaPDFEnvDiv.style.display = "block";
+                            const uploadNowRadio = document.getElementById("uploadNow");
+                            const checkEnvio = document.getElementById("checkEnvio");
+                            if (uploadNowRadio && uploadNowRadio.checked && checkEnvio && checkEnvio.checked) {
+                                botonCargaPDFEnvDiv.style.display = "block";
+                            } else {
+                                botonCargaPDFEnvDiv.style.display = "none";
+                            }
                         }
                         if (checkAnticipoContainer) checkAnticipoContainer.style.display = "none"; // Ocultar el checkbox de anticipo (FORZADO)
                         if (checkExoneracionContainer) checkExoneracionContainer.style.display = "none"; // Ocultar el checkbox de exoneración
@@ -2616,7 +2622,7 @@ document.getElementById("DownloadExo").addEventListener("click", function (event
     const archivoExoneracion = inputExoneracion.files;
     const inputExoneracion1 = document.getElementById("DownloadExo"); // El botón
 
-    if (archivoExoneracion.size > 5 * 1024 * 1024) {
+    if (archivoExoneracion && archivoExoneracion.length > 0 && archivoExoneracion[0].size > 5 * 1024 * 1024) {
       Swal.fire({
         icon: "warning",
         title: "Archivo muy grande",
@@ -2637,7 +2643,7 @@ document.getElementById("DownloadAntici").addEventListener("click", function (ev
   const inputAnticipo1 = document.getElementById("DownloadAntici"); // El botón
 
   // NUEVA VALIDACIÓN: Verificar tamaño del archivo de anticipo
-  if (archivoAnticipo.size > 5 * 1024 * 1024) {
+  if (archivoAnticipo && archivoAnticipo.size > 5 * 1024 * 1024) {
     Swal.fire({
       icon: "warning",
       title: "Archivo muy grande",
@@ -2659,7 +2665,7 @@ document.getElementById("DownloadEnvi").addEventListener("click", function (even
   const inputEnvio1 = document.getElementById("DownloadEnvi"); // El botón
 
   // NUEVA VALIDACIÓN: Verificar tamaño del archivo de envío
-  if (archivoEnvio.size > 5 * 1024 * 1024) {
+  if (archivoEnvio && archivoEnvio.size > 5 * 1024 * 1024) {
     Swal.fire({
       icon: "warning",
       title: "Archivo muy grande",
@@ -6600,6 +6606,10 @@ checkEnvio.addEventListener("change", function() {
   const miModalElement = document.getElementById("miModal");
   if (miModalElement) {
     miModalElement.addEventListener("shown.bs.modal", function() {
+      // Sincronizar visibilidad de la sección de carga de documentos al abrir el modal
+      if (typeof updateDocumentUploadVisibility === "function") {
+        updateDocumentUploadVisibility();
+      }
       // Actualizar la visibilidad del icono cuando el modal se muestra
       setTimeout(function() {
         updateIconoAgregarInfoVisibility();
