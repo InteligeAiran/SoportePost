@@ -104,7 +104,6 @@ class HistoricalModel extends Model
 
     private function parseDateToTimestamp($dateStr) {
         if (empty($dateStr) || $dateStr === 'N/A') return 0;
-        // Formato esperado: DD-MM-YYYY HH:II
         $parts = explode(' ', $dateStr);
         if (count($parts) < 1) return 0;
         
@@ -119,47 +118,43 @@ class HistoricalModel extends Model
         return strtotime($formatted);
     }
 
-    public function MarkTicketReceived($id_ticket, $id_user) // id_user es el ID del coordinador que realiza la acción
-        {
+    public function MarkTicketReceived($id_ticket, $id_user)
+    {
         try {
             $id_ticket = (int) $id_ticket;
-            $id_user = (int) $id_user; // ID del usuario/coordinador que marca como recibido
+            $id_user = (int) $id_user;
 
-            $db = $this->db->getConnection(); // Obtener la conexión a la base de datos
+            $db = $this->db->getConnection();
 
-            // --- 1. Obtener los últimos datos del historial del ticket ---
-            // Buscamos el registro más reciente para este id_ticket en ticket_status_history
             $sql_get_last_history = "SELECT
                 tsh.new_status_lab,
                 tsh.new_status_payment,
                 tsh.new_status_domiciliacion,
-				tsh.new_status
+                tsh.new_status
             FROM
                 tickets_status_history tsh
             WHERE
-                tsh.id_ticket = {$id_ticket} -- Filtrar por el ID del ticket
+                tsh.id_ticket = {$id_ticket}
             ORDER BY
-                tsh.changedstatus_at DESC, tsh.id_history DESC -- Ordenar por fecha y luego por ID para el último registro
-            LIMIT 1;
-            ";
+                tsh.changedstatus_at DESC, tsh.id_history DESC
+            LIMIT 1;";
 
             $result_last_history = pg_query($db, $sql_get_last_history);
 
+            $last_status_lab = 0;
+            $last_status_payment = 'NULL';
+            $last_status_domiciliacion = 'NULL';
+            $last_status_ticket = 1;
+
             if ($result_last_history && pg_num_rows($result_last_history) > 0) {
                 $row_last_history = pg_fetch_assoc($result_last_history);
-                // Si el valor es NULL en la DB, lo mantendrá como NULL, así que casteamos a int para asegurar un número
-                $last_status_lab = (int) ($row_last_history['new_status_lab'] ?? NULL);
-                $last_status_payment = (int) ($row_last_history['new_status_payment'] ?? NULL);
-                $last_status_domiciliacion = (int) ($row_last_history['new_status_domiciliacion'] ?? NULL);
-                $last_status_ticket = (int) ($row_last_history['new_status']?? NULL); // El último estado principal
+                $last_status_lab = (int) ($row_last_history['new_status_lab'] ?? 0);
+                $last_status_payment = $row_last_history['new_status_payment'] !== null ? (int)$row_last_history['new_status_payment'] : 'NULL';
+                $last_status_domiciliacion = $row_last_history['new_status_domiciliacion'] !== null ? (int)$row_last_history['new_status_domiciliacion'] : 'NULL';
+                $last_status_ticket = (int) ($row_last_history['new_status'] ?? 1);
                 pg_free_result($result_last_history);
-            } else {
-                error_log("No se encontró historial previo para el ticket ID: {$id_ticket}. Usando valores por defecto.");
             }
 
-            // --- 2. Llamar a la función SQL para actualizar el estado principal del ticket ---
-            // Esta función `update_ticket_to_received` debería encargarse de actualizar
-            // `id_status_ticket` y `date_received_coordinator` en la tabla `tickets`.
             $sqlCallFunction = "SELECT public.update_ticket_to_received({$id_ticket}, {$id_user});";
             $resultUpdate = $this->db->pgquery($sqlCallFunction);
 
@@ -169,30 +164,33 @@ class HistoricalModel extends Model
             }
             pg_free_result($resultUpdate);
 
-            // --- 3. Insertar en ticket_status_history ---
-            $id_accion_ticket_history = 3; // ID de acción para "Recibido por Coordinador"
+            $id_accion_ticket_history = 3; // ID de acción 3: "Recibido por la Coordinación"
 
-             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
-            $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-            if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-                $row_coordinador = pg_fetch_assoc($resultcoordinador);
-                $id_coordinador = (int) $row_coordinador['id_coordinador'];
-                pg_free_result($resultcoordinador);
-            }else{ 
-                $id_coordinador = null;
-            }
-
+            // ACCION 3: Quien lo marca como recibido en la coordinación es el Coordinador
+            $updateCoordSql = "
+                UPDATE users_tickets ut
+                SET id_coordinador = {$id_user}
+                FROM (
+                    SELECT id_user_ticket
+                    FROM users_tickets
+                    WHERE id_ticket = {$id_ticket}
+                    ORDER BY id_user_ticket DESC
+                    LIMIT 1
+                ) last_ut
+                WHERE ut.id_user_ticket = last_ut.id_user_ticket;";
+            $this->db->pgquery($updateCoordSql);
+            $id_coordinador = (int) $id_user;
 
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %d::integer);",
                 (int) $id_ticket,
-                (int) $id_user, // changedstatus_by
-                (int) $last_status_ticket, // new_status (del ticket principal, 'En Proceso')
-                (int) $id_accion_ticket_history, // new_action
-                (int) $last_status_lab, // new_status_lab (del historial anterior)
-                (int) $last_status_payment, // new_status_payment (del historial anterior)
-                (int) $last_status_domiciliacion, // new_status_domiciliacion (del historial anterior)
-                (int) $id_coordinador // new_coordinador (del historial anterior)
+                (int) $id_user,
+                (int) $last_status_ticket,
+                (int) $id_accion_ticket_history,
+                (int) $last_status_lab,
+                $last_status_payment,
+                $last_status_domiciliacion,
+                (int) $id_coordinador
             );
 
             $resultHistory = $this->db->pgquery($sqlInsertHistory);
@@ -203,57 +201,50 @@ class HistoricalModel extends Model
             }
             pg_free_result($resultHistory);
 
-            // Si todo fue exitoso
             return ['success' => true, 'message' => 'Ticket marcado como recibido y historial registrado.'];
 
         } catch (Throwable $e) {
-            error_log("Excepción en TicketModel::MarkTicketReceived: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+            error_log("Excepción en TicketModel::MarkTicketReceived: " . $e->getMessage());
             return ['success' => false, 'message' => 'Error interno del servidor.'];
-        } finally {
-            // ... (Tu lógica para cerrar la conexión si aplica) ...
         }
     }
 
-    public function MarkTicketReceivedTechnical($id_ticket, $id_user) // id_user es el ID del técnico que realiza la acción
-     {
+    public function MarkTicketReceivedTechnical($id_ticket, $id_user)
+    {
         try {
             $id_ticket = (int) $id_ticket;
-            $id_user = (int) $id_user; // ID del usuario/coordinador que marca como recibido
+            $id_user = (int) $id_user;
 
-            $db = $this->db->getConnection(); // Obtener la conexión a la base de datos
+            $db = $this->db->getConnection();
 
-            // --- 1. Obtener los últimos datos del historial del ticket ---
-            // Buscamos el registro más reciente para este id_ticket en ticket_status_history
             $sql_get_last_history = "SELECT
                 tsh.new_status_lab,
                 tsh.new_status_payment,
                 tsh.new_status_domiciliacion,
-				tsh.new_status
+                tsh.new_status
             FROM
                 tickets_status_history tsh
             WHERE
-                tsh.id_ticket = {$id_ticket} -- Filtrar por el ID del ticket
+                tsh.id_ticket = {$id_ticket}
             ORDER BY
-                tsh.changedstatus_at DESC, tsh.id_history DESC -- Ordenar por fecha y luego por ID para el último registro
-            LIMIT 1;
-            ";
+                tsh.changedstatus_at DESC, tsh.id_history DESC
+            LIMIT 1;";
             $result_last_history = pg_query($db, $sql_get_last_history);
+
+            $last_status_lab = 0;
+            $last_status_payment = 'NULL';
+            $last_status_domiciliacion = 'NULL';
+            $last_status_ticket = 1;
 
             if ($result_last_history && pg_num_rows($result_last_history) > 0) {
                 $row_last_history = pg_fetch_assoc($result_last_history);
-                // Si el valor es NULL en la DB, lo mantendrá como NULL, así que casteamos a int para asegurar un número
-                $last_status_lab = (int) ($row_last_history['new_status_lab'] ?? NULL);
-                $last_status_payment = (int) ($row_last_history['new_status_payment'] ?? NULL);
-                $last_status_domiciliacion = (int) ($row_last_history['new_status_domiciliacion'] ?? NULL);
-                $last_status_ticket = (int) ($row_last_history['new_status']?? NULL); // El último estado principal
+                $last_status_lab = (int) ($row_last_history['new_status_lab'] ?? 0);
+                $last_status_payment = $row_last_history['new_status_payment'] !== null ? (int)$row_last_history['new_status_payment'] : 'NULL';
+                $last_status_domiciliacion = $row_last_history['new_status_domiciliacion'] !== null ? (int)$row_last_history['new_status_domiciliacion'] : 'NULL';
+                $last_status_ticket = (int) ($row_last_history['new_status'] ?? 1);
                 pg_free_result($result_last_history);
-            } else {
-                error_log("No se encontró historial previo para el ticket ID: {$id_ticket}. Usando valores por defecto.");
             }
 
-            // --- 2. Llamar a la función SQL para actualizar el estado principal del ticket ---
-            // Esta función `update_ticket_to_received` debería encargarse de actualizar
-            // `id_status_ticket` y `date_received_coordinator` en la tabla `tickets`.
             $sqlCallFunction = "SELECT public.update_ticket_to_received_tecnico({$id_ticket});";
             $resultUpdate = $this->db->pgquery($sqlCallFunction);
 
@@ -263,7 +254,6 @@ class HistoricalModel extends Model
             }
             pg_free_result($resultUpdate);
 
-            // --- 3. Insertar en ticket_status_history ---
             $id_accion_ticket_history = 10; // ID de acción para "Recibido por Técnico"
 
             $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$id_ticket};";
@@ -272,20 +262,20 @@ class HistoricalModel extends Model
                 $row_coordinador = pg_fetch_assoc($resultcoordinador);
                 $id_coordinador = (int) $row_coordinador['id_coordinador'];
                 pg_free_result($resultcoordinador);
-            }else{ 
+            } else { 
                 $id_coordinador = null;
             }
 
             $sqlInsertHistory = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %d::integer);",
                 (int) $id_ticket,
-                (int) $id_user, // changedstatus_by
-                (int) $last_status_ticket, // new_status (del ticket principal, 'En Proceso')
-                (int) $id_accion_ticket_history, // new_action
-                (int) $last_status_lab, // new_status_lab (del historial anterior)
-                (int) $last_status_payment, // new_status_payment (del historial anterior)
-                (int) $last_status_domiciliacion, // new_status_domiciliacion (del historial anterior)
-                (int) $id_coordinador // new_coordinador (del historial anterior)
+                (int) $id_user,
+                (int) $last_status_ticket,
+                (int) $id_accion_ticket_history,
+                (int) $last_status_lab,
+                $last_status_payment,
+                $last_status_domiciliacion,
+                (int) $id_coordinador
             );
 
             $resultHistory = $this->db->pgquery($sqlInsertHistory);
@@ -296,16 +286,12 @@ class HistoricalModel extends Model
             }
             pg_free_result($resultHistory);
 
-            // Si todo fue exitoso
             return ['success' => true, 'message' => 'Ticket marcado como recibido y historial registrado.'];
 
         } catch (Throwable $e) {
-            error_log("Excepción en TicketModel::MarkTicketReceived: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+            error_log("Excepción en TicketModel::MarkTicketReceivedTechnical: " . $e->getMessage());
             return ['success' => false, 'message' => 'Error interno del servidor.'];
-        } finally {
-            // ... (Tu lógica para cerrar la conexión si aplica) ...
         }
     }
 }
 ?>
-
