@@ -8150,11 +8150,31 @@ if (uploadPresupuestoPDFBtnGlobal) {
             Swal.close();
 
             if (result && result.success) {
+                // Notificar por correo al técnico N1 creador del ticket
+                let emailSent = false;
+                if (typeof sendAnticipoPresupuestoEmail === 'function' && nroTicket) {
+                    Swal.fire({
+                        title: 'Enviando notificación...',
+                        html: 'El PDF se cargó correctamente. Enviando correo al técnico...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    try {
+                        emailSent = await sendAnticipoPresupuestoEmail(nroTicket);
+                    } catch (errEmail) {
+                        console.error('Error al enviar correo tras carga de PDF:', errEmail);
+                    }
+                }
+
                 // Cerrar el modal primero
                 const modalElement = document.getElementById("uploadPresupuestoPDFModal");
                 if (modalElement) {
-                    const bsModal = new bootstrap.Modal(modalElement);
-                    bsModal.hide();
+                    const bsModal = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? (bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement)) : null;
+                    if (bsModal) bsModal.hide();
                 }
                 
                 // Limpiar el input y sus clases después de cerrar el modal
@@ -8188,12 +8208,16 @@ if (uploadPresupuestoPDFBtnGlobal) {
                 }, 300);
                 
                 // Mostrar mensaje de éxito con temporizador
+                const successText = emailSent 
+                    ? 'El PDF del presupuesto se ha cargado correctamente y se envió la notificación por correo al técnico creador.'
+                    : (result.message || 'El PDF del presupuesto se ha cargado y guardado correctamente.');
+
                 Swal.fire({
                     icon: 'success',
                     title: '¡Éxito!',
-                    text: result.message || 'El PDF del presupuesto se ha cargado y guardado correctamente.',
+                    text: successText,
                     color: 'black',
-                    timer: 3500, // 3.5 segundos
+                    timer: 4000, // 4 segundos
                     timerProgressBar: true,
                     showConfirmButton: false,
                     allowOutsideClick: false,
@@ -9891,80 +9915,80 @@ $(document).on('shown.bs.modal', '#modalAgregarDatosPago', function() {
     }
 });
 
-// Función para enviar correo con datos de anticipo y presupuesto
+// Función para enviar correo con datos de anticipo y presupuesto (retorna Promesa)
 function sendAnticipoPresupuestoEmail(nroTicket) {
-    try {
-        console.log('Iniciando envío de correo de anticipo y presupuesto para ticket:', nroTicket);
-        
-        if (!nroTicket) {
-            console.error('Error: nroTicket no está definido');
-            return;
-        }
-        
-        const data = new URLSearchParams();
-        data.append('action', 'send_anticipo_presupuesto_email');
-        data.append('nro_ticket', nroTicket);
-        
-        const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_anticipo_presupuesto_email`;
-        console.log('URL del endpoint:', url);
-        console.log('Datos a enviar:', data.toString());
-        
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', url);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        
-        xhr.onload = function() {
-            console.log('Respuesta recibida. Status:', xhr.status);
-            console.log('Respuesta completa:', xhr.responseText);
+    return new Promise((resolve) => {
+        try {
+            console.log('Iniciando envío de correo de anticipo y presupuesto para ticket:', nroTicket);
             
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    console.log('Respuesta parseada:', response);
-                    
-                    if (response.success) {
-                        console.log('✅ Correo de anticipo y presupuesto enviado correctamente:', response.message);
-                        if (response.emails_sent !== undefined) {
-                            console.log(`📧 Correos enviados: ${response.emails_sent}/${response.total_emails}`);
-                        }
-                    } else {
-                        console.error('❌ Error al enviar correo:', response.message);
-                        // Mostrar alerta al usuario
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Aviso',
-                            text: 'El presupuesto se guardó correctamente, pero hubo un problema al enviar el correo: ' + (response.message || 'Error desconocido'),
-                            confirmButtonText: 'Aceptar',
-                            confirmButtonColor: '#003594'
-                        });
-                    }
-                } catch (e) {
-                    console.error('Error al parsear respuesta del servidor:', e);
-                    console.error('Respuesta recibida (texto):', xhr.responseText);
-                }
-            } else {
-                console.error('❌ Error HTTP al enviar correo:', xhr.status, xhr.statusText);
-                console.error('Respuesta del servidor:', xhr.responseText);
+            if (!nroTicket) {
+                console.error('Error: nroTicket no está definido');
+                resolve(false);
+                return;
             }
-        };
-        
-        xhr.onerror = function() {
-            console.error('❌ Error de red al enviar correo');
-        };
-        
-        xhr.ontimeout = function() {
-            console.error('❌ Timeout al enviar correo');
-        };
-        
-        // Configurar timeout de 30 segundos
-        xhr.timeout = 30000;
-        
-        xhr.send(data);
-        console.log('Petición enviada al servidor');
-    } catch (error) {
-        console.error('❌ Error en sendAnticipoPresupuestoEmail:', error);
-        console.error('Stack trace:', error.stack);
-    }
+            
+            const data = new URLSearchParams();
+            data.append('action', 'send_anticipo_presupuesto_email');
+            data.append('nro_ticket', nroTicket);
+            
+            const url = `${ENDPOINT_BASE}${APP_PATH}api/email/send_anticipo_presupuesto_email`;
+            console.log('URL del endpoint:', url);
+            console.log('Datos a enviar:', data.toString());
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onload = function() {
+                console.log('Respuesta recibida. Status:', xhr.status);
+                console.log('Respuesta completa:', xhr.responseText);
+                
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('Respuesta parseada:', response);
+                        
+                        if (response.success) {
+                            console.log('✅ Correo de anticipo y presupuesto enviado correctamente:', response.message);
+                            if (response.emails_sent !== undefined) {
+                                console.log(`📧 Correos enviados: ${response.emails_sent}/${response.total_emails}`);
+                            }
+                            resolve(true);
+                        } else {
+                            console.error('❌ Error al enviar correo:', response.message);
+                            resolve(false);
+                        }
+                    } catch (e) {
+                        console.error('Error al parsear respuesta del servidor:', e);
+                        resolve(false);
+                    }
+                } else {
+                    console.error('❌ Error HTTP al enviar correo:', xhr.status, xhr.statusText);
+                    resolve(false);
+                }
+            };
+            
+            xhr.onerror = function() {
+                console.error('❌ Error de red al enviar correo');
+                resolve(false);
+            };
+            
+            xhr.ontimeout = function() {
+                console.error('❌ Timeout al enviar correo');
+                resolve(false);
+            };
+            
+            // Configurar timeout de 30 segundos
+            xhr.timeout = 30000;
+            
+            xhr.send(data);
+            console.log('Petición enviada al servidor');
+        } catch (error) {
+            console.error('❌ Error en sendAnticipoPresupuestoEmail:', error);
+            console.error('Stack trace:', error.stack);
+            resolve(false);
+        }
+    });
 }
 
 // NUEVO: Función para calcular Monto REF (Corregido)
