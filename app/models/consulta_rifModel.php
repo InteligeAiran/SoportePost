@@ -876,14 +876,13 @@ class consulta_rifModel extends Model
             $id_status_domiciliacion_inicial = 1; 
 
             $sqlInsertHistoryCrear = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer, NULL::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,
                 (int) $id_status_ticket_inicial,
                 (int) $id_accion_ticket_crear,
                 (int) $id_status_payment,
-                (int) $id_status_domiciliacion_inicial,
-                (int) $coordinador
+                (int) $id_status_domiciliacion_inicial
             );
             $resultHistoryCrear = $this->db->pgquery($sqlInsertHistoryCrear);
             
@@ -897,14 +896,13 @@ class consulta_rifModel extends Model
             $id_accion_ticket = 4; 
 
             $sqlInsertHistoryCoord = sprintf(
-                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer, %d::integer);",
+                "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, NULL::integer, %d::integer, %d::integer, NULL::integer);",
                 (int) $idTicketCreado,
                 (int) $id_user,
                 (int) $id_status_ticket_inicial,
                 (int) $id_accion_ticket,
                 (int) $id_status_payment,
-                (int) $id_status_domiciliacion_inicial,
-                (int) $coordinador
+                (int) $id_status_domiciliacion_inicial
             );
             $resultHistoryCoord = $this->db->pgquery($sqlInsertHistoryCoord);
             
@@ -2015,44 +2013,23 @@ class consulta_rifModel extends Model
                     $row_coordinador = pg_fetch_assoc($resultcoordinador);
 
                     $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
                     pg_free_result($resultcoordinador);
-
                 }else{ 
-
                     $id_coordinador = null;
-
                 }
 
 
-
-
-
                 // Llamar a insertintouser_ticket AQUI
-
                 $sqlInsertHistory = sprintf(
-
-            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer);",
-
-                    (int) $id_ticket,    // Corresponds to p_id_ticket
-
-                    (int) $id_user,      // Corresponds to p_changedstatus_by
-
-                    $id_status_ticket,     // Corresponds to p_new_action (assuming it's always 4 based on your function's internal logic)
-
-                    (int) $id_accion_ticket,         // Corresponds to p_id_action_ticket
-
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, %d::integer, NULL::integer);",
+                    (int) $id_ticket,
+                    (int) $id_user,
+                    $id_status_ticket,
+                    (int) $id_accion_ticket,
                     (int) $id_status_lab,
-
-                    (int)$id_new_status_payment,  // p_new_status_payment - ��Este es el que te faltaba en la llamada!
-
-                    (int)$new_status_domiciliacion,
-
-                    (int)$id_coordinador    // p_new_status_domiciliacion - ¡Este es el que te faltaba en la llamada!
-
+                    (int)$id_new_status_payment,
+                    (int)$new_status_domiciliacion
                 );
-
-
 
                 $resultsqlInsertHistory = $this->db->pgquery($sqlInsertHistory);
 
@@ -4790,46 +4767,26 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
-                     $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
-
+                    $sqlgetcoordinador = "SELECT t.id_coordinador FROM users_tickets t WHERE t.id_ticket = {$ticketId};";
                     $resultcoordinador = $this->db->pgquery($sqlgetcoordinador);
-
                     if ($resultcoordinador && pg_num_rows($resultcoordinador) > 0) {
-
                         $row_coordinador = pg_fetch_assoc($resultcoordinador);
-
-                        $id_coordinador = (int) $row_coordinador['id_coordinador'];
-
+                        $id_coordinador = $row_coordinador['id_coordinador'] !== null ? (int) $row_coordinador['id_coordinador'] : null;
                         pg_free_result($resultcoordinador);
-
-                    }else{ 
-
+                    } else { 
                         $id_coordinador = null;
-
                     }
 
-
-
                     $sqlInsertHistory = sprintf(
-
-                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %d::integer);",
-
-                    (int)$ticketId, // Se asume que $id_ticket ya es un entero válido o se castea
-
-                    (int)$id_user,   // Se asume que $id_user ya es un entero válido o se castea
-
-                    (int)2, // Usamos la acción específica para el historial
-
-                    (int)$id_accion_ticket, // Usamos la acción específica para el historial
-
+                    "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %d::integer, %d::integer, %s::integer, %s::integer, %s::integer, %s::integer);",
+                    (int)$ticketId,
+                    (int)$id_user,
+                    (int)2,
+                    (int)$id_accion_ticket,
                     $id_status_lab,
-
                     $id_new_status_payment,
-
                     $new_status_domiciliacion,
-
-                    (int)$id_coordinador // Se asume que $id_coordinador ya es un entero válido o se castea
-
+                    $id_coordinador !== null ? (int)$id_coordinador : 'NULL'
                 );
 
 

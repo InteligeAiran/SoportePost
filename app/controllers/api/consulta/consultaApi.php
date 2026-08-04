@@ -1262,7 +1262,8 @@ class Consulta extends Controller
             if ($id_status_payment_actual == 5 && $exoneracionOk) {
                 // Correos específicos para exoneración
                 $emails_admin = [
-                    'olga.rojas@intelipunto.com'
+                    'ROBERT.MARINO@INTELIGENSA.COM',
+
                 ];
                 $name_admin = 'Administración';
                 
@@ -4198,7 +4199,8 @@ class Consulta extends Controller
                     }
 
                     $emails_admin = [
-                        'olga.rojas@intelipunto.com'
+                        'ROBERT.MARINO@INTELIGENSA.COM',
+                        'neishy.tupano@inteligensa.com'
                     ];
 
                     $embeddedImages = [];

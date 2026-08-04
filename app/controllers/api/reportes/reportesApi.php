@@ -2257,8 +2257,8 @@ class reportes extends Controller
             if ($document_type === 'Exoneracion' && $id_status_payment_actual == 5) {
                 // Correos específicos para exoneración
                 $emails_admin = [
-                    /*'olga.rojas@intelipunto.com'*/
-                    'airanbracamonte01@gmail.com'
+                    'ROBERT.MARINO@INTELIGENSA.COM',
+                    'neishy.tupano@inteligensa.com'
                 ];
                 $name_admin = 'Administración';
 
