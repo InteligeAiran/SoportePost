@@ -8173,8 +8173,20 @@ if (uploadPresupuestoPDFBtnGlobal) {
                 // Cerrar el modal primero
                 const modalElement = document.getElementById("uploadPresupuestoPDFModal");
                 if (modalElement) {
-                    const bsModal = (typeof bootstrap !== 'undefined' && bootstrap.Modal) ? (bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement)) : null;
-                    if (bsModal) bsModal.hide();
+                    try {
+                        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+                            $(modalElement).modal('hide');
+                        } else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                            if (typeof bootstrap.Modal.getInstance === 'function') {
+                                const inst = bootstrap.Modal.getInstance(modalElement);
+                                if (inst) inst.hide(); else (new bootstrap.Modal(modalElement)).hide();
+                            } else {
+                                (new bootstrap.Modal(modalElement)).hide();
+                            }
+                        }
+                    } catch (eModal) {
+                        console.warn('Error cerrando modal:', eModal);
+                    }
                 }
                 
                 // Limpiar el input y sus clases después de cerrar el modal
