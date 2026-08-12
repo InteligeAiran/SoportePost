@@ -2927,16 +2927,11 @@ document.addEventListener("DOMContentLoaded", function () {
               const isPdf = fileExtension === 'pdf';
               const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension);
               
-              // ✅ CONSTRUIR LA URL COMPLETA DEL DOCUMENTO USANDO LA FUNCIÓN EXISTENTE
+              // ✅ CONSTRUIR LA URL DE DESCARGA VÍA EL ENDPOINT AUTENTICADO (ya no
+              // expone directamente el Alias estático /Documentos)
               function cleanFilePath(filePath) {
                 if (!filePath) return null;
-                let cleanPath = filePath.replace(/\\/g, '/');
-                const pathSegments = cleanPath.split('Documentos_SoportePost/');
-                if (pathSegments.length > 1) {
-                  cleanPath = pathSegments[1];
-                }
-                // Usar window.location.origin para obtener el host dinámicamente
-                return `${window.location.origin}/Documentos/${cleanPath}`;
+                return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
               }
               
               const fullUrl = cleanFilePath(filePath);
@@ -6055,21 +6050,12 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, curr
     modalTicketIdSpanView.textContent = nroTicket || ticketId;
     nameDocumento.textContent = documentName || 'Documento';
 
-    // Función para limpiar la ruta del archivo
+    // Construye la URL de descarga de un documento a partir de su ruta cruda
+    // en disco, vía el endpoint autenticado (ya no expone directamente el
+    // Alias estático /Documentos)
     function cleanFilePath(filePath) {
         if (!filePath) return null;
-
-        // Reemplazar barras invertidas con barras normales
-        let cleanPath = filePath.replace(/\\/g, '/');
-
-        // Extraer la parte después de 'Documentos_SoportePost/'
-        const pathSegments = cleanPath.split('Documentos_SoportePost/');
-        if (pathSegments.length > 1) {
-            cleanPath = pathSegments[1];
-        }
-
-        // Construir la URL completa
-        return `http://${HOST}/Documentos/${cleanPath}`;
+        return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
     }
 
     // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS

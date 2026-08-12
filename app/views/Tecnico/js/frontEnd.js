@@ -5922,14 +5922,12 @@ function viewExonerationSupportByNro(nroExoneracion, nroTicket = '') {
     xhr.send(`record_number=${nroExoneracion}&document_type=Exoneracion`);
 }
 
+// Construye la URL de descarga de un documento a partir de su ruta cruda en
+// disco, vía el endpoint autenticado (ya no expone directamente el Alias
+// estático /Documentos)
 function cleanFilePath(filePath) {
     if (!filePath) return null;
-    let path = filePath.replace(/\\/g, '/');
-    const rootMarker = "Documentos_SoportePost/";
-    const index = path.toLowerCase().indexOf(rootMarker.toLowerCase());
-    if (index !== -1) path = path.substring(index + rootMarker.length);
-    const origin = new URL(ENDPOINT_BASE).origin;
-    return `${origin}/Documentos/${path}`;
+    return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
 }
 
 function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null, subtitle = null) {

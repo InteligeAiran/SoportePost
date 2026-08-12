@@ -5269,6 +5269,30 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
     }
 
+    public function getAttachmentById($id) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $escaped_id = pg_escape_literal($db_conn, $id);
+
+            $sql = "SELECT * FROM archivos_adjuntos WHERE id = $escaped_id LIMIT 1";
+            $result = $this->db->pgquery($sql);
+
+            if ($result === false) {
+                error_log("Error al consultar adjunto por id: " . pg_last_error($db_conn));
+                return false;
+            }
+
+            if (pg_num_rows($result) === 0) {
+                return false;
+            }
+
+            return pg_fetch_assoc($result);
+        } catch (Throwable $e) {
+            error_log("Excepción en getAttachmentById: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
     public function GetMotivos($documentType) {
         try {
