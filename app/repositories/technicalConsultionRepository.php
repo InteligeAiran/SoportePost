@@ -760,6 +760,10 @@ class TechnicalConsultionRepository
         return $result;
     }
 
+    public function GetDeudaPendienteTicket($id_ticket){
+        return $this->model->calcularDeudaPendienteTicket($id_ticket);
+    }
+
     public function EntregarTicketGenerico($id_ticket, $id_user, $comment){
         $result = $this->model->EntregarTicketGenerico($id_ticket, $id_user, $comment);
         return $result;

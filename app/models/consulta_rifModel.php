@@ -4170,6 +4170,54 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
     /**
+     * Deuda pendiente del presupuesto de taller de un ticket: monto_taller
+     * del presupuesto vigente, menos lo ya aprobado en payment_records
+     * (payment_status = 6) y menos una exoneración de tipo 'Pago taller'
+     * ya aprobada, si existe. Mismo criterio que usa el frontend de
+     * gestion_regions para bloquear el botón de entrega ("Guardar y
+     * Completar"), pero validado también en el servidor — la validación
+     * del frontend por sí sola no impide llamar al endpoint directamente.
+     * Devuelve 0.0 si no hay presupuesto registrado para el ticket.
+     */
+    public function calcularDeudaPendienteTicket($id_ticket) {
+        $db_conn = $this->db->getConnection();
+
+        $sql_ticket = "SELECT nro_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . " LIMIT 1;";
+        $res_ticket = pg_query($db_conn, $sql_ticket);
+        if (!$res_ticket || pg_num_rows($res_ticket) === 0) {
+            return 0.0;
+        }
+        $nro_ticket = pg_fetch_result($res_ticket, 0, 'nro_ticket');
+        $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+
+        $sql_budget = "SELECT monto_taller FROM budgets WHERE nro_ticket = " . $escaped_nro_ticket . " ORDER BY fecha_creacion DESC LIMIT 1;";
+        $res_budget = pg_query($db_conn, $sql_budget);
+        $total_budget = ($res_budget && pg_num_rows($res_budget) > 0) ? (float) pg_fetch_result($res_budget, 0, 'monto_taller') : 0.0;
+
+        if ($total_budget <= 0) {
+            return 0.0;
+        }
+
+        $sql_paid = "SELECT COALESCE(SUM(reference_amount), 0) as total FROM payment_records
+            WHERE nro_ticket = " . $escaped_nro_ticket . "
+              AND payment_status = 6
+              AND (is_substituted IS NULL OR is_substituted = FALSE);";
+        $res_paid = pg_query($db_conn, $sql_paid);
+        $total_paid = ($res_paid && pg_num_rows($res_paid) > 0) ? (float) pg_fetch_result($res_paid, 0, 'total') : 0.0;
+
+        $sql_exo = "SELECT porcentaje FROM exoneraciones
+            WHERE nro_ticket = " . $escaped_nro_ticket . "
+              AND tipo_exoneracion = 'Pago taller'
+              AND id_status_payment = 4
+            ORDER BY id_exoneracion DESC LIMIT 1;";
+        $res_exo = pg_query($db_conn, $sql_exo);
+        $exoneration_percentage = ($res_exo && pg_num_rows($res_exo) > 0) ? (float) pg_fetch_result($res_exo, 0, 'porcentaje') : 0.0;
+        $exoneration_amount = $total_budget * $exoneration_percentage / 100;
+
+        return max(0.0, $total_budget - $exoneration_amount - $total_paid);
+    }
+
+    /**
      * Si todos los pagos individuales del ticket (payment_records) ya están
      * aprobados pero nadie disparó FinalizarRevisionTicket, el
      * id_status_payment general del ticket se queda atascado en 5 (pago
@@ -4220,6 +4268,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
     public function EntregarTicket($id_ticket, $id_user, $comment){
 
         try {
+
+            $deudaPendiente = $this->calcularDeudaPendienteTicket($id_ticket);
+            if ($deudaPendiente > 0.01) {
+                error_log("EntregarTicket: bloqueado, ticket id={$id_ticket} tiene una deuda pendiente de {$deudaPendiente}");
+                return false;
+            }
 
             $this->corregirStatusPaymentSiTodoAprobado($id_ticket);
 
@@ -6807,6 +6861,12 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
      */
     public function EntregarTicketGenerico($id_ticket, $id_user, $comment) {
         try {
+            $deudaPendiente = $this->calcularDeudaPendienteTicket($id_ticket);
+            if ($deudaPendiente > 0.01) {
+                error_log("EntregarTicketGenerico: bloqueado, ticket id={$id_ticket} tiene una deuda pendiente de {$deudaPendiente}");
+                return false;
+            }
+
             $this->corregirStatusPaymentSiTodoAprobado($id_ticket);
 
             $db_conn = $this->db->getConnection();

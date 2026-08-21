@@ -2244,12 +2244,25 @@ class Consulta extends Controller
         }
 
         $repository = new TechnicalConsultionRepository();
+
+        $deudaPendiente = $repository->GetDeudaPendienteTicket($ticketId);
+        if ($deudaPendiente > 0.01) {
+            // El frontend solo lee el mensaje del body cuando el status es 2xx
+            // (fuera de ese rango muestra un genérico "Código de estado: XXX"),
+            // por eso se responde 200 aquí con success:false.
+            $this->response([
+                'success' => false,
+                'message' => 'No se puede completar el ticket: tiene un pago pendiente de $' . number_format($deudaPendiente, 2) . ' sin aprobar.'
+            ], 200);
+            return;
+        }
+
         $result = $repository->EntregarTicket($ticketId, $id_user,  $comment);
 
         if ($result) {
             // Obtener los datos del ticket para el modal
             $ticketData = $repository->GetTicketDataForDelivery($ticketId);
-            
+
             $this->response([
                 'success' => true,
                 'message' => 'El ticket ha sido entregado exitosamente.',
@@ -2257,7 +2270,7 @@ class Consulta extends Controller
             ], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
-        } 
+        }
     }
 
     public function handleEntregarTicketGenerico(){
@@ -2271,12 +2284,25 @@ class Consulta extends Controller
         }
 
         $repository = new TechnicalConsultionRepository();
+
+        $deudaPendiente = $repository->GetDeudaPendienteTicket($ticketId);
+        if ($deudaPendiente > 0.01) {
+            // El frontend solo lee el mensaje del body cuando el status es 2xx
+            // (fuera de ese rango muestra un genérico "Código de estado: XXX"),
+            // por eso se responde 200 aquí con success:false.
+            $this->response([
+                'success' => false,
+                'message' => 'No se puede completar el ticket: tiene un pago pendiente de $' . number_format($deudaPendiente, 2) . ' sin aprobar.'
+            ], 200);
+            return;
+        }
+
         $result = $repository->EntregarTicketGenerico($ticketId, $id_user, $comment);
 
         if ($result) {
             // Obtener los datos del ticket para el modal
             $ticketData = $repository->GetTicketDataForDelivery($ticketId);
-            
+
             $this->response([
                 'success' => true,
                 'message' => 'El ticket ha sido cerrado exitosamente.',
@@ -2284,7 +2310,7 @@ class Consulta extends Controller
             ], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción de cierre.'], 500);
-        } 
+        }
     }
 
     public function handleEntregarTicketDevolucion(){
