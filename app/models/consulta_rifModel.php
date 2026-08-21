@@ -951,6 +951,18 @@ class consulta_rifModel extends Model
                 if ($exoneracionTransferResult) {
                     error_log("Exoneración transferida exitosamente dentro de SaveDataFalla2 para el serial: " . $serial);
                 }
+                // Beneficio pendiente otorgado desde SuperApp (Backoffice →
+                // aprobar canje de premio "Entrada a Taller sin Anticipo").
+                // Se sobreescribe el resultado del flujo normal de arriba
+                // porque el id_status_payment inicial lo decide el frontend
+                // (llega por POST antes de este método) y no hay forma
+                // confiable de interceptarlo desde aquí — en su lugar se
+                // deja crear el ticket normal y, si el cliente tiene un
+                // beneficio sin usar, se aprueba la exoneración justo
+                // después, igual que si un humano la hubiera aprobado.
+                // Nunca lanza excepción: un fallo aquí no debe impedir que
+                // el ticket termine de crearse.
+                $this->aplicarBeneficioTallerSuperApp($rif, $idTicketCreado, $Nr_ticket, $serial, $id_user);
             } else {
                 $fallaName = $isActualizacionSoftware ? "Actualización de Software (id_failure = 9)" : "Sin Llaves/Dukpt Vacío (id_failure = 12)";
                 error_log("Ticket de {$fallaName}: Se omiten anticipo, exoneración y transferencia de pago.");
@@ -5978,6 +5990,151 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         } catch (Throwable $e) {
             error_log("Error en FinalizarRevisionTicket: " . $e->getMessage());
             return ["success" => false, "message" => "Excepción: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Inserta UNA exoneración ya aprobada (id_status_payment = 4 directo,
+     * no 5 como haría un cliente que sube un comprobante a revisión) y su
+     * entrada de historial correspondiente — mismo patrón defensivo que
+     * usa AprobarExoneracionTicket (consulta los valores actuales del
+     * ticket en vez de asumirlos). $tipo_exoneracion es 'Anticipo' o 'Pago
+     * taller' (los dos únicos valores que ya usa el sistema real). Se
+     * extrajo como helper porque aplicarBeneficioTallerSuperApp() puede
+     * necesitar llamarlo una o dos veces según el tipo de beneficio.
+     * Devuelve el id_exoneracion creado, o false si falló.
+     */
+    private function crearExoneracionAprobada($db_conn, $id_ticket, $nro_ticket, $serial_pos, $id_user, $tipo_exoneracion, $nro_exoneracion) {
+        $sqlInsertExo = "INSERT INTO exoneraciones (nro_ticket, serial_pos, tipo_exoneracion, porcentaje, nro_exoneracion, id_user, id_status_payment)
+            VALUES (" . pg_escape_literal($db_conn, $nro_ticket) . ", "
+                . pg_escape_literal($db_conn, $serial_pos) . ", "
+                . pg_escape_literal($db_conn, $tipo_exoneracion) . ", 100, "
+                . pg_escape_literal($db_conn, $nro_exoneracion) . ", "
+                . (int)$id_user . ", 4) RETURNING id_exoneracion;";
+        $resultExo = pg_query($db_conn, $sqlInsertExo);
+        if (!$resultExo || pg_num_rows($resultExo) === 0) {
+            error_log("crearExoneracionAprobada: fallo al insertar exoneración ($tipo_exoneracion) para ticket $nro_ticket");
+            return false;
+        }
+        $idExoneracion = (int) pg_fetch_result($resultExo, 0, 'id_exoneracion');
+
+        $id_status_lab = 0;
+        $status_lab_result = pg_query($db_conn, "SELECT id_status_lab FROM tickets_status_lab WHERE id_ticket = " . (int)$id_ticket . ";");
+        if ($status_lab_result && pg_num_rows($status_lab_result) > 0) {
+            $id_status_lab = pg_fetch_result($status_lab_result, 0, 'id_status_lab') ?? 0;
+        }
+
+        $new_status_domiciliacion = 'NULL';
+        $status_domiciliacion_result = pg_query($db_conn, "SELECT id_status_domiciliacion FROM tickets_status_domiciliacion WHERE id_ticket = " . (int)$id_ticket . ";");
+        if ($status_domiciliacion_result && pg_num_rows($status_domiciliacion_result) > 0) {
+            $val = pg_fetch_result($status_domiciliacion_result, 0, 'id_status_domiciliacion');
+            $new_status_domiciliacion = $val !== null ? (int)$val : 'NULL';
+        }
+
+        $id_status_ticket = 'NULL';
+        $status_ticket_result = pg_query($db_conn, "SELECT id_status_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";");
+        if ($status_ticket_result && pg_num_rows($status_ticket_result) > 0) {
+            $val = pg_fetch_result($status_ticket_result, 0, 'id_status_ticket');
+            $id_status_ticket = $val !== null ? (int)$val : 'NULL';
+        }
+
+        $id_accion_ticket = 'NULL';
+        $accion_ticket_result = pg_query($db_conn, "SELECT id_accion_ticket FROM tickets WHERE id_ticket = " . (int)$id_ticket . ";");
+        if ($accion_ticket_result && pg_num_rows($accion_ticket_result) > 0) {
+            $val = pg_fetch_result($accion_ticket_result, 0, 'id_accion_ticket');
+            $id_accion_ticket = $val !== null ? (int)$val : 'NULL';
+        }
+
+        $id_coordinador = 'NULL';
+        $coordinador_result = pg_query($db_conn, "SELECT id_coordinador FROM users_tickets WHERE id_ticket = " . (int)$id_ticket . ";");
+        if ($coordinador_result && pg_num_rows($coordinador_result) > 0) {
+            $val = pg_fetch_result($coordinador_result, 0, 'id_coordinador');
+            $id_coordinador = $val !== null ? (int)$val : 'NULL';
+        }
+
+        $sql_history = sprintf(
+            "SELECT public.insert_ticket_status_history(%d::integer, %d::integer, %s::integer, %s::integer, %d::integer, %d::integer, %s::integer, %s::integer, %d::integer);",
+            (int)$id_ticket,
+            (int)$id_user,
+            $id_status_ticket,
+            $id_accion_ticket,
+            (int)$id_status_lab,
+            4,
+            $new_status_domiciliacion,
+            $id_coordinador,
+            $idExoneracion
+        );
+        pg_query($db_conn, $sql_history);
+
+        return $idExoneracion;
+    }
+
+    /**
+     * Consume (si existe) un beneficio otorgado desde SuperApp (Backoffice
+     * → aprobar canje de un premio con "Efecto Automático" de taller) sobre
+     * la tabla beneficios_taller_superapp — tabla que vive en esta misma
+     * base de datos pero cuyo dueño de DDL es SuperApp (se crea desde su
+     * backend, no aquí). Si hay un beneficio sin usar para el RIF del
+     * ticket, aprueba automáticamente la(s) exoneración(es) que
+     * correspondan según tipo_beneficio, igual que si un humano las hubiera
+     * aprobado a mano vía AprobarExoneracionTicket:
+     *   - ANTICIPO_EXONERADO: solo el anticipo de entrada a taller.
+     *   - EXONERACION_TOTAL: anticipo + pago del taller (presupuesto).
+     * Nunca lanza excepción hacia afuera: un fallo aquí no debe impedir que
+     * el ticket termine de crearse.
+     */
+    private function aplicarBeneficioTallerSuperApp($rif, $id_ticket, $nro_ticket, $serial_pos, $id_user) {
+        try {
+            $db_conn = $this->db->getConnection();
+            $rifNormalizado = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string)$rif));
+
+            // 1. Reclamo atómico del beneficio más antiguo sin usar para
+            // este RIF — una sola sentencia UPDATE...RETURNING, para que
+            // dos tickets creados casi simultáneamente para el mismo
+            // cliente no puedan consumir el mismo beneficio dos veces.
+            $sqlClaim = "UPDATE beneficios_taller_superapp
+                SET usado = TRUE, fecha_usado = NOW(), nro_ticket_aplicado = " . pg_escape_literal($db_conn, $nro_ticket) . "
+                WHERE id_beneficio = (
+                    SELECT id_beneficio FROM beneficios_taller_superapp
+                    WHERE UPPER(REGEXP_REPLACE(rif, '[^A-Za-z0-9]', '', 'g')) = " . pg_escape_literal($db_conn, $rifNormalizado) . "
+                      AND usado = FALSE
+                    ORDER BY fecha_otorgado ASC LIMIT 1
+                    FOR UPDATE SKIP LOCKED
+                )
+                RETURNING id_beneficio, tipo_beneficio;";
+
+            $resultClaim = pg_query($db_conn, $sqlClaim);
+            if (!$resultClaim || pg_num_rows($resultClaim) === 0) {
+                return false; // No hay beneficio pendiente para este RIF.
+            }
+            $idBeneficio = (int) pg_fetch_result($resultClaim, 0, 'id_beneficio');
+            $tipoBeneficio = pg_fetch_result($resultClaim, 0, 'tipo_beneficio');
+
+            // 2. Exoneración(es) según el tipo de beneficio reclamado.
+            if ($tipoBeneficio === 'EXONERACION_TOTAL') {
+                $okAnticipo = $this->crearExoneracionAprobada($db_conn, $id_ticket, $nro_ticket, $serial_pos, $id_user, 'Anticipo', "SUPERAPP-{$idBeneficio}-A");
+                $okTaller = $this->crearExoneracionAprobada($db_conn, $id_ticket, $nro_ticket, $serial_pos, $id_user, 'Pago taller', "SUPERAPP-{$idBeneficio}-T");
+                if ($okAnticipo === false || $okTaller === false) {
+                    error_log("aplicarBeneficioTallerSuperApp: fallo al crear exoneraciones EXONERACION_TOTAL para ticket $nro_ticket");
+                    return false;
+                }
+            } else {
+                // ANTICIPO_EXONERADO (default/compatibilidad hacia atrás).
+                $okAnticipo = $this->crearExoneracionAprobada($db_conn, $id_ticket, $nro_ticket, $serial_pos, $id_user, 'Anticipo', "SUPERAPP-{$idBeneficio}-A");
+                if ($okAnticipo === false) {
+                    error_log("aplicarBeneficioTallerSuperApp: fallo al crear exoneración de Anticipo para ticket $nro_ticket");
+                    return false;
+                }
+            }
+
+            // 3. Aprobar el ticket directamente.
+            pg_query($db_conn, "UPDATE tickets SET id_status_payment = 4 WHERE id_ticket = " . (int)$id_ticket);
+
+            error_log("aplicarBeneficioTallerSuperApp: beneficio #$idBeneficio ($tipoBeneficio) aplicado al ticket $nro_ticket (RIF: $rif)");
+            return true;
+        } catch (Throwable $e) {
+            error_log("Error en aplicarBeneficioTallerSuperApp: " . $e->getMessage());
+            return false;
         }
     }
 
