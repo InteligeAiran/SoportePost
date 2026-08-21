@@ -4169,9 +4169,59 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
 
 
 
+    /**
+     * Si todos los pagos individuales del ticket (payment_records) ya están
+     * aprobados pero nadie disparó FinalizarRevisionTicket, el
+     * id_status_payment general del ticket se queda atascado en 5 (pago
+     * pendiente por revisión) aunque en la práctica ya esté todo cubierto
+     * (anticipo + presupuesto, etc.). Se llama antes de cerrar/entregar un
+     * ticket para corregirlo. Nunca fuerza el estatus si hay pagos
+     * rechazados o pendientes, ni toca tickets en Garantía/Falla Libre de
+     * Pago (1, 3, 16).
+     */
+    private function corregirStatusPaymentSiTodoAprobado($id_ticket) {
+        $db_conn = $this->db->getConnection();
+
+        $sql_ticket = "SELECT nro_ticket, id_status_payment FROM tickets WHERE id_ticket = " . (int)$id_ticket . " LIMIT 1;";
+        $res_ticket = pg_query($db_conn, $sql_ticket);
+        if (!$res_ticket || pg_num_rows($res_ticket) === 0) {
+            return;
+        }
+        $ticket_row = pg_fetch_assoc($res_ticket);
+        $nro_ticket = $ticket_row['nro_ticket'];
+        $current_id_status_payment = $ticket_row['id_status_payment'] !== null ? (int)$ticket_row['id_status_payment'] : null;
+
+        if (in_array($current_id_status_payment, [1, 3, 16], true)) {
+            return;
+        }
+
+        $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
+        $sql_payments = "SELECT payment_status, COUNT(*) as count FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " GROUP BY payment_status;";
+        $result_payments = pg_query($db_conn, $sql_payments);
+        if (!$result_payments) {
+            return;
+        }
+
+        $approved_count = 0;
+        $total_count = 0;
+        while ($row = pg_fetch_assoc($result_payments)) {
+            $total_count += (int)$row['count'];
+            if ((int)$row['payment_status'] === 6) {
+                $approved_count += (int)$row['count'];
+            }
+        }
+
+        if ($total_count > 0 && $approved_count === $total_count && $current_id_status_payment !== 6) {
+            pg_query($db_conn, "UPDATE tickets SET id_status_payment = 6 WHERE id_ticket = " . (int)$id_ticket . ";");
+            error_log("corregirStatusPaymentSiTodoAprobado: id_status_payment corregido a 6 para ticket $nro_ticket (id_ticket=$id_ticket)");
+        }
+    }
+
     public function EntregarTicket($id_ticket, $id_user, $comment){
 
         try {
+
+            $this->corregirStatusPaymentSiTodoAprobado($id_ticket);
 
             $sql = "UPDATE tickets SET id_accion_ticket = 16, id_status_ticket = 3, date_delivered = NOW(), customer_delivery_comment = '". $comment. "' WHERE id_ticket = ". (int)$id_ticket. ";";
 
@@ -6757,6 +6807,8 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
      */
     public function EntregarTicketGenerico($id_ticket, $id_user, $comment) {
         try {
+            $this->corregirStatusPaymentSiTodoAprobado($id_ticket);
+
             $db_conn = $this->db->getConnection();
             $escaped_comment = pg_escape_string($db_conn, $comment);
 
