@@ -4246,22 +4246,48 @@ public function UpdateStatusDomiciliacion($id_new_status, $id_ticket, $id_user, 
         $escaped_nro_ticket = pg_escape_literal($db_conn, $nro_ticket);
         $sql_payments = "SELECT payment_status, COUNT(*) as count FROM payment_records WHERE nro_ticket = " . $escaped_nro_ticket . " GROUP BY payment_status;";
         $result_payments = pg_query($db_conn, $sql_payments);
-        if (!$result_payments) {
-            return;
-        }
 
-        $approved_count = 0;
-        $total_count = 0;
-        while ($row = pg_fetch_assoc($result_payments)) {
-            $total_count += (int)$row['count'];
-            if ((int)$row['payment_status'] === 6) {
-                $approved_count += (int)$row['count'];
+        $approved_payments = 0;
+        $total_payments = 0;
+        if ($result_payments) {
+            while ($row = pg_fetch_assoc($result_payments)) {
+                $total_payments += (int)$row['count'];
+                if ((int)$row['payment_status'] === 6) {
+                    $approved_payments += (int)$row['count'];
+                }
             }
         }
 
-        if ($total_count > 0 && $approved_count === $total_count && $current_id_status_payment !== 6) {
-            pg_query($db_conn, "UPDATE tickets SET id_status_payment = 6 WHERE id_ticket = " . (int)$id_ticket . ";");
-            error_log("corregirStatusPaymentSiTodoAprobado: id_status_payment corregido a 6 para ticket $nro_ticket (id_ticket=$id_ticket)");
+        // Mismo problema que con payment_records: AprobarExoneracionTicket()
+        // solo actualiza el estatus general del ticket cuando se llama como
+        // "aprobación final" (is_final_approval=true). Si las exoneraciones
+        // se aprueban individualmente sin pasar por ahí, el ticket se queda
+        // pegado en "pendiente por revisión" aunque ya todo esté aprobado.
+        $sql_exoneraciones = "SELECT id_status_payment, COUNT(*) as count FROM exoneraciones WHERE nro_ticket = " . $escaped_nro_ticket . " GROUP BY id_status_payment;";
+        $result_exoneraciones = pg_query($db_conn, $sql_exoneraciones);
+        $approved_exoneraciones = 0;
+        $total_exoneraciones = 0;
+        if ($result_exoneraciones) {
+            while ($row = pg_fetch_assoc($result_exoneraciones)) {
+                $total_exoneraciones += (int)$row['count'];
+                if ((int)$row['id_status_payment'] === 4) {
+                    $approved_exoneraciones += (int)$row['count'];
+                }
+            }
+        }
+
+        $total_count = $total_payments + $total_exoneraciones;
+        $approved_count = $approved_payments + $approved_exoneraciones;
+
+        // Si hubo algún pago real de por medio el estatus final es "Pago
+        // Anticipo Aprobado" (6); si el ticket se resolvió únicamente vía
+        // exoneraciones (sin ningún payment_records) el estatus correcto es
+        // "Exoneracion Aprobado" (4), igual a lo que hace AprobarExoneracionTicket().
+        $target_status = $total_payments > 0 ? 6 : 4;
+
+        if ($total_count > 0 && $approved_count === $total_count && $current_id_status_payment !== $target_status) {
+            pg_query($db_conn, "UPDATE tickets SET id_status_payment = " . $target_status . " WHERE id_ticket = " . (int)$id_ticket . ";");
+            error_log("corregirStatusPaymentSiTodoAprobado: id_status_payment corregido a $target_status para ticket $nro_ticket (id_ticket=$id_ticket)");
         }
     }
 
