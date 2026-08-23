@@ -83,7 +83,7 @@ function mi_navbar() {}
             }
             .accion-timeline .accion-card-header {
                 display: flex;
-                justify-content: space-between;
+                justify-content: flex-end;
                 align-items: center;
                 margin-bottom: 6px;
                 gap: 8px;
@@ -98,13 +98,42 @@ function mi_navbar() {}
                 border-radius: 50px;
                 white-space: nowrap;
             }
-            .accion-timeline .accion-badge-documento + .accion-card .accion-ticket-pill {
-                background: #fdf0da;
-                color: #b7791f;
-            }
             .accion-timeline .accion-card small {
                 color: #6c757d;
                 white-space: nowrap;
+            }
+
+            /* Cada ticket es su propia sección con encabezado, en vez de
+               una sola lista larga mezclando eventos de tickets distintos. */
+            .ticket-grupo {
+                margin-bottom: 20px;
+            }
+            .ticket-grupo-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+                border-bottom: 2px solid #e9ecef;
+                cursor: pointer;
+                user-select: none;
+            }
+            .ticket-grupo-header:hover .accion-ticket-pill {
+                background: #003594;
+                color: #fff;
+            }
+            .ticket-grupo-count {
+                color: #6c757d;
+                font-size: 0.8rem;
+            }
+            .ticket-grupo-chevron {
+                color: #6c757d;
+                transition: transform 0.2s ease-in-out;
+                display: inline-block;
+                margin-left: auto;
+            }
+            .ticket-grupo-header.expandido .ticket-grupo-chevron {
+                transform: rotate(180deg);
             }
             .accion-titulo {
                 font-weight: 600;

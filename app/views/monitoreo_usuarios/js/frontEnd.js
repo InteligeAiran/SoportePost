@@ -151,6 +151,7 @@ function verAccionesUsuario(id_user, nombreCompleto) {
       <div class="acciones-swal-header">Acciones sobre tickets — ${nombreCompleto}</div>
       <div class="acciones-swal-body">
         <p class="text-muted small text-start">Incluye cambios de estatus sobre tickets (crear, aprobar, entregar, etc.) y cargas de documentos de Envío, Envío a Destino y Presupuesto. No cubre otras acciones del sistema fuera del flujo de tickets.</p>
+        <input type="text" id="filtro-ticket-input" class="form-control mb-2" placeholder="Buscar por número de ticket..." style="display: none;">
         <div id="acciones-usuario-container" style="max-height: 55vh; overflow-y: auto; text-align: left;">
           <p class="text-center text-muted">Cargando...</p>
         </div>
@@ -192,41 +193,105 @@ function cargarAccionesUsuario(id_user) {
         }
 
         // Mismo lenguaje visual que el historial de tickets del dashboard
-        // (badge + tarjeta), en un timeline vertical simple: una tarjeta
-        // por acción o carga de documento, ya vienen mezcladas y ordenadas
-        // por fecha desde el backend.
+        // (badge + tarjeta), pero agrupado por ticket: cada ticket es su
+        // propia sección con encabezado, y adentro un timeline solo con
+        // sus eventos (en vez de una sola lista larga mezclando tickets).
         const totalDocumentos = response.acciones.filter((a) => a.tipo === "documento").length;
         const totalAcciones = response.acciones.length - totalDocumentos;
 
-        const items = response.acciones
-          .map((accion) => {
-            const esDocumento = accion.tipo === "documento";
-            const badge = esDocumento ? DOCUMENTO_BADGE_SVG : ACCION_BADGE_SVG;
-            const badgeClase = esDocumento ? "accion-badge accion-badge-documento" : "accion-badge";
+        // response.acciones ya viene ordenado por fecha DESC desde el
+        // backend, así que el Map queda naturalmente ordenado por el
+        // ticket con el evento más reciente primero.
+        const grupos = new Map();
+        response.acciones.forEach((accion) => {
+          if (!grupos.has(accion.nro_ticket)) {
+            grupos.set(accion.nro_ticket, []);
+          }
+          grupos.get(accion.nro_ticket).push(accion);
+        });
+
+        // Un usuario activo puede fácilmente tener acciones sobre 20-30
+        // tickets distintos — con todos los grupos expandidos a la vez el
+        // modal se vuelve una lista imposible de recorrer. Se colapsan
+        // todos menos el primero (el ticket con la acción más reciente),
+        // igual que el patrón "timeline-collapsible" que ya usa el
+        // historial de tickets del dashboard, y se agrega un buscador por
+        // número de ticket cuando hay varios.
+        const gruposHtml = Array.from(grupos.entries())
+          .map(([nroTicket, eventos], index) => {
+            const itemsTicket = eventos
+              .map((accion) => {
+                const esDocumento = accion.tipo === "documento";
+                const badge = esDocumento ? DOCUMENTO_BADGE_SVG : ACCION_BADGE_SVG;
+                const badgeClase = esDocumento ? "accion-badge accion-badge-documento" : "accion-badge";
+                return `
+                  <li>
+                    <div class="${badgeClase}">${badge}</div>
+                    <div class="accion-card">
+                      <div class="accion-card-header">
+                        <small>${formatFecha(accion.fecha)}</small>
+                      </div>
+                      <div class="accion-titulo">${accion.accion || "-"}</div>
+                      <div class="accion-subtexto">${esDocumento ? "📎 " : ""}${accion.estatus || "-"}</div>
+                    </div>
+                  </li>
+                `;
+              })
+              .join("");
+
+            const expandido = index === 0;
             return `
-              <li>
-                <div class="${badgeClase}">${badge}</div>
-                <div class="accion-card">
-                  <div class="accion-card-header">
-                    <span class="accion-ticket-pill">Ticket ${accion.nro_ticket}</span>
-                    <small>${formatFecha(accion.fecha)}</small>
-                  </div>
-                  <div class="accion-titulo">${accion.accion || "-"}</div>
-                  <div class="accion-subtexto">${esDocumento ? "📎 " : ""}${accion.estatus || "-"}</div>
+              <div class="ticket-grupo" data-nro-ticket="${nroTicket}">
+                <div class="ticket-grupo-header${expandido ? " expandido" : ""}">
+                  <span class="accion-ticket-pill">Ticket ${nroTicket}</span>
+                  <span class="ticket-grupo-count">${eventos.length} evento(s)</span>
+                  <span class="ticket-grupo-chevron">▾</span>
                 </div>
-              </li>
+                <ul class="accion-timeline" style="${expandido ? "" : "display: none;"}">${itemsTicket}</ul>
+              </div>
             `;
           })
           .join("");
 
         const resumen = `
           <div class="acciones-resumen">
+            <span>${grupos.size} ticket(s)</span>
             <span>${totalAcciones} cambio(s) de estatus</span>
             <span>${totalDocumentos} documento(s) cargado(s)</span>
           </div>
         `;
 
-        container.innerHTML = `${resumen}<ul class="accion-timeline">${items}</ul>`;
+        container.innerHTML = `${resumen}${gruposHtml}`;
+
+        container.querySelectorAll(".ticket-grupo-header").forEach((header) => {
+          header.addEventListener("click", () => {
+            const lista = header.nextElementSibling;
+            const abierto = header.classList.toggle("expandido");
+            lista.style.display = abierto ? "" : "none";
+          });
+        });
+
+        // Con muchos tickets, dejar el buscador visible para saltar
+        // directo al que se necesita en vez de colapsar/expandir uno por
+        // uno.
+        const filtroInput = document.getElementById("filtro-ticket-input");
+        if (grupos.size > 5) {
+          filtroInput.style.display = "";
+          filtroInput.value = "";
+          filtroInput.oninput = () => {
+            const filtro = filtroInput.value.trim().toLowerCase();
+            container.querySelectorAll(".ticket-grupo").forEach((grupo) => {
+              const coincide = grupo.dataset.nroTicket.toLowerCase().includes(filtro);
+              grupo.style.display = coincide ? "" : "none";
+              if (coincide && filtro) {
+                grupo.querySelector(".ticket-grupo-header").classList.add("expandido");
+                grupo.querySelector(".accion-timeline").style.display = "";
+              }
+            });
+          };
+        } else {
+          filtroInput.style.display = "none";
+        }
       } catch (error) {
         container.innerHTML = '<p class="text-center text-muted">Error al procesar la respuesta</p>';
         console.error("Error parsing JSON:", error);
