@@ -145,6 +145,37 @@ function mi_navbar() {}
                 font-size: 0.9rem;
                 word-break: break-word;
             }
+            /* Badge de color para el estatus del ticket dentro del timeline
+               (Cerrado/En proceso/Abierto/Rechazado). Los eventos de
+               documento no usan esto: su "estatus" es el nombre del
+               archivo, no un estado real. */
+            .accion-estatus-badge {
+                display: inline-block;
+                padding: 2px 10px;
+                border-radius: 50px;
+                font-weight: 700;
+                font-size: 0.78rem;
+            }
+            .accion-estatus-cerrado {
+                background: #d4edda;
+                color: #1e7e34;
+            }
+            .accion-estatus-proceso {
+                background: #fff3cd;
+                color: #b7791f;
+            }
+            .accion-estatus-abierto {
+                background: #cfe2ff;
+                color: #0a58ca;
+            }
+            .accion-estatus-rechazado {
+                background: #f8d7da;
+                color: #a71d2a;
+            }
+            .accion-estatus-neutro {
+                background: #e9ecef;
+                color: #495057;
+            }
             .acciones-resumen {
                 display: flex;
                 gap: 10px;
@@ -184,6 +215,12 @@ function mi_navbar() {}
             }
             .acciones-swal-popup .swal2-actions {
                 margin: 1rem 1.5rem 1.5rem;
+            }
+            /* Fondo medio borroso detrás del modal de "Ver Acciones", en vez
+               del overlay oscuro plano por defecto de SweetAlert2. */
+            .acciones-swal-container {
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
             }
 
             /* El buscador de DataTables no trae borde propio de esta app —

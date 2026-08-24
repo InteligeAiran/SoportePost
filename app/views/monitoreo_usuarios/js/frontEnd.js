@@ -136,6 +136,19 @@ function cargarUsuariosMonitoreo() {
 const ACCION_BADGE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6zm4 1a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5m0 5a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 0-1h-7a.5.5 0 0 0-.5.5M4 8a1 1 0 0 0 1 1h6a1 1 0 1 0 0-2H5a1 1 0 0 0-1 1"/></svg>`;
 const DOCUMENTO_BADGE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M4.5 9a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zm0-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1zm0-2a.5.5 0 0 1 0-1h7a.5.5 0 0 1 0 1z"/></svg>`;
 
+// El "estatus" solo es un estado real de ticket (Abierto/En proceso/Cerrado)
+// para eventos tipo "accion"; en eventos tipo "documento" ese mismo campo
+// trae el nombre del archivo, así que no se colorea.
+function getEstatusBadgeClass(accion) {
+  if (accion.tipo === "documento") return null;
+  const estatus = (accion.estatus || "").toLowerCase();
+  if (estatus.includes("cerrado")) return "accion-estatus-cerrado";
+  if (estatus.includes("proceso")) return "accion-estatus-proceso";
+  if (estatus.includes("abierto")) return "accion-estatus-abierto";
+  if (estatus.includes("rechaz") || estatus.includes("cancel")) return "accion-estatus-rechazado";
+  return "accion-estatus-neutro";
+}
+
 function verAccionesUsuario(id_user, nombreCompleto) {
   // Se usa SweetAlert2 en vez de un modal de Bootstrap: el proyecto no
   // carga ninguna hoja de estilos de Bootstrap (siempre está comentada en
@@ -164,6 +177,7 @@ function verAccionesUsuario(id_user, nombreCompleto) {
     focusConfirm: false,
     customClass: {
       popup: "acciones-swal-popup",
+      container: "acciones-swal-container",
     },
     didOpen: () => {
       cargarAccionesUsuario(id_user);
@@ -224,6 +238,10 @@ function cargarAccionesUsuario(id_user) {
                 const esDocumento = accion.tipo === "documento";
                 const badge = esDocumento ? DOCUMENTO_BADGE_SVG : ACCION_BADGE_SVG;
                 const badgeClase = esDocumento ? "accion-badge accion-badge-documento" : "accion-badge";
+                const claseEstatus = getEstatusBadgeClass(accion);
+                const estatusHtml = claseEstatus
+                  ? `<span class="accion-estatus-badge ${claseEstatus}">${accion.estatus || "-"}</span>`
+                  : `${accion.estatus || "-"}`;
                 return `
                   <li>
                     <div class="${badgeClase}">${badge}</div>
@@ -232,7 +250,7 @@ function cargarAccionesUsuario(id_user) {
                         <small>${formatFecha(accion.fecha)}</small>
                       </div>
                       <div class="accion-titulo">${accion.accion || "-"}</div>
-                      <div class="accion-subtexto">${esDocumento ? "📎 " : ""}${accion.estatus || "-"}</div>
+                      <div class="accion-subtexto">${esDocumento ? "📎 " : ""}${estatusHtml}</div>
                     </div>
                   </li>
                 `;
