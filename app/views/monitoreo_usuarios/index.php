@@ -246,6 +246,39 @@ function mi_navbar() {}
                 padding: 0.25rem 0.5rem;
             }
 
+            /* El "Mostrar N registros" y el buscador de DataTables se ven
+               afectados por la regla global "label { display: inline-block; }"
+               de argon-dashboard.css: un inline-block calcula su ancho por
+               shrink-to-fit, y en ciertos casos ese cálculo se dispara
+               larguísimo (label del buscador llegaba a ~1100px) mucho más
+               ancho que la columna angosta de esta tabla (col-md-7),
+               empujando toda la tabla de más y generando un scroll
+               horizontal que no mostraba nada nuevo al arrastrarlo. Se
+               fuerza el label a flex + ancho completo (ya no depende de
+               shrink-to-fit) pero el input queda con un ancho fijo
+               moderado, no estirado, para que no se vea como una barra
+               larga y fea. */
+            #tabla-monitoreo-usuarios_length,
+            #tabla-monitoreo-usuarios_filter {
+                float: none !important;
+                width: 100% !important;
+                text-align: left !important;
+                margin-bottom: 6px;
+            }
+            #tabla-monitoreo-usuarios_length label,
+            #tabla-monitoreo-usuarios_filter label {
+                display: flex !important;
+                width: 100% !important;
+                white-space: normal !important;
+                align-items: center;
+                gap: 6px;
+            }
+            #tabla-monitoreo-usuarios_filter input[type="search"] {
+                width: 220px;
+                max-width: 100%;
+                flex: none;
+            }
+
             /* Panel "Detalle de Conexión" — tarjetas al estilo de las que ya
                usa ticket-utils.js (formatTicketDetailsPanel) en el resto de
                la app, en vez de simples filas de texto. */
