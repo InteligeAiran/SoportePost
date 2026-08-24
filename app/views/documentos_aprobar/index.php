@@ -990,6 +990,24 @@ function mi_navbar() {}
             transform: none;
         }
 
+        /* Finanzas (id_area=1, id_rol=6) solo verifica/consulta: se ocultan
+           todos los botones de acción (aprobar, rechazar, subir/corregir
+           comprobante), dejando visibles únicamente los de "ver". La clase
+           la agrega frontEnd.js al detectar el área/rol en initComplete. */
+        body.finanzas-read-only #btnAprobarExoneracion,
+        body.finanzas-read-only #btnFinalizarRevision,
+        body.finanzas-read-only .reupload-payment-btn,
+        body.finanzas-read-only .upload-new-doc-btn,
+        body.finanzas-read-only #approveTicketFromImage,
+        body.finanzas-read-only #RechazoDocumento,
+        body.finanzas-read-only #confirmarRechazoBtn,
+        body.finanzas-read-only #btnConfirmarAccionRechazo,
+        body.finanzas-read-only #btnGuardarDatosPago,
+        body.finanzas-read-only #uploadFileBtn,
+        body.finanzas-read-only #paymentValidationContainer {
+            display: none !important;
+        }
+
         /* Clase personalizada para alertas de pago (z-index superior al modal de detalles) */
         /* ID personalizado para alertas de pago (z-index máximo para superar cualquier modal) */
         #paymentAlertModal {
