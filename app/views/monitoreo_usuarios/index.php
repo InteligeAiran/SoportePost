@@ -83,7 +83,7 @@ function mi_navbar() {}
             }
             .accion-timeline .accion-card-header {
                 display: flex;
-                justify-content: space-between;
+                justify-content: flex-end;
                 align-items: center;
                 margin-bottom: 6px;
                 gap: 8px;
@@ -98,13 +98,42 @@ function mi_navbar() {}
                 border-radius: 50px;
                 white-space: nowrap;
             }
-            .accion-timeline .accion-badge-documento + .accion-card .accion-ticket-pill {
-                background: #fdf0da;
-                color: #b7791f;
-            }
             .accion-timeline .accion-card small {
                 color: #6c757d;
                 white-space: nowrap;
+            }
+
+            /* Cada ticket es su propia sección con encabezado, en vez de
+               una sola lista larga mezclando eventos de tickets distintos. */
+            .ticket-grupo {
+                margin-bottom: 20px;
+            }
+            .ticket-grupo-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 10px;
+                padding-bottom: 6px;
+                border-bottom: 2px solid #e9ecef;
+                cursor: pointer;
+                user-select: none;
+            }
+            .ticket-grupo-header:hover .accion-ticket-pill {
+                background: #003594;
+                color: #fff;
+            }
+            .ticket-grupo-count {
+                color: #6c757d;
+                font-size: 0.8rem;
+            }
+            .ticket-grupo-chevron {
+                color: #6c757d;
+                transition: transform 0.2s ease-in-out;
+                display: inline-block;
+                margin-left: auto;
+            }
+            .ticket-grupo-header.expandido .ticket-grupo-chevron {
+                transform: rotate(180deg);
             }
             .accion-titulo {
                 font-weight: 600;
@@ -115,6 +144,37 @@ function mi_navbar() {}
                 color: #6c757d;
                 font-size: 0.9rem;
                 word-break: break-word;
+            }
+            /* Badge de color para el estatus del ticket dentro del timeline
+               (Cerrado/En proceso/Abierto/Rechazado). Los eventos de
+               documento no usan esto: su "estatus" es el nombre del
+               archivo, no un estado real. */
+            .accion-estatus-badge {
+                display: inline-block;
+                padding: 2px 10px;
+                border-radius: 50px;
+                font-weight: 700;
+                font-size: 0.78rem;
+            }
+            .accion-estatus-cerrado {
+                background: #d4edda;
+                color: #1e7e34;
+            }
+            .accion-estatus-proceso {
+                background: #fff3cd;
+                color: #b7791f;
+            }
+            .accion-estatus-abierto {
+                background: #cfe2ff;
+                color: #0a58ca;
+            }
+            .accion-estatus-rechazado {
+                background: #f8d7da;
+                color: #a71d2a;
+            }
+            .accion-estatus-neutro {
+                background: #e9ecef;
+                color: #495057;
             }
             .acciones-resumen {
                 display: flex;
@@ -156,6 +216,12 @@ function mi_navbar() {}
             .acciones-swal-popup .swal2-actions {
                 margin: 1rem 1.5rem 1.5rem;
             }
+            /* Fondo medio borroso detrás del modal de "Ver Acciones", en vez
+               del overlay oscuro plano por defecto de SweetAlert2. */
+            .acciones-swal-container {
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+            }
 
             /* El buscador de DataTables no trae borde propio de esta app —
                mismo estilo que ya usa consulta_ticket para su input de
@@ -178,6 +244,39 @@ function mi_navbar() {}
                 border: 1px solid #ced4da;
                 border-radius: 0.375rem;
                 padding: 0.25rem 0.5rem;
+            }
+
+            /* El "Mostrar N registros" y el buscador de DataTables se ven
+               afectados por la regla global "label { display: inline-block; }"
+               de argon-dashboard.css: un inline-block calcula su ancho por
+               shrink-to-fit, y en ciertos casos ese cálculo se dispara
+               larguísimo (label del buscador llegaba a ~1100px) mucho más
+               ancho que la columna angosta de esta tabla (col-md-7),
+               empujando toda la tabla de más y generando un scroll
+               horizontal que no mostraba nada nuevo al arrastrarlo. Se
+               fuerza el label a flex + ancho completo (ya no depende de
+               shrink-to-fit) pero el input queda con un ancho fijo
+               moderado, no estirado, para que no se vea como una barra
+               larga y fea. */
+            #tabla-monitoreo-usuarios_length,
+            #tabla-monitoreo-usuarios_filter {
+                float: none !important;
+                width: 100% !important;
+                text-align: left !important;
+                margin-bottom: 6px;
+            }
+            #tabla-monitoreo-usuarios_length label,
+            #tabla-monitoreo-usuarios_filter label {
+                display: flex !important;
+                width: 100% !important;
+                white-space: normal !important;
+                align-items: center;
+                gap: 6px;
+            }
+            #tabla-monitoreo-usuarios_filter input[type="search"] {
+                width: 220px;
+                max-width: 100%;
+                flex: none;
             }
 
             /* Panel "Detalle de Conexión" — tarjetas al estilo de las que ya
@@ -211,14 +310,15 @@ function mi_navbar() {}
                 background: #ffffff;
                 border-radius: 12px;
                 border: none;
-                box-shadow: 0 0 12px rgba(0, 53, 148, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+                border-left: 4px solid #003594;
+                box-shadow: 0 4px 16px rgba(0, 53, 148, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
                 padding: 14px 16px;
                 margin-bottom: 12px;
                 transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             }
             .detalle-stat-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 0 15px rgba(0, 53, 148, 0.25), 0 6px 15px rgba(0, 0, 0, 0.08);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 22px rgba(0, 53, 148, 0.28), 0 4px 10px rgba(0, 0, 0, 0.1);
             }
             .detalle-stat-card h6 {
                 color: #111827;

@@ -1988,6 +1988,19 @@ class Consulta extends Controller
         exit();
     }
 
+    /**
+     * Finanzas (id_area=1, id_rol=6) solo puede consultar el estatus de
+     * pagos/exoneraciones en el módulo de Documentos, nunca aprobar,
+     * rechazar ni corregir nada. El frontend ya oculta esos botones, pero
+     * esto lo hace imposible también llamando a la API directamente.
+     */
+    private function blockFinanzasReadOnly() {
+        $id_area = (int)($_SESSION['id_area'] ?? 0);
+        $id_rol = (int)($_SESSION['id_rol'] ?? 0);
+        if ($id_area === 1 && $id_rol === 6) {
+            $this->response(['success' => false, 'message' => 'No autorizado.'], 403);
+        }
+    }
 
     public function handleGetModulesUsers(){
         //$id_usuario = '7';
@@ -2741,6 +2754,7 @@ class Consulta extends Controller
     }
 
     public function handlerechazarDocumentos(){
+        $this->blockFinanzasReadOnly();
         $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
         $id_motivo = isset($_POST['motivoId'])? $_POST['motivoId'] : '';
         $nro_ticket = isset($_POST['nroTicket'])? $_POST['nroTicket'] : '';
@@ -2765,6 +2779,7 @@ class Consulta extends Controller
     }
 
     public function handleapprovedocument(){
+        $this->blockFinanzasReadOnly();
         $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : '';
         $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
@@ -2834,6 +2849,7 @@ class Consulta extends Controller
 
     public function handleFinalizarRevisionTicket()
     {
+        $this->blockFinanzasReadOnly();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nroTicket = $_POST['nroTicket'] ?? null;
             $id_user = $_POST['id_user'] ?? null;
@@ -3158,6 +3174,7 @@ class Consulta extends Controller
     }
 
     public function handleAprobarExoneracionTicket(){
+        $this->blockFinanzasReadOnly();
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nroTicket = $_POST['nro_ticket'] ?? null;
             $id_user = $_POST['id_user'] ?? null;
@@ -3404,6 +3421,7 @@ class Consulta extends Controller
      * @return void
      */
     public function handleSavePayment(){
+        $this->blockFinanzasReadOnly();
         $repository = new TechnicalConsultionRepository();
         
         // ============================================
@@ -4025,6 +4043,7 @@ class Consulta extends Controller
     }
 
     public function handleSubstitutePayment() {
+        $this->blockFinanzasReadOnly();
         $repository = new TechnicalConsultionRepository();
         $id_payment_old = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
         
@@ -4074,6 +4093,7 @@ class Consulta extends Controller
 
     private function handleUploadPaymentDoc()
     {
+        $this->blockFinanzasReadOnly();
         error_log("handleUploadPaymentDoc CALLED");
         // Validar que se recibieron archivos
         if (!isset($_FILES['payment_doc']) || $_FILES['payment_doc']['error'] !== UPLOAD_ERR_OK) {

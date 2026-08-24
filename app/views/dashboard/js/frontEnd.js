@@ -2430,6 +2430,9 @@ function formatOpenDetails(details) {
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || 'N/A'}</dd>
 
+                        <dt class="col-sm-4">Región:</dt>
+                        <dd class="col-sm-8">${ticket.region_creador || 'N/A'}</dd>
+
                         <dt class="col-sm-4">Modelo POS:</dt>
                         <dd class="col-sm-8">${ticket.name_modelopos_cliente || 'N/A'}</dd>
 
@@ -3020,6 +3023,9 @@ function formatProcessTicketsDetails(details){
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
 
+                        <dt class="col-sm-4">Región:</dt>
+                        <dd class="col-sm-8">${ticket.region_creador || "N/A"}</dd>
+
                         <dt class="col-sm-4">Modelo POS:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_modelopos_cliente || "N/A"
@@ -3547,6 +3553,9 @@ function formatTallerDetails(details) {
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
 
+                        <dt class="col-sm-4">Región:</dt>
+                        <dd class="col-sm-8">${ticket.region_creador || "N/A"}</dd>
+
                         <dt class="col-sm-4">Modelo POS:</dt>
                         <dd class="col-sm-8">${
                           ticket.name_modelopos_cliente || "N/A"
@@ -3641,6 +3650,9 @@ function formatResolveDetails(details) {
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Región:</dt>
+                        <dd class="col-sm-8">${ticket.region_creador || "N/A"}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
                         <dd class="col-sm-8">${
@@ -5416,6 +5428,9 @@ function formatDetalleTicketComercial(details) {
 
                         <dt class="col-sm-4">Rif Cliente:</dt>
                         <dd class="col-sm-8">${ticket.rif_cliente || "N/A"}</dd>
+
+                        <dt class="col-sm-4">Región:</dt>
+                        <dd class="col-sm-8">${ticket.region_creador || "N/A"}</dd>
 
                         <dt class="col-sm-4">Modelo POS:</dt>
                         <dd class="col-sm-8">${
