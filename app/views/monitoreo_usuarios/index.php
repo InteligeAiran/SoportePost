@@ -310,14 +310,15 @@ function mi_navbar() {}
                 background: #ffffff;
                 border-radius: 12px;
                 border: none;
-                box-shadow: 0 0 12px rgba(0, 53, 148, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+                border-left: 4px solid #003594;
+                box-shadow: 0 4px 16px rgba(0, 53, 148, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
                 padding: 14px 16px;
                 margin-bottom: 12px;
                 transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             }
             .detalle-stat-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 0 15px rgba(0, 53, 148, 0.25), 0 6px 15px rgba(0, 0, 0, 0.08);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 22px rgba(0, 53, 148, 0.28), 0 4px 10px rgba(0, 0, 0, 0.1);
             }
             .detalle-stat-card h6 {
                 color: #111827;
