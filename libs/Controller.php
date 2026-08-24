@@ -49,6 +49,13 @@ class Controller {
         $limit = 10; // Límite estricto de 10 intentos de inicio de sesión por minuto
       } elseif (stripos($route, 'upload') !== false) {
         $limit = 10; // Límite estricto de 10 cargas de archivos por minuto
+      } elseif ($route === 'api/consulta/getdocumentfile' && defined('SUPERAPP_ALLOWED_IPS')) {
+        // La IP del servicio de SuperApp agrega las descargas de TODOS sus usuarios,
+        // así que necesita un límite mucho mayor que un navegador individual.
+        $allowedServiceIps = array_filter(array_map('trim', explode(',', SUPERAPP_ALLOWED_IPS)));
+        if (in_array($this->getClientIP(), $allowedServiceIps, true)) {
+          $limit = 500;
+        }
       }
 
       // 2. Obtener la IP real del cliente
@@ -105,7 +112,7 @@ class Controller {
   /**
    * Obtiene la dirección IP real del cliente considerando proxies o balanceadores de carga
    */
-  private function getClientIP() {
+  protected function getClientIP() {
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {

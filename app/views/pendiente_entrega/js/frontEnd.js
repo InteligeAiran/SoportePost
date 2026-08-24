@@ -352,27 +352,12 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
         return;
     }
 
-        // Función para limpiar la ruta del archivo
+        // Función para construir la URL de descarga de un documento a partir de
+        // su ruta cruda en disco, vía el endpoint autenticado (ya no expone
+        // directamente el Alias estático /Documentos)
         function cleanFilePath(filePath) {
             if (!filePath) return null;
-
-            // Reemplazar barras invertidas con barras normales
-            let cleanPath = filePath.replace(/\\/g, '/');
-
-        // Extraer la parte después de 'Documentos_SoportePost/' o 'uploads/'
-            const pathSegments = cleanPath.split('Documentos_SoportePost/');
-            if (pathSegments.length > 1) {
-                cleanPath = pathSegments[1];
-        } else {
-            // Si no tiene Documentos_SoportePost/, intentar con uploads/
-            const uploadsSegments = cleanPath.split('uploads/');
-            if (uploadsSegments.length > 1) {
-                cleanPath = 'uploads/' + uploadsSegments[1];
-            }
-            }
-
-          // Construir la URL completa
-          return `//${HOST}/Documentos/${cleanPath}`;
+            return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
         }
 
     // Función para mostrar un documento
@@ -8361,35 +8346,9 @@ function openAgregarAnticipoModal(nroTicket, serialPos = '') {
     .then(data => {
         if (data.success && data.document) {
             const doc = data.document;
-            // Asegurar que la ruta sea accesible desde el frontend
-            // La ruta en BD puede ser absoluta del sistema de archivos, hay que convertirla a URL web
-            // Asumiendo que cleanFilePath ya existe o implementando logica similar
-            
-            // Si cleanFilePath no está disponible en este scope, hacemos una limpieza básica
-            // Ajustar segun estructura de carpetas: C:/xampp/htdocs/SoportePost/public/documentos/...
-            // a http://localhost/SoportePost/public/documentos/...
-            
-            let fullPath = doc.file_path || '';
-            let webPath = fullPath;
-            
-            if (fullPath.includes('public/documentos')) {
-                 const parts = fullPath.split('public/documentos');
-                 if (parts.length > 1) {
-                     // Construir URL relativa
-                     webPath = `${ENDPOINT_BASE}${APP_PATH}public/documentos${parts[1]}`;
-                 }
-            } else if (fullPath.includes('Documentos_SoportePost')) {
-                 // Caso soporte post externo
-                 const parts = fullPath.split('Documentos_SoportePost');
-                  if (parts.length > 1) {
-                     const hostToUse = (typeof HOST !== 'undefined' && HOST) ? HOST : window.location.host;
-                     webPath = `http://${hostToUse}/Documentos${parts[1]}`;
-                 }
-            }
-            // Normalizar slashes
-            webPath = webPath.replace(/\\/g, '/');
-
-            currentPaymentDocUrl = webPath;
+            // Documento servido por el endpoint autenticado (ya no se expone la
+            // ruta cruda del filesystem ni el Alias estático /Documentos)
+            currentPaymentDocUrl = `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?id=${doc.id}`;
             currentPaymentDocName = doc.original_filename || 'Anticipo';
             currentPaymentDocType = (doc.mime_type === 'application/pdf' || currentPaymentDocName.toLowerCase().endsWith('.pdf')) ? 'pdf' : 'image';
             

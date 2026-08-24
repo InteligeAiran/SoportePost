@@ -75,7 +75,7 @@ class DatabaseCon
         });
 
         try {
-            $this->conexion = pg_pconnect($connString);
+            $this->conexion = pg_connect($connString);
         } catch (RuntimeException $e) {
             restore_error_handler();
             error_log('[SoportePost] DB Connect Error: ' . $e->getMessage());

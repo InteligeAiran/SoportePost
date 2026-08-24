@@ -36,6 +36,10 @@ define('database',   EnvLoader::get('DB_NOMBRE',   'SoportePost'));
 // --- Constantes de Archivos ---
 define('UPLOAD_BASE_DIR', EnvLoader::get('UPLOAD_BASE_DIR', 'C:\\Documentos_SoportePost\\'));
 
+// --- Constantes de Integración con SuperApp (descarga de documentos) ---
+define('SUPERAPP_SERVICE_KEY', EnvLoader::get('SUPERAPP_SERVICE_KEY', ''));
+define('SUPERAPP_ALLOWED_IPS', EnvLoader::get('SUPERAPP_ALLOWED_IPS', '127.0.0.1'));
+
 // --- Constantes de Correo ---
 define('SMTP_HOST',     EnvLoader::get('SMTP_HOST',     'smtp.gmail.com'));
 define('SMTP_AUTH',     filter_var(EnvLoader::get('SMTP_AUTH', 'true'), FILTER_VALIDATE_BOOLEAN));

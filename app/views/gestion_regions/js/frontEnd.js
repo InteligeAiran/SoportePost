@@ -2231,21 +2231,12 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     messageContainer.textContent = "";
     messageContainer.classList.add("hidden");
 
-    // Función para limpiar la ruta del archivo
+    // Construye la URL de descarga de un documento a partir de su ruta cruda
+    // en disco, vía el endpoint autenticado (ya no expone directamente el
+    // Alias estático /Documentos)
     function cleanFilePath(filePath) {
         if (!filePath) return null;
-
-        // Reemplazar barras invertidas con barras normales
-        let cleanPath = filePath.replace(/\\/g, '/');
-
-        // Extraer la parte después de 'Documentos_SoportePost/'
-        const pathSegments = cleanPath.split('Documentos_SoportePost/');
-        if (pathSegments.length > 1) {
-            cleanPath = pathSegments[1];
-        }
-
-        // Construir la URL completa
-        return `//${HOST}/Documentos/${cleanPath}`;
+        return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
     }
 
     if (imageUrl) {

@@ -1394,47 +1394,13 @@ window.viewPaymentReceipt = function(path, mime, name, recordNumber) {
 };
 
 /**
- * Robustly clean file paths for document viewing.
- * Extracts the relative part from absolute disk paths.
+ * Construye la URL de descarga de un documento a partir de su ruta cruda en
+ * disco, vía el endpoint autenticado (ya no expone directamente el Alias
+ * estático /Documentos).
  */
 function cleanFilePath(filePath) {
     if (!filePath) return null;
-
-    // 1. Normalize all slashes to forward slashes first
-    let path = filePath.replace(/\\/g, '/');
-
-    // 2. Extract path after the storage root (Documentos_SoportePost)
-    // We look for 'Documentos_SoportePost' regardless of case
-    const rootMarker = "Documentos_SoportePost/";
-    const index = path.toLowerCase().indexOf(rootMarker.toLowerCase());
-    
-    if (index !== -1) {
-        path = path.substring(index + rootMarker.length);
-    } else {
-        // Fallback: If root marker not found, try to find by common segments
-        const segments = path.split('/');
-        const pagosIndex = segments.findIndex(s => s.toLowerCase() === 'pagos' || s.toLowerCase() === 'anticipo');
-        if (pagosIndex !== -1 && pagosIndex > 0) {
-            // Keep segments from the serial onwards (usually root/SERIAL/TICKET/Pagos/FILE)
-            path = segments.slice(pagosIndex - 2).join('/');
-        }
-    }
-
-    // 3. Construct the web URL
-    // Use ENDPOINT_BASE if HOST is not defined (standard in this app)
-    let baseUrl = "";
-    if (typeof HOST !== 'undefined' && HOST) {
-        baseUrl = `http://${HOST}/Documentos/`;
-    } else if (typeof ENDPOINT_BASE !== 'undefined') {
-        // ENDPOINT_BASE usually points to the app root, e.g., http://localhost/SoportePost/
-        // Documentos are served from a virtual directory /Documentos/ at the server root
-        const origin = new URL(ENDPOINT_BASE).origin;
-        baseUrl = `${origin}/Documentos/`;
-    } else {
-        baseUrl = "/Documentos/";
-    }
-
-    return baseUrl + path;
+    return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
 }
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");

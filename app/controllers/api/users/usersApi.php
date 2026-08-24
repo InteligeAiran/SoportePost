@@ -87,6 +87,14 @@ class users extends Controller {
                     }
                 break;
 
+                case 'GetUsuariosMonitoreo':
+                    $this->handleGetUsuariosMonitoreo();
+                break;
+
+                case 'GetAccionesUsuario':
+                    $this->handleGetAccionesUsuario();
+                break;
+
                 case 'GetAreaUsers':
                     $this->handleGetAreaUsers();
                 break;
@@ -421,6 +429,52 @@ class users extends Controller {
             $this->response(['success' => true, 'permissions' => $permissions], 200);
         } else {
             $this->response(['error' => 'No se encontraron permisos para el usuario'], 404);
+        }
+    }
+
+    /**
+     * Módulo de monitoreo (última conexión + acciones sobre tickets).
+     * Restringido a SuperAdmin también a nivel de API, no solo de página
+     * — un chequeo de rol en el controlador de la vista no basta si el
+     * endpoint se puede llamar directo.
+     */
+    private function requireSuperAdmin(){
+        if ((int)($_SESSION['id_rol'] ?? 0) !== 1) {
+            $this->response(['success' => false, 'message' => 'No autorizado.'], 403);
+        }
+    }
+
+    public function handleGetUsuariosMonitoreo(){
+        $this->requireSuperAdmin();
+
+        $repository = new UserRepository();
+        $result = $repository->GetUsuariosMonitoreo();
+
+        if ($result !== false && !empty($result)) {
+            $this->response(['success' => true, 'usuarios' => $result], 200);
+        } elseif ($result !== false && empty($result)) {
+            $this->response(['success' => false, 'message' => 'No hay usuarios disponibles'], 404);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener los usuarios'], 500);
+        }
+    }
+
+    public function handleGetAccionesUsuario(){
+        $this->requireSuperAdmin();
+
+        $id_user = isset($_POST['id_user']) ? (int)$_POST['id_user'] : 0;
+        if ($id_user <= 0) {
+            $this->response(['success' => false, 'message' => 'id_user inválido.'], 400);
+            return;
+        }
+
+        $repository = new UserRepository();
+        $result = $repository->GetAccionesTicketsUsuario($id_user);
+
+        if ($result !== false) {
+            $this->response(['success' => true, 'acciones' => $result], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al obtener las acciones del usuario'], 500);
         }
     }
 

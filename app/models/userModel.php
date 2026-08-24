@@ -17,6 +17,92 @@ class userModel extends Model{
         $this->db = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database);
     }
 
+    /**
+     * Lista de usuarios con rol Técnico (id_rolusr = 3) o Coordinador
+     * (id_rolusr = 4) con su última conexión real, sacada de sessions_users
+     * (no hay campo de último login en la tabla users). Usada por el
+     * módulo de monitoreo de usuarios.
+     */
+    public function GetUsuariosMonitoreo(){
+        try{
+            $sql = "SELECT
+                        ROW_NUMBER() OVER (ORDER BY u.name, u.surname) AS secuencial,
+                        u.id_user,
+                        CONCAT(u.name, ' ', u.surname) AS full_name,
+                        u.username AS usuario,
+                        u.email AS correo,
+                        r.name_rol,
+                        uc.ultima_conexion,
+                        uc.ultima_ip
+                    FROM users u
+                    JOIN roles r ON r.id_rolusr = u.id_rolusr
+                    LEFT JOIN LATERAL (
+                        SELECT su.start_date AS ultima_conexion, su.ip_address AS ultima_ip
+                        FROM sessions_users su
+                        WHERE su.id_user = u.id_user
+                        ORDER BY su.start_date DESC
+                        LIMIT 1
+                    ) uc ON TRUE
+                    WHERE u.id_rolusr IN (3, 4)
+                    ORDER BY uc.ultima_conexion DESC NULLS LAST;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log('GetUsuariosMonitoreo: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Acciones realizadas por un usuario sobre tickets: cambios de estatus
+     * (tickets_status_history, único registro de auditoría de ese tipo que
+     * existe hoy) combinados con las cargas de documentos de Envío, Envío a
+     * Destino y Presupuesto (archivos_adjuntos.uploaded_by_user_id). No
+     * cubre acciones fuera del flujo de tickets, ni otros tipos de
+     * documento (Anticipo, Pago).
+     */
+    public function GetAccionesTicketsUsuario($id_user){
+        try{
+            $sql = "SELECT * FROM (
+                        SELECT
+                            h.changedstatus_at AS fecha,
+                            t.nro_ticket,
+                            a.name_accion_ticket AS accion,
+                            s.name_status_ticket AS estatus,
+                            'accion' AS tipo
+                        FROM tickets_status_history h
+                        JOIN tickets t ON t.id_ticket = h.id_ticket
+                        LEFT JOIN accions_tickets a ON a.id_accion_ticket = h.new_action
+                        LEFT JOIN status_tickets s ON s.id_status_ticket = h.new_status
+                        WHERE h.changedstatus_by = " . (int)$id_user . "
+
+                        UNION ALL
+
+                        SELECT
+                            ad.uploaded_at::timestamp AS fecha,
+                            ad.nro_ticket,
+                            CASE ad.document_type
+                                WHEN 'Envio' THEN 'Cargó documento de Envío'
+                                WHEN 'Envio_Destino' THEN 'Cargó documento de Envío a Destino'
+                                WHEN 'presupuesto' THEN 'Cargó Presupuesto'
+                                ELSE 'Cargó documento: ' || ad.document_type
+                            END AS accion,
+                            ad.original_filename AS estatus,
+                            'documento' AS tipo
+                        FROM archivos_adjuntos ad
+                        WHERE ad.uploaded_by_user_id = " . (int)$id_user . "
+                          AND ad.document_type IN ('Envio', 'Envio_Destino', 'presupuesto')
+                    ) combinado
+                    ORDER BY fecha DESC
+                    LIMIT 300;";
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log('GetAccionesTicketsUsuario: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function getAllUsers(){
         try{
             $sql = "SELECT * FROM GetAllDataUser()";

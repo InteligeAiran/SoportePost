@@ -18,6 +18,34 @@ class UserRepository
         $this->model = new userModel(); // Instancia tu modelo de usuario
     }
 
+    public function GetUsuariosMonitoreo(){
+        $result = $this->model->GetUsuariosMonitoreo();
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
+    public function GetAccionesTicketsUsuario($id_user){
+        $result = $this->model->GetAccionesTicketsUsuario($id_user);
+        if ($result && $result['numRows'] > 0) {
+            $rows = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $rows[] = pg_fetch_assoc($result['query'], $i);
+            }
+            pg_free_result($result['query']);
+            return $rows;
+        } else {
+            return [];
+        }
+    }
+
     public function getAllUsers(){
         // Lógica para obtener todos los usuarios
         $result = $this->model->getAllUsers(); // Asumiendo que tienes este método en tu modelo

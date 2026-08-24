@@ -497,6 +497,10 @@ class Consulta extends Controller
                     $this->handleGetBudgetIdByNroTicket();
                     break;
 
+                case 'GetDocumentFile':
+                    $this->handleGetDocumentFile();
+                    break;
+
                 case 'GetPaymentByRecordNumber':
                     $this->handleGetPaymentByRecordNumber();
                     break;
@@ -1870,7 +1874,112 @@ class Consulta extends Controller
             return; // Termina la ejecución aquí
         }
     }
-    
+
+    /**
+     * Sirve un documento (presupuesto, convenio, anticipo, etc.). Reemplaza el
+     * acceso directo al Alias estático /Documentos: requiere sesión de portal
+     * activa, o una llamada de servicio (SuperApp) con X-Service-Key + IP
+     * autorizada.
+     *
+     * Acepta:
+     *  - ?id=<id_adjunto>  (preferido: trae mime_type/original_filename de BD)
+     *  - ?path=<file_path> (fallback para vistas que solo tienen la ruta cruda
+     *    en memoria, no el id del adjunto; misma validación de contención que
+     *    con id, no se confía en el nombre/mime que traiga el cliente)
+     */
+    public function handleGetDocumentFile() {
+        $id = $_GET['id'] ?? $_POST['id'] ?? '';
+        $rawPath = $_GET['path'] ?? $_POST['path'] ?? '';
+
+        if ($id === '' && $rawPath === '') {
+            $this->response(['success' => false, 'message' => 'ID o ruta de documento requerido.'], 400);
+            return;
+        }
+        if ($id !== '' && !ctype_digit((string)$id)) {
+            $this->response(['success' => false, 'message' => 'ID de documento inválido.'], 400);
+            return;
+        }
+
+        if (!$this->authorizeDocumentAccess()) {
+            $this->response(['success' => false, 'message' => 'No autorizado.'], 401);
+            return;
+        }
+
+        $mimeType = null;
+        $originalFilename = null;
+        $candidatePath = $rawPath;
+
+        if ($id !== '') {
+            $model = new consulta_rifModel();
+            $attachment = $model->getAttachmentById($id);
+            if (!$attachment) {
+                $this->response(['success' => false, 'message' => 'Documento no encontrado.'], 404);
+                return;
+            }
+            $candidatePath = $attachment['file_path'] ?? '';
+            $mimeType = $attachment['mime_type'] ?: null;
+            $originalFilename = $attachment['original_filename'] ?: null;
+        }
+
+        // Evitar path traversal: el archivo resuelto debe quedar dentro de UPLOAD_BASE_DIR
+        $realBase = realpath(UPLOAD_BASE_DIR);
+        $realFile = realpath($candidatePath);
+        if (!$realBase || !$realFile || strncmp($realFile, $realBase, strlen($realBase)) !== 0) {
+            $this->response(['success' => false, 'message' => 'Documento no encontrado.'], 404);
+            return;
+        }
+
+        if (!$mimeType) {
+            $mimeType = (function_exists('mime_content_type') ? mime_content_type($realFile) : false) ?: 'application/octet-stream';
+        }
+        if (!$originalFilename) {
+            $originalFilename = basename($realFile);
+        }
+
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: inline; filename="' . basename($originalFilename) . '"');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Pragma: public');
+        header('Content-Length: ' . filesize($realFile));
+
+        readfile($realFile);
+        exit();
+    }
+
+    /**
+     * Autoriza el acceso a handleGetDocumentFile: sesión de portal activa, o
+     * llamada de servicio (SuperApp) con clave compartida + IP autorizada.
+     */
+    private function authorizeDocumentAccess() {
+        // Vía 1: sesión de navegador del portal (mismo criterio que los page
+        // controllers, ej. documentos_aprobar.php, adaptado a responder JSON)
+        if (!empty($_SESSION['id_user'])) {
+            if (!empty($_SESSION['session_id'])) {
+                require_once __DIR__ . '/../../../models/userModel.php';
+                $userModel = new \UserModel();
+                return (bool) $userModel->IsSessionActuallyActive($_SESSION['session_id'], $_SESSION['id_user']);
+            }
+            return true;
+        }
+
+        // Vía 2: llamada de servicio (SuperApp) con X-Service-Key + IP autorizada
+        $serviceKey = $_SERVER['HTTP_X_SERVICE_KEY'] ?? '';
+        if ($serviceKey !== '' && !empty(SUPERAPP_SERVICE_KEY) && hash_equals(SUPERAPP_SERVICE_KEY, $serviceKey)) {
+            $allowedIps = array_filter(array_map('trim', explode(',', SUPERAPP_ALLOWED_IPS)));
+            if (in_array($this->getClientIP(), $allowedIps, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function response($data, $status = 200)
     {
         header('Content-Type: application/json');
@@ -2136,12 +2245,25 @@ class Consulta extends Controller
         }
 
         $repository = new TechnicalConsultionRepository();
+
+        $deudaPendiente = $repository->GetDeudaPendienteTicket($ticketId);
+        if ($deudaPendiente > 0.01) {
+            // El frontend solo lee el mensaje del body cuando el status es 2xx
+            // (fuera de ese rango muestra un genérico "Código de estado: XXX"),
+            // por eso se responde 200 aquí con success:false.
+            $this->response([
+                'success' => false,
+                'message' => 'No se puede completar el ticket: tiene un pago pendiente de $' . number_format($deudaPendiente, 2) . ' sin aprobar.'
+            ], 200);
+            return;
+        }
+
         $result = $repository->EntregarTicket($ticketId, $id_user,  $comment);
 
         if ($result) {
             // Obtener los datos del ticket para el modal
             $ticketData = $repository->GetTicketDataForDelivery($ticketId);
-            
+
             $this->response([
                 'success' => true,
                 'message' => 'El ticket ha sido entregado exitosamente.',
@@ -2149,7 +2271,7 @@ class Consulta extends Controller
             ], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción.'], 500);
-        } 
+        }
     }
 
     public function handleEntregarTicketGenerico(){
@@ -2163,12 +2285,25 @@ class Consulta extends Controller
         }
 
         $repository = new TechnicalConsultionRepository();
+
+        $deudaPendiente = $repository->GetDeudaPendienteTicket($ticketId);
+        if ($deudaPendiente > 0.01) {
+            // El frontend solo lee el mensaje del body cuando el status es 2xx
+            // (fuera de ese rango muestra un genérico "Código de estado: XXX"),
+            // por eso se responde 200 aquí con success:false.
+            $this->response([
+                'success' => false,
+                'message' => 'No se puede completar el ticket: tiene un pago pendiente de $' . number_format($deudaPendiente, 2) . ' sin aprobar.'
+            ], 200);
+            return;
+        }
+
         $result = $repository->EntregarTicketGenerico($ticketId, $id_user, $comment);
 
         if ($result) {
             // Obtener los datos del ticket para el modal
             $ticketData = $repository->GetTicketDataForDelivery($ticketId);
-            
+
             $this->response([
                 'success' => true,
                 'message' => 'El ticket ha sido cerrado exitosamente.',
@@ -2176,7 +2311,7 @@ class Consulta extends Controller
             ], 200);
         } else {
             $this->response(['success' => false,'message' => 'Error al realizar la acción de cierre.'], 500);
-        } 
+        }
     }
 
     public function handleEntregarTicketDevolucion(){

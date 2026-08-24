@@ -2148,38 +2148,34 @@ function getDocumentType(url) {
   }
 }
 
-function cleanFilePath(filePath) {
+// Función para mostrar el modal de visualización (modificada para usar los elementos del DOM)
+function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
+  const modalElementView = document.getElementById("viewDocumentModal");
+  const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
+  const imageViewPreview = document.getElementById("imageViewPreview");
+  const pdfViewViewer = document.getElementById("pdfViewViewer");
+  const messageContainer = document.getElementById("viewDocumentMessage");
+  const nameDocumento = document.getElementById("NombreImage");
+  const BotonCerrarModal = document.getElementById("CerrarModalVizualizar");
+  const BotonCerrarModalSelect = document.getElementById("BotonCerrarSelectDocument");
+
+  currentTicketId = ticketId;
+  currentNroTicket = nroTicket;
+  modalTicketIdSpanView.textContent = currentNroTicket;
+
+  // Limpiar vistas y mensajes
+  imageViewPreview.style.display = "none";
+  pdfViewViewer.style.display = "none";
+  messageContainer.textContent = "";
+  messageContainer.classList.add("hidden");
+
+  // Construye la URL de descarga de un documento a partir de su ruta cruda en
+  // disco, vía el endpoint autenticado (ya no expone directamente el Alias
+  // estático /Documentos)
+  function cleanFilePath(filePath) {
     if (!filePath) return null;
-    let path = filePath.replace(/\\/g, '/');
-    const rootMarker = "Documentos_SoportePost/";
-    const index = path.toLowerCase().indexOf(rootMarker.toLowerCase());
-    if (index !== -1) path = path.substring(index + rootMarker.length);
-    const host = (typeof HOST !== 'undefined' && HOST) ? HOST : window.location.host;
-    return `//${host}/Documentos/${path}`;
-}
-
-function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, fromSelector = true, customTitle = null, subtitle = null) {
-    // Verificar que el modal existe antes de continuar
-    const modalElementView = document.getElementById("viewDocumentModal");
-    if (!modalElementView) {
-        console.error("Error: No se encontró el modal 'viewDocumentModal'");
-        Swal.fire({
-            icon: 'error',
-            title: 'Error del Sistema',
-            text: 'No se pudo abrir el modal de visualización.',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-        });
-        return;
-    }
-
-    // Verificar que todos los elementos necesarios existen
-    const modalTicketIdSpanView = modalElementView.querySelector("#viewModalTicketId");
-    const imageViewPreview = document.getElementById("imageViewPreview");
-    const pdfViewViewer = document.getElementById("pdfViewViewer");
-    const messageContainer = document.getElementById("viewDocumentMessage");
-    const nameDocumento = document.getElementById("NombreImage");
+    return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
+  }
 
     // Verificar que los elementos críticos existen
     if (!modalTicketIdSpanView || !imageViewPreview || !pdfViewViewer || !messageContainer || !nameDocumento) {
