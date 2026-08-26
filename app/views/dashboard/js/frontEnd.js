@@ -5468,7 +5468,7 @@ function formatDetalleTicketComercial(details) {
                         }</dd> <!-- Usar la variable formateada -->
                     </dl>
                     <div class="mt-3 d-flex justify-content-end align-items-center flex-wrap">
-                        ${(currentUserRole === 1 || currentUserRole === 4) ? `<button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
+                        ${((currentUserRole === 1 || currentUserRole === 4) && ticket.name_accion_ticket !== "Entregado a Cliente") ? `<button type="button" class="btn btn-danger btn-sm ms-2" id="btnCerrarTicketGlobal" data-id-ticket="${ticket.id_ticket}" data-nro-ticket="${ticket.nro_ticket}" data-serial-pos="${ticket.serial_pos_cliente || ticket.serial_pos || ''}">
                             Cerrar Ticket
                         </button>` : ''}
                     </div>
