@@ -1362,6 +1362,28 @@ function getTicketDataFinaljs() {
                                             </button>`;
 
                       }
+                      // Prioridad 2.6: Devolución del técnico en campo (nunca pasó por taller) para
+                      // regiones NO centrales: va directo a la región, sin exigir documento de
+                      // presupuesto (ese ticket jamás generó uno porque no hubo diagnóstico de taller).
+                      else if (!isCentralRegion && name_accion_ticket === "En espera de Confirmar Devolución") {
+                          actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
+                                              data-id-ticket="${idTicket}"
+                                              data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"
+                                              data-serial-pos="${serialPos}"
+                                              data-nro-ticket="${nroTicket}"
+                                              data-pdf-presupuesto=""
+                                              data-id-failure="${idFailure || ''}"
+                                              data-status-lab="${currentStatusLab || ''}"
+                                              data-id-status-payment="${idStatusPayment || ''}"
+                                              data-garantia-instalacion="${row.garantia_instalacion === true || row.garantia_instalacion === 't' ? 'true' : 'false'}"
+                                              data-garantia-reingreso="${row.garantia_reingreso === true || row.garantia_reingreso === 't' ? 'true' : 'false'}"
+                                              data-is-actualizacion-software="${isFallaSinPago ? 'true' : 'false'}"
+                                              data-is-devolucion="true">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-truck-front-fill" viewBox="0 0 16 16">
+                                                <path d="M3.5 0A2.5 2.5 0 0 0 1 2.5v9c0 .818.393 1.544 1 2v2a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V14h6v1.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-2c.607-.456 1-1.182 1-2v-9A2.5 2.5 0 0 0 12.5 0zM3 3a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v3.9c0 .625-.562 1.092-1.17.994C10.925 7.747 9.208 7.5 8 7.5s-2.925.247-3.83.394A1.008 1.008 0 0 1 3 6.9zm1 9a1 1 0 1 1 0-2 1 1 0 0 1 0 2m8 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2m-5-2h2a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2"/>
+                                              </svg>
+                                          </button>`;
+                      }
                       else {
                           // Condiciones comunes para el flujo de envío a región:
                           // 1. NO es región central
@@ -2399,7 +2421,9 @@ function getTicketDataFinaljs() {
                     const isFallaSinPago = (idFailure == 9 || idFailure == 12 || $(this).attr("data-is-actualizacion-software") === 'true');
                     const isGarantia = (idStatusPayment == 1 || idStatusPayment == 3 || isGarantiaInst || isGarantiaRein);
                     const isIrreparable = (rawStatusLab === "Gestión Comercial (Irreparable)");
-                    
+                    // Devolución del técnico en campo: nunca pasó por taller, no debe exigir presupuesto.
+                    const isDevolucion = $(this).attr("data-is-devolucion") === 'true';
+
                     // Obtener si tiene presupuesto PDF desde el atributo data
                     const pdfPathPresupuesto = $(this).attr("data-pdf-presupuesto") || "";
                     const hasPresupuestoPDF = pdfPathPresupuesto.trim() !== "" && pdfPathPresupuesto !== "null";
@@ -2408,9 +2432,10 @@ function getTicketDataFinaljs() {
                     // MANTENER FLUJO SEGÚN SOLICITUD DEL USUARIO (Orden de validación)
                     // "si alguna de esa es true no me puede salir el alerta"
                     
-                    if (isIrreparable || isGarantia || isFallaSinPago) {
-                        // Si es Irreparable, Garantía o Falla 9/12, permitimos el paso directamente
-                        console.log("Paso directo concedido por excepción (Garantía/Falla/Irreparable)");
+                    if (isIrreparable || isGarantia || isFallaSinPago || isDevolucion) {
+                        // Si es Irreparable, Garantía, Falla 9/12, o Devolución del técnico en campo
+                        // (nunca pasó por taller), permitimos el paso directamente sin presupuesto.
+                        console.log("Paso directo concedido por excepción (Garantía/Falla/Irreparable/Devolución)");
                     } else {
                         // Si NO es ninguna de las anteriores, validamos el presupuesto obligatoriamente
                         if (!hasPresupuestoPDF) {
