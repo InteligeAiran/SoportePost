@@ -22,16 +22,16 @@ function mi_navbar() {}
         <!--     Fonts and icons     -->
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <!-- Nucleo Icons -->
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/carts.css" />
-        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css"/>
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-icons.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-svg.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/carts.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/carts.css'); ?>" />
+        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css?v=<?php echo $this->staticAssetVersion('app/plugins/animate-css/animate.min.css'); ?>"/>
         <!-- Font Awesome Icons -->
         <script> var currentUserRole = <?php echo $_SESSION['id_rol'] ?? 'guest'; ?>;</script>
         <!-- CSS Files -->
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/dashboard.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/General.css'); ?>" />
     </head>
 
     <body class="g-sidenav-show bg-gray-100">

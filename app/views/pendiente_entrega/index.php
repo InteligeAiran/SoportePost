@@ -23,17 +23,17 @@ function mi_navbar()
     </title>
     <script>var isReadOnlyUser = <?php echo (!empty($_SESSION['solo_lectura'])) ? 'true' : 'false'; ?>;</script>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-icons.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-svg.css'); ?>" />
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css"/>
+        <link rel="stylesheet" href="<?php echo APP; ?>app/plugins/animate-css/animate.min.css?v=<?php echo $this->staticAssetVersion('app/plugins/animate-css/animate.min.css'); ?>"/>
 
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
-        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css" />
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css?v=<?php echo $this->staticAssetVersion('DataTable/datatable.css'); ?>">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css?v=<?php echo $this->staticAssetVersion('DataTable/jquery.dataTables.min.css'); ?>">
+        <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css?v=<?php echo $this->staticAssetVersion('DataTable/buttons.dataTables.min1.css'); ?>">
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/tecnico/tecnico.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/General.css'); ?>" />
     <style>
         /* Estilos empresariales para el SweetAlert de Anticipo */
         .swal2-popup-custom-anticipo {
@@ -1233,7 +1233,7 @@ function mi_navbar()
     <!-- CSS Files -->
     <link id="pagestyle" rel="stylesheet"
         href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
+    <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/dashboard.css'); ?>" />
     <style>
         .forced-hidden { display: none !important; }
     </style>
