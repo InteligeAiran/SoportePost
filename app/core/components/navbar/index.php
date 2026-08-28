@@ -24,6 +24,10 @@
         const ENDPOINT_BASE = '<?php echo ENDPOINT_BASE_DYNAMIC; ?>';
         const APP_PATH = '<?php echo APP_BASE_PATH; ?>';
         const HOST = '<?php echo HOST; ?>';
+        // SEGURIDAD: usuario de "Solo Lectura" (ver users.is_readonly / libs/Controller.php).
+        // Todo módulo que incluye este navbar hereda esta bandera para ocultar botones
+        // de acción; el bloqueo real de datos sigue ocurriendo en el backend.
+        var isReadOnlyUser = <?php echo (!empty($_SESSION['solo_lectura'])) ? 'true' : 'false'; ?>;
     </script>
     <style>
         #sidenav-collapse-main ul{

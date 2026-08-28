@@ -57,32 +57,16 @@ class dashboard extends Controller {
 
     function index() {
 
-    $referer = $_SERVER['HTTP_REFERER'] ?? null;
-    
-    // Obtener la URL base de tu aplicación
-    // Se asume que self::getURL() devuelve la base (ej: http://localhost:8080/SoportePost/)
-    $base_url = self::getURL(); 
-
-    // Definir la URL interna válida de origen (tu dashboard, por ejemplo)
-    $url_dashboard = $base_url . 'dashboard'; 
-    
-    // Condición de Bloqueo:
-    // Si NO hay referer (acceso directo tecleado) 
-    // O si el referer existe, PERO NO contiene la base_url Y NO es el dashboard permitido.
-    if (
-        !$referer || 
-        (strpos($referer, $base_url) === false && $referer !== $url_dashboard)
-    ) {
-        
-        // CERRAR SESIÓN DE INMEDIATO (Política estricta)
-        session_unset();
-        session_destroy();
-        setcookie(session_name(), '', time() - 3600, '/'); 
-        
-        // Redirigir al login
-        header('Location: ' . $base_url . 'login?');
-        exit();
-    }
+    // NOTA DE SEGURIDAD: Antes había aquí una política que destruía la sesión
+    // completa (session_destroy) si la petición no traía un header Referer que
+    // apuntara a esta app o al dashboard. Eso rompía cualquier navegación
+    // "directa" legítima -- refrescar (F5), un bookmark, abrir la URL en una
+    // pestaña nueva, o el botón atrás/adelante del navegador -- todos esos
+    // casos pueden llegar sin Referer u con uno distinto, y el usuario quedaba
+    // deslogueado sin aviso a media tarea. El Referer tampoco es un control de
+    // seguridad real (cualquiera lo omite/falsea), y la protección real contra
+    // CSRF ya la da validateCSRFToken() en libs/Controller.php para las
+    // acciones que sí modifican datos. Se removió esta verificación.
 
 
         Model::exists('login');

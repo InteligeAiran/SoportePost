@@ -23,8 +23,87 @@ class Controller {
     // SEGURIDAD: Ejecutar verificación de límite de peticiones (Rate Limiting) y validación de tokens CSRF
     $this->checkRateLimit();
     $this->validateCSRFToken();
+    $this->checkReadOnlyGuard();
 
     $this->view = new View();
+  }
+
+  /**
+   * SEGURIDAD: Usuarios de "Solo Lectura" ($_SESSION['solo_lectura'], ver
+   * users.is_readonly / api/users/access) pueden ver los módulos que se les
+   * asignen pero no deben poder ejecutar ninguna acción que modifique datos.
+   * Denylist explícito por controlador de la API: cada acción que inserta,
+   * actualiza, elimina o sube/envía algo debe listarse aquí. Si agregas una
+   * acción mutadora nueva en cualquier controlador de app/controllers/api,
+   * agrégala también en esta lista.
+   */
+  private static $READONLY_BLOCKED_ACTIONS = [
+    'users' => [
+      // updatePassword se bloquea también: handleupdatePassword() no valida que
+      // userId sea el usuario en sesión (acepta cualquier id_user por POST), así
+      // que dejarlo abierto le daría a un usuario de solo lectura una vía para
+      // cambiar la clave de OTRO usuario. El self-service real de "olvidé mi
+      // clave" es api/email/resetpassword (ver abajo), que sí queda exento.
+      'GuardarUsuarios', 'EditarUsuarios', 'AsignacionModulo', 'AsignacionSubModulo',
+      'updatePassword', 'ReassignTicket', 'ToggleReadOnly',
+    ],
+    'historical' => [
+      'MarkTicketReceived', 'markReceivedTechnical',
+    ],
+    'email' => [
+      // resetPassword (recuperar clave olvidada) queda fuera a propósito: es
+      // autoservicio de cuenta, no una acción de negocio, y ya está exenta de
+      // CSRF por el mismo motivo (ver validateCSRFToken). Todo lo demás aquí
+      // dispara un correo real dentro del flujo de tickets.
+      'send_ticket1', 'send_ticket2', 'send_end_ticket', 'send_involuntary_ticket',
+      'send_devolution_ticket', 'send_reject_document', 'send_reassignment_email',
+      'send_anticipo_presupuesto_email', 'send_approval_email', 'send_payment_notification',
+    ],
+    'consulta' => [
+      'SaveDataFalla', 'SaveDataFalla2', 'UpdateAdministrativeRequest', 'SaveAdministrativeRequest',
+      'AssignTicket', 'SendToTaller', 'UploadPaymentDoc', 'UpdateTicketStatus', 'UpdateKeyReceiveDate',
+      'DevolverCliente', 'UpdateStatusToReceiveInTaller', 'updateRepuestoDate', 'UpdateRepuestoDate2',
+      'SendToComercial', 'SendToGestionRosal', 'MarkKeyAsReceived', 'entregar_ticket',
+      'EntregarTicketGenerico', 'entregar_ticketDev', 'UpdateStatusToReceiveInRosal',
+      'UpdateStatusToReceiveInRegion', 'SendToRegion', 'sendToRegionWithoutComponent', 'rechazarDocumento',
+      'finalizarRevisionTicket', 'SendBackToTaller', 'CloseTicket', 'SavePayment', 'SaveExoneracion',
+      'SaveExoneracionDirect', 'UpdateExoneration', 'AprobarExoneracionTicket', 'InsertPaymentRecord',
+      'SaveBudget', 'UploadPresupuestoPDF', 'UpdatePayment', 'SubstitutePayment',
+    ],
+    'reportes' => [
+      'uploadDocument', 'uploadDocumentnNew', 'uploadDocumentTec', 'uploadPaymentDocument', 'SaveComponents',
+    ],
+    // 'documents' y 'ai' no tienen ninguna acción mutadora (auditado: son solo
+    // lecturas/reportes), por eso no aparecen en esta lista.
+  ];
+
+  private function checkReadOnlyGuard() {
+    if (empty($_SESSION['solo_lectura'])) {
+      return;
+    }
+
+    $url = $_GET['url'] ?? '';
+    $url = rtrim($url, '/');
+    $urlSegments = explode('/', $url);
+
+    // Solo aplica a rutas de la API: api/{controlador}/{accion}
+    if (!isset($urlSegments[0]) || strtolower($urlSegments[0]) !== 'api') {
+      return;
+    }
+
+    $controllerName = strtolower($urlSegments[1] ?? '');
+    $action = $urlSegments[2] ?? '';
+
+    $blockedActions = self::$READONLY_BLOCKED_ACTIONS[$controllerName] ?? [];
+    if (in_array($action, $blockedActions, true)) {
+      header('Content-Type: application/json');
+      http_response_code(403);
+      echo json_encode([
+        'success' => false,
+        'message' => 'Tu usuario tiene acceso de solo lectura. No tienes permitido realizar esta acción.'
+      ]);
+      exit();
+    }
   }
 
   /**

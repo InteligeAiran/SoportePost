@@ -21,6 +21,7 @@ function mi_navbar()
     <title>
         <?php echo tituloPagina; ?>
     </title>
+    <script>var isReadOnlyUser = <?php echo (!empty($_SESSION['solo_lectura'])) ? 'true' : 'false'; ?>;</script>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
         <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />

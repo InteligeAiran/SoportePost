@@ -152,7 +152,15 @@ class users extends Controller {
                     } else {
                         $this->response(['error' => 'Método no permitido para /api/AsignacionSubModulo'], 405);
                     }
-                break; 
+                break;
+
+                case 'ToggleReadOnly':
+                    if($method === 'POST'){
+                        $this->handleToggleReadOnly();
+                    } else {
+                        $this->response(['error' => 'Método no permitido para /api/ToggleReadOnly'], 405);
+                    }
+                break;
 
                 case 'checkUsernameAvailability':
                     if($method === 'POST'){
@@ -303,6 +311,7 @@ class users extends Controller {
     $_SESSION['name_rol']     = $userData['name_rol'];
     $_SESSION['status']       = (int) $userData['status'];
     $_SESSION['id_area']      = (int) $userData['id_area'];
+    $_SESSION['solo_lectura'] = isset($userData['is_readonly']) && ($userData['is_readonly'] === 't' || $userData['is_readonly'] === true);
 
     
     $session_lifetime = 3600; // Ejemplo: 1200seg = 20 minutos
@@ -347,6 +356,7 @@ class users extends Controller {
             'username' => $_SESSION["usuario"],
             'id_rol' => $_SESSION['id_rol'],
             'name_rol' => $_SESSION['name_rol'],
+            'solo_lectura' => $_SESSION['solo_lectura'],
             'permissions' => $repository->getUserPermissions((int) $_SESSION['id_user'])
         ], 200);
     } else {
@@ -562,8 +572,9 @@ class users extends Controller {
         $regionusers = isset($_POST['regionusers']) ? $_POST['regionusers'] : '';
         $id_nivel = isset($_POST['id_nivel']) ? $_POST['id_nivel'] : '';
         $identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
+        $is_readonly = isset($_POST['is_readonly']) ? $_POST['is_readonly'] : false;
 
-        $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $identificacion,$users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
+        $result = $repository->Guardar_Usuario($id_user, $nombreusers,$apellidousers, $identificacion,$users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel, $is_readonly);
     
         if ($result) {
             $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
@@ -602,13 +613,28 @@ class users extends Controller {
         $edit_tipo_users = isset($_POST['edit_tipousers']) ? $_POST['edit_tipousers'] : '';
         $edit_idnivel = isset($_POST['edit_idnivel']) ? $_POST['edit_idnivel'] : '';
         $id_user = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : ''; // id del usuario logueado
+        $edit_is_readonly = isset($_POST['edit_is_readonly']) ? $_POST['edit_is_readonly'] : false;
         //$identificacion = isset($_POST['identificacion']) ? $_POST['identificacion'] : '';
 
         //var_dump($edit_idnivel);
 
-        $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
-    
+        // Guardamos el is_readonly previo para saber si cambió y, de ser así, forzar
+        // el re-login del usuario editado (ver nota en handleToggleReadOnly).
+        $previousData = $repository->MostrarUsuarioEdit($idusuario_edit);
+        $previous_is_readonly = isset($previousData[0]['is_readonly'])
+            ? ($previousData[0]['is_readonly'] === 't' || $previousData[0]['is_readonly'] === true)
+            : false;
+        $new_is_readonly = ($edit_is_readonly === true || $edit_is_readonly === '1' || $edit_is_readonly === 'true' || $edit_is_readonly === 'on');
+
+        $result = $repository->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user, $edit_is_readonly);
+
         if ($result) {
+            if ($previous_is_readonly !== $new_is_readonly) {
+                // $_SESSION['solo_lectura'] solo se calcula al hacer login: si el usuario
+                // editado ya tiene una sesión activa, no vería este cambio hasta volver a
+                // entrar. Invalidamos su sesión para forzar ese re-login.
+                $repository->InvalidateAllSessionsForUser($idusuario_edit);
+            }
             $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
@@ -669,6 +695,29 @@ class users extends Controller {
             $this->response(['success' => true, 'message' => 'Datos guardados con éxito.'], 200);
         } else {
             $this->response(['success' => false, 'message' => 'Error al guardar los datos de la falla.'], 500);
+        }
+    }
+
+    public function handleToggleReadOnly(){
+        $id_usuario = isset($_POST['id_usuario']) ? $_POST['id_usuario'] : '';
+        $is_readonly = isset($_POST['is_readonly']) && ($_POST['is_readonly'] === '1' || $_POST['is_readonly'] === 'true');
+
+        if ($id_usuario === '') {
+            $this->response(['success' => false, 'message' => 'id_usuario no proporcionado.'], 400);
+            return;
+        }
+
+        $repository = new UserRepository();
+        $result = $repository->SetReadOnly($id_usuario, $is_readonly);
+
+        if ($result) {
+            // $_SESSION['solo_lectura'] solo se calcula al hacer login, así que si el
+            // usuario ya tiene una sesión activa no vería este cambio hasta volver a
+            // entrar. Invalidamos su sesión para forzar ese re-login.
+            $repository->InvalidateAllSessionsForUser($id_usuario);
+            $this->response(['success' => true, 'message' => 'Actualizado con éxito.'], 200);
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al actualizar el usuario.'], 500);
         }
     }
 

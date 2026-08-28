@@ -519,8 +519,9 @@ function getTicketDataCoordinator() {
             // Se muestra SIEMPRE (Comportamiento solicitado: "lo haré visible SIEMPRE")
             const ticketTienePago = data.ticket_tiene_pago === 't' || data.ticket_tiene_pago === 'true' || data.ticket_tiene_pago === true;
 
+            if (!(typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser)) {
             actionButtonsHtml += `
-                <button type="button" id="btnExonerationRegistration" class="btn btn-exoneration-reg" 
+                <button type="button" id="btnExonerationRegistration" class="btn btn-exoneration-reg"
                   data-ticket-id="${data.id_ticket}" 
                   data-serial-pos="${data.serial_pos}" 
                   data-nro-ticket="${data.nro_ticket}" 
@@ -542,6 +543,7 @@ function getTicketDataCoordinator() {
                     <span class="exoneration-reg-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Registrar Exoneración</span>
                 </button>
             `;
+            }
 
             console.log(data.id_cliente_intelipunto);
 

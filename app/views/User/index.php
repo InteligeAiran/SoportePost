@@ -264,6 +264,7 @@ function mi_navbar() {}
                                         <th>Área</th>
                                         <th>Nivel Técnico</th>
                                         <th>Región</th>
+                                        <th>Solo Lectura</th>
                                         <th>Modulos</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -378,9 +379,17 @@ function mi_navbar() {}
                         </div>
                       </div>
                       <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
-                </div> 
-            </div> 
-          </div>   
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="is_readonly" name="is_readonly">
+                            <label class="form-check-label" for="is_readonly">Usuario de Solo Lectura (puede ver los módulos asignados pero no ejecutar ninguna acción)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
           <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closedModalCreated()">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btnGuardarUsers">Guardar</button>
@@ -480,11 +489,19 @@ function mi_navbar() {}
                             </select>
                         </div>
                       </div>
-                      
-                </div>   
+
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="edit_is_readonly" name="edit_is_readonly">
+                            <label class="form-check-label" for="edit_is_readonly">Usuario de Solo Lectura (puede ver los módulos asignados pero no ejecutar ninguna acción)</label>
+                        </div>
+                    </div>
+                </div>
                 <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
-            </div> 
-          </div>   
+            </div>
+          </div>
           <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closedModal()">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btnEditarUsers" >Guardar</button>
@@ -509,9 +526,14 @@ function mi_navbar() {}
             <div class="modal-body">
                 <div class="panel-body">
                 
-                <input type="hidden" id="idusuario_edit" class="form-control" name="idusuario_edit"> 
-                
+                <input type="hidden" id="idusuario_edit" class="form-control" name="idusuario_edit">
+
                 <input name="id_user" id="id_user" type="hidden" value="<?php echo $_SESSION['id_user']?>">
+
+                    <div class="form-check" style="margin-bottom: 15px;">
+                        <input type="checkbox" class="form-check-input" id="modulo_is_readonly">
+                        <label class="form-check-label" for="modulo_is_readonly">Usuario de Solo Lectura (puede ver estos módulos pero no ejecutar ninguna acción)</label>
+                    </div>
 
                     <table id="tabla-modulo" class="table table-striped table-bordered table-hover table-sm" style="width:100%">
                         <thead>

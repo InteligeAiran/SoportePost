@@ -2555,11 +2555,6 @@ function mi_navbar() {}
 
         <!-- Custom scripts for all pages-->
         <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
-
-        <script src="<?php echo APP; ?>app/plugins/devoops-master/plugins/maskedinput/src/jquery.maskedinput.js"></script>
-
-        <!-- Custom scripts for all pages-->
-        <script src="<?php echo APP; ?>app/plugins/js/sb-admin-2.min.js"></script>
         <script src="<?php echo APP; ?>app/views/consulta_rif/js/frontEnd.js"></script>
 
         <script>
@@ -2567,14 +2562,6 @@ function mi_navbar() {}
                 new ConsultaRIFTutorial().startTutorial();
             }
             </script>
-
-        <?php
-            if (isset($this->js)) {
-                foreach ($this->js as $js) {
-                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
-                }
-            }
-        ?>
 
         <!-- PARTE DEL CODIGO DE SESSION EXPIRADAS-->
             <?php

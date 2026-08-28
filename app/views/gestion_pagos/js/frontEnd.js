@@ -508,9 +508,9 @@ function getTicketDataCoordinator() {
             const idStatusPayment = data.id_status_payment ? parseInt(data.id_status_payment) : null;
             const isGarantiaOrFree = idStatusPayment === 1 || idStatusPayment === 3 || idStatusPayment === 16 || 
                                      (data.name_failure && (data.name_failure.trim() === 'Actualización de Software' || data.name_failure.trim() === 'Sin Llaves /Dukpt Vacío'));
-            if (!isGarantiaOrFree) {
+            if (!isGarantiaOrFree && !(typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser)) {
               actionButtonsHtml += `
-                  <button type="button" id="btnPaymentBudget" class="btn generate-presupuesto-btn" 
+                  <button type="button" id="btnPaymentBudget" class="btn generate-presupuesto-btn"
                     data-ticket-id="${data.id_ticket}" 
                     data-serial-pos="${data.serial_pos}" 
                     data-nro-ticket="${data.nro_ticket}" 

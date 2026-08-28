@@ -214,6 +214,7 @@ function getUserData() {
             const areaCell = row.insertCell();
             const tipo_userCell = row.insertCell();
             const name_regionCell = row.insertCell();
+            const readonlyCell = row.insertCell();
             const moduloCell = row.insertCell(); // Nueva celda para las acciones
             const actionsCell = row.insertCell();
 
@@ -228,6 +229,7 @@ function getUserData() {
             areaCell.textContent = data.name_area;
             tipo_userCell.textContent = data.name_level;
             name_regionCell.textContent = data.name_region;
+            readonlyCell.textContent = (data.is_readonly === "t" || data.is_readonly === true) ? "Sí" : "No";
 
             const moduloButton = document.createElement("button");
             moduloButton.textContent = "Asignar";
@@ -253,7 +255,7 @@ function getUserData() {
             moduloButton.onclick = function () {
               const idusuario = data.id_user;
               $("#ModalModulos").modal("show"); // abrir
-              VerModulos(idusuario);
+              VerModulos(idusuario, data.is_readonly);
             };
           });
 
@@ -508,6 +510,7 @@ function GuardarUsuariosNew() {
   const regionusers = document.getElementById("regionusers").value;
   const id_nivel = document.getElementById("idnivel").value;
   const id_user = document.getElementById("id_user").value;
+  const is_readonly = document.getElementById("is_readonly").checked ? "1" : "0";
 
   const identificacion = tipo_doc+'-'+documento;
 
@@ -535,6 +538,7 @@ function GuardarUsuariosNew() {
     formData.append("identificacion", identificacion);
     formData.append("id_user", id_user);
     formData.append("id_nivel", id_nivel);
+    formData.append("is_readonly", is_readonly);
     formData.append("action", "GuardarUsuarios");
 
     const xhr = new XMLHttpRequest();
@@ -628,6 +632,7 @@ function VerUsuario(idusuario) {
       $("#edit_regionusers").val(userData.idreg);
       $("#edit_tipousers").val(userData.name_rol);
       $("#edit_idnivel").val(userData.idlevel);
+      $("#edit_is_readonly").prop("checked", userData.is_readonly === "t" || userData.is_readonly === true);
 
       if (userData.idrol == 3) {
         $("#nivelEditar").css("display", "block");
@@ -775,6 +780,7 @@ function EditarUsuarios() {
   const tipo_usuario = document.getElementById("edit_tipousers").value;
   const id_nivel = document.getElementById("edit_idnivel").value;
   const usuariocarga = document.getElementById("id_user").value;
+  const edit_is_readonly = document.getElementById("edit_is_readonly").checked ? "1" : "0";
 
     const identificacion = tipo_doc_edit+'-'+documento;
 
@@ -795,6 +801,7 @@ function EditarUsuarios() {
   formData.append("edit_tipousers", tipo_usuario);
   formData.append("edit_idnivel", id_nivel);
   formData.append("id_user", usuariocarga);
+  formData.append("edit_is_readonly", edit_is_readonly);
 
   formData.append("action", "EditarUsuarios");
 
@@ -961,9 +968,18 @@ function EditarUsuarios() {
 //   xhr.send(datos);
 // }
 
-function VerModulos(idusuario) {
+function VerModulos(idusuario, isReadonly) {
   const id_usuario  = idusuario;
   const id_usuario1 = document.getElementById('id_user').value;
+
+  const readonlyCheckbox = document.getElementById("modulo_is_readonly");
+  if (readonlyCheckbox) {
+    readonlyCheckbox.checked = (isReadonly === "t" || isReadonly === true);
+    readonlyCheckbox.onchange = function () {
+      ToggleReadOnly(id_usuario, readonlyCheckbox.checked);
+    };
+  }
+
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/ModuloUsers`);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -1346,6 +1362,42 @@ function AsignacionSubModulo(idmodulo, idsubmodulo, iusuario, isChecked) {
   xhr.send(datos);
 }
 
+function ToggleReadOnly(id_usuario, isChecked) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/users/ToggleReadOnly`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    let response = null;
+    try {
+      response = JSON.parse(xhr.responseText);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
+
+    if (xhr.status === 200 && response && response.success) {
+      return;
+    }
+
+    // Falló (403 de solo-lectura, 500, etc.): revertir el checkbox visualmente
+    // y mostrar el motivo real que mandó el servidor en vez de un genérico
+    // "error de conexión" cuando sí hubo respuesta del servidor.
+    const readonlyCheckbox = document.getElementById("modulo_is_readonly");
+    if (readonlyCheckbox) {
+      readonlyCheckbox.checked = !isChecked;
+    }
+
+    Swal.fire({
+      icon: "error",
+      title: "No se pudo actualizar Solo Lectura",
+      text: (response && response.message) || "No se pudo conectar con el servidor.",
+      color: "black",
+    });
+  };
+  const datos = `action=ToggleReadOnly&id_usuario=${encodeURIComponent(id_usuario)}&is_readonly=${isChecked ? "1" : "0"}`;
+  xhr.send(datos);
+}
+
 
 
 
@@ -1371,6 +1423,7 @@ function closedModalCreated() {
   $("#tipousers").val("");
   $("#idnivel").val("");
   $("#idnivel").val("");
+  $("#is_readonly").prop("checked", false);
 }
 
 

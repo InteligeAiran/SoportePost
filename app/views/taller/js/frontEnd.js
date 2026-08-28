@@ -335,7 +335,9 @@ function getTicketData() {
                                 const confirm_date_repuesto = row.confirm_date;
 
                                 let buttonsHtml = "";
-                                if (currentStatus === "Reparado") {
+                                if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                                    return `<button class="btn btn-secondary btn-sm" disabled>${currentStatus || 'Sin acción'}</button>`;
+                                } else if (currentStatus === "Reparado") {
                                     buttonsHtml += `<button class="btn btn-warning btn-sm" disabled style = "background-color: #00FF00;">Reparado</button>`;
                                 } else if (currentStatus === "Gestión Comercial (Irreparable)") {
                                     buttonsHtml += `<button class="btn btn-danger btn-sm" disabled>Irreparable</button>`;
@@ -377,7 +379,9 @@ function getTicketData() {
                             className: "dt-body-center",
                             render: function (data, type, row) {
                                 const hasSendKeyDate = row.date_sendkey && String(row.date_sendkey).trim() !== "";
-                                if (row.name_status_lab === "Reparado" && !hasSendKeyDate) {
+                                if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                                    return hasSendKeyDate ? '<i class="bi bi-check-circle-fill text-success" title="Llave Recibida"></i>' : "";
+                                } else if (row.name_status_lab === "Reparado" && !hasSendKeyDate) {
                                     return `<input type="checkbox" class="receive-key-checkbox" data-id-ticket="${row.id_ticket}" data-nro-ticket="${row.nro_ticket}">`;
                                 } else if (hasSendKeyDate) {
                                     return '<i class="bi bi-check-circle-fill text-success" title="Llave Recibida"></i>';
@@ -396,6 +400,9 @@ function getTicketData() {
                             visible: true,
                             className: "dt-body-center",
                             render: function (data, type, row) {
+                                if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                                    return "";
+                                }
                                 if (row.name_status_lab === "Reparado" || row.name_status_lab === "Gestión Comercial (Irreparable)") {
                                     const hasSendKeyDate = row.date_sendkey && String(row.date_sendkey).trim() !== "";
                                     const dataSent = hasSendKeyDate ? 'true' : 'false';
