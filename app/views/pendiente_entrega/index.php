@@ -1487,7 +1487,7 @@ function mi_navbar()
                         <!-- Sección de Selección de Documento -->
                         <div id="documentSelectionContainer" style="display: none;">
                             <p class="text-center mb-4">Seleccione el documento que desea visualizar:</p>
-                            <div class="d-flex justify-content-center gap-4">
+                            <div class="d-flex justify-content-center flex-wrap gap-4">
                                 <div class="form-check custom-radio">
                                     <input class="form-check-input" type="radio" name="documentTypeView" id="radioEnvioDestino" value="Envio_Destino">
                                     <label class="form-check-label fw-bold text-dark" for="radioEnvioDestino">
@@ -1498,6 +1498,24 @@ function mi_navbar()
                                     <input class="form-check-input" type="radio" name="documentTypeView" id="radioPresupuesto" value="Presupuesto">
                                     <label class="form-check-label fw-bold text-dark" for="radioPresupuesto">
                                         Presupuesto
+                                    </label>
+                                </div>
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioInformeTecnico" value="InformeTecnico">
+                                    <label class="form-check-label fw-bold text-dark" for="radioInformeTecnico">
+                                        Informe Técnico
+                                    </label>
+                                </div>
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioEnvioInicial" value="EnvioInicial">
+                                    <label class="form-check-label fw-bold text-dark" for="radioEnvioInicial">
+                                        Envío Inicial
+                                    </label>
+                                </div>
+                                <div class="form-check custom-radio">
+                                    <input class="form-check-input" type="radio" name="documentTypeView" id="radioExoneracion" value="Exoneracion">
+                                    <label class="form-check-label fw-bold text-dark" for="radioExoneracion">
+                                        Exoneración
                                     </label>
                                 </div>
                             </div>
@@ -2008,7 +2026,58 @@ function mi_navbar()
         </div>
     </div>
     <!-- END MODAL PARA CARGAR PDF DEL PRESUPUESTO -->
-    
+
+    <!-- MODAL PARA CARGAR EL INFORME TÉCNICO (equipos Irreparables) -->
+    <div class="modal fade" id="uploadInformeTecnicoModal" tabindex="-1" aria-labelledby="uploadInformeTecnicoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title" id="uploadInformeTecnicoModalLabel">
+                        Cargar Informe Técnico - Ticket: <span id="modalInformeTecnicoTicketId" class="fw-bold"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="closeUploadInformeTecnicoBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadInformeTecnicoForm">
+                        <!-- Campos ocultos -->
+                        <input type="hidden" id="uploadInformeTecnicoNroTicketHidden">
+                        <input type="hidden" id="uploadInformeTecnicoSerialPosHidden">
+
+                        <div class="mb-3">
+                            <label for="informeTecnicoFile" class="form-label text-gray-700 fw-semibold">
+                                Seleccionar Archivo:
+                            </label>
+                            <div class="position-relative">
+                                <input class="form-control" type="file" id="informeTecnicoFile" accept="application/pdf,image/png,image/jpeg" required>
+                                <div class="valid-feedback">
+                                    Formato correcto
+                                </div>
+                                <div class="invalid-feedback">
+                                    Solo se permiten archivos PDF, PNG o JPG
+                                </div>
+                            </div>
+                            <small id="informeTecnicoFileFormatInfo" class="text-gray-500 d-block mt-1" style="display: block;">
+                                Formatos permitidos: PDF, PNG, JPG
+                            </small>
+                        </div>
+                        <div id="informeTecnicoUploadMessage" class="alert alert-info hidden" role="alert" style="display: none;"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cerrarUploadInformeTecnicoBtn" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="uploadInformeTecnicoBtn" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload me-2" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5h2.767l12-12H14a.5.5 0 0 1 0-1h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V2.717l-12 12H10a.5.5 0 0 1 0 1H7a.5.5 0 0 1-.5-.5V9.9z"/>
+                            <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1 0-1H14V3.5h-3a.5.5 0 0 1 0-1z"/>
+                        </svg>
+                        Subir Informe Técnico
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL PARA CARGAR EL INFORME TÉCNICO -->
+
     <!--MODAL AGREGAR DATOS DE PAGO-->
     <div class="modal fade" id="modalAgregarDatosPago" tabindex="-1" aria-labelledby="modalAgregarDatosPagoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-xl">

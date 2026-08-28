@@ -493,6 +493,10 @@ class Consulta extends Controller
                     $this->handleUploadPresupuestoPDF();
                     break;
 
+                case 'UploadInformeTecnico':
+                    $this->handleUploadInformeTecnico();
+                    break;
+
                 case 'GetBudgetIdByNroTicket':
                     $this->handleGetBudgetIdByNroTicket();
                     break;
@@ -3882,6 +3886,159 @@ class Consulta extends Controller
             } catch (\Exception $e) {
                 unlink($uploadPath);
                 $this->response(['success' => false, 'message' => 'Error interno al guardar el PDF: ' . $e->getMessage()], 500);
+            }
+        } else {
+            $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino.'], 500);
+        }
+    }
+
+    /**
+     * Carga del Informe Técnico para equipos marcados como "Gestión Comercial (Irreparable)"
+     * en el Rosal. Reemplaza al presupuesto como requisito para enviar el ticket a la región.
+     */
+    public function handleUploadInformeTecnico(){
+        $repository = new TechnicalConsultionRepository();
+
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : '';
+        $serial_pos = isset($_POST['serial_pos']) ? trim($_POST['serial_pos']) : '';
+        $file = isset($_FILES['informe_tecnico_file']) ? $_FILES['informe_tecnico_file'] : null;
+        $id_user = isset($_POST['id_user']) ? (int)$_POST['id_user'] : null;
+
+        if (empty($nro_ticket)) {
+            $this->response(['success' => false, 'message' => 'Nro de ticket no proporcionado.'], 400);
+            return;
+        }
+
+        if (empty($serial_pos)) {
+            $this->response(['success' => false, 'message' => 'Serial del ticket no proporcionado.'], 400);
+            return;
+        }
+
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            $errorMessage = 'Error en la subida: ';
+            if (!$file) {
+                $errorMessage .= 'Archivo no proporcionado. ';
+            } elseif ($file['error'] !== UPLOAD_ERR_OK) {
+                $errorMessage .= 'Error de subida del archivo. Código de error: ' . $file['error'];
+            }
+            $this->response(['success' => false, 'message' => $errorMessage], 400);
+            return;
+        }
+
+        // Verificar el tipo real del archivo (contenido, no solo el Content-Type
+        // declarado por el navegador, que puede ser falseado).
+        $allowedTypes = ['application/pdf', 'image/png', 'image/jpeg'];
+        $fileType = $file['type'];
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $detectedType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+            if ($detectedType) {
+                $fileType = $detectedType;
+            }
+        }
+        if (!in_array($fileType, $allowedTypes, true)) {
+            $this->response(['success' => false, 'message' => 'Solo se permiten archivos PDF, PNG o JPG.'], 400);
+            return;
+        }
+
+        $serial = $serial_pos;
+
+        $originalFileName = basename($file['name']);
+        $fileSize = $file['size'];
+
+        $cleanSerial = preg_replace("/[^a-zA-Z0-9_-]/", "_", $serial);
+        $baseUploadDir = UPLOAD_BASE_DIR;
+        $serialUploadDir = $baseUploadDir . $cleanSerial . DIRECTORY_SEPARATOR;
+        $ticketUploadDir = $serialUploadDir . $nro_ticket . DIRECTORY_SEPARATOR;
+
+        if (!is_dir($baseUploadDir)) {
+            if (!mkdir($baseUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio base: " . $baseUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (base).'], 500);
+                return;
+            }
+        }
+        if (!is_dir($serialUploadDir)) {
+            if (!mkdir($serialUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio del serial: " . $serialUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (serial).'], 500);
+                return;
+            }
+        }
+        if (!is_dir($ticketUploadDir)) {
+            if (!mkdir($ticketUploadDir, 0755, true)) {
+                error_log("Error al crear el directorio del ticket: " . $ticketUploadDir);
+                $this->response(['success' => false, 'message' => 'Error interno del servidor al preparar el almacenamiento de archivos (ticket).'], 500);
+                return;
+            }
+        }
+
+        $informeTecnicoDir = $ticketUploadDir . 'informe_tecnico' . DIRECTORY_SEPARATOR;
+        if (!is_dir($informeTecnicoDir)) {
+            if (!mkdir($informeTecnicoDir, 0755, true)) {
+                $this->response(['success' => false, 'message' => 'No se pudo crear el subdirectorio para informe técnico: ' . $informeTecnicoDir], 500);
+                return;
+            }
+        }
+
+        $info = pathinfo($originalFileName);
+        $nombreSinExtension = $info['filename'];
+        $extension = isset($info['extension']) ? '.' . $info['extension'] : '';
+        $cleanNombreSinExtension = preg_replace("/[^a-zA-Z0-9_\-.]/", "_", $nombreSinExtension);
+        $dateForFilename = date('Ymd_His');
+        $uniqueFileName = 'informe_tecnico_' . $dateForFilename . '_' . uniqid() . '_' . $cleanNombreSinExtension . $extension;
+
+        $uploadPath = $informeTecnicoDir . $uniqueFileName;
+        $filePathForDatabase = UPLOAD_BASE_DIR . $cleanSerial . '/' . $nro_ticket . '/informe_tecnico/' . $uniqueFileName;
+
+        if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            try {
+                $ticketDetails = $repository->getTicketDetailsByNroTicket($nro_ticket);
+
+                $id_ticket_db = null;
+                if ($ticketDetails && isset($ticketDetails['id_ticket'])) {
+                    $id_ticket_db = $ticketDetails['id_ticket'];
+                } elseif ($ticketDetails && isset($ticketDetails[0]) && isset($ticketDetails[0]['id_ticket'])) {
+                     $id_ticket_db = $ticketDetails[0]['id_ticket'];
+                }
+
+                $resAdjunto = false;
+                if ($id_ticket_db) {
+                    $fileInfo = [
+                        'original_filename' => $originalFileName,
+                        'stored_filename' => $uniqueFileName,
+                        'file_path' => $filePathForDatabase,
+                        'mime_type' => $fileType,
+                        'file_size_bytes' => $fileSize,
+                        'document_type' => 'informe_tecnico'
+                    ];
+
+                    $resAdjunto = $repository->saveArchivoAdjunto($id_ticket_db, $nro_ticket, $id_user, $fileInfo);
+                    if (!$resAdjunto) {
+                         error_log("Error: No se pudo registrar el Informe Técnico en archivos_adjuntos. Ticket: $nro_ticket");
+                    }
+                } else {
+                     error_log("Error: No se pudo obtener id_ticket para guardar adjunto. Ticket: $nro_ticket");
+                }
+
+                if ($resAdjunto) {
+                    $this->response([
+                        'success' => true,
+                        'message' => 'Informe Técnico subido y registrado exitosamente.',
+                        'nro_ticket' => $nro_ticket,
+                        'original_filename' => $originalFileName,
+                        'stored_filename' => $uniqueFileName,
+                        'file_path' => $filePathForDatabase,
+                        'file_size_bytes' => $fileSize
+                    ], 200);
+                } else {
+                    unlink($uploadPath);
+                    $this->response(['success' => false, 'message' => 'El archivo se subió, pero hubo un error al registrarlo en la base de datos (archivos_adjuntos).'], 500);
+                }
+            } catch (\Exception $e) {
+                unlink($uploadPath);
+                $this->response(['success' => false, 'message' => 'Error interno al guardar el Informe Técnico: ' . $e->getMessage()], 500);
             }
         } else {
             $this->response(['success' => false, 'message' => 'Error al mover el archivo subido. Verifique los permisos de escritura en la carpeta de destino.'], 500);

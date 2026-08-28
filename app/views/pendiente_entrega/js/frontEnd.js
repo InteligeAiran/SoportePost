@@ -147,6 +147,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const modalPresupuestoTicketIdSpan = modalElementUploadPresupuestoPDF ? modalElementUploadPresupuestoPDF.querySelector("#modalPresupuestoTicketId") : null;
     let bsUploadPresupuestoPDFModal = null;
 
+    // Modal para Cargar el Informe Técnico (equipos Irreparables)
+    const modalElementUploadInformeTecnico = document.getElementById("uploadInformeTecnicoModal");
+    const cerrarBotonUploadInformeTecnico = document.getElementById("cerrarUploadInformeTecnicoBtn");
+    const iconoCerrarUploadInformeTecnico = document.getElementById("closeUploadInformeTecnicoBtn");
+    const inputInformeTecnicoFile = document.getElementById("informeTecnicoFile");
+    const uploadInformeTecnicoBtn = document.getElementById("uploadInformeTecnicoBtn");
+    const modalInformeTecnicoTicketIdSpan = modalElementUploadInformeTecnico ? modalElementUploadInformeTecnico.querySelector("#modalInformeTecnicoTicketId") : null;
+    let bsUploadInformeTecnicoModal = null;
+
     // Instancias de Modales de Bootstrap (si usas Bootstrap JS para controlarlos)
     let bsUploadModal = null;
 
@@ -158,6 +167,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (modalElementUploadPresupuestoPDF) {
         bsUploadPresupuestoPDFModal = new bootstrap.Modal(modalElementUploadPresupuestoPDF, { keyboard: false });
+    }
+    if (modalElementUploadInformeTecnico) {
+        bsUploadInformeTecnicoModal = new bootstrap.Modal(modalElementUploadInformeTecnico, { keyboard: false });
     }
     if (modalElementPresupuestoPDF) {
         bsPresupuestoPDFModal = new bootstrap.Modal(modalElementPresupuestoPDF, { keyboard: false }); // Habilita cierre con ESC
@@ -313,8 +325,75 @@ function openUploadPresupuestoPDFModal(nroTicket, serialPos) {
         }
 }
 
+// Función para abrir el modal de carga del Informe Técnico (equipos Irreparables)
+function openUploadInformeTecnicoModal(nroTicket, serialPos) {
+    const modalInformeTecnicoTicketIdSpanLocal = document.getElementById("modalInformeTecnicoTicketId");
+    if (modalInformeTecnicoTicketIdSpanLocal) {
+        modalInformeTecnicoTicketIdSpanLocal.textContent = nroTicket;
+    }
+
+    // Establecer valores en los campos ocultos
+    const uploadInformeTecnicoNroTicket = document.getElementById("uploadInformeTecnicoNroTicket");
+    const uploadInformeTecnicoNroTicketHidden = document.getElementById("uploadInformeTecnicoNroTicketHidden");
+    const uploadInformeTecnicoSerialPosHidden = document.getElementById("uploadInformeTecnicoSerialPosHidden");
+
+    if (uploadInformeTecnicoNroTicket) {
+        uploadInformeTecnicoNroTicket.textContent = nroTicket;
+    }
+    if (uploadInformeTecnicoNroTicketHidden) {
+        uploadInformeTecnicoNroTicketHidden.value = nroTicket;
+    }
+    if (uploadInformeTecnicoSerialPosHidden) {
+        uploadInformeTecnicoSerialPosHidden.value = serialPos || '';
+    }
+
+    // Limpiar el input de archivo y clases de validación
+    const inputInformeTecnicoFileLocal = document.getElementById("informeTecnicoFile");
+    if (inputInformeTecnicoFileLocal) {
+        inputInformeTecnicoFileLocal.value = "";
+        inputInformeTecnicoFileLocal.classList.remove('is-invalid', 'is-valid');
+    }
+
+    // Ocultar mensajes de validación y mostrar el texto informativo
+    setTimeout(function() {
+        const formatInfo = document.getElementById('informeTecnicoFileFormatInfo');
+        const input = document.getElementById("informeTecnicoFile");
+
+        const validFeedback = input && input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+        const invalidFeedback = input && input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+
+        if (validFeedback) {
+            validFeedback.style.setProperty("display", "none", "important");
+        }
+        if (invalidFeedback) {
+            invalidFeedback.style.setProperty("display", "none", "important");
+        }
+        if (formatInfo) {
+            formatInfo.style.removeProperty("display");
+        }
+        if (typeof $ !== 'undefined') {
+            if (validFeedback) $(validFeedback).hide();
+            if (invalidFeedback) $(invalidFeedback).hide();
+            $('#informeTecnicoFileFormatInfo').show();
+        }
+    }, 100);
+
+    // Deshabilitar el botón de subir
+    const uploadInformeTecnicoBtnLocal = document.getElementById("uploadInformeTecnicoBtn");
+    if (uploadInformeTecnicoBtnLocal) {
+        uploadInformeTecnicoBtnLocal.disabled = true;
+    }
+
+    // Mostrar el modal
+    if (bsUploadInformeTecnicoModal) {
+        bsUploadInformeTecnicoModal.show();
+    } else {
+        console.error("Error: Instancia de Bootstrap Modal para 'uploadInformeTecnicoModal' no creada.");
+    }
+}
+
 // Función para mostrar el modal de visualización
-window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, hasPresupuesto, presupuestoPath) {
+window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName, hasPresupuesto, presupuestoPath, hasInformeTecnico, informeTecnicoPath, hasEnvioInicial, envioInicialPath, hasExoneracion, exoneracionPath) {
     const modalElementView = document.getElementById("viewDocumentModal");
     
     // Inicializar bsViewModal si no está inicializado
@@ -332,9 +411,18 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
     const documentViewArea = document.getElementById("documentViewArea");
     const radioEnvioDestino = document.getElementById("radioEnvioDestino");
     const radioPresupuesto = document.getElementById("radioPresupuesto");
-    const labelEnvioDestino = radioEnvioDestino ? radioEnvioDestino.nextElementSibling : null;
-    const labelPresupuesto = radioPresupuesto ? radioPresupuesto.nextElementSibling : null;
+    const radioInformeTecnico = document.getElementById("radioInformeTecnico");
+    const radioEnvioInicial = document.getElementById("radioEnvioInicial");
+    const radioExoneracion = document.getElementById("radioExoneracion");
     const btnVisualizarDocumento = document.getElementById("btnVisualizarDocumento");
+
+    // Un documento (aparte de Envío a Destino) es imagen si su ruta termina en
+    // png/jpg/jpeg; de lo contrario se asume PDF.
+    function isImagePath(path) {
+        if (!path) return false;
+        const ext = path.split('.').pop().toLowerCase();
+        return ext === 'png' || ext === 'jpg' || ext === 'jpeg';
+    }
 
     const imageViewPreview = document.getElementById("imageViewPreview");
     const pdfViewViewer = document.getElementById("pdfViewViewer");
@@ -409,6 +497,9 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
         // Determinar qué documentos están disponibles
         const hasEnvio = (imageUrl || pdfUrl);
         const hasPresupuestoDoc = hasPresupuesto && presupuestoPath;
+        const hasInformeTecnicoDoc = hasInformeTecnico && informeTecnicoPath;
+        const hasEnvioInicialDoc = hasEnvioInicial && envioInicialPath;
+        const hasExoneracionDoc = hasExoneracion && exoneracionPath;
 
         // Guardar las rutas y nombres de los documentos para uso posterior
         window.currentEnvioImageUrl = imageUrl;
@@ -417,22 +508,35 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
         window.currentPresupuestoPath = presupuestoPath;
         window.currentHasEnvio = hasEnvio;
         window.currentHasPresupuesto = hasPresupuestoDoc;
+        window.currentInformeTecnicoPath = informeTecnicoPath;
+        window.currentHasInformeTecnico = hasInformeTecnicoDoc;
+        window.currentInformeTecnicoIsImage = isImagePath(informeTecnicoPath);
+        window.currentEnvioInicialPath = envioInicialPath;
+        window.currentHasEnvioInicial = hasEnvioInicialDoc;
+        window.currentEnvioInicialIsImage = isImagePath(envioInicialPath);
+        window.currentExoneracionPath = exoneracionPath;
+        window.currentHasExoneracion = hasExoneracionDoc;
+        window.currentExoneracionIsImage = isImagePath(exoneracionPath);
 
         // Mostrar/ocultar radio buttons según los documentos disponibles
-        if (hasEnvio && labelEnvioDestino && radioEnvioDestino) {
-            radioEnvioDestino.parentElement.style.display = "block";
-        } else if (radioEnvioDestino) {
-            radioEnvioDestino.parentElement.style.display = "none";
-        }
+        const docOptions = [
+            { has: hasEnvio, radio: radioEnvioDestino },
+            { has: hasPresupuestoDoc, radio: radioPresupuesto },
+            { has: hasInformeTecnicoDoc, radio: radioInformeTecnico },
+            { has: hasEnvioInicialDoc, radio: radioEnvioInicial },
+            { has: hasExoneracionDoc, radio: radioExoneracion },
+        ];
 
-        if (hasPresupuestoDoc && labelPresupuesto && radioPresupuesto) {
-            radioPresupuesto.parentElement.style.display = "block";
-        } else if (radioPresupuesto) {
-            radioPresupuesto.parentElement.style.display = "none";
-        }
+        docOptions.forEach(({ has, radio }) => {
+            if (radio) {
+                radio.parentElement.style.display = has ? "block" : "none";
+            }
+        });
+
+        const availableDocs = docOptions.filter(d => d.has && d.radio);
 
         // Siempre mostrar la selección primero si hay al menos un documento
-        if (hasEnvio || hasPresupuestoDoc) {
+        if (availableDocs.length > 0) {
             // Hay al menos un documento, mostrar selección
             if (documentSelectionContainer) documentSelectionContainer.style.display = "block";
             if (documentViewArea) documentViewArea.style.display = "none";
@@ -441,14 +545,13 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
                 btnVisualizarDocumento.style.display = "block";
             }
             // Desmarcar todos los radios
-            if (radioEnvioDestino) radioEnvioDestino.checked = false;
-            if (radioPresupuesto) radioPresupuesto.checked = false;
-            
+            docOptions.forEach(({ radio }) => {
+                if (radio) radio.checked = false;
+            });
+
             // Si solo hay un documento, marcarlo automáticamente
-            if (hasEnvio && !hasPresupuestoDoc && radioEnvioDestino) {
-                radioEnvioDestino.checked = true;
-            } else if (!hasEnvio && hasPresupuestoDoc && radioPresupuesto) {
-                radioPresupuesto.checked = true;
+            if (availableDocs.length === 1) {
+                availableDocs[0].radio.checked = true;
             }
         } else {
             // No hay documentos
@@ -489,6 +592,15 @@ window.showViewModal = function showViewModal(ticketId, nroTicket, imageUrl, pdf
                     );
                 } else if (documentType === 'Presupuesto' && window.currentHasPresupuesto) {
                     displayDocument(window.currentPresupuestoPath, "Presupuesto.pdf", false);
+                } else if (documentType === 'InformeTecnico' && window.currentHasInformeTecnico) {
+                    const isImg = !!window.currentInformeTecnicoIsImage;
+                    displayDocument(window.currentInformeTecnicoPath, isImg ? "Informe_Tecnico" : "Informe_Tecnico.pdf", isImg);
+                } else if (documentType === 'EnvioInicial' && window.currentHasEnvioInicial) {
+                    const isImg = !!window.currentEnvioInicialIsImage;
+                    displayDocument(window.currentEnvioInicialPath, isImg ? "Envio_Inicial" : "Envio_Inicial.pdf", isImg);
+                } else if (documentType === 'Exoneracion' && window.currentHasExoneracion) {
+                    const isImg = !!window.currentExoneracionIsImage;
+                    displayDocument(window.currentExoneracionPath, isImg ? "Exoneracion" : "Exoneracion.pdf", isImg);
                 }
             };
         }
@@ -840,6 +952,17 @@ function closeUploadModalAndClean() {
             return;
         }
 
+        // Delegación para el botón "Cargar Informe Técnico" (equipos Irreparables)
+        const uploadInformeTecnicoBtnDelegated = event.target.closest(".upload-informe-tecnico-btn");
+        if (uploadInformeTecnicoBtnDelegated) {
+            event.preventDefault();
+            const nroTicket = uploadInformeTecnicoBtnDelegated.dataset.nroTicket;
+            const serialPos = uploadInformeTecnicoBtnDelegated.dataset.serialPos;
+
+            openUploadInformeTecnicoModal(nroTicket, serialPos);
+            return;
+        }
+
 
         // Delegación para el botón "Ver Imagen" (o similar, con ID 'viewimage')
         // Asume que el botón de ver imagen tiene un ID 'viewimage' y un data-url-document
@@ -1050,6 +1173,23 @@ function closeUploadModalAndClean() {
         iconoCerrarUploadPresupuestoPDF.addEventListener('click', function() {
             if (bsUploadPresupuestoPDFModal) {
                 bsUploadPresupuestoPDFModal.hide();
+            }
+        });
+    }
+
+    // Event listeners para cerrar el modal de carga del Informe Técnico
+    if (cerrarBotonUploadInformeTecnico) {
+        cerrarBotonUploadInformeTecnico.addEventListener('click', function() {
+            if (bsUploadInformeTecnicoModal) {
+                bsUploadInformeTecnicoModal.hide();
+            }
+        });
+    }
+
+    if (iconoCerrarUploadInformeTecnico) {
+        iconoCerrarUploadInformeTecnico.addEventListener('click', function() {
+            if (bsUploadInformeTecnicoModal) {
+                bsUploadInformeTecnicoModal.hide();
             }
         });
     }
@@ -1372,6 +1512,7 @@ function getTicketDataFinaljs() {
                                               data-serial-pos="${serialPos}"
                                               data-nro-ticket="${nroTicket}"
                                               data-pdf-presupuesto=""
+                                              data-informe-tecnico=""
                                               data-id-failure="${idFailure || ''}"
                                               data-status-lab="${currentStatusLab || ''}"
                                               data-id-status-payment="${idStatusPayment || ''}"
@@ -1410,13 +1551,16 @@ function getTicketDataFinaljs() {
                               // Obtener el PDF del presupuesto para agregarlo como atributo data
                               const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
                               const pdfPathEscaped = pdfPathPresupuesto ? pdfPathPresupuesto.replace(/"/g, '&quot;') : '';
-                              
+                              const pdfPathInformeTecnicoBtn = row.pdf_path_informe_tecnico || '';
+                              const pdfPathInformeTecnicoEscaped = pdfPathInformeTecnicoBtn ? pdfPathInformeTecnicoBtn.replace(/"/g, '&quot;') : '';
+
                               actionButton = `<button type="button" class="btn btn-success btn-sm send-to-region-btn" title = "Enviar a Región: ${nombre_estado_cliente}"
                                                   data-id-ticket="${idTicket}"
-                                                  data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"  
+                                                  data-region-name="${nombre_estado_cliente || 'No tiene Asignado'}"
                                                   data-serial-pos="${serialPos}"
                                                   data-nro-ticket="${nroTicket}"
                                                   data-pdf-presupuesto="${pdfPathEscaped}"
+                                                  data-informe-tecnico="${pdfPathInformeTecnicoEscaped}"
                                                   data-id-failure="${idFailure || ''}"
                                                   data-status-lab="${currentStatusLab || ''}"
                                                   data-id-status-payment="${idStatusPayment || ''}"
@@ -1483,17 +1627,37 @@ function getTicketDataFinaljs() {
                              </svg>
                           </button>`;
                       }
-                      
+
+                      // Verificar si existe el Informe Técnico cargado (reemplaza al presupuesto
+                      // para equipos "Irreparables": no aplica presupuesto, aplica informe técnico).
+                      const pdfPathInformeTecnico = row.pdf_path_informe_tecnico || '';
+                      const hasInformeTecnico = pdfPathInformeTecnico && pdfPathInformeTecnico.trim() !== '';
+
+                      // Agregar botón para cargar el Informe Técnico (solo si es Irreparable,
+                      // no existe todavía, y ya fue confirmado en el Rosal).
+                      let uploadInformeTecnicoButton = '';
+                      if (isIrreparable && !hasInformeTecnico && hasConfirmRosal) {
+                          uploadInformeTecnicoButton = `<button type="button" class="btn btn-warning btn-sm upload-informe-tecnico-btn" title="Cargar Informe Técnico"
+                              data-id-ticket="${idTicket}"
+                              data-serial-pos="${serialPos}"
+                              data-nro-ticket="${nroTicket}">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-medical-fill" viewBox="0 0 16 16">
+                                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zM9 4.5V1l5 5h-3.5A1.5 1.5 0 0 1 9 4.5M8.5 6a.5.5 0 0 1 .5.5V9h2.5a.5.5 0 0 1 0 1H9v2.5a.5.5 0 0 1-1 0V10H5.5a.5.5 0 0 1 0-1H8V6.5a.5.5 0 0 1 .5-.5"/>
+                             </svg>
+                          </button>`;
+                      }
+
                       // Usuario de Solo Lectura: no debe poder ejecutar ninguna acción que
                       // modifique el ticket (enviar, cargar documento, marcar recibido, etc.).
                       if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
                           actionButton = '';
                           presupuestoButton = '';
                           uploadPresupuestoPDFButton = '';
+                          uploadInformeTecnicoButton = '';
                       }
 
                       // Combinar todos los botones en una fila horizontal
-                      const allButtons = `${actionButton || ''}${presupuestoButton}${uploadPresupuestoPDFButton}`;
+                      const allButtons = `${actionButton || ''}${presupuestoButton}${uploadPresupuestoPDFButton}${uploadInformeTecnicoButton}`;
                       return `<div style="display: flex; align-items: center; gap: 5px; flex-direction: row; flex-wrap: nowrap;">${allButtons}</div>`;
                   },
           });
@@ -1621,13 +1785,26 @@ function getTicketDataFinaljs() {
                 // Verificar si existe PDF del presupuesto
                 const pdfPathPresupuesto = row.pdf_path_presupuesto || row.pdf_path || row.presupuesto_pdf_path || '';
                 const hasPresupuestoPDF = pdfPathPresupuesto && pdfPathPresupuesto.trim() !== '';
-                
-                // Si hay al menos un documento (Envio_Destino o Presupuesto), mostrar botón
-                if ((hasEnvioDestinoDocument && url_documento) || hasPresupuestoPDF) {
+
+                // Verificar si existe el Informe Técnico (puede ser PDF, PNG o JPG)
+                const pdfPathInformeTecnico = row.pdf_path_informe_tecnico || '';
+                const hasInformeTecnico = pdfPathInformeTecnico && pdfPathInformeTecnico.trim() !== '';
+
+                // Verificar si existe el documento de Envío inicial (subido al crear el ticket)
+                const pdfPathEnvioInicial = row.pdf_path_envio || '';
+                const hasEnvioInicial = pdfPathEnvioInicial && pdfPathEnvioInicial.trim() !== '';
+
+                // Verificar si existe el documento de Exoneración (módulo de pagos)
+                const pdfPathExoneracion = row.pdf_path_exoneracion || '';
+                const hasExoneracion = pdfPathExoneracion && pdfPathExoneracion.trim() !== '';
+
+                // Si hay al menos un documento, mostrar botón
+                if ((hasEnvioDestinoDocument && url_documento) || hasPresupuestoPDF || hasInformeTecnico || hasEnvioInicial || hasExoneracion) {
                   const fileExtension = url_documento ? url_documento.split('.').pop().toLowerCase() : '';
                     const isPdf = fileExtension === 'pdf';
-                        
-                    return `<button type="button" class="btn btn-info btn-sm view-document-btn" 
+                    const documentCount = [(hasEnvioDestinoDocument && url_documento), hasPresupuestoPDF, hasInformeTecnico, hasEnvioInicial, hasExoneracion].filter(Boolean).length;
+
+                    return `<button type="button" class="btn btn-info btn-sm view-document-btn"
                       data-id-ticket="${idTicket}"
                       data-nro-ticket="${nroTicket}"
                       data-url-document="${url_documento || ''}"
@@ -1635,8 +1812,14 @@ function getTicketDataFinaljs() {
                       data-filename="${filename || 'Documento'}"
                       data-has-envio="${hasEnvioDestinoDocument && url_documento ? 'true' : 'false'}"
                       data-has-presupuesto="${hasPresupuestoPDF ? 'true' : 'false'}"
-                      data-presupuesto-path="${pdfPathPresupuesto || ''}">
-                      Ver Documento${hasEnvioDestinoDocument && hasPresupuestoPDF ? 's' : ''}
+                      data-presupuesto-path="${pdfPathPresupuesto || ''}"
+                      data-has-informe-tecnico="${hasInformeTecnico ? 'true' : 'false'}"
+                      data-informe-tecnico-path="${pdfPathInformeTecnico || ''}"
+                      data-has-envio-inicial="${hasEnvioInicial ? 'true' : 'false'}"
+                      data-envio-inicial-path="${pdfPathEnvioInicial || ''}"
+                      data-has-exoneracion="${hasExoneracion ? 'true' : 'false'}"
+                      data-exoneracion-path="${pdfPathExoneracion || ''}">
+                      Ver Documento${documentCount > 1 ? 's' : ''}
                     </button>`;
                 } else {
                     return `<button type="button" class="btn btn-secondary btn-sm" title="No hay documento disponible" disabled>No hay documento disponible</button>`;
@@ -2469,15 +2652,50 @@ function getTicketDataFinaljs() {
                     // Obtener si tiene presupuesto PDF desde el atributo data
                     const pdfPathPresupuesto = $(this).attr("data-pdf-presupuesto") || "";
                     const hasPresupuestoPDF = pdfPathPresupuesto.trim() !== "" && pdfPathPresupuesto !== "null";
-                
-                    
+
+                    // Obtener si tiene el Informe Técnico cargado (requerido para Irreparables
+                    // en lugar del presupuesto).
+                    const pdfPathInformeTecnico = $(this).attr("data-informe-tecnico") || "";
+                    const hasInformeTecnico = pdfPathInformeTecnico.trim() !== "" && pdfPathInformeTecnico !== "null";
+
                     // MANTENER FLUJO SEGÚN SOLICITUD DEL USUARIO (Orden de validación)
                     // "si alguna de esa es true no me puede salir el alerta"
-                    
-                    if (isIrreparable || isGarantia || isFallaSinPago || isDevolucion) {
-                        // Si es Irreparable, Garantía, Falla 9/12, o Devolución del técnico en campo
-                        // (nunca pasó por taller), permitimos el paso directamente sin presupuesto.
-                        console.log("Paso directo concedido por excepción (Garantía/Falla/Irreparable/Devolución)");
+
+                    if (isIrreparable) {
+                        // Los equipos "Irreparables" no requieren presupuesto, pero sí el
+                        // Informe Técnico antes de poder enviarse a la región.
+                        if (!hasInformeTecnico) {
+                            Swal.fire({
+                                title: 'Informe Técnico Requerido',
+                                html: `
+                                    <div style="text-align: center;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#ffc107" class="bi bi-exclamation-triangle-fill mb-3" viewBox="0 0 16 16">
+                                            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                                        </svg>
+                                        <p class="h5 mb-3" style="color: black;">
+                                            No se puede enviar el ticket a la región sin el Informe Técnico.
+                                        </p>
+                                        <p class="mb-3" style="color: #6c757d;">
+                                            Este equipo fue marcado como Irreparable. Por favor, cargue el Informe Técnico antes de enviar el ticket a la región.
+                                        </p>
+                                        <p class="text-muted" style="font-size: 0.9rem;">
+                                            Ticket: <strong>${nroTicket}</strong>
+                                        </p>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#003594',
+                                color: 'black',
+                                allowOutsideClick: false,
+                                allowEscapeKey: true
+                            });
+                            return; // Bloquear el flujo
+                        }
+                        console.log("Paso concedido: Irreparable con Informe Técnico cargado");
+                    } else if (isGarantia || isFallaSinPago || isDevolucion) {
+                        // Garantía, Falla 9/12, o Devolución del técnico en campo (nunca pasó por
+                        // taller), permitimos el paso directamente sin presupuesto.
+                        console.log("Paso directo concedido por excepción (Garantía/Falla/Devolución)");
                     } else {
                         // Si NO es ninguna de las anteriores, validamos el presupuesto obligatoriamente
                         if (!hasPresupuestoPDF) {
@@ -3435,13 +3653,19 @@ $(document).ready(function () {
     const hasEnvio = $(this).data("has-envio") === true || $(this).data("has-envio") === 'true';
     const hasPresupuesto = $(this).data("has-presupuesto") === true || $(this).data("has-presupuesto") === 'true';
     const presupuestoPath = $(this).data("presupuesto-path") || '';
-    
+    const hasInformeTecnico = $(this).data("has-informe-tecnico") === true || $(this).data("has-informe-tecnico") === 'true';
+    const informeTecnicoPath = $(this).data("informe-tecnico-path") || '';
+    const hasEnvioInicial = $(this).data("has-envio-inicial") === true || $(this).data("has-envio-inicial") === 'true';
+    const envioInicialPath = $(this).data("envio-inicial-path") || '';
+    const hasExoneracion = $(this).data("has-exoneracion") === true || $(this).data("has-exoneracion") === 'true';
+    const exoneracionPath = $(this).data("exoneracion-path") || '';
+
     // Llamar a la función showViewModal con los parámetros correctos
     if (typeof window.showViewModal === 'function') {
     if (documentType === 'pdf') {
-        window.showViewModal(idTicket, nroTicket, null, urlDocument, filename, hasPresupuesto, presupuestoPath);
+        window.showViewModal(idTicket, nroTicket, null, urlDocument, filename, hasPresupuesto, presupuestoPath, hasInformeTecnico, informeTecnicoPath, hasEnvioInicial, envioInicialPath, hasExoneracion, exoneracionPath);
     } else {
-        window.showViewModal(idTicket, nroTicket, urlDocument, null, filename, hasPresupuesto, presupuestoPath);
+        window.showViewModal(idTicket, nroTicket, urlDocument, null, filename, hasPresupuesto, presupuestoPath, hasInformeTecnico, informeTecnicoPath, hasEnvioInicial, envioInicialPath, hasExoneracion, exoneracionPath);
       }
     } else {
       console.error('showViewModal no está definida');
@@ -8090,6 +8314,77 @@ if (inputPresupuestoPDFFileGlobal) {
     });
 }
 
+// Event listeners para el modal de carga del Informe Técnico
+const inputInformeTecnicoFileGlobal = document.getElementById("informeTecnicoFile");
+if (inputInformeTecnicoFileGlobal) {
+    inputInformeTecnicoFileGlobal.addEventListener('change', function() {
+        const formatInfo = document.getElementById('informeTecnicoFileFormatInfo');
+        const input = this;
+
+        const validFeedback = input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+        const invalidFeedback = input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+
+        const allowedInformeTecnicoTypes = ['application/pdf', 'image/png', 'image/jpeg'];
+        if (this.files.length > 0 && allowedInformeTecnicoTypes.includes(this.files[0].type)) {
+            const uploadInformeTecnicoBtnGlobal = document.getElementById("uploadInformeTecnicoBtn");
+            if (uploadInformeTecnicoBtnGlobal) {
+                uploadInformeTecnicoBtnGlobal.disabled = false;
+            }
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+
+            if (invalidFeedback) {
+                invalidFeedback.style.setProperty("display", "none", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $(invalidFeedback).hide();
+            }
+
+            if (validFeedback) {
+                validFeedback.style.setProperty("display", "block", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $(validFeedback).show();
+            }
+
+            if (formatInfo) {
+                formatInfo.style.setProperty("display", "none", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $('#informeTecnicoFileFormatInfo').hide();
+            }
+        } else {
+            const uploadInformeTecnicoBtnGlobal = document.getElementById("uploadInformeTecnicoBtn");
+            if (uploadInformeTecnicoBtnGlobal) {
+                uploadInformeTecnicoBtnGlobal.disabled = true;
+            }
+            this.classList.remove('is-valid');
+            this.classList.add('is-invalid');
+
+            if (validFeedback) {
+                validFeedback.style.setProperty("display", "none", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $(validFeedback).hide();
+            }
+
+            if (invalidFeedback) {
+                invalidFeedback.style.setProperty("display", "block", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $(invalidFeedback).show();
+            }
+
+            if (formatInfo) {
+                formatInfo.style.setProperty("display", "none", "important");
+            }
+            if (typeof $ !== 'undefined') {
+                $('#informeTecnicoFileFormatInfo').hide();
+            }
+        }
+    });
+}
+
 const uploadPresupuestoPDFBtnGlobal = document.getElementById("uploadPresupuestoPDFBtn");
 if (uploadPresupuestoPDFBtnGlobal) {
     uploadPresupuestoPDFBtnGlobal.addEventListener('click', async function() {
@@ -8378,6 +8673,225 @@ if (modalElementUploadPresupuestoPDFGlobal) {
             formatInfo.style.display = 'block';
         }
     });
+
+// ========== SUBIDA DEL INFORME TÉCNICO (equipos Irreparables) ==========
+
+const uploadInformeTecnicoBtnGlobal = document.getElementById("uploadInformeTecnicoBtn");
+if (uploadInformeTecnicoBtnGlobal) {
+    uploadInformeTecnicoBtnGlobal.addEventListener('click', async function() {
+        const nroTicket = document.getElementById("uploadInformeTecnicoNroTicketHidden")?.value;
+        const serialPos = document.getElementById("uploadInformeTecnicoSerialPosHidden")?.value;
+        const inputInformeTecnicoFileGlobal = document.getElementById("informeTecnicoFile");
+        const file = inputInformeTecnicoFileGlobal?.files[0];
+        const id_user = document.getElementById("userId")?.value;
+
+        if (!nroTicket) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo obtener el número de ticket.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+            return;
+        }
+
+        if (!serialPos) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo obtener el serial del ticket.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+            return;
+        }
+
+        if (!file) {
+            Swal.fire({
+                icon: 'warning',
+                title: '¡Advertencia!',
+                text: 'Por favor, selecciona un archivo antes de subir.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#003594',
+                color: 'black',
+            });
+            return;
+        }
+
+        if (!['application/pdf', 'image/png', 'image/jpeg'].includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Formato Inválido',
+                text: 'Solo se permiten archivos PDF, PNG o JPG.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Subiendo Informe Técnico...',
+            html: 'Por favor, espere mientras se carga el documento.',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const formData = new FormData();
+        formData.append("action", "UploadInformeTecnico");
+        formData.append("nro_ticket", nroTicket);
+        formData.append("serial_pos", serialPos);
+        formData.append("informe_tecnico_file", file);
+        formData.append("id_user", id_user);
+
+        try {
+            const url = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UploadInformeTecnico`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error HTTP:', response.status, errorText);
+                throw new Error(`Error del servidor (${response.status}): ${errorText}`);
+            }
+
+            let result;
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.includes("application/json")) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                console.error('Respuesta del servidor no es JSON:', text);
+                throw new Error('El servidor no devolvió una respuesta JSON válida. Respuesta: ' + text.substring(0, 200));
+            }
+
+            Swal.close();
+
+            if (result && result.success) {
+                // Cerrar el modal primero
+                const modalElement = document.getElementById("uploadInformeTecnicoModal");
+                if (modalElement) {
+                    try {
+                        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+                            $(modalElement).modal('hide');
+                        } else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                            if (typeof bootstrap.Modal.getInstance === 'function') {
+                                const inst = bootstrap.Modal.getInstance(modalElement);
+                                if (inst) inst.hide(); else (new bootstrap.Modal(modalElement)).hide();
+                            } else {
+                                (new bootstrap.Modal(modalElement)).hide();
+                            }
+                        }
+                    } catch (eModal) {
+                        console.warn('Error cerrando modal:', eModal);
+                    }
+                }
+
+                setTimeout(() => {
+                    const inputInformeTecnicoFileLocal = document.getElementById("informeTecnicoFile");
+                    if (inputInformeTecnicoFileLocal) {
+                        inputInformeTecnicoFileLocal.value = '';
+                        inputInformeTecnicoFileLocal.classList.remove('is-invalid', 'is-valid');
+                    }
+
+                    const uploadInformeTecnicoBtnLocal = document.getElementById("uploadInformeTecnicoBtn");
+                    if (uploadInformeTecnicoBtnLocal) {
+                        uploadInformeTecnicoBtnLocal.disabled = true;
+                    }
+                }, 300);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: (result.message || 'El Informe Técnico se ha cargado y guardado correctamente.'),
+                    color: 'black',
+                    timer: 4000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al subir',
+                    text: (result && result.message) || 'Hubo un error al cargar el Informe Técnico. Por favor, intente nuevamente.',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#dc3545',
+                    color: 'black',
+                });
+            }
+        } catch (error) {
+            console.error('Error completo al subir Informe Técnico:', error);
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'No se pudo conectar con el servidor para subir el Informe Técnico. Verifique su conexión.',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#dc3545',
+                color: 'black',
+            });
+        }
+    });
+}
+
+const modalElementUploadInformeTecnicoGlobal = document.getElementById("uploadInformeTecnicoModal");
+if (modalElementUploadInformeTecnicoGlobal) {
+    modalElementUploadInformeTecnicoGlobal.addEventListener('hidden.bs.modal', function () {
+        const inputInformeTecnicoFileLocal = document.getElementById("informeTecnicoFile");
+        if (inputInformeTecnicoFileLocal) {
+            inputInformeTecnicoFileLocal.value = '';
+            inputInformeTecnicoFileLocal.classList.remove('is-invalid', 'is-valid');
+        }
+        const uploadInformeTecnicoBtnLocal = document.getElementById("uploadInformeTecnicoBtn");
+        if (uploadInformeTecnicoBtnLocal) {
+            uploadInformeTecnicoBtnLocal.disabled = true;
+        }
+        setTimeout(function() {
+            const formatInfo = document.getElementById('informeTecnicoFileFormatInfo');
+            const input = document.getElementById("informeTecnicoFile");
+
+            const validFeedback = input && input.parentElement ? input.parentElement.querySelector('.valid-feedback') : null;
+            const invalidFeedback = input && input.parentElement ? input.parentElement.querySelector('.invalid-feedback') : null;
+
+            if (validFeedback) {
+                validFeedback.style.setProperty("display", "none", "important");
+            }
+            if (invalidFeedback) {
+                invalidFeedback.style.setProperty("display", "none", "important");
+            }
+            if (formatInfo) {
+                formatInfo.style.removeProperty("display");
+            }
+            if (typeof $ !== 'undefined') {
+                if (validFeedback) $(validFeedback).hide();
+                if (invalidFeedback) $(invalidFeedback).hide();
+                $('#informeTecnicoFileFormatInfo').show();
+            }
+        }, 100);
+    });
+
+    modalElementUploadInformeTecnicoGlobal.addEventListener('shown.bs.modal', function () {
+        const formatInfo = document.getElementById('informeTecnicoFileFormatInfo');
+        if (formatInfo) {
+            formatInfo.style.display = 'block';
+        }
+    });
+}
 
 // ========== FUNCIONES PARA MODAL DE AGREGAR ANTICIPO ==========
 
