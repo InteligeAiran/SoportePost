@@ -2350,9 +2350,7 @@ function mi_navbar() {}
         <?php
             if (isset($this->js)) {
                 foreach ($this->js as $js) {
-                    // Cache buster usando timestamp para asegurar que el usuario vea los cambios de frontEnd.js
-                    $version = time();
-                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '?v=' . $version . '"></script>';
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '?v=' . $this->assetVersion($js) . '"></script>';
                 }
             }
         ?>

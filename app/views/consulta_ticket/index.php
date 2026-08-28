@@ -577,7 +577,7 @@ require 'app/footer.php';
         <?php
             if (isset($this->js)) {
                 foreach ($this->js as $js) {
-                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '"></script>';
+                    echo '<script type="text/javascript" src="' . APP . 'app/views/' . $js . '?v=' . $this->assetVersion($js) . '"></script>';
                 }
             }
         ?>

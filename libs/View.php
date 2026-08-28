@@ -17,6 +17,15 @@ class View {
       	//Constructor de view
       }
 
+      // Cache-busting para los <script> de cada módulo: usa la fecha de última
+      // modificación del archivo en disco como versión, así el navegador (o
+      // cualquier proxy/CDN intermedio) siempre sirve el JS actualizado después
+      // de un deploy, sin depender de que el usuario limpie caché manualmente.
+      public function assetVersion($relativePath){
+          $fsPath = ROOT . 'app/views/' . $relativePath;
+          return file_exists($fsPath) ? filemtime($fsPath) : time();
+      }
+
       public function render($name,$noInclude = false){
         // SEGURIDAD: Iniciar la sesión si no está iniciada para obtener el token CSRF actual
         if (session_status() === PHP_SESSION_NONE) {
