@@ -17,14 +17,14 @@ function mi_navbar() {}
             <?php echo tituloPagina; ?>
         </title>
         <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-icons.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-svg.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/General.css'); ?>" />
         <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/argon-dashboard.css?v=2.1.0" />
-        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/user/desktop/desktop.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css" />
-        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css" />
+        <link id="pagestyle" rel="stylesheet" href="<?php echo APP; ?>app/plugins/css/dashboard/dashboard.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/dashboard.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/user/desktop/desktop.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/user/desktop/desktop.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/dataTables.min.css?v=<?php echo $this->staticAssetVersion('app/plugins/DataTable/dataTables.min.css'); ?>" />
+        <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/DataTable/datatable.css?v=<?php echo $this->staticAssetVersion('app/plugins/DataTable/datatable.css'); ?>" />
         <style>
             /* Timeline de acciones sobre tickets del modal "Ver Acciones" —
                mismo lenguaje visual (badge + tarjeta) que el historial de

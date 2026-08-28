@@ -19,17 +19,17 @@ function mi_navbar() {}
             <?php echo tituloPagina; ?>
         </title>
 
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css" />
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-icons.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-icons.css'); ?>" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/nucleo-svg.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/nucleo-svg.css'); ?>" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery-resizable-columns@0.2.3/dist/jquery.resizableColumns.min.css">
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/General.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/General.css'); ?>" />
 
-    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css">
-    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css">
-    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/datatable.css?v=<?php echo $this->staticAssetVersion('DataTable/datatable.css'); ?>">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/jquery.dataTables.min.css?v=<?php echo $this->staticAssetVersion('DataTable/jquery.dataTables.min.css'); ?>">
+    <link type="text/css" rel="stylesheet" href="<?php echo APP; ?>DataTable/buttons.dataTables.min1.css?v=<?php echo $this->staticAssetVersion('DataTable/buttons.dataTables.min1.css'); ?>">
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css" />
+    <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/tecnico/tecnico.css'); ?>" />
     <style>
         /* Estilos para el botón botonMostarImage */
         #botonMostarImage{

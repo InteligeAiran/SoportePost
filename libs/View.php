@@ -17,13 +17,21 @@ class View {
       	//Constructor de view
       }
 
-      // Cache-busting para los <script> de cada módulo: usa la fecha de última
-      // modificación del archivo en disco como versión, así el navegador (o
-      // cualquier proxy/CDN intermedio) siempre sirve el JS actualizado después
-      // de un deploy, sin depender de que el usuario limpie caché manualmente.
-      public function assetVersion($relativePath){
-          $fsPath = ROOT . 'app/views/' . $relativePath;
+      // Cache-busting genérico para cualquier archivo estático del proyecto
+      // (JS, CSS): usa la fecha de última modificación en disco como versión,
+      // así el navegador (o cualquier proxy/CDN intermedio) siempre sirve el
+      // archivo actualizado después de un deploy, sin depender de que el
+      // usuario limpie caché manualmente. $relativePathFromRoot es relativo
+      // a la raíz del proyecto (ROOT), ej. 'app/plugins/css/General.css'.
+      public function staticAssetVersion($relativePathFromRoot){
+          $fsPath = ROOT . $relativePathFromRoot;
           return file_exists($fsPath) ? filemtime($fsPath) : time();
+      }
+
+      // Igual que staticAssetVersion(), pero para los <script> de cada módulo,
+      // cuya ruta ya viene relativa a app/views/ (ej. 'pendiente_entrega/js/frontEnd.js').
+      public function assetVersion($relativePath){
+          return $this->staticAssetVersion('app/views/' . $relativePath);
       }
 
       public function render($name,$noInclude = false){
