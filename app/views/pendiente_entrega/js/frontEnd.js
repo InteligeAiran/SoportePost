@@ -1637,11 +1637,12 @@ function getTicketDataFinaljs() {
                       // no existe todavía, y ya fue confirmado en el Rosal).
                       let uploadInformeTecnicoButton = '';
                       if (isIrreparable && !hasInformeTecnico && hasConfirmRosal) {
-                          uploadInformeTecnicoButton = `<button type="button" class="btn btn-warning btn-sm upload-informe-tecnico-btn" title="Cargar Informe Técnico"
+                          uploadInformeTecnicoButton = `<button type="button" class="btn upload-informe-tecnico-btn" title="Cargar Informe Técnico"
                               data-id-ticket="${idTicket}"
                               data-serial-pos="${serialPos}"
-                              data-nro-ticket="${nroTicket}">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-medical-fill" viewBox="0 0 16 16">
+                              data-nro-ticket="${nroTicket}"
+                              style="background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%); border: none; border-radius: 25px; padding: 8px 16px; box-shadow: 0 2px 8px rgba(142, 68, 173, 0.35); transition: all 0.3s ease;">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" class="bi bi-file-earmark-medical-fill" viewBox="0 0 16 16" style="pointer-events: none;">
                                 <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zM9 4.5V1l5 5h-3.5A1.5 1.5 0 0 1 9 4.5M8.5 6a.5.5 0 0 1 .5.5V9h2.5a.5.5 0 0 1 0 1H9v2.5a.5.5 0 0 1-1 0V10H5.5a.5.5 0 0 1 0-1H8V6.5a.5.5 0 0 1 .5-.5"/>
                              </svg>
                           </button>`;
