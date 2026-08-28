@@ -863,6 +863,9 @@ function getTicketDataFinaljs() {
               searchable: false,
               className: "dt-body-center",
               render: function (data, type, row) {
+                if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                  return '';
+                }
                 const idTicket = row.id_ticket;
                 const serialPos = row.serial_pos;
                 const nroTicket = row.nro_ticket;

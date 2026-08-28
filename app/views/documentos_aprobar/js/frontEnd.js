@@ -821,9 +821,10 @@ function getTicketAprovalDocument() {
                                 const id_area = document.getElementById('id_area').value;
                                 const id_rol = document.getElementById('id_rol').value;
 
-                                // Finanzas solo verifica/consulta, no aprueba ni rechaza:
-                                // oculta los botones de acción vía CSS (body.finanzas-read-only).
-                                if (id_area == 1 && id_rol == 6) {
+                                // Finanzas solo verifica/consulta, no aprueba ni rechaza; lo mismo
+                                // aplica a un usuario de Solo Lectura: ambos ocultan los botones de
+                                // acción vía CSS (body.finanzas-read-only).
+                                if ((id_area == 1 && id_rol == 6) || (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser)) {
                                     document.body.classList.add('finanzas-read-only');
                                 }
 

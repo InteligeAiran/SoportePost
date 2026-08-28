@@ -184,7 +184,7 @@ class userModel extends Model{
 
 
 
-    public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
+    public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel, $is_readonly = false){
         try {
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
             $escaped_nombreusers = pg_escape_literal($this->db->getConnection(), $nombreusers);
@@ -197,8 +197,9 @@ class userModel extends Model{
             $escaped_tipo_users = pg_escape_literal($this->db->getConnection(), $tipo_users);
             $escaped_regionusers = pg_escape_literal($this->db->getConnection(), $regionusers);
             $escaped_id_nivel = pg_escape_literal($this->db->getConnection(), $id_nivel);
+            $bool_is_readonly = ($is_readonly === true || $is_readonly === '1' || $is_readonly === 'true' || $is_readonly === 'on') ? 'true' : 'false';
 
-            
+
              $sql_check_user = "SELECT * FROM sp_verificarusuariorep(".$escaped_users.")";
                 $result_check_user = $this->db->pgquery($sql_check_user);
 
@@ -211,7 +212,7 @@ class userModel extends Model{
                 }
 
             $sql_sp  = "SELECT * FROM sp_guardarusuarios(".$escaped_id_user.", ".$escaped_nombreusers.", ".$escaped_apellidousers.", ".$escaped_encry_passw.",
-                    ".$escaped_identificacion.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.", ".$escaped_regionusers.", ".$escaped_id_nivel.")";
+                    ".$escaped_identificacion.", ".$escaped_users.", ".$escaped_correo.",".$escaped_area_users.",".$escaped_tipo_users.", ".$escaped_regionusers.", ".$escaped_id_nivel.", ".$bool_is_readonly.")";
             $result_sp  = $this->db->pgquery($sql_sp );
 
             if ($result_sp) {
@@ -250,7 +251,7 @@ class userModel extends Model{
     }   
 
 
-    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user, $is_readonly = false){
         try {
             $escaped_idusuario_edit = pg_escape_literal($this->db->getConnection(), $idusuario_edit);
             $escaped_edit_nombreusers = pg_escape_literal($this->db->getConnection(), $edit_nombreusers);
@@ -263,9 +264,10 @@ class userModel extends Model{
             $escaped_edit_tipo_users = pg_escape_literal($this->db->getConnection(), $edit_tipo_users);
             $escaped_edit_idnivel = pg_escape_literal($this->db->getConnection(), $edit_idnivel);
             $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $bool_is_readonly = ($is_readonly === true || $is_readonly === '1' || $is_readonly === 'true' || $is_readonly === 'on') ? 'true' : 'false';
 
             $sql = "SELECT * FROM sp_editarusuarios(".$escaped_idusuario_edit.", ".$escaped_edit_nombreusers.", ".$escaped_edit_apellidousers.", ".$escaped_edit_usuario.",
-                    ".$escaped_identificacion.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.")";
+                    ".$escaped_identificacion.", ".$escaped_edit_correo.", ".$escaped_edit_area_users.",".$escaped_edit_regionusers.",".$escaped_edit_tipo_users.", ".$escaped_edit_idnivel.",".$escaped_id_user.", ".$bool_is_readonly.")";
             //echo $sql;
             $result = Model::getResult($sql, $this->db);
             return $result;
@@ -321,6 +323,19 @@ class userModel extends Model{
             return $result;
         } catch (Throwable $e) {
         // Handle exception
+        }
+    }
+
+    public function SetReadOnly($id_user, $is_readonly){
+        try{
+            $escaped_id_user = pg_escape_literal($this->db->getConnection(), $id_user);
+            $bool_is_readonly = $is_readonly ? 'true' : 'false';
+            $sql = "UPDATE users SET is_readonly = ".$bool_is_readonly." WHERE id_user = ".$escaped_id_user.";";
+            $result = $this->db->pgquery($sql);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Error en SetReadOnly: " . $e->getMessage());
+            return false;
         }
     }
 

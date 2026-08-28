@@ -1484,6 +1484,14 @@ function getTicketDataFinaljs() {
                           </button>`;
                       }
                       
+                      // Usuario de Solo Lectura: no debe poder ejecutar ninguna acción que
+                      // modifique el ticket (enviar, cargar documento, marcar recibido, etc.).
+                      if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                          actionButton = '';
+                          presupuestoButton = '';
+                          uploadPresupuestoPDFButton = '';
+                      }
+
                       // Combinar todos los botones en una fila horizontal
                       const allButtons = `${actionButton || ''}${presupuestoButton}${uploadPresupuestoPDFButton}`;
                       return `<div style="display: flex; align-items: center; gap: 5px; flex-direction: row; flex-wrap: nowrap;">${allButtons}</div>`;
@@ -1532,6 +1540,9 @@ function getTicketDataFinaljs() {
                           Ya has devuelto este ticket 1 vez
                         </button>`;
                       }
+                     if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                         actionButton = '';
+                     }
                      return actionButton;
                   },
           });
@@ -1582,11 +1593,12 @@ function getTicketDataFinaljs() {
                                      data-serial-pos="${row.serial_pos}" 
                                     title="Confirmar recibido" disabled>`;
                         }else{
-                          return `<input type="checkbox" class="receive-key-checkbox" 
-                                    data-id-ticket="${idTicket}" 
+                          const readOnlyAttr = (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) ? 'disabled' : '';
+                          return `<input type="checkbox" class="receive-key-checkbox"
+                                    data-id-ticket="${idTicket}"
                                     data-nro-ticket="${row.nro_ticket}"
-                                     data-serial-pos="${row.serial_pos}" 
-                                    title="Confirmar Carga De llaves">`;
+                                     data-serial-pos="${row.serial_pos}"
+                                    title="Confirmar Carga De llaves" ${readOnlyAttr}>`;
                         }
                 },
           });

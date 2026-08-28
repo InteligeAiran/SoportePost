@@ -278,8 +278,10 @@ function getTicketData() {
           const shouldHideActionsForGarantia = isGarantia && isEstadoSinEnvio;
 
           const isAsignadoCoordinacion = ticket.name_accion_ticket === "Asignado a la Coordinación";
+          const isReadOnly = typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser;
 
           if (
+            !isReadOnly &&
             (ticket.id_status_payment == 13 || ticket.id_status_payment == 11 || ticket.id_status_payment == 10 || ticket.id_status_payment == 9 || ticket.id_status_payment == 6 || ticket.id_status_payment == 4 || ticket.id_status_payment == 1 || ticket.id_status_payment == 3) &&
             (ticket.confirmtecn === "t" || ticket.confirmtecn === true || ticket.confirmcoord === "t" || ticket.confirmcoord === true || isAsignadoCoordinacion) &&
             !shouldHideActionsForGarantia
@@ -313,7 +315,7 @@ function getTicketData() {
               </button>`;
           }
 
-          if (!hasBeenConfirmedByAnyone) {
+          if (!isReadOnly && !hasBeenConfirmedByAnyone) {
             actionButtonsHTML += `
               <button id="RecibirTec" class="btn btn-sm btn-received-ticket mr-2"
                   data-bs-toggle="tooltip" data-bs-placement="top"
@@ -324,7 +326,7 @@ function getTicketData() {
           }
 
           // Mostrar botón "Enviar a Taller" solo si el usuario es SuperAdmin (1) o Coordinador (4)
-          if (hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller" && (currentUserRole === 1 || currentUserRole === 4)) {
+          if (!isReadOnly && hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller" && (currentUserRole === 1 || currentUserRole === 4)) {
             actionButtonsHTML += `
               <button class="btn btn-sm btn-wrench-custom"
                   data-bs-toggle="tooltip" data-bs-placement="top"

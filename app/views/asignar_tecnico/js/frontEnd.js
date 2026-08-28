@@ -400,7 +400,9 @@ function getTicketDataCoordinator() {
             currentTicketNroForImage = data.nro_ticket;
 
             // Lógica para los botones de acción
-            if (data.id_accion_ticket === '4') {
+            if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+              // Sin botones mutadores para Solo Lectura
+            } else if (data.id_accion_ticket === '4') {
               actionButtonsHtml += `
                 <button id="confirmreceived" class="btn btn-sm btn-info btn-received-coord mr-2"
                   data-bs-toggle="tooltip"

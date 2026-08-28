@@ -529,8 +529,9 @@ function getTicketDataCoordinator() {
             // Se muestra SIEMPRE (Comportamiento solicitado: "lo haré visible SIEMPRE")
             const ticketTienePago = data.ticket_tiene_pago === 't' || data.ticket_tiene_pago === 'true' || data.ticket_tiene_pago === true;
 
+            if (!(typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser)) {
             actionButtonsHtml += `
-                <button type="button" id="btnExonerationRegistration" class="btn btn-exoneration-reg" 
+                <button type="button" id="btnExonerationRegistration" class="btn btn-exoneration-reg"
                   data-ticket-id="${data.id_ticket}" 
                   data-serial-pos="${data.serial_pos}" 
                   data-nro-ticket="${data.nro_ticket}" 
@@ -552,6 +553,7 @@ function getTicketDataCoordinator() {
                     <span class="exoneration-reg-text" style="display: none; margin-left: 8px; color: white; font-weight: 600; white-space: nowrap;">Registrar Exoneración</span>
                 </button>
             `;
+            }
 
             console.log(data.id_cliente_intelipunto);
 
@@ -1307,8 +1309,8 @@ function getTicketDataFinaljs() {
                       <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
                     </svg>
                   </button>
-                  <!-- Botón Editar: solo visible cuando estatus = 1 (Pendiente por Aprobar) -->
-                  ${isPendiente ? `
+                  <!-- Botón Editar: solo visible cuando estatus = 1 (Pendiente por Aprobar) y no es Solo Lectura -->
+                  ${(isPendiente && !(typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser)) ? `
                   <button class="edit-admin-req-btn" title="Editar Solicitud"
                     style="
                       display: inline-flex;

@@ -7766,20 +7766,28 @@ function SendRif() {
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
             enlaceSerial.textContent = item.serial_pos;
-            enlaceSerial.style.color = "blue";
-            enlaceSerial.style.textDecoration = "underline";
-            enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
             desc_posCell.textContent = item.desc_pos;
             bancoCell.textContent = item.banco;
 
-            // Modal de detalles del serial (Usando sistema Premium)
-            const modalSerial = document.getElementById("ModalSerial");
-            enlaceSerial.onclick = function () {
-              window.modalSerialInstance = new bootstrap.Modal(modalSerial);
-              window.modalSerialInstance.show();
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm, item.banco);
-            };
+            // Modal de detalles del serial (Usando sistema Premium). Solo Lectura:
+            // desde ese modal se puede llegar a crear un ticket, así que se deja
+            // el serial como texto plano, no clicable.
+            if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+              enlaceSerial.style.color = "inherit";
+              enlaceSerial.style.textDecoration = "none";
+              enlaceSerial.style.cursor = "default";
+            } else {
+              enlaceSerial.style.color = "blue";
+              enlaceSerial.style.textDecoration = "underline";
+              enlaceSerial.style.cursor = "pointer";
+              const modalSerial = document.getElementById("ModalSerial");
+              enlaceSerial.onclick = function () {
+                window.modalSerialInstance = new bootstrap.Modal(modalSerial);
+                window.modalSerialInstance.show();
+                fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm, item.banco);
+              };
+            }
             
             
             fechainstallCell.textContent = item.fechainstalacion;
@@ -8381,6 +8389,11 @@ function SendSerial() {
               data: "serial_pos",
               title: "Serial POS",
               render: function (data, type, row) {
+                // Solo Lectura: el link abre un modal desde el que se puede crear un
+                // ticket, así que se deja como texto plano, no clicable.
+                if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+                  return data;
+                }
                 return `<a href="#" class="serial-link" data-id-cliente="${row.id_cliente || ''}">${data}</a>`;
               },
             },
@@ -8952,20 +8965,27 @@ function SendRazon() {
             // Crear el enlace para el número de serie
             const enlaceSerial = document.createElement("a");
             enlaceSerial.textContent = item.serial_pos;
-            enlaceSerial.style.color = "blue";
-            enlaceSerial.style.textDecoration = "underline";
-            enlaceSerial.style.cursor = "pointer";
             serial_posCell.appendChild(enlaceSerial);
             desc_posCell.textContent = item.desc_pos;
 
-            // Modal de detalles del serial (tu código existente)
-            // Modal de detalles del serial (Usando sistema Premium)
-            const modalSerial = document.getElementById("ModalSerial");
-            enlaceSerial.onclick = function () {
-              window.modalSerialInstance = new bootstrap.Modal(modalSerial);
-              window.modalSerialInstance.show();
-              fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm, item.banco);
-            };
+            // Modal de detalles del serial (Usando sistema Premium). Solo Lectura:
+            // desde ese modal se puede llegar a crear un ticket, así que se deja
+            // el serial como texto plano, no clicable.
+            if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+              enlaceSerial.style.color = "inherit";
+              enlaceSerial.style.textDecoration = "none";
+              enlaceSerial.style.cursor = "default";
+            } else {
+              enlaceSerial.style.color = "blue";
+              enlaceSerial.style.textDecoration = "underline";
+              enlaceSerial.style.cursor = "pointer";
+              const modalSerial = document.getElementById("ModalSerial");
+              enlaceSerial.onclick = function () {
+                window.modalSerialInstance = new bootstrap.Modal(modalSerial);
+                window.modalSerialInstance.show();
+                fetchSerialData(item.serial_pos, item.rif, item.razonsocial, item.id_cliente, item.cod_adm, item.banco);
+              };
+            }
             
             
             fechainstallCell.textContent = item.fechainstalacion;

@@ -115,12 +115,12 @@ class UserRepository
         return $id_rolusr;
     }
 
-    public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel){
+    public function Guardar_Usuario($id_user, $nombreusers, $apellidousers, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel, $is_readonly = false){
 
         $defaul_pass = 1234567;
         $encry_passw = sha1(md5($defaul_pass));
 
-        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel);
+        $result = $this->model->Guardar_Usuario($id_user, $nombreusers, $apellidousers, $encry_passw, $identificacion, $users, $correo, $area_users, $tipo_users, $regionusers, $id_nivel, $is_readonly);
 
         return $result;
     }
@@ -169,8 +169,8 @@ class UserRepository
     }    
 
 
-    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user){
-        $result = $this->model->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user);
+    public function Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user, $is_readonly = false){
+        $result = $this->model->Editar_Usuario($idusuario_edit,$edit_nombreusers, $edit_apellidousers, $edit_usuario,$identificacion,  $edit_correo,$edit_area_users,$edit_regionusers,$edit_tipo_users,$edit_idnivel,$id_user, $is_readonly);
 
         return $result;
     }
@@ -262,6 +262,11 @@ class UserRepository
 
     public function AsignacionModulo($id_modulo, $id_usuario,$idcheck_value){
         $result = $this->model->AsignacionModulo($id_modulo, $id_usuario,$idcheck_value);
+        return $result;
+    }
+
+    public function SetReadOnly($id_usuario, $is_readonly){
+        $result = $this->model->SetReadOnly($id_usuario, $is_readonly);
         return $result;
     }
 

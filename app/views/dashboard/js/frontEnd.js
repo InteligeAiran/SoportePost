@@ -2404,6 +2404,8 @@ function formatOpenDetails(details) {
                 Ya está recibido
               </button>
             `;
+        } else if (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) {
+            markReceivedButtonHtml = '';
         } else if (currentUserRole === 1 || currentUserRole === 4) {
             markReceivedButtonHtml = `
               <button type="button" class="btn btn-success ms-2 mark-received-btn" data-ticket-id="${ticket.id_ticket}" data-nro-ticket = "${ticket.nro_ticket}" data-serial-pos = ${ticket.serial_pos_cliente}>
@@ -3524,7 +3526,10 @@ function formatTallerDetails(details) {
               `;
           }
           
-          if ((currentUserRole === 1 || currentUserRole === 4) && accionTicket === "Recibido en Taller") {
+          if ((typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser)) {
+              // Ya cubierto por el bloque "Ya está recibido en Taller" cuando aplica;
+              // si no aplica, simplemente no mostramos el botón mutador.
+          } else if ((currentUserRole === 1 || currentUserRole === 4) && accionTicket === "Recibido en Taller") {
                 markReceivedButtonHtml = `
                   <button type="button" class="btn btn-success ms-2 mark-received-btnTaller" data-ticket-id="${ticket.id_ticket}" data-nro-ticket = "${ticket.nro_ticket}" data-serial-pos = ${ticket.serial_pos_cliente}>
                     Marcar como Recibido En Taller

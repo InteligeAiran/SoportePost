@@ -200,9 +200,10 @@ function formatTicketDetailsPanel(d) {
                         </div>
                         <div class="col-12 mt-3 mb-1" style="display: ${
                             isTicketClosed ||
+                            (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) ||
                             (window.location.pathname.toLowerCase().includes('asignar_tecnico') &&
-                             (!d.full_name_tecnico_n2_actual || 
-                              d.full_name_tecnico_n2_actual.trim() === '' || 
+                             (!d.full_name_tecnico_n2_actual ||
+                              d.full_name_tecnico_n2_actual.trim() === '' ||
                               d.full_name_tecnico_n2_actual.trim().toLowerCase() === 'no asignado'))
                             ? 'none' : 'block'
                         };">
@@ -219,7 +220,7 @@ function formatTicketDetailsPanel(d) {
                                 Cerrar Ticket
                             </button>
                         </div>
-                        <div class="col-sm-6 mb-2" style="display: ${(isAllowedPeripherals && !(isTicketClosed || isAdminReq || d.name_accion_ticket === 'En espera de confirmar recibido en Región')) ? 'block' : 'none'};">
+                        <div class="col-sm-6 mb-2" style="display: ${(isAllowedPeripherals && !(isTicketClosed || isAdminReq || (typeof isReadOnlyUser !== 'undefined' && isReadOnlyUser) || d.name_accion_ticket === 'En espera de confirmar recibido en Región')) ? 'block' : 'none'};">
                           <button type="button" class="btn btn-link p-0" id="hiperbinComponents" data-id-ticket = "${d.id_ticket || d.id || ""}" data-serial-pos = "${d.serial_pos || ""}">
                             <i class="bi bi-box-seam-fill me-1"></i> Cargar Periféricos del Dispositivo
                           </button>
