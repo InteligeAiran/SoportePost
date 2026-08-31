@@ -1993,17 +1993,31 @@ class Consulta extends Controller
     }
 
     /**
-     * Finanzas (id_area=1, id_rol=6) solo puede consultar el estatus de
-     * pagos/exoneraciones en el módulo de Documentos, nunca aprobar,
-     * rechazar ni corregir nada. El frontend ya oculta esos botones, pero
-     * esto lo hace imposible también llamando a la API directamente.
+     * Finanzas (id_area=1, id_rol=6) administra Exoneraciones con normalidad
+     * (ve y aprueba/rechaza), pero de Pagos solo puede consultar el estatus:
+     * nunca aprobar, rechazar ni corregir un comprobante de pago. El frontend
+     * ya oculta esos botones, pero esto lo hace imposible también llamando a
+     * la API directamente.
+     *
+     * $documentType: tipo del documento sobre el que se actúa (cuando la
+     * acción es compartida entre Pagos y Exoneración, ej. aprobar/rechazar
+     * documento). Si es un tipo de pago (o no se especifica, para las
+     * acciones que son exclusivamente de Pagos) se bloquea; si es
+     * Exoneración u otro tipo no-pago, se permite.
      */
-    private function blockFinanzasReadOnly() {
+    private function blockFinanzasReadOnly($documentType = null) {
         $id_area = (int)($_SESSION['id_area'] ?? 0);
         $id_rol = (int)($_SESSION['id_rol'] ?? 0);
-        if ($id_area === 1 && $id_rol === 6) {
-            $this->response(['success' => false, 'message' => 'No autorizado.'], 403);
+        if ($id_area !== 1 || $id_rol !== 6) {
+            return;
         }
+
+        $paymentDocTypes = ['Anticipo', 'pago', 'Pago', 'comprobante_pago'];
+        if ($documentType !== null && !in_array($documentType, $paymentDocTypes, true)) {
+            return;
+        }
+
+        $this->response(['success' => false, 'message' => 'No autorizado.'], 403);
     }
 
     public function handleGetModulesUsers(){
@@ -2758,13 +2772,14 @@ class Consulta extends Controller
     }
 
     public function handlerechazarDocumentos(){
-        $this->blockFinanzasReadOnly();
         $id_ticket = isset($_POST['ticketId'])? $_POST['ticketId'] : '';
         $id_motivo = isset($_POST['motivoId'])? $_POST['motivoId'] : '';
         $nro_ticket = isset($_POST['nroTicket'])? $_POST['nroTicket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $document_type = isset($_POST['documentType']) ? $_POST['documentType'] : '';
         $id_payment_record = isset($_POST['id_payment_record']) ? $_POST['id_payment_record'] : null;
+
+        $this->blockFinanzasReadOnly($document_type);
 
         if (!$id_ticket || !$id_motivo || !$nro_ticket || !$id_user || !$document_type) {
             $this->response(['success' => false, 'message' => 'Faltan los datos necesarios.'], 400);
@@ -2783,11 +2798,12 @@ class Consulta extends Controller
     }
 
     public function handleapprovedocument(){
-        $this->blockFinanzasReadOnly();
         $nro_ticket = isset($_POST['nro_ticket'])? $_POST['nro_ticket'] : '';
         $id_ticket = isset($_POST['id_ticket'])? $_POST['id_ticket'] : '';
         $id_user = isset($_POST['id_user'])? $_POST['id_user'] : '';
         $document_type = isset($_POST['document_type'])? $_POST['document_type'] : '';
+
+        $this->blockFinanzasReadOnly($document_type);
         $nro_payment_reference_verified = isset($_POST['nro_payment_reference_verified'])? trim($_POST['nro_payment_reference_verified']) : '';
         $payment_date_verified = isset($_POST['payment_date_verified'])? trim($_POST['payment_date_verified']) : '';
         $amount_verified = isset($_POST['amount_verified'])? trim($_POST['amount_verified']) : '';
@@ -3178,7 +3194,8 @@ class Consulta extends Controller
     }
 
     public function handleAprobarExoneracionTicket(){
-        $this->blockFinanzasReadOnly();
+        // Aprobar Exoneración es exclusivo del flujo de Exoneraciones (nunca
+        // de Pagos), así que Finanzas sí debe poder hacerlo con normalidad.
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nroTicket = $_POST['nro_ticket'] ?? null;
             $id_user = $_POST['id_user'] ?? null;

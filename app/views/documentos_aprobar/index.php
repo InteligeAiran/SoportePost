@@ -990,18 +990,17 @@ function mi_navbar() {}
             transform: none;
         }
 
-        /* Finanzas (id_area=1, id_rol=6) solo verifica/consulta: se ocultan
-           todos los botones de acción (aprobar, rechazar, subir/corregir
-           comprobante), dejando visibles únicamente los de "ver". La clase
-           la agrega frontEnd.js al detectar el área/rol en initComplete. */
-        body.finanzas-read-only #btnAprobarExoneracion,
+        /* Finanzas (id_area=1, id_rol=6) administra exoneraciones (ve y aprueba/
+           rechaza normalmente) pero de Pagos solo verifica/consulta: no puede
+           aprobar, rechazar, corregir ni subir comprobantes de pago. Estos
+           botones son exclusivos del flujo de Pagos, por eso se ocultan por
+           completo. Los que se comparten entre Pagos y Exoneración
+           (aprobar/rechazar desde el visor de imagen) se controlan aparte,
+           por tipo de documento, en showApprovalModal() de frontEnd.js.
+           La clase la agrega frontEnd.js al detectar el área/rol en initComplete. */
         body.finanzas-read-only #btnFinalizarRevision,
         body.finanzas-read-only .reupload-payment-btn,
         body.finanzas-read-only .upload-new-doc-btn,
-        body.finanzas-read-only #approveTicketFromImage,
-        body.finanzas-read-only #RechazoDocumento,
-        body.finanzas-read-only #confirmarRechazoBtn,
-        body.finanzas-read-only #btnConfirmarAccionRechazo,
         body.finanzas-read-only #btnGuardarDatosPago,
         body.finanzas-read-only #uploadFileBtn,
         body.finanzas-read-only #paymentValidationContainer {
