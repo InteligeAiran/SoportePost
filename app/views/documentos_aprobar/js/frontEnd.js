@@ -916,8 +916,10 @@ function getTicketAprovalDocument() {
                                     `;
                                     /* id_area = 1 (Finanzas) || id_rol = 6 (Analista Financiero) */
                                 } else if (id_area == 1 && id_rol == 6) {
-                                    // Finanzas: solo consulta el estatus de Pagos y Exoneraciones
-                                    // (no puede aprobar/rechazar nada, ver body.finanzas-read-only).
+                                    // Finanzas: administra Exoneraciones con normalidad (ve y
+                                    // aprueba/rechaza), pero de Pagos solo consulta el estatus
+                                    // (no puede aprobar/rechazar/corregir, ver body.finanzas-read-only
+                                    // y el filtro por tipo de documento en showApprovalModal()).
                                     // Filtros de Pagos: reutiliza el mismo mecanismo de búsqueda
                                     // por id_status_payment que ya usan Anticipos (el tipo de
                                     // documento 'Pago' ya está incluido en allowedTypes).
@@ -3151,7 +3153,22 @@ function showApprovalModal(ticketId, documentType, filePath, mimeType, fileName,
             rejectDocumentBtn.style.display = (documentoRechazado === 'Sí') ? 'none' : 'block';
         }
     }
-    
+
+    // Finanzas administra Exoneraciones (puede aprobar/rechazar normalmente),
+    // pero de Pagos solo verifica/consulta: nunca debe poder aprobar ni
+    // rechazar un comprobante de pago, aunque sí pueda ver la imagen. Este
+    // botón se comparte entre ambos flujos, por eso el filtro es por tipo de
+    // documento y no un ocultamiento por CSS (eso sí ocultaría también la
+    // aprobación de Exoneraciones, que Finanzas sí debe poder hacer).
+    const idAreaEl = document.getElementById('id_area');
+    const idRolEl = document.getElementById('id_rol');
+    const isFinanzas = idAreaEl && idRolEl && idAreaEl.value == 1 && idRolEl.value == 6;
+    const isPaymentDocType = ['Anticipo', 'pago', 'Pago', 'comprobante_pago'].includes(documentType);
+    if (isFinanzas && isPaymentDocType) {
+        if (approveTicketFromImageBtn) approveTicketFromImageBtn.style.display = 'none';
+        if (rejectDocumentBtn) rejectDocumentBtn.style.display = 'none';
+    }
+
     // Mostrar el modal de aprobacin
     const imageApprovalModal = new bootstrap.Modal(imageApprovalModalElement);
     
