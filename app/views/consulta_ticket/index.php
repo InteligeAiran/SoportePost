@@ -392,6 +392,7 @@ require 'app/footer.php';
     </head>
     <body id="fondo" class="g-sidenav-show bg-gray-100">
     <input type="hidden" name="idtipouser" id="idtipouser" value="<?php echo $_SESSION['id_rol']?>">
+    <input type="hidden" id="id_user" value="<?php echo $_SESSION['id_user'] ?? ''; ?>"/>
     <input type="hidden" id="Full_name" value="<?php echo $_SESSION['nombres']; ?> <?php echo $_SESSION['apellidos']; ?>">
 
 

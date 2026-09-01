@@ -39,13 +39,13 @@ class Controller {
    */
   private static $READONLY_BLOCKED_ACTIONS = [
     'users' => [
-      // updatePassword se bloquea también: handleupdatePassword() no valida que
-      // userId sea el usuario en sesión (acepta cualquier id_user por POST), así
-      // que dejarlo abierto le daría a un usuario de solo lectura una vía para
-      // cambiar la clave de OTRO usuario. El self-service real de "olvidé mi
-      // clave" es api/email/resetpassword (ver abajo), que sí queda exento.
+      // updatePassword NO va aquí: es self-service (handleupdatePassword() ahora
+      // exige que userId == $_SESSION['id_user']), y un usuario de solo lectura
+      // debe poder cambiar su propia clave igual que cualquier otro, sobre todo
+      // en el cambio obligatorio del primer ingreso. El self-service de "olvidé
+      // mi clave" es api/email/resetpassword (ver abajo), que también queda exento.
       'GuardarUsuarios', 'EditarUsuarios', 'AsignacionModulo', 'AsignacionSubModulo',
-      'updatePassword', 'ReassignTicket', 'ToggleReadOnly',
+      'ReassignTicket', 'ToggleReadOnly',
     ],
     'historical' => [
       'MarkTicketReceived', 'markReceivedTechnical',
