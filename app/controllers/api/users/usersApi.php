@@ -774,6 +774,14 @@ class users extends Controller {
 
     public function handleupdatePassword(){
         $id_user = isset($_POST['userId']) ? $_POST['userId'] : '';
+
+        // Solo se permite cambiar la propia contraseña: evita que un usuario
+        // (de solo lectura o no) cambie la clave de otro usuario enviando un
+        // userId distinto al de su sesión.
+        if (empty($_SESSION['id_user']) || (string)$id_user !== (string)$_SESSION['id_user']) {
+            $this->response(['success' => false, 'message' => 'No autorizado.'], 403);
+        }
+
         $contrase = isset($_POST['newPassword']) ? $_POST['newPassword'] : '';
         $contrase = sha1(md5($contrase)); // Asegúrate de que el hash sea el correcto
         $repository = new UserRepository();
