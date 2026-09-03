@@ -822,7 +822,11 @@ function getTicketColumnsConfig(visibleKeys) {
         if (key === "has_pending_budget") {
             columnDef.render = function(data, type, row) {
                 // Check multiple truthy values that Postgres/PHP might return
-                if (data === true || data === 't' || data === 'true' || data === 1) {
+                const isPending = (data === true || data === 't' || data === 'true' || data === 1);
+                if (type !== 'display') {
+                    return isPending ? 'Pendiente' : 'Al día';
+                }
+                if (isPending) {
                     return '<span class="badge bg-danger text-white rounded-pill px-3" style="font-size: 0.85em; box-shadow: 0 2px 4px rgba(220,53,69,0.3);">Pendiente</span>';
                 }
                 return '<span class="badge bg-success text-white rounded-pill px-3" style="font-size: 0.85em; opacity: 0.8;">Al día</span>';
@@ -832,6 +836,9 @@ function getTicketColumnsConfig(visibleKeys) {
         } else if (["name_status_lab", "name_status_domiciliacion"].includes(key)) {
             columnDef.render = function(data, type, row) {
                 const text = safeValue(data);
+                if (type !== 'display') {
+                    return text;
+                }
                 const style = getTicketStatusStyle(text);
                 if (style) {
                     return `<span style="color: ${style.color}; font-weight: ${style.bold ? 'bold' : 'normal'};">${text}</span>`;
