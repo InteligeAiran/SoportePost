@@ -1398,8 +1398,47 @@ function ToggleReadOnly(id_usuario, isChecked) {
   xhr.send(datos);
 }
 
+// Interruptor global (no por usuario) del boton "Solicitar Prestamo de POS"
+// en Gestion Tecnico. Reutiliza el endpoint ya construido en el modulo de
+// Prestamo, que ya valida en el servidor que solo un SuperAdmin lo mueva.
+document.addEventListener('DOMContentLoaded', () => {
+  const switchPrestamo = document.getElementById('switchHabilitarPrestamo');
+  if (!switchPrestamo) return;
 
+  switchPrestamo.addEventListener('change', function () {
+    const activo = this.checked;
+    const checkbox = this;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${ENDPOINT_BASE}${APP_PATH}api/prestamo_pos/SetFeatureFlagCanRequestPosLoan`);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function () {
+      let response = null;
+      try {
+        response = JSON.parse(xhr.responseText);
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+      }
 
+      if (xhr.status === 200 && response && response.success) {
+        Swal.fire({ icon: 'success', title: 'Listo', text: response.message, color: 'black' });
+        return;
+      }
+
+      checkbox.checked = !activo;
+      Swal.fire({
+        icon: 'error',
+        title: 'No se pudo actualizar',
+        text: (response && response.message) || 'No se pudo conectar con el servidor.',
+        color: 'black',
+      });
+    };
+    xhr.onerror = function () {
+      checkbox.checked = !activo;
+      Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo conectar con el servidor.', color: 'black' });
+    };
+    xhr.send(`action=SetFeatureFlagCanRequestPosLoan&activo=${activo ? '1' : '0'}`);
+  });
+});
 
 function closedModal() {
   $("#edit_areausers").empty();

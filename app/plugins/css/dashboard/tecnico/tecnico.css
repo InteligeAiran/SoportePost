@@ -349,6 +349,18 @@ button.btn-wrench-custom:hover {
   /* Color del icono/texto al pasar el ratón */
 }
 
+button.btn-solicitar-prestamo {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+  color: #ffffff;
+}
+
+button.btn-solicitar-prestamo:hover {
+  background-color: #59339c;
+  border-color: #59339c;
+  color: #ffffff;
+}
+
 #SendToTaller-button {
   background-color: #003594;
   /* Tu color azul deseado */
