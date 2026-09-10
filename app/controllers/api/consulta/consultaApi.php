@@ -78,6 +78,7 @@ class Consulta extends Controller
 
                 case 'GetPhotoDashboard':
                     $this->handleGetPhotoDashboard();
+                    break;
 
                 case 'ValidateRif':
                     $this->handleVlidateRif();

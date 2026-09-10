@@ -73,6 +73,10 @@ class Controller {
     'reportes' => [
       'uploadDocument', 'uploadDocumentnNew', 'uploadDocumentTec', 'uploadPaymentDocument', 'SaveComponents',
     ],
+    'prestamo_pos' => [
+      'TransferirPosAlPool', 'CrearSolicitud', 'AprobarSolicitud', 'RechazarSolicitud',
+      'MarcarSustituido', 'RetornarAIntelipunto', 'SetFeatureFlagCanRequestPosLoan',
+    ],
     // 'documents' y 'ai' no tienen ninguna acción mutadora (auditado: son solo
     // lecturas/reportes), por eso no aparecen en esta lista.
   ];

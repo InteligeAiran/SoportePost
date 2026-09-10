@@ -325,6 +325,21 @@ function getTicketData() {
               </button>`;
           }
 
+          // El flag can_request_pos_loan restringe a todos menos SuperAdmin (rol
+          // 1): asi lo valida tambien el servidor en prestamo_posApi.php.
+          // Coordinador y Administrador quedan igual que Tecnico -- solo
+          // SuperAdmin lo ve siempre, sin depender del interruptor.
+          const puedeSolicitarPrestamoPos = currentUserRole === 1 || (typeof puedeSolicitarPrestamo !== 'undefined' && puedeSolicitarPrestamo === true);
+          if (!isReadOnly && puedeSolicitarPrestamoPos) {
+            actionButtonsHTML += `
+              <button class="btn btn-sm btn-solicitar-prestamo mr-2"
+                  data-bs-toggle="tooltip" data-bs-placement="top"
+                  title="Solicitar Préstamo de POS"
+                  data-ticket-id="${ticket.id_ticket}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>
+              </button>`;
+          }
+
           // Mostrar botón "Enviar a Taller" solo si el usuario es SuperAdmin (1) o Coordinador (4)
           if (!isReadOnly && hasBeenConfirmedByAnyone && ticket.name_accion_ticket !== "Enviado a taller" && (currentUserRole === 1 || currentUserRole === 4)) {
             actionButtonsHTML += `
@@ -535,6 +550,19 @@ function getTicketData() {
                 } else {
                   console.error("Error: ticketId no encontrado en el botón .btn-received-ticket");
                 }
+              });
+
+            $("#tabla-ticket tbody")
+              .off("click", ".btn-solicitar-prestamo")
+              .on("click", ".btn-solicitar-prestamo", function (e) {
+                e.stopPropagation();
+                const ticketId = $(this).data("ticket-id");
+                const selectedTicketDetails = TicketData.find(t => t.id_ticket == ticketId);
+                if (!selectedTicketDetails) {
+                  console.error(`Error: No se encontraron detalles para el ticket ID: ${ticketId}`);
+                  return;
+                }
+                showModalSolicitarPrestamoPos(selectedTicketDetails);
               });
 
             $("#tabla-ticket tbody")
@@ -3109,6 +3137,78 @@ function handleMarkTicketReceived(ticketId, currentnroTicket) {
   const data = `action=markReceivedTechnical&id_ticket=${ticketId}&id_user=${encodeURIComponent(
     id_user
   )}`;
+  xhr.send(data);
+}
+
+// ===============================================
+// Solicitar Préstamo de POS (modulo prestamo_pos)
+// ===============================================
+
+function showModalSolicitarPrestamoPos(ticket) {
+  const customExchangeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="#6f42c1" class="bi bi-arrow-left-right custom-icon-animation" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>`;
+
+  Swal.fire({
+    title: `<div class="custom-modal-header-title bg-gradient-primary text-white">
+              <div class="custom-modal-header-content">Solicitar Préstamo de POS</div>
+            </div>`,
+    html: `
+        <div class="custom-modal-body-content">
+            <div class="mb-3">${customExchangeSvg}</div>
+            <p class="h4 mb-3">Ticket Nro: <span style="display:inline-block;padding:0.2rem 0.5rem;border-radius:0.3rem;background-color:#e0f7fa;color:#007bff;">${ticket.nro_ticket}</span></p>
+            <p class="h5 text-muted">Se creará una solicitud de préstamo de POS para este ticket, pendiente de aprobación.</p>
+        </div>
+    `,
+    input: "textarea",
+    inputPlaceholder: "Motivo del préstamo (observación)",
+    inputAttributes: { "aria-label": "Observación" },
+    showCancelButton: true,
+    confirmButtonText: "Crear Solicitud",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#003594",
+    showLoaderOnConfirm: true,
+    customClass: {
+        container: 'custom-swal-container',
+        popup: 'custom-swal-popup',
+        title: 'custom-swal-title',
+        content: 'custom-swal-content',
+        actions: 'custom-swal-actions',
+        confirmButton: 'btn btn-primary btn-lg custom-confirm-button',
+        cancelButton: 'btn btn-secondary btn-lg custom-cancel-button',
+    },
+    preConfirm: (observacion) => {
+      return new Promise((resolve) => {
+        handleSolicitarPrestamoPos(ticket.id_ticket, observacion || "", resolve);
+      });
+    },
+    allowOutsideClick: () => !Swal.isLoading()
+  }).then((result) => {
+    if (result.isConfirmed && result.value && result.value.success) {
+      Swal.fire("¡Listo!", result.value.message || "Solicitud de préstamo creada.", "success");
+    } else if (result.isConfirmed && result.value && !result.value.success) {
+      Swal.fire("Error", result.value.message || "No se pudo crear la solicitud.", "error");
+    }
+  });
+}
+
+function handleSolicitarPrestamoPos(ticketId, observacion, resolve) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/prestamo_pos/CrearSolicitud`);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  xhr.onload = function () {
+    try {
+      const response = JSON.parse(xhr.responseText);
+      resolve(response);
+    } catch (error) {
+      console.error("Error parsing JSON for CrearSolicitud:", error);
+      resolve({ success: false, message: "Error al procesar la respuesta del servidor." });
+    }
+  };
+  xhr.onerror = function () {
+    resolve({ success: false, message: "Error de red al crear la solicitud de préstamo." });
+  };
+
+  const data = `id_ticket=${encodeURIComponent(ticketId)}&observacion=${encodeURIComponent(observacion)}`;
   xhr.send(data);
 }
 

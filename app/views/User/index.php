@@ -6,6 +6,19 @@
  * @license   Propietario - Ver archivo LICENSE en la raiz del proyecto
  */
 function mi_navbar() {}
+
+$esSuperAdmin = (int)($_SESSION['id_rol'] ?? 0) === 1;
+
+// Interruptor global de lanzamiento del boton "Solicitar Prestamo de POS"
+// en Gestion Tecnico (ver app_config, tabla generica). Se lee aqui en vivo
+// (no en sesion) para que el cambio surta efecto de inmediato para todos.
+$prestamoFlagActivo = false;
+if ($esSuperAdmin) {
+    $dbFlag = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database);
+    $resFlag = $dbFlag->pgquery("SELECT config_value FROM app_config WHERE config_key = 'can_request_pos_loan'");
+    $rowFlag = $dbFlag->pgfetch($resFlag);
+    $prestamoFlagActivo = $rowFlag && $rowFlag['config_value'] === 'true';
+}
 ?>
 <!DOCTYPE html>
 <lang="en">
@@ -248,8 +261,25 @@ function mi_navbar() {}
                                 <div class="card card-body bg-gradient-blue shadow-primary border-radius-lg pt-4 pb-3">
                                     <strong><h5 class="text-black text-capitalize ps-3" style="color: black;">LISTA DE USUARIOS</h5></strong>
                                 </div>
-                            </div> 
-                                  
+                            </div>
+
+                            <?php if ($esSuperAdmin): ?>
+                            <div class="col-lg-12 col-md-12 mb-4">
+                                <div class="card card-body bg-light">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="switchHabilitarPrestamo" <?php echo $prestamoFlagActivo ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="switchHabilitarPrestamo">
+                                            Habilitar el botón "Solicitar Préstamo de POS" (Gestión Técnico)
+                                        </label>
+                                    </div>
+                                    <p class="text-muted mb-0" style="font-size:0.85rem;">
+                                        Mientras esté apagado, nadie ve ni puede usar el botón en Gestión Técnico excepto SuperAdmin (Coordinador y Administrador quedan igual que Técnico).
+                                    </p>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+
                             <table id="tabla-ticket" class="background-users-table">
                                 <thead>
                                     <tr>

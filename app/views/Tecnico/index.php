@@ -35,6 +35,16 @@ function mi_navbar() {}
     <link rel="stylesheet" type="text/css" href="<?php echo APP; ?>app/plugins/css/dashboard/tecnico/tecnico.css?v=<?php echo $this->staticAssetVersion('app/plugins/css/dashboard/tecnico/tecnico.css'); ?>" />
     <!-- User Role for JavaScript -->
     <script> var currentUserRole = <?php echo $_SESSION['id_rol'] ?? 'guest'; ?>;</script>
+    <?php
+        // Interruptor global (no por usuario) del boton "Solicitar Prestamo de
+        // POS": se lee en vivo de app_config en cada carga de pagina, para que
+        // el cambio del SuperAdmin surta efecto de inmediato sin re-login.
+        $dbFlagTecnico = DatabaseCon::getInstance(bd_hostname, mvc_port, bd_usuario, bd_clave, database);
+        $resFlagTecnico = $dbFlagTecnico->pgquery("SELECT config_value FROM app_config WHERE config_key = 'can_request_pos_loan'");
+        $rowFlagTecnico = $dbFlagTecnico->pgfetch($resFlagTecnico);
+        $puedeSolicitarPrestamoPHP = $rowFlagTecnico && $rowFlagTecnico['config_value'] === 'true';
+    ?>
+    <script> var puedeSolicitarPrestamo = <?php echo $puedeSolicitarPrestamoPHP ? 'true' : 'false'; ?>;</script>
     <style>
       
             #ticket-details-panel table td, table th {

@@ -2179,107 +2179,50 @@ function showViewModal(ticketId, nroTicket, imageUrl, pdfUrl, documentName) {
     return `${ENDPOINT_BASE}${APP_PATH}api/consulta/GetDocumentFile?path=${encodeURIComponent(filePath)}`;
   }
 
-    // Verificar que los elementos críticos existen
-    if (!modalTicketIdSpanView || !imageViewPreview || !pdfViewViewer || !messageContainer || !nameDocumento) {
-        console.error("Error: Faltan elementos necesarios en el modal");
-        Swal.fire({
-            icon: 'error',
-            title: 'Error del Sistema',
-            text: 'El modal no está configurado correctamente.',
-            confirmButtonText: 'Ok',
-            color: 'black',
-            confirmButtonColor: '#003594'
-        });
-        return;
-    }
+  if (imageUrl) {
+    // Es una imagen
+    const fullUrl = cleanFilePath(imageUrl);
 
-    // Limpiar contenido previo
-    imageViewPreview.style.display = "none";
-    pdfViewViewer.style.display = "none";
-    pdfViewViewer.innerHTML = "";
-    if (messageContainer) {
-        messageContainer.textContent = "";
-        messageContainer.classList.add("hidden");
-    }
+    imageViewPreview.src = fullUrl;
+    imageViewPreview.style.display = "block";
+    nameDocumento.textContent = documentName;
 
-    // Configurar información del ticket
-    if (customTitle) {
-        modalTicketIdSpanView.innerHTML = customTitle;
-    } else {
-        modalTicketIdSpanView.textContent = nroTicket || ticketId;
-    }
-    nameDocumento.textContent = documentName || 'Documento';
+  } else if (pdfUrl) {
+    // Es un PDF
+    const fullUrl = cleanFilePath(pdfUrl);
 
-    // DETERMINAR QUÉ MOSTRAR BASÁNDOSE EN LOS PARÁMETROS
-    if (imageUrl) {
-        // Es una imagen
-        const fullUrl = cleanFilePath(imageUrl);
-        imageViewPreview.src = fullUrl;
-        imageViewPreview.style.display = "block";
-        
-        // Manejar errores de carga de imagen
-        imageViewPreview.onerror = function() {
-            if (messageContainer) {
-                messageContainer.textContent = "Error al cargar la imagen.";
-                messageContainer.classList.remove("hidden");
-            }
-            imageViewPreview.style.display = "none";
-        };
+    pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none;"></iframe>`;
+    pdfViewViewer.style.display = "block";
+    nameDocumento.textContent = documentName;
 
-    } else if (pdfUrl) {
-        // Es un PDF
-        const fullUrl = cleanFilePath(pdfUrl);
-        pdfViewViewer.innerHTML = `<iframe src="${fullUrl}" width="100%" height="100%" style="border:none; min-height: 500px;"></iframe>`;
-        pdfViewViewer.style.display = "block";
-        
-        // Manejar errores de carga de PDF
-        const iframe = pdfViewViewer.querySelector('iframe');
-        if (iframe) {
-            iframe.onerror = function() {
-                if (messageContainer) {
-                    messageContainer.textContent = "Error al cargar el PDF.";
-                    messageContainer.classList.remove("hidden");
-                }
-                pdfViewViewer.style.display = "none";
-            };
-        }
-        
-    } else {
-        // No hay documento
-        if (messageContainer) {
-            messageContainer.textContent = "No hay documento disponible para este ticket.";
-            messageContainer.classList.remove("hidden");
-        }
-    }
+  } else {
+    // No hay documento
+    messageContainer.textContent = "No hay documento disponible para este ticket.";
+    messageContainer.classList.remove("hidden");
+    nameDocumento.textContent = "";
+  }
 
-    // Mostrar el modal usando Bootstrap
-    try {
-        const viewDocumentModal = new bootstrap.Modal(modalElementView);
-        viewDocumentModal.show();
+  const viewDocumentModal = new bootstrap.Modal(document.getElementById('viewDocumentModal'));
+  const VizualizarImage = document.getElementById('visualizarImagenModal');
+  const visualizarImagenModal = new bootstrap.Modal(VizualizarImage, { keyboard: false });
+  viewDocumentModal.show();
 
-        const buttonCerrarModal = document.getElementById("CerrarModalVizualizar");
-        if (buttonCerrarModal) {
-            // Eliminar listeners previos para evitar duplicados
-            const newButton = buttonCerrarModal.cloneNode(true);
-            buttonCerrarModal.parentNode.replaceChild(newButton, buttonCerrarModal);
-            
-            newButton.addEventListener("click", function() {
-                viewDocumentModal.hide();
-                if (fromSelector) {
-                    setTimeout(() => {
-                        const accionsDocument = document.getElementById("documentActionsModal");
-                        if (accionsDocument) {
-                            const accionsdocumentsIntance = new bootstrap.Modal(accionsDocument);
-                            accionsdocumentsIntance.show();
-                        }
-                    }, 300);
-                }
-            });
-        }
-    } catch (error) {
-        console.error("Error al mostrar el modal:", error);
-    }
-}
+  BotonCerrarModal.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    viewDocumentModal.hide();
+
+    // Mostrar nuevamente el modal de selección
+    setTimeout(() => {
+      visualizarImagenModal.show();
+    }, 300); //
+  });
+
+  BotonCerrarModalSelect.addEventListener('click', function () {
+    // Ocultar el modal de visualización
+    visualizarImagenModal.hide();
+
+  });
+};
 
 const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
 

@@ -1880,20 +1880,24 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                 body: formData
             })
             .then(response => response.json())
-            .then(data => {
+            .then(async (data) => {
                 if (data.success) {
 
-                    // --- LOGICA DE SUBIDA DE IMAGEN (INJECTED INTO FETCH) ---
-                    console.log(">>> IMAGEN: Pago registrado. Verificando archivo para subir...");
+                    // --- SUBIDA DEL COMPROBANTE (BLOQUEANTE) ---
+                    // Antes esto era un XHR "fire-and-forget": si fallaba, solo
+                    // quedaba un console.error y el usuario igual veía "¡Pago
+                    // Registrado!", dejando el pago guardado sin comprobante sin
+                    // ningún aviso. Ahora se espera la respuesta y, si falla, se
+                    // avisa explícitamente en vez de simular éxito.
                     const fileInput = document.getElementById("pago_documentFile");
-                    
+                    let uploadOk = false;
+                    let uploadErrorMsg = 'No se detectó el archivo del comprobante.';
+
                     if (fileInput && fileInput.files.length > 0) {
-                        console.log(">>> IMAGEN: Archivo detectado. Preparando subida...");
                         const file = fileInput.files[0];
                         const formDataImg = new FormData();
-                        
-                        // Acción NUEVA y DEDICADA
-                        formDataImg.append("action", "UploadPaymentDoc"); 
+
+                        formDataImg.append("action", "UploadPaymentDoc");
                         // Intentar obtener Nro Ticket de varias fuentes
                         let nroTicketToSend = window.currentNroTicket || '';
                         if (!nroTicketToSend) {
@@ -1911,43 +1915,43 @@ const motivoRechazoSelect = document.getElementById("motivoRechazoSelect");
                                 }
                             }
                         }
-                        
-                        console.log(">>> DEBUG IMAGEN: nroTicketToSend final:", nroTicketToSend);
                         formDataImg.append("nro_ticket", nroTicketToSend);
-                        
+
                         // Usar el valor STRING del input 'registro'
                         const registroElem = document.getElementById("registro");
                         const registroVal = registroElem ? registroElem.value : data.id_payment;
                         formDataImg.append("record_number", registroVal);
-                       
+
                         const userId = document.getElementById('id_user_pago') ? document.getElementById('id_user_pago').value : '';
                         formDataImg.append("user_loader", userId);
                         formDataImg.append("payment_doc", file);
 
-                        const xhrImg = new XMLHttpRequest();
-                        const apiUrlImg = (typeof ENDPOINT_BASE !== 'undefined' ? ENDPOINT_BASE + APP_PATH : '') + "api/consulta/UploadPaymentDoc";
-                        
-                        xhrImg.open("POST", apiUrlImg, true);
-                        
-                        xhrImg.onload = function() {
-                            if (xhrImg.status === 200) {
-                                try {
-                                    const dataImg = JSON.parse(xhrImg.responseText);
-                                    if(dataImg.success) {
-                                        console.log(">>> IMAGEN: Subida EXITOSA.");
-                                    } else {
-                                        console.warn(">>> IMAGEN: Error en respuesta:", dataImg.message);
-                                    }
-                                } catch(e) { 
-                                    console.error(">>> IMAGEN: Error parseando respuesta", e); 
-                                }
+                        try {
+                            const apiUrlImg = `${ENDPOINT_BASE}${APP_PATH}api/consulta/UploadPaymentDoc`;
+                            const resImg = await fetch(apiUrlImg, { method: 'POST', body: formDataImg });
+                            const dataImg = await resImg.json();
+                            if (dataImg.success) {
+                                uploadOk = true;
                             } else {
-                                console.error(">>> IMAGEN: Error HTTP:", xhrImg.status);
+                                uploadErrorMsg = dataImg.message || 'El servidor rechazó el comprobante.';
                             }
-                        };
-                        xhrImg.send(formDataImg);
-                    } else {
-                        console.log(">>> IMAGEN: No se seleccionó archivo (input vacío).");
+                        } catch (errImg) {
+                            uploadErrorMsg = 'Error de red al subir el comprobante.';
+                        }
+                    }
+
+                    if (!uploadOk) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Pago registrado, comprobante NO adjuntado',
+                            html: `El pago quedó guardado en el expediente, pero el comprobante no se pudo subir:<br><strong>${uploadErrorMsg}</strong><br>Por favor vuelve a intentar cargar el comprobante para este pago.`,
+                            confirmButtonColor: '#dc3545'
+                        });
+                        btnGuardarPago.disabled = false;
+                        btnGuardarPago.innerHTML = '<i class="fas fa-save me-2"></i>Guardar Pago';
+                        loadPaymentHistory(window.currentNroTicket);
+                        loadTotalPaid(window.currentNroTicket, window.currentBudgetAmount);
+                        return;
                     }
                     // ----------------------------------------------------
 
@@ -2226,15 +2230,12 @@ document.getElementById('btnConfirmarAccionRechazo').addEventListener('click', f
     }
     */
 
-    // 4. Guardar Pago
-    const btnGuardarPago = document.getElementById("btnGuardarPagoPresupuesto");
-    if (btnGuardarPago) {
-        btnGuardarPago.addEventListener("click", function(e) {
-             e.preventDefault();
-             e.stopPropagation();
-             savePayment();
-        });
-    }
+    // NOTA: el guardado de "Guardar Pago" (#btnGuardarPagoPresupuesto) ya se
+    // maneja en el otro listener DOMContentLoaded de este archivo (el que
+    // llama a InsertPaymentRecord). Aquí había un segundo listener duplicado
+    // que llamaba a la función legacy savePayment() (endpoint SavePayment,
+    // sin subida real de comprobante) y se disparaba en el MISMO click,
+    // creando un payment_record extra sin documento adjunto. Se removió.
 
 });
 
@@ -4482,133 +4483,10 @@ function loadBancosPagoMovil() {
     xhr.send();
 }
 
-function savePayment() {
-    const serialPosPago = document.getElementById("serialPosPago");
-    const idUser = document.getElementById("id_user_pago");
-    const fechaPago = document.getElementById("fechaPago");
-    const formaPago = document.getElementById("formaPago");
-    const moneda = document.getElementById("moneda");
-    const montoBs = document.getElementById("montoBs");
-    const montoRef = document.getElementById("montoRef");
-    const referencia = document.getElementById("referencia");
-    const depositante = document.getElementById("depositante");
-    const fechaCarga = document.getElementById("fechaCarga");
-    const obsAdministracion = document.getElementById("obsAdministracion");
-    const bancoOrigen = document.getElementById("bancoOrigen");
-    const bancoDestino = document.getElementById("bancoDestino");
-
-    // Validations (Simplified)
-    const pagoFileInput = document.getElementById('pago_documentFile');
-    if (!fechaPago.value || !formaPago.value || !moneda.value || !referencia.value || !depositante.value || !pagoFileInput || pagoFileInput.files.length === 0) {
-         Swal.fire("Campos Incompletos", "Por favor complete los campos obligatorios y Adjunte El Documento de pago.", "error");
-         return;
-    }
-    
-    // Configurar Payment ID para la API (usamos null porque es nuevo pago o el existing modal no lo tiene)
-    const paymentId = null; 
-
-    // Prepare FormData
-    const formData = new URLSearchParams();
-    if(serialPosPago) formData.append("serial_pos", serialPosPago.value);
-    if(idUser) formData.append("user_loader", idUser.value);
-    formData.append("payment_date", fechaPago.value + " " + new Date().toLocaleTimeString('en-GB'));
-    
-    // Bancos logic
-    let origenBankVal = null;
-    let destBankVal = null;
-    const selectedText = formaPago.options[formaPago.selectedIndex].textContent.toLowerCase();
-    
-    if (selectedText.includes("móvil") || selectedText.includes("movil")) {
-         const bancoOr = document.getElementById("origenBanco");
-         const bancoDes = document.getElementById("destinoBanco");
-         
-         // Validar que el banco origen esté seleccionado
-         if(!bancoOr || !bancoOr.value || bancoOr.value === "") {
-             Swal.fire({
-                 title: "Campo Requerido",
-                 text: "Por favor seleccione el Banco Origen para el Pago Móvil.",
-                 icon: "warning",
-                 confirmButtonText: "Entendido"
-             });
-             return;
-         }
-
-         if(bancoOr && bancoOr.selectedIndex >= 0) origenBankVal = bancoOr.options[bancoOr.selectedIndex].textContent;
-         if(bancoDes && bancoDes.selectedIndex >= 0) destBankVal = bancoDes.options[bancoDes.selectedIndex].textContent;
-         
-         // Append Pago Movil specifics as null as requested
-         formData.append("origen_telefono", "null");
-         formData.append("origen_rif_numero", "null");
-    } else if (parseInt(formaPago.value) === 2) { // Transferencia
-         if(bancoOrigen && bancoOrigen.selectedIndex >= 0) origenBankVal = bancoOrigen.options[bancoOrigen.selectedIndex].textContent;
-         if(bancoDestino && bancoDestino.selectedIndex >= 0) destBankVal = bancoDestino.options[bancoDestino.selectedIndex].textContent;
-    }
-
-    formData.append("origen_bank", origenBankVal);
-    formData.append("destination_bank", destBankVal);
-    formData.append("payment_method", formaPago.options[formaPago.selectedIndex].textContent);
-    formData.append("currency", moneda.value === 'bs' ? 'BS' : 'USD');
-    formData.append("reference_amount", montoRef && montoRef.value ? montoRef.value : 0);
-    formData.append("amount_bs", montoBs && montoBs.value ? montoBs.value.replace(/,/g, '') : 0);
-    formData.append("payment_reference", referencia.value);
-    formData.append("depositor", depositante.value);
-    if(obsAdministracion) formData.append("observations", obsAdministracion.value);
-    formData.append("loadpayment_date", fechaCarga && fechaCarga.value ? fechaCarga.value : new Date().toISOString().split('T')[0]);
-    formData.append("confirmation_number", false);
-    formData.append("payment_id", paymentId);
-    
-    // Add currentTicketId if available (Crucial for linking to existing ticket in gestion_pagos context if backend supports it)
-    // Note: The original SavePayment in consulta_rif might NOT take ticket_id, but saves to temp. 
-    // We hope the backend handles it or we might need to update the backend. 
-    // For now we send what we have.
-    
-    const apiUrl = ENDPOINT_BASE + APP_PATH + "api/consulta/SavePayment";
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", apiUrl);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            try {
-                const data = JSON.parse(xhr.responseText);
-                if (data.success) {
-
-                    // --- LOGICA DE SUBIDA DE IMAGEN (DUPLICADA - COMENTADA) ---
-                    /*
-                    console.log("Pago registrado. Intentando subir imagen...");
-                    // CORRECCIÓN: El ID en el HTML es 'pago_documentFile', no 'soportePago'
-                    const fileInput = document.getElementById("pago_documentFile");
-                    
-                    if (fileInput && fileInput.files.length > 0) {
-                        // ... Logica movida al listener principal ...
-                    } else {
-                        console.log("No se seleccionó archivo para subir.");
-                        // Swal.fire("Atención", "El pago se guardó, pero NO se detectó ningún documento adjunto para subir. Asegúrate de seleccionarlo.", "info");
-                    }
-                    */
-                    // ----------------------------------------------------
-
-                    Swal.fire({
-                        title: "¡Pago Registrado!",
-                        text: "El pago se ha registrado correctamente.",
-                        icon: "success",
-                        confirmButtonColor: "#003594"
-                    }).then(() => {
-                        if(modalPagoPresupuestoInstance) modalPagoPresupuestoInstance.hide();
-                         // Refresh table if needed
-                         if(typeof getTicketDataCoordinator === 'function') getTicketDataCoordinator();
-                         if(typeof loadPaymentsTable === 'function') loadPaymentsTable(currentTicketNro);
-                    });
-                } else {
-                    Swal.fire("Error", data.message || "Error al guardar", "error");
-                }
-            } catch (e) { Swal.fire("Error", "Respuesta inválida del servidor", "error"); }
-        } else {
-            Swal.fire("Error", "Error de conexión", "error");
-        }
-    };
-    xhr.send(formData.toString());
-}
+// NOTA: la función legacy savePayment() (endpoint SavePayment + subida de
+// comprobante comentada/muerta) fue removida. El guardado real de pagos en
+// este módulo se hace en el listener DOMContentLoaded que llama a
+// InsertPaymentRecord y luego UploadPaymentDoc (ver más arriba en este archivo).
 
 // Initial setup for listeners that don't depend on modal open
 document.addEventListener("DOMContentLoaded", function() {
