@@ -3443,7 +3443,11 @@ class Consulta extends Controller
      * @return void
      */
     public function handleSavePayment(){
-        $this->blockFinanzasReadOnly();
+        // Cargar un pago NUEVO es tarea normal del analista financiero
+        // (rol Finanzas, id_rol=6) -- la restriccion de blockFinanzasReadOnly
+        // es solo para aprobar/rechazar/corregir un pago ya cargado (ver
+        // handlerechazarDocumentos, handleapprovedocument,
+        // handleFinalizarRevisionTicket, handleSubstitutePayment).
         $repository = new TechnicalConsultionRepository();
         
         // ============================================
@@ -4268,7 +4272,8 @@ class Consulta extends Controller
 
     private function handleUploadPaymentDoc()
     {
-        $this->blockFinanzasReadOnly();
+        // Subir el comprobante de un pago NUEVO es tarea normal del analista
+        // financiero (rol Finanzas, id_rol=6) -- ver nota en handleSavePayment.
         error_log("handleUploadPaymentDoc CALLED");
         // Validar que se recibieron archivos
         if (!isset($_FILES['payment_doc']) || $_FILES['payment_doc']['error'] !== UPLOAD_ERR_OK) {
