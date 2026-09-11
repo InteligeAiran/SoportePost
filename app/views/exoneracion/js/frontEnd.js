@@ -2282,6 +2282,20 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
         resetFormPago(); // Usar la función de reset completa
     }
 
+    // Fecha Pago Default (Hoy) -- DEBE ir antes de la logica de
+    // moneda/presupuesto de abajo: esa logica dispara un evento 'input'
+    // sobre montoRef que, si exchangeRate todavia no esta cargado, cae en
+    // calculateUsdToBs() -> loadExchangeRateToday(fechaPago.value). Si el
+    // campo de fecha todavia esta vacio en ese momento, fechaPago.value es
+    // '' y eso dispara una llamada SIN fecha a GetExchangeRateToday (que
+    // ademas esta rota -- ver DataBase/add_exchange_rate_cache.sql).
+    const inputFecha = document.getElementById("fechaPago");
+    if(inputFecha) {
+         const today = new Date().toISOString().split('T')[0];
+         inputFecha.value = today;
+         loadExchangeRateToday(today);
+    }
+
     // Validar razonSocial
     if (!razonSocial || razonSocial === "undefined" || razonSocial === "null") {
         razonSocial = "";
@@ -2438,15 +2452,6 @@ function openModalPagoPresupuesto(nroTicket, ticketId, serialPos, budgetAmount, 
     const ticketHeader = document.getElementById("ticketNumeroPago");
     if(ticketHeader) ticketHeader.textContent = "Ticket #" + nroTicket;
 
-    
-    // Fecha Pago Default (Hoy)
-    const inputFecha = document.getElementById("fechaPago");
-    if(inputFecha) {
-         const today = new Date().toISOString().split('T')[0];
-         inputFecha.value = today;
-         loadExchangeRateToday(today);
-    }
-    
     // Reset visual state (Hide dynamic fields)
     const bancoContainer = document.getElementById("bancoFieldsContainer");
     if(bancoContainer) bancoContainer.style.display = 'none';
@@ -3767,6 +3772,7 @@ function loadBancos() {
 }
 
 let exchangeRate = null;
+let lastLoadedExchangeRateFecha = null;
 
 function loadExchangeRate() {
     if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
@@ -3795,6 +3801,12 @@ function loadExchangeRateToday(fecha = null) {
       if (fechaPagoInput && fechaPagoInput.value) {
         fecha = fechaPagoInput.value;
       }
+    }
+    // Evitar repetir la consulta si ya se cargo la tasa para esta misma
+    // fecha (el campo de fecha antes disparaba esto en cada clic, no
+    // solo cuando el valor realmente cambiaba).
+    if (fecha && fecha === lastLoadedExchangeRateFecha && exchangeRate) {
+      return;
     }
     if (typeof ENDPOINT_BASE === "undefined" || typeof APP_PATH === "undefined") return;
 
@@ -3829,6 +3841,7 @@ function loadExchangeRateToday(fecha = null) {
                const tasa = parseFloat(tasaValue);
                if (!isNaN(tasa)) {
                  exchangeRate = tasa;
+                 lastLoadedExchangeRateFecha = fecha;
                  console.log("Exchange Rate set to:", exchangeRate); // DEBUG
                  if (tasaDisplayValue) tasaDisplayValue.textContent = "Bs. " + tasa.toFixed(2);
                  
