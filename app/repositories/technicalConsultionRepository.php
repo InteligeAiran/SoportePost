@@ -546,6 +546,9 @@ class TechnicalConsultionRepository
             case "consulta tickets":
                 $url_segment = 'consulta_ticket'; // Usé el de tu HTML inicial
                 break;
+            case "suiche 7b":
+                $url_segment = 'suiche7b_registros';
+                break;
             // Añade más casos aquí si tienes otros nombres que se mapeen a URLs específicas
         }
         return $this->app_base_path . $url_segment; // Concatena la ruta base de la aplicación
@@ -1020,6 +1023,57 @@ class TechnicalConsultionRepository
             return $banks;
         }
         return null;
+    }
+
+    // Suiche 7B: registro de afiliacion P2C. Inteligensa hace la afiliacion
+    // con el banco por el comercio, asi que el agente solo llena el
+    // telefono con el que se afilio (banco/razon social/seriales se
+    // resuelven aqui mismo, reutilizando SearchRif -> getdataclientbyrif,
+    // igual que ya se usa para la tabla de resultados por RIF).
+    public function SaveSuiche7B($rif, $telefono, $id_user){
+        $datosCliente = $this->SearchRif($rif);
+        if (!$datosCliente || count($datosCliente) === 0) {
+            return ['success' => false, 'error' => 'El RIF ingresado no está registrado como cliente.'];
+        }
+
+        $razonSocial = $datosCliente[0]['razonsocial'] ?? null;
+        $idCliente = $datosCliente[0]['id_cliente'] ?? null;
+        $banco = null;
+        $serialesArr = [];
+        foreach ($datosCliente as $fila) {
+            if ($banco === null && !empty($fila['banco'])) {
+                $banco = $fila['banco'];
+            }
+            if (!empty($fila['serial_pos']) && !in_array($fila['serial_pos'], $serialesArr, true)) {
+                $serialesArr[] = $fila['serial_pos'];
+            }
+        }
+        $seriales = implode(', ', $serialesArr);
+
+        $result = $this->model->SaveSuiche7B($rif, $idCliente, $razonSocial, $banco, $seriales, $telefono, $id_user);
+        if ($result && isset($result['success']) && $result['success'] === true) {
+            return [
+                'success' => true,
+                'id_registro' => $result['id_registro'],
+                'rif' => $rif,
+                'razon_social' => $razonSocial,
+                'banco' => $banco,
+                'seriales' => $seriales,
+            ];
+        }
+        return ['success' => false, 'error' => $result['error'] ?? 'Error al registrar la afiliación Suiche 7B.'];
+    }
+
+    public function GetAllSuiche7B($search = ''){
+        $result = $this->model->GetAllSuiche7B($search);
+        if ($result && isset($result['numRows']) && $result['numRows'] > 0) {
+            $registros = [];
+            for ($i = 0; $i < $result['numRows']; $i++) {
+                $registros[] = pg_fetch_assoc($result['query'], $i);
+            }
+            return $registros;
+        }
+        return [];
     }
 
     public function GetTicketDataComponent(){

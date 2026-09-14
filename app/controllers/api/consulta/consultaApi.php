@@ -351,6 +351,14 @@ class Consulta extends Controller
                     $this->handleGetAccountsBanks();
                     break;
 
+                case 'SaveSuiche7B':
+                    $this->handleSaveSuiche7B();
+                    break;
+
+                case 'GetSuiche7BRegistros':
+                    $this->handleGetSuiche7BRegistros();
+                    break;
+
                 case 'rechazarDocumento':
                     $this->handlerechazarDocumentos();
                     break;
@@ -2769,6 +2777,44 @@ class Consulta extends Controller
         } else {
             $this->response(['success' => false,'message' => 'No fue posible obtener los bancos.'], 500);
         }
+    }
+
+    // Suiche 7B: el agente ya hizo la afiliacion con el banco por el
+    // cliente (llamada/visita); aca solo registra el telefono con el que
+    // se afilio. Banco/razon social/seriales se resuelven del lado del
+    // servidor a partir del RIF (ver technicalConsultionRepository::SaveSuiche7B).
+    public function handleSaveSuiche7B()
+    {
+        $rif = isset($_POST['rif']) ? trim($_POST['rif']) : '';
+        $telefono = isset($_POST['telefono']) ? trim($_POST['telefono']) : '';
+        $id_user = isset($_POST['id_user']) ? $_POST['id_user'] : '';
+
+        if ($rif === '' || $telefono === '' || $id_user === '') {
+            $this->response(['success' => false, 'message' => 'RIF, teléfono y usuario son requeridos.'], 400);
+            return;
+        }
+
+        $repository = new TechnicalConsultionRepository();
+        $result = $repository->SaveSuiche7B($rif, $telefono, (int) $id_user);
+
+        if ($result && isset($result['success']) && $result['success'] === true) {
+            $this->response([
+                'success' => true,
+                'message' => 'Afiliación Suiche 7B registrada correctamente.',
+                'data' => $result,
+            ], 200);
+        } else {
+            $this->response(['success' => false, 'message' => $result['error'] ?? 'Error al registrar la afiliación.'], 400);
+        }
+    }
+
+    // Suiche 7B: listado de afiliaciones ya registradas (RIF o razon social).
+    public function handleGetSuiche7BRegistros()
+    {
+        $search = isset($_REQUEST['search']) ? trim($_REQUEST['search']) : '';
+        $repository = new TechnicalConsultionRepository();
+        $registros = $repository->GetAllSuiche7B($search);
+        $this->response(['success' => true, 'registros' => $registros], 200);
     }
 
     public function handlerechazarDocumentos(){

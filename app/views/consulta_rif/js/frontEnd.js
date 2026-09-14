@@ -5,6 +5,7 @@ let globalEstatusPos = "";
 let global_BancoDelCliente = "";
 let globalIdClient = "";
 let globalIdIntelipunto = "";
+
 // Variable global para controlar que el alerta de garantía se muestre solo una vez
 let garantiaAlertShown = false;
 
@@ -627,6 +628,199 @@ function inicializeModal() {
   }
   if (cambioBancoBtn) {
     cambioBancoBtn.addEventListener("click", () => openGestionAdmin('banco'));
+  }
+
+  // Suiche 7B: registro de afiliacion P2C. La afiliacion con el banco la
+  // hace Inteligensa por el comercio, asi que aqui solo se confirma el
+  // telefono con el que quedo afiliado (banco/razon social/seriales se
+  // resuelven en el servidor a partir del RIF).
+  const registrarSuiche7BBtn = document.getElementById("registrarSuiche7BBtn");
+  const guardarSuiche7BBtn = document.getElementById("guardarSuiche7BBtn");
+  const ModalSuiche7BCloseBtn = document.getElementById("ModalSuiche7BCloseBtn");
+
+  // Boton propio con ID exclusivo (no la clase compartida .btn-close-custom):
+  // esta misma clase ya tiene un listener global mas abajo en este archivo
+  // que siempre cierra el modal de Exoneracion sin importar cual boton se
+  // haya clickeado, asi que si este boton usara solo esa clase nunca
+  // cerraba el modal correcto.
+  if (ModalSuiche7BCloseBtn) {
+    ModalSuiche7BCloseBtn.addEventListener("click", () => {
+      const modalEl = document.getElementById("ModalSuiche7B");
+      if (!modalEl) return;
+      const instancia = bootstrap.Modal.getInstance(modalEl) || window.modalSuiche7BInstance;
+      if (instancia) {
+        instancia.hide();
+      } else {
+        new bootstrap.Modal(modalEl).hide();
+      }
+    });
+  }
+
+  if (registrarSuiche7BBtn) {
+    registrarSuiche7BBtn.addEventListener("click", () => {
+      if (!globalRif) {
+        if (typeof Swal !== "undefined") {
+          Swal.fire({ icon: "warning", title: "No hay cliente seleccionado", text: "Abre primero los detalles de un POS con RIF válido." });
+        } else {
+          alert("No hay cliente seleccionado. Abre primero los detalles de un POS con RIF válido.");
+        }
+        return;
+      }
+
+      const rifTxt = document.getElementById("suiche7bRifTxt");
+      const razonTxt = document.getElementById("suiche7bRazonTxt");
+      const telefonoInput = document.getElementById("suiche7bTelefonoInput");
+      const errorMsg = document.getElementById("suiche7bErrorMsg");
+      const serialesLoading = document.getElementById("suiche7bSerialesLoading");
+      const serialesList = document.getElementById("suiche7bSerialesList");
+
+      if (rifTxt) rifTxt.value = globalRif || "";
+      if (razonTxt) razonTxt.value = globalRazon || "";
+      if (telefonoInput) telefonoInput.value = "";
+      if (errorMsg) {
+        errorMsg.textContent = "";
+        errorMsg.style.display = "none";
+      }
+      if (serialesList) {
+        serialesList.innerHTML = "";
+        serialesList.style.display = "none";
+      }
+      if (serialesLoading) {
+        serialesLoading.textContent = "Cargando seriales...";
+        serialesLoading.style.display = "block";
+      }
+
+      const modalSuiche7BElement = document.getElementById("ModalSuiche7B");
+      if (modalSuiche7BElement) {
+        window.modalSuiche7BInstance = new bootstrap.Modal(modalSuiche7BElement);
+        window.modalSuiche7BInstance.show();
+      }
+
+      // Reutiliza el mismo endpoint que ya usa la busqueda por RIF, para
+      // traer razon social/banco/seriales frescos (puede haber mas de un
+      // POS asociado al mismo RIF).
+      const xhrSeriales = new XMLHttpRequest();
+      xhrSeriales.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SearchRif`);
+      xhrSeriales.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhrSeriales.onload = function () {
+        try {
+          const response = JSON.parse(xhrSeriales.responseText);
+          if (response.success && response.rif && response.rif.length > 0) {
+            const filas = response.rif;
+            if (razonTxt && filas[0].razonsocial) razonTxt.value = filas[0].razonsocial;
+
+            if (serialesList) {
+              filas.forEach((fila, idx) => {
+                const row = document.createElement("div");
+                row.className = "row gx-3 mb-2" + (idx < filas.length - 1 ? " pb-2 border-bottom" : "");
+
+                function campo(colClass, etiqueta, valor) {
+                  const col = document.createElement("div");
+                  col.className = colClass;
+                  const label = document.createElement("label");
+                  label.className = "form-label small fw-bold text-uppercase text-muted";
+                  label.textContent = etiqueta;
+                  const input = document.createElement("input");
+                  input.type = "text";
+                  input.className = "form-control bg-light border-0 fw-bold";
+                  input.readOnly = true;
+                  input.style.fontSize = "0.85rem";
+                  input.value = valor || "—";
+                  col.appendChild(label);
+                  col.appendChild(input);
+                  return col;
+                }
+
+                row.appendChild(campo("col-md-4", "Serial POS", fila.serial_pos));
+                row.appendChild(campo("col-md-5", "Banco", fila.banco));
+                row.appendChild(campo("col-md-3", "Estatus", fila.desc_pos));
+                serialesList.appendChild(row);
+              });
+            }
+            if (serialesLoading) serialesLoading.style.display = "none";
+            if (serialesList) serialesList.style.display = "block";
+          } else if (serialesLoading) {
+            serialesLoading.textContent = "No se encontraron seriales asociados a este RIF.";
+          }
+        } catch (e) {
+          if (serialesLoading) serialesLoading.textContent = "No se pudieron cargar los seriales.";
+        }
+      };
+      xhrSeriales.onerror = function () {
+        if (serialesLoading) serialesLoading.textContent = "No se pudieron cargar los seriales.";
+      };
+      xhrSeriales.send(`rif=${encodeURIComponent(globalRif)}`);
+    });
+  }
+
+  if (guardarSuiche7BBtn) {
+    guardarSuiche7BBtn.addEventListener("click", () => {
+      const telefonoInput = document.getElementById("suiche7bTelefonoInput");
+      const telefono = telefonoInput ? (telefonoInput.value || "").trim() : "";
+      const idUserEl = document.getElementById("id_user");
+      const id_user = idUserEl ? idUserEl.value : "";
+
+      // Alerta POR ENCIMA del modal (SweetAlert2 ya se muestra con z-index
+      // mayor al de Bootstrap), no texto escrito dentro del propio modal.
+      function mostrarErrorSuiche7B(msg) {
+        if (typeof Swal !== "undefined") {
+          Swal.fire({ icon: "warning", title: "No se pudo guardar", text: msg, confirmButtonColor: "#0dcaf0" });
+        } else {
+          alert(msg);
+        }
+      }
+
+      if (!telefono) {
+        mostrarErrorSuiche7B("Ingresa el teléfono con el que el cliente se afilió. Hay campos vacíos.");
+        return;
+      }
+      if (!globalRif) {
+        mostrarErrorSuiche7B("No se ha seleccionado un cliente (RIF) todavía.");
+        return;
+      }
+
+      guardarSuiche7BBtn.disabled = true;
+      const textoOriginalBtn = guardarSuiche7BBtn.textContent;
+      guardarSuiche7BBtn.textContent = "Guardando...";
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `${ENDPOINT_BASE}${APP_PATH}api/consulta/SaveSuiche7B`);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onload = function () {
+        guardarSuiche7BBtn.disabled = false;
+        guardarSuiche7BBtn.textContent = textoOriginalBtn;
+        try {
+          const response = JSON.parse(xhr.responseText);
+          if (xhr.status >= 200 && xhr.status < 300 && response.success) {
+            if (window.modalSuiche7BInstance) {
+              window.modalSuiche7BInstance.hide();
+            }
+            if (typeof Swal !== "undefined") {
+              Swal.fire({
+                icon: "success",
+                title: "Afiliación registrada",
+                text: response.message || "Se registró la afiliación Suiche 7B correctamente.",
+                confirmButtonColor: "#003594",
+              });
+            } else {
+              alert(response.message || "Afiliación Suiche 7B registrada correctamente.");
+            }
+          } else {
+            mostrarErrorSuiche7B(response.message || "No se pudo registrar la afiliación.");
+          }
+        } catch (e) {
+          mostrarErrorSuiche7B("Respuesta inesperada del servidor.");
+        }
+      };
+      xhr.onerror = function () {
+        guardarSuiche7BBtn.disabled = false;
+        guardarSuiche7BBtn.textContent = textoOriginalBtn;
+        mostrarErrorSuiche7B("Error de conexión al registrar la afiliación.");
+      };
+      xhr.send(
+        `rif=${encodeURIComponent(globalRif)}&telefono=${encodeURIComponent(telefono)}&id_user=${encodeURIComponent(id_user)}`
+      );
+    });
   }
 
   if (registrarVisitaBtn) {

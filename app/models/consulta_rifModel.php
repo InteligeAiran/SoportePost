@@ -58,6 +58,68 @@ class consulta_rifModel extends Model
 
     }
 
+    // Suiche 7B: guarda el registro de afiliacion P2C (banco/razon_social/
+    // seriales ya vienen resueltos desde el repositorio via SearchRif).
+    public function SaveSuiche7B($rif, $idCliente, $razonSocial, $banco, $seriales, $telefono, $idUser)
+    {
+        try {
+            $conn = $this->db->getConnection();
+            $litOrNull = function ($v) use ($conn) {
+                return ($v === null || $v === '') ? "NULL" : pg_escape_literal($conn, $v);
+            };
+            $sql = "INSERT INTO suiche7b_registros
+                        (rif, id_cliente, razon_social, banco, seriales, telefono_afiliacion, id_user)
+                    VALUES (" .
+                        pg_escape_literal($conn, $rif) . ", " .
+                        ($idCliente !== null ? (int) $idCliente : "NULL") . ", " .
+                        $litOrNull($razonSocial) . ", " .
+                        $litOrNull($banco) . ", " .
+                        $litOrNull($seriales) . ", " .
+                        pg_escape_literal($conn, $telefono) . ", " .
+                        (int) $idUser .
+                    ") RETURNING id_registro;";
+
+            $result = pg_query($conn, $sql);
+            if ($result === false) {
+                error_log("Error al insertar en suiche7b_registros: " . pg_last_error($conn));
+                return ['success' => false, 'error' => 'Error al guardar el registro.'];
+            }
+
+            $row = pg_fetch_assoc($result);
+            return ['success' => true, 'id_registro' => $row['id_registro']];
+        } catch (Throwable $e) {
+            error_log("Excepcion al guardar Suiche 7B: " . $e->getMessage());
+            return ['success' => false, 'error' => 'Error al guardar el registro.'];
+        }
+    }
+
+    // Suiche 7B: listado de afiliaciones ya registradas (tabla de consulta).
+    public function GetAllSuiche7B($search = '')
+    {
+        try {
+            $conn = $this->db->getConnection();
+            $where = '';
+            if ($search !== '' && $search !== null) {
+                $escapedSearch = pg_escape_literal($conn, '%' . $search . '%');
+                $where = "WHERE s.rif ILIKE $escapedSearch OR s.razon_social ILIKE $escapedSearch";
+            }
+            $sql = "SELECT s.id_registro, s.rif, s.razon_social, s.banco, s.seriales,
+                           s.telefono_afiliacion, s.creado_en,
+                           TRIM(CONCAT(u.name, ' ', u.surname)) AS agente
+                    FROM suiche7b_registros s
+                    LEFT JOIN users u ON u.id_user = s.id_user
+                    $where
+                    ORDER BY s.creado_en DESC
+                    LIMIT 200;";
+
+            $result = Model::getResult($sql, $this->db);
+            return $result;
+        } catch (Throwable $e) {
+            error_log("Excepcion al listar Suiche 7B: " . $e->getMessage());
+            return false;
+        }
+    }
+
 
 
     public function SearchSerialData($serial)
