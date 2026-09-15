@@ -1488,80 +1488,12 @@ function mi_navbar() {}
                                         <!--button type="button" class="btn-custom-action btn-crear-solicitud" id="crearSolicitudBtn" style="background: linear-gradient(135deg, #0dcaf0 0%, #00acc1 100%); border: none; color: white; padding: 10px 20px; border-radius: 12px; font-weight: 700;">
                                              <i class="bi bi-plus-circle-fill me-2"></i>Crear Solicitud
                                         </button-->
-                                        <button type="button" class="btn-custom-action" id="registrarSuiche7BBtn" style="background: linear-gradient(135deg, #0dcaf0 0%, #00acc1 100%); border: none; color: white; padding: 10px 20px; border-radius: 12px; font-weight: 700;">
-                                            <i class="bi bi-phone-fill me-2"></i>Registrar Afiliación Suiche 7B
-                                        </button>
                                     </div>
                                     <div class="mt-3 w-100 d-flex justify-content-center" id="txtDescripcion"></div>
                                     <!--div class="mt-3 w-100 d-flex justify-content-center">
                                         <button type="button" class="btn btn-secondary w-75" id="closeDetailsPanelBtn">Cerrar Detalles</button>
                                     </div-->
 
-                                </div>
-                            </div>
-
-                            <!-- Suiche 7B: registro de afiliacion P2C. La afiliacion con el banco -->
-                            <!-- la hace Inteligensa por el comercio; el agente solo confirma el   -->
-                            <!-- telefono con el que quedo afiliado. Banco/razon social/seriales ya -->
-                            <!-- se conocen (misma consulta por RIF), no se piden aqui.             -->
-                            <div class="modal fade" id="ModalSuiche7B" tabindex="-1" aria-labelledby="ModalSuiche7BLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);">
-                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-                                    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-                                        <div class="modal-header bg-gradient-info p-4 border-0" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);">
-                                            <div class="d-flex align-items-center">
-                                                <div class="rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(4px); flex-shrink: 0;">
-                                                    <i class="bi bi-phone-fill text-white fs-4"></i>
-                                                </div>
-                                                <div>
-                                                    <h5 class="modal-title text-white fw-bold mb-0" id="ModalSuiche7BLabel" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Registrar Afiliación Suiche 7B</h5>
-                                                    <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.85rem; font-weight: 500;">La afiliación con el banco la gestiona Inteligensa por el comercio</p>
-                                                </div>
-                                            </div>
-                                            <button type="button" class="btn-close-custom ms-auto" id="ModalSuiche7BCloseBtn" aria-label="Close">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body p-4 bg-light">
-                                            <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 18px 20px 22px; border: 1px solid #e0e0e0; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); overflow: visible; height: auto;">
-                                                <div class="form-section-header mb-3 pb-2 border-bottom">
-                                                    <i class="bi bi-building text-info me-2"></i>
-                                                    <span class="form-section-title fw-bold text-dark">Datos del Comercio</span>
-                                                </div>
-                                                <div class="row gx-3">
-                                                    <div class="col-md-4 mb-1">
-                                                        <label class="form-label small fw-bold text-uppercase text-muted">RIF</label>
-                                                        <input type="text" class="form-control bg-light border-0 fw-bold" id="suiche7bRifTxt" readonly style="font-size: 0.85rem;">
-                                                    </div>
-                                                    <div class="col-md-8 mb-1">
-                                                        <label class="form-label small fw-bold text-uppercase text-muted">Razón Social</label>
-                                                        <input type="text" class="form-control bg-light border-0 fw-bold" id="suiche7bRazonTxt" readonly style="font-size: 0.85rem;">
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 18px 20px 22px; border: 1px solid #e0e0e0; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); overflow: visible; height: auto;">
-                                                <div class="form-section-header mb-3 pb-2 border-bottom">
-                                                    <i class="bi bi-credit-card-2-front-fill text-info me-2"></i>
-                                                    <span class="form-section-title fw-bold text-dark">Seriales POS Asociados</span>
-                                                </div>
-                                                <div id="suiche7bSerialesLoading" class="text-muted small">Cargando seriales...</div>
-                                                <div id="suiche7bSerialesList" style="display: none; max-height: 300px; overflow-y: auto; overflow-x: hidden;"></div>
-                                            </div>
-
-                                            <div class="form-section highlight-section" style="background: white; border-radius: 12px; padding: 18px 20px 22px; border: 1px solid #e0e0e0; margin-bottom: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); overflow: visible; height: auto;">
-                                                <div class="form-section-header mb-3 pb-2 border-bottom">
-                                                    <i class="bi bi-telephone-fill text-info me-2"></i>
-                                                    <span class="form-section-title fw-bold text-dark">Teléfono de Afiliación</span>
-                                                </div>
-                                                <label for="suiche7bTelefonoInput" class="form-label small fw-bold text-uppercase text-muted">Teléfono con el que se afilió</label>
-                                                <input type="text" class="form-control fw-bold" id="suiche7bTelefonoInput" placeholder="04XX-XXXXXXX">
-                                            </div>
-                                            <p id="suiche7bErrorMsg" class="mt-3 mb-0" style="color: #dc3545; display: none;"></p>
-                                        </div>
-                                        <div class="modal-footer border-0 bg-light">
-                                            <button type="button" class="btn-custom-action" id="guardarSuiche7BBtn" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%); border: none; color: white; padding: 10px 24px; border-radius: 12px; font-weight: 700;">Guardar</button>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
