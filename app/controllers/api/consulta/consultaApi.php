@@ -1640,10 +1640,14 @@ class Consulta extends Controller
         $result = $repository->AssignTicket($id_ticket, $id_tecnico);
 
         if ($id_tecnico != '' && $id_ticket != '') {
-            if ($result) {
-                $this->response(['success' => true, 'message' => 'Asignado Con Éxito'], 200);
+            // FIX: $result siempre era un array no vacio (incluso los
+            // 'return [success => false, ...]' de UpdateAccion), y en PHP
+            // un array no vacio es truthy -- este if nunca detectaba un
+            // fallo real. Ahora se revisa la clave 'success' explicita.
+            if (!empty($result['success'])) {
+                $this->response(['success' => true, 'message' => $result['message'] ?? 'Asignado Con Éxito'], 200);
             } else {
-                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+                $this->response(['success' => false, 'message' => $result['message'] ?? 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
             }
         } else {
             $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found

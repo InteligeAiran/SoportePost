@@ -1706,6 +1706,22 @@ class consulta_rifModel extends Model
 
         try {
 
+            // FIX: validar la sesion ANTES de escribir nada. Si
+            // $_SESSION['id_user'] llega vacio (sesion caida/expirada a
+            // medias), el UPDATE de id_coordinador mas abajo quedaba como
+            // "SET id_coordinador = " (SQL invalido), pg_query fallaba, y
+            // el error se tragaba en silencio -- el tecnico se asignaba
+            // pero el coordinador se perdia para siempre.
+            $id_user = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
+
+            if ($id_user <= 0) {
+                error_log("UpdateAccion: sesion invalida (id_user vacio) al asignar ticket {$id_ticket} a tecnico {$id_tecnico}.");
+                return ['success' => false, 'message' => 'Tu sesión no es válida. Vuelve a iniciar sesión e intenta asignar de nuevo.'];
+            }
+
+            $id_ticket = (int) $id_ticket;
+            $id_tecnico = (int) $id_tecnico;
+
             // Escapar los valores para seguridad (esto es una buena práctica)
 
             $escaped_id_ticket = pg_escape_literal($this->db->getConnection(), $id_ticket);
@@ -1743,8 +1759,6 @@ class consulta_rifModel extends Model
 
 
             $id_accion_ticket = $ticketData['assigntickettotecnico']; // Capturar el ID del ticket creado
-
-            $id_user = $_SESSION['id_user'];
 
             $id_status_ticket = 2; // Asignar un valor predeterminado o dinámico según tu lógica
 
@@ -1874,22 +1888,21 @@ class consulta_rifModel extends Model
 
                     $resultUpdate = $this->db->pgquery($updateSql);
 
+                    $coordinador_guardado = false;
 
-
-                    if ($resultUpdate && pg_num_rows($resultUpdate) > 0) {
-
-                        $row = pg_fetch_assoc($resultUpdate);
-
-                        $id_coordinador = (int)$row['id_coordinador'];
-
-                        pg_free_result($resultUpdate);
-
-                    } else {
-
-                        error_log('UPDATE users_tickets no retornó filas. ' . pg_last_error($this->db->getConnection()));
-
+                    if ($resultUpdate === false) {
+                        // La query fallo de verdad (SQL invalido, conexion caida, etc.)
+                        error_log("UpdateAccion: fallo el UPDATE de id_coordinador para ticket {$id_ticket} (user {$id_user}): " . pg_last_error($this->db->getConnection()));
                         $id_coordinador = null;
-
+                    } elseif (pg_num_rows($resultUpdate) > 0) {
+                        $row = pg_fetch_assoc($resultUpdate);
+                        $id_coordinador = (int)$row['id_coordinador'];
+                        $coordinador_guardado = true;
+                        pg_free_result($resultUpdate);
+                    } else {
+                        // La query corrio bien pero no encontro fila en users_tickets para este ticket -- no deberia pasar nunca.
+                        error_log("UpdateAccion: el UPDATE de id_coordinador no encontro fila en users_tickets para ticket {$id_ticket} (user {$id_user}).");
+                        $id_coordinador = null;
                     }
 
 
@@ -1934,7 +1947,13 @@ class consulta_rifModel extends Model
 
             }
 
-           return array('save_result' => $result, 'history_result' => $resultsqlInsertHistory, 'insert_coordinador_result' => $resultUpdate);
+           return array(
+               'success' => (bool) ($result && $resultsqlInsertHistory && $coordinador_guardado),
+               'message' => $coordinador_guardado ? 'Asignado con éxito.' : 'El técnico se asignó, pero no se pudo guardar el coordinador. Revisa el ticket e intenta reasignarlo.',
+               'save_result' => $result,
+               'history_result' => $resultsqlInsertHistory,
+               'insert_coordinador_result' => $resultUpdate
+           );
 
         } catch (Throwable $e) {
 
