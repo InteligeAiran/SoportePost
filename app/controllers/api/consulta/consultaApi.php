@@ -1543,6 +1543,13 @@ class Consulta extends Controller
             $workshop = null;
             
             foreach ($results as $row) {
+                // Una exoneración rechazada (12) es historial muerto: no debe
+                // tapar a una posterior aprobada/pendiente del otro tipo al
+                // elegir la "primary" mas abajo (ej. un Pago Taller rechazado
+                // no debe ocultar un Anticipo aprobado al 100%).
+                if ((int)$row['id_status_payment'] === 12) {
+                    continue;
+                }
                 $tipo = strtolower(trim($row['tipo_exoneracion']));
                 if ($tipo === 'anticipo') {
                     $anticipo = $row;
@@ -3246,24 +3253,33 @@ class Consulta extends Controller
 
         if ($exoResults && is_array($exoResults)) {
             $all_exonerations = $exoResults;
-            foreach ($exoResults as $exo) {
+            // Una exoneración rechazada (12) es historial muerto: no debe
+            // contar para el porcentaje/ahorro ni para determinar el tipo
+            // "activo" (ver mismo criterio en handleGetExoneracionPorcentaje).
+            $activeExonerations = array_values(array_filter($exoResults, function ($exo) {
+                return (int)($exo['id_status_payment'] ?? 0) !== 12;
+            }));
+
+            foreach ($activeExonerations as $exo) {
                 if (isset($exo['porcentaje'])) {
                     $total_porcentaje += (float)$exo['porcentaje'];
                 }
             }
-            if (count($exoResults) > 0) {
-                $tipo_exoneracion = count($exoResults) > 1 ? 'Múltiple' : ($exoResults[0]['tipo_exoneracion'] ?? 'Anticipo');
+            if (count($activeExonerations) > 0) {
+                $tipo_exoneracion = count($activeExonerations) > 1 ? 'Múltiple' : ($activeExonerations[0]['tipo_exoneracion'] ?? 'Anticipo');
             }
+        } else {
+            $activeExonerations = [];
         }
 
         $total_budget = floatval($result['total_budget']);
         $ahorro_taller = 0;
         $ahorro_anticipo = 0;
 
-        foreach ($all_exonerations as $exo) {
+        foreach ($activeExonerations as $exo) {
             $tipo = strtolower(trim($exo['tipo_exoneracion'] ?? ''));
             $porcentaje = (float)($exo['porcentaje'] ?? 0);
-            
+
             if ($tipo === 'pago taller' || $tipo === 'taller' || $tipo === 'presupuesto') {
                 $ahorro_taller += ($total_budget * $porcentaje / 100);
             } else if ($tipo === 'anticipo') {
@@ -4141,14 +4157,16 @@ class Consulta extends Controller
     public function handleGetPaymentAttachmentByRecordNumber() {
         $repository = new TechnicalConsultionRepository();
         $record_number = isset($_POST['record_number']) ? $_POST['record_number'] : '';
-        
+        $nro_ticket = isset($_POST['nro_ticket']) ? trim($_POST['nro_ticket']) : null;
+        $document_type = isset($_POST['document_type']) ? trim($_POST['document_type']) : null;
+
         if (empty($record_number)) {
             $this->response(['success' => false, 'message' => 'Nro de registro no proporcionado'], 400);
             return;
         }
 
-        $attachment = $repository->GetPaymentAttachmentByRecordNumber1($record_number);
-        
+        $attachment = $repository->GetPaymentAttachmentByRecordNumber($record_number, $nro_ticket, $document_type);
+
         if ($attachment) {
             $this->response(['success' => true, 'attachment' => $attachment], 200);
         } else {
@@ -4680,6 +4698,12 @@ class Consulta extends Controller
         if ($exoResults) {
             error_log("Exonerations found: " . count($exoResults));
             foreach ($exoResults as $exo) {
+                // Una exoneración rechazada (12) es historial muerto: no debe
+                // permitir saltarse el pago (mismo criterio que en
+                // handleGetExoneracionPorcentaje).
+                if ((int)($exo['id_status_payment'] ?? 0) === 12) {
+                    continue;
+                }
                 $tipo = strtolower(trim($exo['tipo_exoneracion']));
                 $porcentaje = (float)$exo['porcentaje'];
                 error_log("Checking Exo: tipo=$tipo, porcentaje=$porcentaje");
