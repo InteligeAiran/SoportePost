@@ -1633,10 +1633,14 @@ class Consulta extends Controller
         $result = $repository->AssignTicket($id_ticket, $id_tecnico);
 
         if ($id_tecnico != '' && $id_ticket != '') {
-            if ($result) {
-                $this->response(['success' => true, 'message' => 'Asignado Con Éxito'], 200);
+            // FIX: $result siempre era un array no vacio (incluso los
+            // 'return [success => false, ...]' de UpdateAccion), y en PHP
+            // un array no vacio es truthy -- este if nunca detectaba un
+            // fallo real. Ahora se revisa la clave 'success' explicita.
+            if (!empty($result['success'])) {
+                $this->response(['success' => true, 'message' => $result['message'] ?? 'Asignado Con Éxito'], 200);
             } else {
-                $this->response(['success' => false, 'message' => 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
+                $this->response(['success' => false, 'message' => $result['message'] ?? 'No se encontraron datos', 'historial' => []], 404); // Código de estado 404 Not Found
             }
         } else {
             $this->response(['success' => false, 'message' => 'Hay campos vacios'], 400); // Código de estado 404 Not Found
@@ -2005,6 +2009,10 @@ class Consulta extends Controller
      * documento). Si es un tipo de pago (o no se especifica, para las
      * acciones que son exclusivamente de Pagos) se bloquea; si es
      * Exoneración u otro tipo no-pago, se permite.
+     *
+     * Nota: cargar/sustituir un comprobante de pago (handleSavePayment,
+     * handleSubstitutePayment) NO usa este bloqueo -- Finanzas si puede
+     * cargar y corregir comprobantes, solo no puede aprobar/rechazar.
      */
     private function blockFinanzasReadOnly($documentType = null) {
         $id_area = (int)($_SESSION['id_area'] ?? 0);
@@ -3443,11 +3451,11 @@ class Consulta extends Controller
      * @return void
      */
     public function handleSavePayment(){
-        // Cargar un pago NUEVO es tarea normal del analista financiero
+        // Cargar un pago NUEVO (o sustituir uno rechazado, ver
+        // handleSubstitutePayment) es tarea normal del analista financiero
         // (rol Finanzas, id_rol=6) -- la restriccion de blockFinanzasReadOnly
-        // es solo para aprobar/rechazar/corregir un pago ya cargado (ver
-        // handlerechazarDocumentos, handleapprovedocument,
-        // handleFinalizarRevisionTicket, handleSubstitutePayment).
+        // es solo para aprobar/rechazar un pago (ver handlerechazarDocumentos,
+        // handleapprovedocument, handleFinalizarRevisionTicket).
         $repository = new TechnicalConsultionRepository();
         
         // ============================================
@@ -4222,7 +4230,9 @@ class Consulta extends Controller
     }
 
     public function handleSubstitutePayment() {
-        $this->blockFinanzasReadOnly();
+        // Sustituir un pago rechazado es, en esencia, cargar un nuevo
+        // comprobante de pago (como handleSavePayment): Finanzas SI puede
+        // hacerlo. No se bloquea aqui.
         $repository = new TechnicalConsultionRepository();
         $id_payment_old = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
         
