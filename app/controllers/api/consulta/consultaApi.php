@@ -2008,6 +2008,10 @@ class Consulta extends Controller
      * documento). Si es un tipo de pago (o no se especifica, para las
      * acciones que son exclusivamente de Pagos) se bloquea; si es
      * Exoneración u otro tipo no-pago, se permite.
+     *
+     * Nota: cargar/sustituir un comprobante de pago (handleSavePayment,
+     * handleSubstitutePayment) NO usa este bloqueo -- Finanzas si puede
+     * cargar y corregir comprobantes, solo no puede aprobar/rechazar.
      */
     private function blockFinanzasReadOnly($documentType = null) {
         $id_area = (int)($_SESSION['id_area'] ?? 0);
@@ -3446,11 +3450,11 @@ class Consulta extends Controller
      * @return void
      */
     public function handleSavePayment(){
-        // Cargar un pago NUEVO es tarea normal del analista financiero
+        // Cargar un pago NUEVO (o sustituir uno rechazado, ver
+        // handleSubstitutePayment) es tarea normal del analista financiero
         // (rol Finanzas, id_rol=6) -- la restriccion de blockFinanzasReadOnly
-        // es solo para aprobar/rechazar/corregir un pago ya cargado (ver
-        // handlerechazarDocumentos, handleapprovedocument,
-        // handleFinalizarRevisionTicket, handleSubstitutePayment).
+        // es solo para aprobar/rechazar un pago (ver handlerechazarDocumentos,
+        // handleapprovedocument, handleFinalizarRevisionTicket).
         $repository = new TechnicalConsultionRepository();
         
         // ============================================
@@ -4225,7 +4229,9 @@ class Consulta extends Controller
     }
 
     public function handleSubstitutePayment() {
-        $this->blockFinanzasReadOnly();
+        // Sustituir un pago rechazado es, en esencia, cargar un nuevo
+        // comprobante de pago (como handleSavePayment): Finanzas SI puede
+        // hacerlo. No se bloquea aqui.
         $repository = new TechnicalConsultionRepository();
         $id_payment_old = isset($_POST['id_payment']) ? $_POST['id_payment'] : '';
         
