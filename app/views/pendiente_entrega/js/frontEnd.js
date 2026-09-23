@@ -1460,11 +1460,9 @@ function getTicketDataFinaljs() {
                       const hasBudget = row.has_budget === true || row.has_budget === 't' || row.has_budget === 1 || 
                                        (row.id_budget && row.id_budget !== null && row.id_budget !== '') ||
                                        (row.pdf_path_presupuesto && row.pdf_path_presupuesto.trim() !== '');
-                      const idStatusTicket = row.id_status_ticket ? parseInt(row.id_status_ticket) : null;
                       const idStPay = row.id_status_payment || row.idStatusPayment || null;
                       const idStatusPayment = idStPay ? parseInt(idStPay) : null;
-                      const isEnProceso = idStatusTicket === 2;
-                       const isGarantia = idStatusPayment === 1 || idStatusPayment === 3 || 
+                       const isGarantia = idStatusPayment === 1 || idStatusPayment === 3 ||
                                           row.garantia_instalacion === true || row.garantia_instalacion === 't' ||
                                           row.garantia_reingreso === true || row.garantia_reingreso === 't';
 
@@ -1576,13 +1574,14 @@ function getTicketDataFinaljs() {
                       
                       // Validar si debe mostrarse el botón de presupuesto
                       // El botón se muestra si:
-                      // 1. NO hay datos en budgets para este nro_ticket
-                      // 2. O si HAY datos en budgets Y el id_status_ticket NO es 2 ("En proceso")
-                      // NO mostrar botón si: hay presupuesto Y está en proceso
+                      // 1. NO hay datos en budgets para este nro_ticket (sin importar el
+                      //    estatus del ticket -- un ticket puede llegar a esta etapa sin
+                      //    haber pasado nunca por id_status_ticket = 2 "En proceso", ej.
+                      //    si lo gestiona directamente el mismo coordinador)
                       // NO mostrar botón si: id_failure = 9 ("Actualización de Software") o id_failure = 12 ("Sin Llaves/Dukpt Vacío")
                       // NO mostrar botón si: confirmrosal es nulo o falso
                       const hasConfirmRosal = row.confirmrosal === true || row.confirmrosal === 't' || row.confirmrosal === 'true';
-                      const shouldShowPresupuestoButton = !(hasBudget && isEnProceso) && !isFallaSinPago && !isGarantia && hasConfirmRosal;
+                      const shouldShowPresupuestoButton = !hasBudget && !isFallaSinPago && !isGarantia && hasConfirmRosal;
                       
                       // Agregar botón de presupuesto solo si cumple las condiciones
                       let presupuestoButton = '';
